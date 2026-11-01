@@ -1,0 +1,16 @@
+{
+  "fast": {
+    "correct": 123,
+    "wrong": 1
+  },
+  "slow": {},
+  "abstain": 351,
+  "gate_eligible": 0,
+  "total": 475,
+  "fast_pa": 0.25684210526315787,
+  "hybrid_pa": 0.25684210526315787,
+  "slow_delta_pa": 0.0,
+  "model_evaluated": false,
+  "recommend_enable": false,
+  "limitation": "Prospective split only. Existing rule tuning used Train; existing SFT saw all businesses."
+}

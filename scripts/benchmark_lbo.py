@@ -1,7 +1,6 @@
 """
 benchmark_lbo.py: Leave-Business-Out (LBO) Cross-Validation Benchmark.
-Evaluates model generalization across unseen businesses to prevent overfitting
-and accurately measure true test performance.
+Reports a fixed resolver by business group; no fold-specific training or tuning isolation.
 """
 
 from __future__ import annotations
@@ -20,34 +19,7 @@ from zaic_2026_datamate.intent_parser import resolve_query
 logging.basicConfig(level=logging.WARNING)
 
 
-def evaluate_match(pred_type: str, pred_val: Any, target_type: str, target_val: Any) -> bool:
-    """Check if predicted answer matches target under ZAIC rulebook."""
-    if pred_type == "unanswerable":
-        return target_type == "unanswerable"
-
-    if target_type == "unanswerable":
-        return pred_type == "unanswerable"
-
-    if pred_val is None or target_val is None:
-        return pred_val == target_val
-
-    if target_type == "percent":
-        try:
-            p = float(pred_val)
-            t = float(target_val)
-            return abs(p - t) <= 0.02 or abs(p * 100 - t) <= 0.02
-        except Exception:
-            return False
-
-    if target_type == "number":
-        try:
-            p = int(round(float(pred_val)))
-            t = int(round(float(target_val)))
-            return p == t
-        except Exception:
-            return False
-
-    return str(pred_val).strip().lower() == str(target_val).strip().lower()
+from zaic_2026_datamate.evaluation import evaluate_match
 
 
 def run_lbo(n_folds: int = 5, verbose: bool = False) -> None:
@@ -81,7 +53,7 @@ def run_lbo(n_folds: int = 5, verbose: bool = False) -> None:
     loader = DataLoader(data_dir, calendar_path)
     ctx_cache: Dict[str, BusinessContext] = {}
 
-    print(f"🚀 BẮT ĐẦU LEAVE-BUSINESS-OUT EVALUATION ({n_folds} FOLDS)")
+    print(f"🚀 BẮT ĐẦU BUSINESS-GROUPED TRAIN EVALUATION ({n_folds} FOLDS)")
     print("=" * 80)
 
     fold_results = []
@@ -168,19 +140,19 @@ def run_lbo(n_folds: int = 5, verbose: bool = False) -> None:
     overall_prec = (overall_correct / overall_answered * 100) if overall_answered > 0 else 0.0
 
     print("\n" + "=" * 80)
-    print("🏆 TỔNG KẾT LEAVE-BUSINESS-OUT (LBO) 5-FOLD:")
+    print("🏆 TỔNG KẾT TRAIN THEO NHÓM DOANH NGHIỆP:")
     print(f"   - Tổng số câu hỏi: {overall_total}")
     print(f"   - Số câu trả lời: {overall_answered} ({overall_answered/overall_total*100:.2f}%)")
     print(f"   - Đúng (+1): {overall_correct} | Sai (-1): {overall_wrong} | Abstain (0): {overall_abstain}")
     print(f"   - Điểm PA Tổng thể: {overall_pa:+.5f} (Net points: {overall_net:+d})")
-    print(f"   - Độ chuẩn xác Khái quát hóa (LBO Precision): {overall_prec:.2f}%")
+    print(f"   - Precision trên Train: {overall_prec:.2f}%")
     print("   - Chi tiết từng Fold:")
     for fr in fold_results:
         print(f"     * Fold {fr['fold']} ({', '.join(fr['bids'])}): PA={fr['pa']:+.4f}, Precision={fr['precision']:.1f}% ({fr['correct']}/{fr['answered']})")
     print("=" * 80)
 
     if all_wrong_cases:
-        print(f"\n❌ TỔNG SỐ {len(all_wrong_cases)} CÂU SAI PHÁT HIỆN TRÊN TẬP HOLDOUT:")
+        print(f"\n❌ TỔNG SỐ {len(all_wrong_cases)} CÂU SAI PHÁT HIỆN TRÊN TRAIN:")
         for i, c in enumerate(all_wrong_cases):
             print(f"[{i+1}] [{c['business_id']}] {c['id']}: {c['question']}")
             print(f"    As-of-date: {c['as_of_date']}")

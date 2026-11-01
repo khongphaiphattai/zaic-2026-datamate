@@ -1,0 +1,28 @@
+{
+  "fast": {
+    "correct": 123,
+    "wrong": 1
+  },
+  "slow": {},
+  "abstain": 351,
+  "gate_eligible": 7,
+  "total": 475,
+  "fast_pa": 0.25684210526315787,
+  "hybrid_pa": 0.25684210526315787,
+  "slow_delta_pa": 0.0,
+  "model_evaluated": false,
+  "exploratory": true,
+  "training_overlap": [
+    "biz_101",
+    "biz_103",
+    "biz_110",
+    "biz_118",
+    "biz_119",
+    "biz_125"
+  ],
+  "recommend_enable": false,
+  "limitation": "Prospective split only. Existing rule tuning used Train; existing SFT saw all businesses.",
+  "model_attempted": true,
+  "inference_errors": 7,
+  "infrastructure_error": "HTTP 530 / Cloudflare 1033 for all 7 eligible requests; no quality conclusion"
+}

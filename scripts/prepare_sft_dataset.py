@@ -22,26 +22,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def evaluate_match(pred_type: str, pred_val: Any, target_type: str, target_val: Any) -> bool:
-    if pred_type == "unanswerable":
-        return target_type == "unanswerable"
-    if target_type == "unanswerable":
-        return pred_type == "unanswerable"
-    if pred_val is None or target_val is None:
-        return pred_val == target_val
-    if target_type == "percent":
-        try:
-            p, t = float(pred_val), float(target_val)
-            return abs(p - t) <= 0.02 or abs(p * 100 - t) <= 0.02
-        except Exception:
-            return False
-    if target_type == "number":
-        try:
-            p, t = int(round(float(pred_val))), int(round(float(target_val)))
-            return p == t
-        except Exception:
-            return False
-    return str(pred_val).strip().lower() == str(target_val).strip().lower()
+from zaic_2026_datamate.evaluation import evaluate_match
 
 
 def mine_sft_dataset(
@@ -50,6 +31,7 @@ def mine_sft_dataset(
     data_dir: str = "data/train/train/data",
     calendar_path: str = "data/train/train/calendar.csv",
     output_path: str = "train_sft.jsonl",
+    allowed_businesses: Optional[List[str]] = None,
 ) -> None:
     q_file = Path(questions_path)
     a_file = Path(answers_path)
@@ -66,6 +48,9 @@ def mine_sft_dataset(
         questions = [json.loads(line) for line in f]
 
     print(f"🚀 BẮT ĐẦU ĐÀO TẬP DỮ LIỆU SFT VỚI SQL ĐƯỢC KIỂM CHỨNG TỪ {len(questions)} CÂU HỎI...")
+
+    if allowed_businesses is not None:
+        questions = [q for q in questions if q["business_id"] in allowed_businesses]
 
     sft_records: List[Dict[str, Any]] = []
     biz_cache: Dict[str, Any] = {}
@@ -157,4 +142,12 @@ def mine_sft_dataset(
 
 
 if __name__ == "__main__":
-    mine_sft_dataset()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--split", help="Prospective split.json; only train_businesses will be mined")
+    parser.add_argument("--output", default="train_sft.jsonl")
+    args = parser.parse_args()
+    if args.split and args.output == "train_sft.jsonl":
+        parser.error("Use a separate --output to preserve the original SFT dataset")
+    allowed = json.loads(Path(args.split).read_text())["train_businesses"] if args.split else None
+    mine_sft_dataset(output_path=args.output, allowed_businesses=allowed)

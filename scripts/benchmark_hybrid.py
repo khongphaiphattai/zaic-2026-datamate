@@ -25,34 +25,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def evaluate_match(pred_type: str, pred_val: Any, target_type: str, target_val: Any) -> bool:
-    """Check if predicted answer matches target under ZAIC rulebook."""
-    if pred_type == "unanswerable":
-        return target_type == "unanswerable"
-
-    if target_type == "unanswerable":
-        return pred_type == "unanswerable"
-
-    if pred_val is None or target_val is None:
-        return pred_val == target_val
-
-    if target_type == "percent":
-        try:
-            p = float(pred_val)
-            t = float(target_val)
-            return abs(p - t) <= 0.02 or abs(p * 100 - t) <= 0.02
-        except Exception:
-            return False
-
-    if target_type == "number":
-        try:
-            p = int(round(float(pred_val)))
-            t = int(round(float(target_val)))
-            return p == t
-        except Exception:
-            return False
-
-    return str(pred_val).strip().lower() == str(target_val).strip().lower()
+from zaic_2026_datamate.evaluation import evaluate_match
 
 
 def run_benchmark(

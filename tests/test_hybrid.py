@@ -210,6 +210,40 @@ def test_hybrid_agent_cascade(sample_context):
         question="Khách hàng nào mua nhiều nhất?",
         context=sample_context,
     )
-    assert ans_type == "string"
-    assert ans_val == "trần thị b"
-    assert route == "slow_path"
+    assert ans_type == "abstain"
+    assert route == "abstain"
+
+@pytest.mark.parametrize('payload',[
+ '[]', '{"type":"number","confidence":"bad","sql":"SELECT 1"}',
+ '{"type":"number","confidence":0.99,"sql":"SELECT 1 UNION ALL SELECT 2"}',
+ '{"type":"number","confidence":0.99,"sql":"SELECT 1; SELECT 2"}',
+ '{"type":"number","confidence":0.99,"sql":"CREATE TABLE unwanted AS SELECT 1"}',
+])
+def test_slow_path_rejects_invalid_or_unsafe_response(sample_context,payload):
+ engine=SlowPathEngine(MockLLMClient(lambda _:payload),enable_self_correction=False)
+ assert engine.resolve_slow_path('doanh thu hôm nay?',sample_context,'2025-06-10')[0]=='abstain'
+
+
+def test_selective_daily_calls_model_after_fast_abstains(sample_context):
+ from unittest.mock import patch
+ calls=[]
+ def handler(prompt):
+  calls.append(prompt)
+  return json.dumps({'type':'number','sql':"SELECT SUM(tien) FROM don_hang WHERE ngay='2025-06-02'",'confidence':0.99})
+ agent=HybridAgent(enable_slow_path=True,llm_client=MockLLMClient(handler))
+ with patch('zaic_2026_datamate.hybrid_agent.resolve_query',return_value=('abstain',None,None)):
+  assert agent.answer_query('Doanh thu hôm nay bao nhiêu?',sample_context,'2025-06-02')[:2]==('number',250000)
+ assert len(calls)==1
+
+
+def test_fast_path_precedes_gate(sample_context):
+ from unittest.mock import patch
+ agent=HybridAgent(enable_slow_path=True,llm_client=MockLLMClient(lambda _:pytest.fail('No LLM for Fast Path')))
+ with patch('zaic_2026_datamate.hybrid_agent.resolve_query',return_value=('number',42,None)):
+  assert agent.answer_query('anything',sample_context,'2025-06-02')==('number',42,None,'fast_path')
+
+
+def test_slow_path_blocks_multitable_and_external_reads(sample_context):
+ for sql in ["SELECT COUNT(*) FROM don_hang JOIN other ON true", "SELECT * FROM read_csv('/etc/passwd')", "SELECT 123"]:
+  engine=SlowPathEngine(MockLLMClient(lambda _, sql=sql:json.dumps({'type':'number','sql':sql,'confidence':0.99})),enable_self_correction=False)
+  assert engine.resolve_slow_path('doanh thu hôm nay?',sample_context,'2025-06-02')[0]=='abstain'

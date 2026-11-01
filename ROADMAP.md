@@ -453,3 +453,49 @@
       - *Phương án A (Đề xuất tối ưu PA):* Áp dụng **Selective Slow Path Gate** chỉ mở Slow Path cho các câu doanh thu ngày/hôm nay đã chứng minh đúng 100%, các câu đa bảng lạ tiếp tục `abstain` an toàn để bảo vệ điểm số dương.
       - *Phương án B:* Mở rộng tập SFT đa tác vụ với template phân tích đơn hàng đa dòng và ca làm việc.
 
+
+### 01/11/2026 — Bảo vệ baseline trước selective gate
+- Hoàn tất snapshot `artifacts/baseline-v2.8/submission.jsonl` từ commit `874f9bd` (1.000 dòng); giữ riêng bản working tree 5 dòng tại `working-copy-before-changes.jsonl`. File chính chưa bị sửa.
+- Thiết kế và tiêu chí nghiệm thu theo phương án A đã được người dùng duyệt: `docs/specs/2026-11-01-selective-slow-path.md`.
+- Các bước kế tiếp: bảo vệ output, evaluator nghiêm ngặt, gate mặc định tắt, split có kiểm tra overlap SFT và báo cáo đối chứng.
+
+### 01/11/2026 — Hoàn tất evaluator chung và bảo vệ output
+- Thêm `evaluation.py`: kiểm type/format, không nhân phần trăm với 100, không chấp nhận chuỗi số/bool thay số; so list có thứ tự và table không phụ thuộc thứ tự dòng. Alias theo shop chưa tự động phân giải; bộ chấm local không thay thế scorer BTC.
+- Thay evaluator sao chép trong 5 scripts bằng hàm chung (gồm cả bộ đào SFT).
+- Thêm xuất output có kiểm tra đủ ID, trùng ID, format và JSON hữu hạn; ghi atomic, mặc định từ chối ghi đè. `--limit` phải dùng tên preview riêng, không được ghi vào `submission.jsonl`.
+- Kiểm thử tăng mới: 16 passed, đã xác nhận lỗi trước khi triển khai các module. Bản submission working tree và baseline giữ nguyên.
+
+### 01/11/2026 — Hoàn tất selective routing và kiểm tra response
+- Khi bật Slow Path, `HybridAgent` chỉ gọi model cho tổng doanh thu một ngày rõ ràng, không điều kiện con; mặc định Slow Path vẫn tắt. Chỉ nhận đáp án number; Fast Path không sửa logic.
+- Gate dùng allowlist toàn câu, kiểm ngày hợp lệ và không sau as_of_date; chưa đủ bằng chứng để bật chính thức trên Public.
+- Kiểm thử gate và Hybrid trước tăng cường response: 19 passed. Test mới tái hiện 4 lỗi response/SQL (confidence sai định dạng, scalar nhiều dòng, nhiều statement, DDL) trước khi sửa.
+- Slow Path bổ sung kiểm JSON object/confidence, scalar shape, số hữu hạn, kiểm lại response tự sửa SQL; chỉ thực thi một SELECT và tắt external access. Đây là hạn chế quyền cơ bản, chưa phải process sandbox hay timeout tài nguyên.
+
+### 01/11/2026 — Hoàn tất split và audit provenance
+- Thêm `scripts/evaluate_selective.py`: tạo split cố định 24 doanh nghiệp train / 6 validation; ghi provenance, trace và báo cáo Fast/Slow correct/wrong, abstain, delta PA.
+- Kiểm tra thực tế: 761 mẫu SFT cũ chứa cả 6 business validation (`biz_101`, `biz_103`, `biz_110`, `biz_118`, `biz_119`, `biz_125`). Script từ chối chạy model holdout khi training provenance trùng validation. Đây là split cho lần huấn luyện tiếp theo, không biến các business đã được dùng tinh chỉnh rule thành unseen.
+- Bộ đào SFT hỗ trợ `--split` và `--output` riêng để chỉ đào 24 business train; không tự huấn luyện hay tiêu compute cloud.
+- Kiểm thử toàn dự án sau gate/response guards: **51 passed** (21.66 giây). Benchmark Fast-only nghiêm ngặt đang chạy; chưa có kết quả Slow Path thật, chưa khuyến nghị bật Public.
+
+### 01/11/2026 — Hoàn tất chấm lại baseline Train nghiêm ngặt
+- 3.000 câu: **756 đúng, 6 sai, 2.238 abstain**, PA **0.25000**, precision **99.21%** trên 762 câu trả lời. So với số cũ 761 đúng/1 sai, evaluator nghiêm ngặt phát hiện thêm 5 câu phần trăm lệch 0.01 từng được dung sai che khuất.
+- Không sửa công thức Fast Path trong đợt này; score Public v2.8 vẫn là 0.13400 theo lần nộp trước, không suy ra score mới từ Train.
+- Lưu báo cáo `artifacts/strict-baseline/train-grouped.txt`; đổi nhãn script LBO thành đánh giá Train theo nhóm để tránh hiểu nhầm là cross-validation có fit/tune tách fold.
+- Đã nhận endpoint Colab và model `/content/qwen2.5-coder-7b-datamate`; đang chạy thăm dò có nhãn exploratory vì model cũ trùng validation. Kết quả không được dùng làm bằng chứng unseen.
+
+### 01/11/2026 — Kết quả thăm dò endpoint Colab
+- Gate bổ sung cách nói cùng nghĩa “trong ngày hôm nay”; kiểm thử hồi quy tái hiện và sửa lỗi bóc tiền tố thời gian.
+- 475 câu thuộc 6 business nhóm validation: Fast-only 123 đúng/1 sai/351 abstain, PA 0.25684. Sau mở rộng allowlist có 7 câu Fast abstain đủ điều kiện thử Slow Path.
+- **Cả 7 request đều lỗi HTTP 530 / Cloudflare 1033** tại endpoint người dùng cung cấp. Không có kết quả model thành công; không suy luận precision hoặc hiệu quả gate từ lỗi kết nối. Báo cáo `artifacts/selective-exploratory/report.json` ghi `model_evaluated=false`, `inference_errors=7`.
+- Giữ Slow Path mặc định tắt, không xuất/nộp bài Public mới. Đã yêu cầu URL tunnel mới để tiếp tục đo thật. Script lưu lý do Slow Path abstain thay vì che bằng lý do Fast Path.
+
+### 01/11/2026 — Rà soát trước bàn giao selective gate
+- Bổ sung kiểm thực thi: SELECT duy nhất, đúng một bảng đã đăng ký trong business context; chặn truy vấn nhiều bảng, nguồn ngoài và SELECT hằng không có dữ liệu. Tắt external access; vẫn cần process/resource sandbox ở giai đoạn đóng gói.
+- Đã thêm test nhánh gọi model cho doanh thu ngày, Fast Path không gọi model, preview không ghi đè submission và các nguồn SQL bị chặn.
+- SHA256 snapshot baseline đúng manifest; xác nhận file submission chính vẫn trùng byte bản working-copy 5 dòng trước thay đổi.
+- `IMPLEMENTATION_PLAN.md` đã cập nhật công việc hoàn tất và bước tiếp theo; kiểm thử cuối đang chạy.
+
+### 01/11/2026 — Chốt kiểm thử và bàn giao
+- **56/56 tests passed** (21.58 giây); `git diff --check` sạch.
+- Rà lại giới hạn SQL bằng fresh DuckDB catalog vì `get_table_names` trên connection có DataFrame views che mất tên bảng; test nhánh hợp lệ, nhiều bảng và file ngoài đều qua.
+- Code trên nhánh `feat/selective-slow-path`; không stage/commit thay đổi 5 dòng có sẵn ở root `submission.jsonl`. Chờ endpoint tunnel mới để tiếp tục thăm dò; gate chưa được khuyến nghị bật trên Public.

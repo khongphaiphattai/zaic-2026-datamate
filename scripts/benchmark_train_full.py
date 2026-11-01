@@ -38,49 +38,7 @@ def load_dataset(limit: Optional[int] = None) -> Tuple[List[Dict[str, Any]], Dic
     return questions, answers
 
 
-def evaluate_match(pred_type: str, pred_val: Any, target_type: str, target_val: Any) -> bool:
-    """Check if predicted answer matches target under ZAIC rulebook."""
-    if pred_type == "unanswerable":
-        return target_type == "unanswerable"
-
-    if target_type == "unanswerable":
-        return pred_type == "unanswerable"
-
-    if pred_val is None or target_val is None:
-        return pred_val == target_val
-
-    if target_type == "percent":
-        try:
-            p = float(pred_val)
-            t = float(target_val)
-            return abs(p - t) <= 0.02 or abs(p * 100 - t) <= 0.02
-        except Exception:
-            return False
-
-    if target_type == "number":
-        try:
-            p = float(pred_val)
-            t = float(target_val)
-            if t == 0:
-                return abs(p) <= 1e-4
-            return abs(p - t) / abs(t) <= 0.005 or abs(p - t) <= 1.0
-        except Exception:
-            return False
-
-    if target_type == "string":
-        return str(pred_val).strip().lower() == str(target_val).strip().lower()
-
-    if target_type == "list":
-        if isinstance(pred_val, list) and isinstance(target_val, list):
-            if len(pred_val) != len(target_val):
-                return False
-            for pv, tv in zip(pred_val, target_val):
-                if str(pv).strip().lower() != str(tv).strip().lower():
-                    return False
-            return True
-        return False
-
-    return str(pred_val).strip().lower() == str(target_val).strip().lower()
+from zaic_2026_datamate.evaluation import evaluate_match
 
 
 def run_benchmark(limit: Optional[int] = None, show_wrong: int = 15):

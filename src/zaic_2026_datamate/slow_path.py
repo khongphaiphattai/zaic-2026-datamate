@@ -9,6 +9,7 @@ Enforces 'Silence is Free' by refusing to guess when SQL fails, returns NULL, or
 from __future__ import annotations
 
 import json
+import math
 import logging
 import re
 import unicodedata
@@ -70,13 +71,18 @@ class SlowPathEngine:
 
         # 3. Parse JSON response
         parsed = self._extract_json(raw_response)
-        if not parsed:
+        if not isinstance(parsed, dict) or not parsed:
             logger.warning("LLM response did not contain valid JSON: %s", raw_response[:100])
             return "abstain", None, "LLM returned invalid JSON"
 
         ans_type = parsed.get("type", "abstain")
         sql = parsed.get("sql")
-        confidence = float(parsed.get("confidence", 0.0))
+        try:
+            confidence = float(parsed.get("confidence", 0.0))
+        except (TypeError, ValueError):
+            return "abstain", None, "Invalid confidence"
+        if not math.isfinite(confidence) or not 0 <= confidence <= 1:
+            return "abstain", None, "Invalid confidence"
         reason = parsed.get("reason") or parsed.get("thought")
 
         # 4. Silence is Free: Gate 1 - Confidence and Refusal Check
@@ -97,7 +103,7 @@ class SlowPathEngine:
         cleaned_sql = self._clean_sql(sql)
 
         # Execute query
-        success, res_df, err = engine.execute_query(cleaned_sql)
+        success, res_df, err = self._execute_read_only(context, engine, cleaned_sql)
 
         # Optional self-correction loop (1 retry)
         if not success and self.enable_self_correction and err:
@@ -106,9 +112,12 @@ class SlowPathEngine:
             try:
                 corr_resp = self.client.generate(prompt=correction_prompt, system_prompt=SYSTEM_PROMPT)
                 corr_parsed = self._extract_json(corr_resp)
-                if corr_parsed and corr_parsed.get("sql"):
+                if (isinstance(corr_parsed, dict) and isinstance(corr_parsed.get("sql"), str)
+                        and corr_parsed.get("type") == ans_type
+                        and isinstance(corr_parsed.get("confidence"), (int, float))
+                        and self.confidence_threshold <= corr_parsed["confidence"] <= 1):
                     cleaned_sql = self._clean_sql(corr_parsed["sql"])
-                    success, res_df, err = engine.execute_query(cleaned_sql)
+                    success, res_df, err = self._execute_read_only(context, engine, cleaned_sql)
             except Exception as e:
                 logger.warning("Self-correction attempt failed: %s", e)
 
@@ -121,6 +130,26 @@ class SlowPathEngine:
 
         # Format output to ZAIC Rulebook Section 9 specifications
         return self._format_result(res_df, ans_type)
+
+    def _execute_read_only(self, context, engine, sql):
+        try:
+            statements = context.duckdb_conn.extract_statements(sql)
+            if len(statements) != 1 or statements[0].type != duckdb.StatementType.SELECT:
+                return False, None, "Only a single SELECT is permitted"
+            # A fresh catalog is required: DuckDB expands registered DataFrame views
+            # in get_table_names, hiding their original names on the live connection.
+            parser = duckdb.connect(":memory:", config={"enable_external_access": "false"})
+            try:
+                tables = set(parser.get_table_names(sql))
+            finally:
+                parser.close()
+            if len(tables) != 1 or not tables.issubset(context.tables):
+                return False, None, "Selective execution requires one registered business table"
+            context.duckdb_conn.execute("SET enable_external_access = false")
+            context.last_sql = sql
+            return engine.execute_query(sql)
+        except Exception as exc:
+            return False, None, str(exc)
 
     def _extract_json(self, text: str) -> Optional[Dict[str, Any]]:
         """Safely extract JSON object from LLM response text."""
@@ -158,6 +187,8 @@ class SlowPathEngine:
 
     def _format_result(self, df: pd.DataFrame, target_type: str) -> Tuple[str, Any, Optional[str]]:
         """Format DuckDB DataFrame result into exact ZAIC Rulebook output types."""
+        if target_type in ("number", "percent", "string", "date", "boolean") and df.shape != (1, 1):
+            return "abstain", None, "Scalar response requires exactly one row and one column"
         # Check all-null
         if df.isna().all().all():
             return "abstain", None, "Result values are all NULL"
@@ -171,6 +202,8 @@ class SlowPathEngine:
                 return "abstain", None, "Scalar number result is NULL"
             try:
                 num = float(val)
+                if not math.isfinite(num):
+                    return "abstain", None, "Non-finite result"
                 # Revenue / count sanity: negative revenue or negative order count -> refuse
                 if num < 0:
                     return "abstain", None, f"Negative numeric result {num} is invalid for positive business metric"
@@ -187,6 +220,8 @@ class SlowPathEngine:
                 return "abstain", None, "Percent result is NULL"
             try:
                 num = float(val)
+                if not math.isfinite(num):
+                    return "abstain", None, "Non-finite result"
                 # If number is ratio (e.g. 0.1245 -> 12.45)
                 # Usually SQL might return 12.45 or 0.1245.
                 # If strictly between 0 and 1, check if model intended percentage
@@ -246,6 +281,8 @@ class SlowPathEngine:
                 return "abstain", None, "Result is NULL"
             try:
                 num = float(val)
+                if not math.isfinite(num):
+                    return "abstain", None, "Non-finite result"
                 if num.is_integer():
                     return "number", int(num), None
                 return "number", round(num, 2), None

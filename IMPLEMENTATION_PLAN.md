@@ -1,5 +1,30 @@
 # Kế hoạch Triển khai Chi tiết — Zalo AI Challenge 2026 (Track 2: DataMate)
 
+## Cập nhật thực tế ngày 01/11/2026 — đọc trước lịch trình gốc
+
+Phần này cập nhật ưu tiên theo mã nguồn và ROADMAP hiện tại; lịch trình phía dưới được giữ làm lịch sử, không phải báo cáo trạng thái mới nhất. Các nhận định cũ về model “số 1”, SFT chắc chắn vượt zero-shot, KPI điểm số và tốc độ là giả thuyết/mục tiêu, chưa phải kết quả đã kiểm chứng.
+
+### Baseline và hiện trạng đã đối chiếu
+
+- Baseline đã nộp: **v2.8, Public PA 0.13400**, theo người dùng và ROADMAP (lần nộp 12). Không có đáp án Public để xác định câu sai cụ thể.
+- Git `HEAD` tại thời điểm rà soát là `874f9bd`; bản `submission.jsonl` trong HEAD có 1.000 dòng: 182 number, 19 percent, 3 unanswerable, 796 abstain. SHA256: `288ed868fde9175d36afd8995cdaf0e2c5f978a716be5c2a845f35c5e89afb9f`. Cơ cấu khớp mô tả v2.8; chưa có checksum của file trên portal để chứng minh đồng nhất từng byte.
+- **File working tree hiện chỉ có 5 dòng**, là thay đổi chưa commit. Không coi file này là artifact đủ 1.000 câu đã đạt 0.13400. Script xuất bài cho phép `--limit` cùng output mặc định `submission.jsonl`, có nguy cơ ghi đè bản đầy đủ khi chạy thử. Chưa xác minh nguyên nhân lần ghi đè hiện tại.
+- Hybrid đã có `HybridAgent`, prompt generator, API client, Slow Path và notebook Colab. Slow Path mặc định tắt. Theo ROADMAP, LoRA đã train/merge trên Colab; benchmark 30 câu ghi Fast Path 8 đúng, Slow Path 2 đúng/5 sai, 15 abstain. Chưa xác minh lại endpoint hoặc checkpoint cloud trong lần rà soát này.
+- `train_sft.jsonl` hiện có 761 mẫu của 30 doanh nghiệp: 615 number, 126 percent, 20 unanswerable. Dữ liệu đào từ Fast Path không tự tạo giám sát cho toàn bộ long-tail; loss thấp chưa chứng minh độ chính xác nghiệp vụ hay khả năng khái quát hóa.
+
+### Thứ tự công việc đề xuất và tiêu chí nghiệm thu
+
+1. **Bảo vệ artifact nộp bài.** Lưu bản chạy thử riêng; chỉ xuất `submission.jsonl` chính thức sau khi kiểm tra đầy đủ ID duy nhất, số câu, kiểu và giá trị JSON. Không tự ghi đè thay đổi hiện có. Việc phục hồi bản HEAD không đồng nghĩa tái xác nhận score portal.
+2. **Chuẩn hóa evaluator trước khi dùng điểm để ra quyết định.** Rulebook §9 yêu cầu đúng type/format và khớp số; các evaluator hiện cho phép sai lệch số và/hoặc nhân phần trăm với 100. Cần bộ chấm dùng chung có kiểm thử chống chấp nhận sai type, sai đơn vị phần trăm, sai số tiền, thứ tự list và cấu trúc table. Tính lại baseline sau khi sửa.
+3. **Thiết lập đánh giá giữ riêng doanh nghiệp.** `benchmark_lbo.py` hiện chỉ phân nhóm doanh nghiệp để chạy cùng resolver, không có bước fit/tune tách biệt theo fold. Vì vậy 99.87% là số liệu đánh giá Train theo nhóm với evaluator hiện tại, chưa đủ chứng minh precision trên doanh nghiệp unseen. Chốt tập train/dev theo business trước khi tinh chỉnh prompt, gate hoặc SFT; giữ ID và provenance mẫu để kiểm tra trùng lặp.
+4. **Kiểm chứng Slow Path theo nhóm nghiệp vụ.** So sánh Fast-only với Hybrid trên tập giữ riêng; báo cáo correct/wrong/abstain, PA và mức tăng PA của Slow Path. Confidence do model tự khai không phải xác suất đã hiệu chuẩn. Các ca doanh thu ngày đúng trong mẫu nhỏ mới là giả thuyết cho selective gate; chỉ bật khi có bằng chứng bổ sung. Gate lỗi SQL/NULL không chứng minh SQL đúng ngữ nghĩa.
+5. **Củng cố thực thi và khả năng tái lập.** `engine.execute_query` hiện thực thi SQL trực tiếp trên connection, chưa có bằng chứng cô lập an toàn; cần giới hạn SQL đọc dữ liệu, tài nguyên và quyền truy cập bên ngoài trước khi xem là sandbox. Rà hợp đồng JSON, kết quả scalar nhiều dòng, số không hữu hạn, boolean và kiểm định lại response sau self-correction.
+6. **Chuẩn bị offline trước hạn 16/11.** Hoàn thiện Dockerfile, entrypoint, dependencies/model revisions và log từng câu. Kiểm tra `/data:ro`, `--network none`, hai lần chạy tái lập và thời gian thực thi. Các notebook cloud cài package không pin chưa thay thế quy trình freeze tái lập.
+
+Nguồn nghiệp vụ ưu tiên: `data/<split>/<split>/rulebook.md` và README từng shop; thể lệ chung đọc từ `zalo-ai-challenge-regulations-en.pdf`, hướng dẫn tổng hợp ở `ZAIC_2026_GUIDE.md`. Ví dụ rulebook đã định nghĩa tháng/quý không ghi năm, không nên gọi mặc định này là phỏng đoán 50/50. Những thông số kỹ thuật chỉ có trong guide/portal cần xác minh riêng trước freeze.
+
+---
+
 > **Mục tiêu:** Xây dựng Data Agent vô địch bảng đấu DataMate (Zalo AI Challenge 2026), tối đa hóa điểm số **Penalized Accuracy (PA)**, tuân thủ 100% các quy định kỹ thuật về Docker offline, giới hạn tham số $\le 15B$, và hoàn thành trước thời hạn đóng băng giải pháp (**23:59 ngày 16/11/2026**).
 
 ---
@@ -273,3 +298,9 @@ flowchart LR
 | **M4: Fine-tuned LoRA Model** | 12/11/2026 | Top 5 Public Leaderboard, PA Public > 0.75 | Sắp tới |
 | **M5: Freeze Solution Docker** | 16/11/2026 | Docker offline chạy 100% tái lập, nộp trước 23:59 | Sắp tới |
 | **M6: Private Test Submission** | 23/11/2026 | Nộp file private test đúng hạn, bảo toàn điểm số | Sắp tới |
+
+## Trạng thái selective gate sau triển khai (01/11/2026)
+
+Snapshot baseline, output atomic không ghi đè mặc định, evaluator dùng chung, gate doanh thu một ngày và audit split/provenance đã triển khai. Báo cáo Train nghiêm ngặt: 756 đúng / 6 sai / 2.238 abstain, PA 0.25000. Snapshot giữ score Public đã báo 0.13400; chưa nộp Public mới.
+
+Checkpoint cũ chứa cả 30 doanh nghiệp Train. Thử endpoint Colab trên 7 câu eligible đều gặp HTTP 530 / Cloudflare 1033; chưa có kết quả chất lượng Slow Path. Giữ mặc định tắt. Bước tiếp theo là sửa kết nối để thăm dò, sau đó đào SFT chỉ từ train partition và train checkpoint mới trước đánh giá theo split đã chốt. Chi tiết bằng chứng và hạn chế ở ROADMAP và `docs/specs/2026-11-01-selective-slow-path.md`.

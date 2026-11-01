@@ -20,6 +20,7 @@ from zaic_2026_datamate.data_loader import BusinessContext
 from zaic_2026_datamate.intent_parser import resolve_query
 from zaic_2026_datamate.llm_client import LLMClient
 from zaic_2026_datamate.slow_path import SlowPathEngine
+from zaic_2026_datamate.selective_gate import daily_revenue_date
 
 logger = logging.getLogger(__name__)
 
@@ -66,13 +67,15 @@ class HybridAgent:
         )
 
         if fast_type != "abstain":
-            # Fast path matched with high confidence (99.87% LBO holdout precision)
+            # Preserve Fast Path decisions without consulting the model.
             return fast_type, fast_val, fast_reason, "fast_path"
 
         # =====================================================================
         # ROUTE 2: SLOW PATH (SLM Text-to-SQL + DuckDB Execution Sandbox)
         # =====================================================================
         if self.enable_slow_path and self.slow_engine is not None:
+            if daily_revenue_date(question, as_of_date) is None:
+                return "abstain", None, "Selective gate: only single-day store revenue is eligible", "abstain"
             logger.info("Fast Path abstained. Invoking Slow Path for: '%s'", question[:60])
             slow_type, slow_val, slow_reason = self.slow_engine.resolve_slow_path(
                 question=question,
@@ -80,8 +83,9 @@ class HybridAgent:
                 as_of_date=as_of_date,
             )
 
-            if slow_type != "abstain":
+            if slow_type == "number":
                 return slow_type, slow_val, slow_reason, "slow_path"
+            return "abstain", None, slow_reason or "Selective gate rejected output type", "abstain"
 
         # =====================================================================
         # ROUTE 3: SAFE ABSTENTION (Silence is Free Axiom - 0 Points Protected)

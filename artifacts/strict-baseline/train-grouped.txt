@@ -1,0 +1,59 @@
+📊 TỔNG SỐ DOANH NGHIỆP TRAIN: 30 (3000 câu hỏi)
+🚀 BẮT ĐẦU LEAVE-BUSINESS-OUT EVALUATION (5 FOLDS)
+================================================================================
+
+📁 FOLD 1/5 — Holdout businesses: biz_101, biz_106, biz_111, biz_116, biz_121, biz_126
+   -> Answered: 135/553 (24.4%) | Correct: 134 | Wrong: 1 | Abstain: 418 | PA: +0.24051 | Precision: 99.26% | Elapsed: 28.4s
+
+📁 FOLD 2/5 — Holdout businesses: biz_102, biz_107, biz_112, biz_117, biz_122, biz_127
+   -> Answered: 197/631 (31.2%) | Correct: 194 | Wrong: 3 | Abstain: 434 | PA: +0.30269 | Precision: 98.48% | Elapsed: 31.8s
+
+📁 FOLD 3/5 — Holdout businesses: biz_103, biz_108, biz_113, biz_118, biz_123, biz_128
+   -> Answered: 152/632 (24.1%) | Correct: 152 | Wrong: 0 | Abstain: 480 | PA: +0.24051 | Precision: 100.00% | Elapsed: 21.3s
+
+📁 FOLD 4/5 — Holdout businesses: biz_104, biz_109, biz_114, biz_119, biz_124, biz_129
+   -> Answered: 116/631 (18.4%) | Correct: 116 | Wrong: 0 | Abstain: 515 | PA: +0.18384 | Precision: 100.00% | Elapsed: 29.9s
+
+📁 FOLD 5/5 — Holdout businesses: biz_105, biz_110, biz_115, biz_120, biz_125, biz_130
+   -> Answered: 162/553 (29.3%) | Correct: 160 | Wrong: 2 | Abstain: 391 | PA: +0.28571 | Precision: 98.77% | Elapsed: 37.9s
+
+================================================================================
+🏆 TỔNG KẾT LEAVE-BUSINESS-OUT (LBO) 5-FOLD:
+   - Tổng số câu hỏi: 3000
+   - Số câu trả lời: 762 (25.40%)
+   - Đúng (+1): 756 | Sai (-1): 6 | Abstain (0): 2238
+   - Điểm PA Tổng thể: +0.25000 (Net points: +750)
+   - Độ chuẩn xác Khái quát hóa (LBO Precision): 99.21%
+   - Chi tiết từng Fold:
+     * Fold 1 (biz_101, biz_106, biz_111, biz_116, biz_121, biz_126): PA=+0.2405, Precision=99.3% (134/135)
+     * Fold 2 (biz_102, biz_107, biz_112, biz_117, biz_122, biz_127): PA=+0.3027, Precision=98.5% (194/197)
+     * Fold 3 (biz_103, biz_108, biz_113, biz_118, biz_123, biz_128): PA=+0.2405, Precision=100.0% (152/152)
+     * Fold 4 (biz_104, biz_109, biz_114, biz_119, biz_124, biz_129): PA=+0.1838, Precision=100.0% (116/116)
+     * Fold 5 (biz_105, biz_110, biz_115, biz_120, biz_125, biz_130): PA=+0.2857, Precision=98.8% (160/162)
+================================================================================
+
+❌ TỔNG SỐ 6 CÂU SAI PHÁT HIỆN TRÊN TẬP HOLDOUT:
+[1] [biz_101] q_91eac74caf39: thang 8/2025 cua hang ban duoc tong cong bao nhieu tien
+    As-of-date: 2026-08-24
+    Dự đoán: ('number', 204534500)  <--->  Đáp án BTC: ('number', 204564500)
+------------------------------------------------------------
+[2] [biz_117] q_008f69128180: trong thang 10/2025, ti le don huy la bnhiu %
+    As-of-date: 2026-05-20
+    Dự đoán: ('percent', 1.2)  <--->  Đáp án BTC: ('percent', 1.21)
+------------------------------------------------------------
+[3] [biz_117] q_a05aeaae5493: Tháng 2/2026 cửa hàng có bao nhiêu % đơn bị huỷ ạ?
+    As-of-date: 2026-05-20
+    Dự đoán: ('percent', 2.7)  <--->  Đáp án BTC: ('percent', 2.71)
+------------------------------------------------------------
+[4] [biz_117] q_a954a482d4bf: Tháng 4/2026 cửa hàng có bao nhiêu % đơn bị huỷ vậy?
+    As-of-date: 2026-05-20
+    Dự đoán: ('percent', 1.95)  <--->  Đáp án BTC: ('percent', 1.96)
+------------------------------------------------------------
+[5] [biz_105] q_f4966c224caa: Cho hỏi tháng 3/2026 cửa hàng có bao nhiêu % đơn bị huỷ?
+    As-of-date: 2026-06-24
+    Dự đoán: ('percent', 2.19)  <--->  Đáp án BTC: ('percent', 2.2)
+------------------------------------------------------------
+[6] [biz_105] q_f72b8741ddf4: tỉ lệ huỷ đơn tháng này là bao nhiu %
+    As-of-date: 2026-06-24
+    Dự đoán: ('percent', 1.87)  <--->  Đáp án BTC: ('percent', 1.88)
+------------------------------------------------------------

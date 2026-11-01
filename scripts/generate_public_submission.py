@@ -19,6 +19,7 @@ from typing import Any, Dict, List, Optional
 
 from zaic_2026_datamate.data_loader import BusinessContext, DataLoader
 from zaic_2026_datamate.hybrid_agent import HybridAgent
+from zaic_2026_datamate.submission import write_submission
 from zaic_2026_datamate.llm_client import OpenAICompatibleClient
 
 logging.basicConfig(level=logging.WARNING)
@@ -34,12 +35,20 @@ def generate_submission(
     model: str = "datamate",
     confidence_threshold: float = 0.95,
     limit: Optional[int] = None,
+    overwrite: bool = False,
 ) -> None:
     questions_path = Path(questions_path)
     data_dir = Path(data_dir)
     calendar_path = Path(calendar_path)
     output_path = Path(output_path)
 
+    if limit is not None and (limit <= 0 or output_path.name == "submission.jsonl"):
+        raise ValueError("--limit requires a positive limit and a separate preview output filename")
+    if output_path.exists() and not overwrite:
+        raise FileExistsError(f"Output exists: {output_path}; use --overwrite explicitly")
+    expected_ids = [json.loads(line)["id"] for line in questions_path.read_text().splitlines() if line.strip()]
+    if limit is not None:
+        expected_ids = expected_ids[:limit]
     loader = DataLoader(data_dir, calendar_path)
     business_cache: Dict[str, BusinessContext] = {}
 
@@ -141,10 +150,7 @@ def generate_submission(
                     flush=True,
                 )
 
-    # Write out submission.jsonl
-    with open(output_path, "w", encoding="utf-8") as f_out:
-        for row in submission_rows:
-            f_out.write(json.dumps(row, ensure_ascii=False) + "\n")
+    write_submission(output_path, submission_rows, expected_ids, overwrite=overwrite)
 
     total_time = time.time() - start_time
     print("\n" + "=" * 75)
@@ -174,6 +180,7 @@ if __name__ == "__main__":
     parser.add_argument("--base-url", default=None)
     parser.add_argument("--model", default="datamate")
     parser.add_argument("--confidence-threshold", type=float, default=0.95)
+    parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--limit", type=int, default=None)
     args = parser.parse_args()
 
@@ -187,4 +194,5 @@ if __name__ == "__main__":
         model=args.model,
         confidence_threshold=args.confidence_threshold,
         limit=args.limit,
+        overwrite=args.overwrite,
     )
