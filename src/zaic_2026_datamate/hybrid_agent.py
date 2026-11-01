@@ -34,7 +34,7 @@ class HybridAgent:
         self,
         enable_slow_path: bool = False,
         llm_client: Optional[LLMClient] = None,
-        confidence_threshold: float = 0.88,
+        confidence_threshold: float = 0.95,
     ):
         self.enable_slow_path = enable_slow_path
         self.slow_engine: Optional[SlowPathEngine] = None

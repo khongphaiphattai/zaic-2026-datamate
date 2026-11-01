@@ -34,7 +34,7 @@ class SlowPathEngine:
     def __init__(
         self,
         llm_client: LLMClient,
-        confidence_threshold: float = 0.88,
+        confidence_threshold: float = 0.95,
         enable_self_correction: bool = True,
     ):
         self.client = llm_client

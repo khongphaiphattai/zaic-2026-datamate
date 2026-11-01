@@ -103,7 +103,7 @@ def test_slow_path_list_query(sample_context):
             "thought": "Lấy danh sách các khách hàng đã mua đơn thành công",
             "type": "list",
             "sql": "SELECT DISTINCT khach FROM don_hang WHERE trang_thai = 'Hoàn thành' ORDER BY khach",
-            "confidence": 0.90,
+            "confidence": 0.98,
         })
 
     client = MockLLMClient(handler=mock_generator)

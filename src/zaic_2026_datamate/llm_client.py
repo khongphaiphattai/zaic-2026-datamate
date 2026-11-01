@@ -78,6 +78,14 @@ class OpenAICompatibleClient:
                 if choices and "message" in choices[0]:
                     return choices[0]["message"].get("content", "")
                 return ""
+        except urllib.error.HTTPError as e:
+            err_body = ""
+            try:
+                err_body = e.read().decode("utf-8")
+            except Exception:
+                pass
+            logger.error("LLM API HTTPError %d: %s | Body: %s", e.code, e.reason, err_body)
+            raise ConnectionError(f"LLM endpoint HTTP {e.code}: {err_body or e.reason}") from e
         except urllib.error.URLError as e:
             logger.error("LLM API request failed: %s", e)
             raise ConnectionError(f"Failed to connect to LLM endpoint {url}: {e}") from e
