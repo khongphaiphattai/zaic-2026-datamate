@@ -12,6 +12,8 @@ wheels/
 # Data archives & datasets
 *.zip
 data/
+*.jsonl
+!submission.jsonl
 
 # Logs & temp
 *.log

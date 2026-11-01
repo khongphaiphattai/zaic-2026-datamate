@@ -315,13 +315,16 @@ class BusinessContext:
     table_metadata: Dict[str, Dict[str, Any]] = field(default_factory=dict)
     readme: str = ""
     duckdb_conn: duckdb.DuckDBPyConnection = field(default_factory=duckdb.connect)
+    last_sql: Optional[str] = None
 
     def query(self, sql: str) -> pd.DataFrame:
         """Execute SQL query directly against the in-memory DuckDB connection."""
+        self.last_sql = sql.strip()
         return self.duckdb_conn.execute(sql).fetchdf()
 
     def scalar(self, sql: str) -> Any:
         """Execute SQL query and return a single scalar value."""
+        self.last_sql = sql.strip()
         res = self.duckdb_conn.execute(sql).fetchone()
         return res[0] if res is not None else None
 
