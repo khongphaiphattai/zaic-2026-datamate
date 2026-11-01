@@ -1,0 +1,29 @@
+[project]
+name = "zaic-2026-datamate"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "duckdb>=2.0.0",
+    "langgraph>=1.2.17",
+    "openpyxl>=3.1.5",
+    "pandas>=3.1.0",
+    "polars>=2.1.0",
+    "pyarrow>=26.0.0",
+    "python-calamine>=0.9.0",
+    "rapidfuzz>=3.14.6",
+    "tabulate>=0.10.0",
+]
+
+[project.scripts]
+zaic-2026-datamate = "zaic_2026_datamate:main"
+
+[build-system]
+requires = ["uv_build>=0.13.5,<0.14.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]
