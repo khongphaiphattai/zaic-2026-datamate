@@ -1,0 +1,13 @@
+{
+  "base_model": "Qwen/Qwen2.5-Coder-7B-Instruct",
+  "base_revision": "c03e6d358207e414f1eca0bb1891e29f1db0e242",
+  "examples": 633,
+  "max_tokens": 5292,
+  "over_2048": 633,
+  "over_8192": 0,
+  "length_percentiles": {
+    "0.5": 3553,
+    "0.9": 4289,
+    "0.99": 4837
+  }
+}

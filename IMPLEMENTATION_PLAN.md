@@ -304,3 +304,9 @@ flowchart LR
 Snapshot baseline, output atomic không ghi đè mặc định, evaluator dùng chung, gate doanh thu một ngày và audit split/provenance đã triển khai. Báo cáo Train nghiêm ngặt: 756 đúng / 6 sai / 2.238 abstain, PA 0.25000. Snapshot giữ score Public đã báo 0.13400; chưa nộp Public mới.
 
 Checkpoint cũ chứa cả 30 doanh nghiệp Train. Thử endpoint Colab trên 7 câu eligible đều gặp HTTP 530 / Cloudflare 1033; chưa có kết quả chất lượng Slow Path. Giữ mặc định tắt. Bước tiếp theo là sửa kết nối để thăm dò, sau đó đào SFT chỉ từ train partition và train checkpoint mới trước đánh giá theo split đã chốt. Chi tiết bằng chứng và hạn chế ở ROADMAP và `docs/specs/2026-11-01-selective-slow-path.md`.
+
+## Chuẩn bị checkpoint business24 (02/11/2026)
+
+Đã đào 633 mẫu SFT từ 24 business (512 number, 106 percent, 15 unanswerable), overlap validation bằng 0. Tokenizer audit phát hiện nguy cơ truncation ở cấu hình 2.048 token cũ; mẫu mới dài tối đa 5.292 nên notebook mới dùng trần 8.192, kiểm toàn bộ length trước train và completion-only loss.
+
+Chạy `notebooks/03_business_holdout_training.ipynb` với `artifacts/zaic-business24-training.zip` trong tab Colab A100; runtime hiện tại không attach được từ CLI. Chưa train hoặc tạo checkpoint mới. Sau train: lấy `training_manifest.json`, xác minh data hash/revision, phục vụ adapter mới trên endpoint mới, đánh giá split 6 business bằng `--training-data artifacts/train-only-sft.jsonl`. Ranh giới này chỉ kiểm soát SFT; lịch sử tune rule/prompt chưa được giữ riêng.

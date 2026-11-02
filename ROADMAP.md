@@ -511,3 +511,22 @@
 - Tổng Hybrid: **129 đúng / 1 sai / 345 abstain**. PA từ **0.2568421 → 0.2694737**, tăng **6 điểm thuần / 475 = 0.0126316 PA**. Precision Slow Path trên các câu có trả lời là 6/6; mẫu rất nhỏ và checkpoint đã thấy dữ liệu nên không suy rộng thành “an toàn tuyệt đối”.
 - Báo cáo/provenance/split/trace tại `artifacts/selective-exploratory-2026-11-02/`, riêng 7 câu lưu ở `eligible-results.json`. `recommend_enable=false`: chưa bật gate mặc định hay tạo/nộp bài Public mới.
 - Xác minh snapshot v2.8 đúng SHA256 và root submission 5 dòng còn nguyên byte. Bước tiếp theo để đánh giá sạch hơn: đào SFT chỉ từ 24 business train rồi huấn luyện checkpoint mới; không gọi checkpoint hiện tại là unseen validation.
+
+### 02/11/2026 — Hoàn tất đào SFT theo split 24/6
+- Chạy lại miner với evaluator nghiêm ngặt trên **2.525 câu thuộc 24 business train**. Tạo `artifacts/train-only-sft.jsonl`: **633 mẫu**, gồm **618 SQL khớp đáp án** và **15 unanswerable**; không lấy dữ liệu câu hỏi/đáp án từ 6 business validation.
+- Kiểm tra tất cả ID duy nhất, đúng business partition, hội thoại system/user/assistant, JSON target và SQL không rỗng. Manifest SHA256 và thống kê lưu tại `artifacts/train-only-sft.manifest.json`; **overlap business = 0**.
+- Dữ liệu SFT 761 mẫu và checkpoint cũ giữ nguyên. Tập mới chỉ sửa ranh giới SFT; không xoá việc từng phân tích/tune rule và gate trên Train.
+- Thêm kiểm tra và chuyển prompt/completion cho training script; 2 tests mới đã qua sau khi xác nhận module chưa tồn tại trước triển khai.
+- Colab CLI liệt kê runtime A100 ở backend nhưng không có session local có thể exec/upload; API tunnel hiện chỉ cung cấp inference. Đang chuẩn bị notebook/gói chạy trong tab Colab hiện tại, chưa khởi chạy training.
+
+### 02/11/2026 — Hoàn tất audit token và gói training Colab
+- Tokenizer Qwen gốc revision cố định `c03e6d358207e414f1eca0bb1891e29f1db0e242`: bộ 633 mẫu mới có max **5.292 tokens**, median **3.553**, p90 **4.289**; **633/633 vượt 2.048**, 0 mẫu vượt 8.192. Lưu `artifacts/train-only-sft.token-audit.json`.
+- Audit bộ SFT cũ đang lưu: **757/761 vượt 2.048**, **532/761 có assistant bắt đầu từ token 2.048 trở đi**. Đây là bằng chứng rủi ro truncation với config notebook cũ, chưa có log tokenization thực tế lần train cũ để kết luận chắc chắn model đã học/mất những token nào. Lưu `artifacts/legacy-sft.token-audit.json`.
+- Script `scripts/holdout_training.py`: bắt đầu từ Qwen gốc revision cố định trong notebook, train 3 epochs, LoRA r16/alpha32, batch1 × accum16, gradient checkpointing, completion-only loss, seed42. Kiểm SHA256 dữ liệu/split, kiểm overlap, không truncation âm thầm, không ghi đè output, lưu model revision/versions/pip freeze/training data provenance. Không dùng nhãn validation để chọn epoch.
+- Notebook `notebooks/03_business_holdout_training.ipynb` và bundle `artifacts/zaic-business24-training.zip` đã tạo. Bundle chứa đúng 5 file, có SHA256 và CRC; tất cả code cell parse thành công. Gói dependency version cố định; torch lấy từ runtime Colab và ghi lại phiên bản khi chạy. Tương thích GPU và cài đặt dependencies chưa được kiểm thực tế trên runtime.
+- API/source reference: TRL v0.25.0 SFTTrainer (`https://huggingface.co/docs/trl/v0.25.0/en/sft_trainer`) và PEFT LoRA. Training model mới **chưa chạy** vì CLI không attach được runtime hiện có; cần người dùng mở notebook, restart kernel giải phóng model inference cũ, upload bundle và chạy các cell. Không cấp phát thêm VM và không dừng runtime của người dùng.
+
+### 02/11/2026 — Chốt kiểm thử gói business24
+- **58/58 tests passed** (21.63 giây); `git diff --check` sạch. Kiểm tra bundle hash, source trong ZIP trùng script hiện tại, dữ liệu trong ZIP trùng tập 633 mẫu và partition không overlap đều qua.
+- Root submission vẫn nguyên byte. Bộ SFT/ZIP nằm local theo .gitignore; commit notebook, script, tests, manifest và hướng dẫn, không đưa dữ liệu Train vào lịch sử Git.
+- Việc cần người dùng thực hiện: mở notebook mới trong Colab A100, restart kernel, upload bundle khi cell yêu cầu và chạy. Sau khi có manifest training hoàn tất mới tiến hành phục vụ/evaluate checkpoint mới; không coi việc chuẩn bị notebook là đã train thành công.

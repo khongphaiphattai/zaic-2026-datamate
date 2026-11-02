@@ -1,0 +1,39 @@
+{
+  "examples": 633,
+  "businesses": [
+    "biz_102",
+    "biz_104",
+    "biz_105",
+    "biz_106",
+    "biz_107",
+    "biz_108",
+    "biz_109",
+    "biz_111",
+    "biz_112",
+    "biz_113",
+    "biz_114",
+    "biz_115",
+    "biz_116",
+    "biz_117",
+    "biz_120",
+    "biz_121",
+    "biz_122",
+    "biz_123",
+    "biz_124",
+    "biz_126",
+    "biz_127",
+    "biz_128",
+    "biz_129",
+    "biz_130"
+  ],
+  "types": {
+    "number": 512,
+    "percent": 106,
+    "unanswerable": 15
+  },
+  "overlap_businesses": [],
+  "data_sha256": "55c2918798e68452be79cf69bc9244311d900af60533554d2fa436bb414a908e",
+  "split_sha256": "ba0a70ea94ecf36c6d74b308ba7bcf29358f1ec693fc6cf73167c0e59b6c4ffa",
+  "source": "Re-mined with strict evaluator from the 24-business training partition; 2525 training questions considered",
+  "scope": "Execution answer matching, not a proof SQL semantics are universally correct"
+}

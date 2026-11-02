@@ -1,0 +1,7 @@
+{
+  "examples": 761,
+  "over_2048": 757,
+  "assistant_starts_at_or_after_2048": 532,
+  "max_tokens": 5292,
+  "limitation": "Actual previous trainer tokenization/truncation logs unavailable; describes current saved SFT with the pinned Qwen tokenizer, not direct proof of historical training behavior."
+}
