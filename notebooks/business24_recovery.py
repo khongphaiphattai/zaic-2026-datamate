@@ -16,6 +16,17 @@ SPLIT_SHA = 'ba0a70ea94ecf36c6d74b308ba7bcf29358f1ec693fc6cf73167c0e59b6c4ffa'
 BACKUP_SHA = '65914f4369f8409854b75c220ef3999077d4f73b2761c4c48dc71dbde7604965'
 
 
+def ensure_pip(python, bootstrap_python, run_logged):
+    """A Python executable may exist in a venv whose pip seed failed."""
+    command = [str(python), '-m', 'pip', '--version']
+    if subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).returncode == 0:
+        return
+    # pip >=22.3 can manage a target environment even when it has no pip.
+    run_logged([str(bootstrap_python), '-m', 'pip', '--python', str(python), 'install', 'pip'], 'install.log')
+    if subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).returncode:
+        raise RuntimeError('pip trong venv chưa hoạt động; dừng và gửi install.log, không chạy cell tiếp theo')
+
+
 def check_manifest(directory, verify_data=True):
     directory = Path(directory)
     manifest = json.loads((directory / 'training_manifest.json').read_text())

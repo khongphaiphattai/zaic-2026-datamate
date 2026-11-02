@@ -75,6 +75,7 @@ markdown('''
     Cài đúng Torch CUDA build trong training manifest và bộ merge đã dùng trước đó.
     `venv` tách khỏi Gradio/Diffusers của Colab; **không pip install vào kernel hệ thống**.
     Lần đầu tải thư viện có thể mất vài phút; chạy lại cell sẽ dùng môi trường đã kiểm.
+    Nếu venv còn Python nhưng thiếu pip, cell tự khôi phục pip vào đúng venv trước khi cài.
     Không cần Restart session sau bước này. Log lưu tại `/content/business24-recovery/install.log`.
 ''')
 code('''
@@ -98,7 +99,8 @@ code('''
         if recovery.managed_process(WORK):
             raise RuntimeError('API đang chạy; không cài lại thư viện giữa lượt đo. Dừng bằng cell 8 trước.')
         if not PYTHON.exists():
-            run_logged([sys.executable, '-m', 'venv', str(VENV)], 'install.log')
+            run_logged([sys.executable, '-m', 'venv', '--without-pip', str(VENV)], 'install.log')
+        recovery.ensure_pip(PYTHON, sys.executable, run_logged)
         run_logged([PYTHON, '-m', 'pip', 'install', 'torch==2.11.0+cu130', '--index-url', 'https://download.pytorch.org/whl/cu130'], 'install.log')
         run_logged([PYTHON, '-m', 'pip', 'install', 'transformers==4.57.1', 'peft==0.17.1', 'accelerate==1.11.0', 'huggingface-hub==0.36.2'], 'install.log')
         run_logged([PYTHON, '-m', 'pip', 'check'], 'install.log')

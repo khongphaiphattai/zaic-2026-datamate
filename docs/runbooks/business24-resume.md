@@ -21,6 +21,19 @@ Chốt phiên 02/11/2026: tạm dừng phần cần GPU theo yêu cầu người
 
 Mất runtime cần cài lại môi trường/tải base/merge lại nếu `/content` mất; không cần training. Log ở `/content/business24-recovery/{install,merge,api}.log`. Chưa thực thi GPU merge/inference của notebook mới ở local; runtime thật sẽ xác nhận bước này. Không gọi phiên bản mới là bảo đảm không bao giờ có lỗi mạng/Colab.
 
+### Nếu bản notebook cũ báo `No module named pip` ở cell 2
+
+Không sang cell 3. Venv có Python chưa đảm bảo đã có pip. Bản notebook đã sửa sẽ tạo venv bằng `--without-pip`, kiểm pip thực tế và dùng pip của kernel với `--python` để cài pip vào đúng venv (không cần ensurepip). Runtime đang mở có thể thêm cell tạm sau, chạy rồi chạy lại cell 2; chỉ tiếp tục khi có `IMPORT/CUDA OK`:
+
+```python
+import sys, subprocess
+venv_python = '/content/business24-venv/bin/python'
+subprocess.run([sys.executable, '-m', 'pip', '--python', venv_python, 'install', 'pip'], check=True)
+subprocess.run([venv_python, '-m', 'pip', '--version'], check=True)
+```
+
+Cách quản lý venv thiếu pip có trong [tài liệu pip](https://pip.pypa.io/en/stable/topics/python-option/). Không restart runtime, không xóa backup/model, không training lại. Nếu cell sửa cũng lỗi, dừng và gửi output đầy đủ; chưa có xác nhận import/CUDA trên runtime thật thì chưa coi cell 2 hoàn tất.
+
 ## Trạng thái agent cần tiếp tục
 
 Grammar đã chốt từ Train-24 ở commit `68b6cac`: thêm 19 Slow candidates trên Train (17 Train-24, 2 SFT-excluded) và 1 Public theo audit offline. Chưa có chất lượng live cho grammar mới. Endpoint cũ NXDOMAIN; không tái dùng URL đó.

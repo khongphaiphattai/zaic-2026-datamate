@@ -1,0 +1,9 @@
+{
+  "issue": "Existing venv Python without pip stops recovery cell 2",
+  "reproduced_with": "python -m venv --without-pip",
+  "bootstrap": "kernel python -m pip --python <venv-python> install pip",
+  "real_bootstrap_passed": true,
+  "second_call_reuses_pip": true,
+  "full_tests_passed": 115,
+  "gpu_colab_validation": false
+}

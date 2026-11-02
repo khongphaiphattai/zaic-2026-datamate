@@ -14,6 +14,25 @@ def load_recovery():
     return module
 
 
+@pytest.mark.parametrize('pip_available', [True, False])
+def test_missing_pip_is_bootstrapped_into_target_venv(monkeypatch, pip_available):
+    import subprocess
+    recovery = load_recovery()
+    probes = []
+    def probe(command, **kwargs):
+        probes.append(command)
+        return subprocess.CompletedProcess(command, 0 if pip_available or len(probes) > 1 else 1)
+    monkeypatch.setattr(recovery.subprocess, 'run', probe)
+    installations = []
+    recovery.ensure_pip('/venv/bin/python', '/kernel/python', lambda command, log: installations.append((command, log)))
+    assert probes[0] == ['/venv/bin/python', '-m', 'pip', '--version']
+    if pip_available:
+        assert installations == []
+    else:
+        assert installations == [(['/kernel/python', '-m', 'pip', '--python', '/venv/bin/python', 'install', 'pip'], 'install.log')]
+        assert len(probes) == 2
+
+
 def backup_fixture(tmp_path, recovery):
     files = {'training_data.jsonl': b'train', 'split.json': b'split',
              'adapter_model.safetensors': b'weights', 'adapter_config.json': b'{}',
