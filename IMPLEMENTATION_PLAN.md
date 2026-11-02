@@ -330,3 +330,9 @@ Public shadow 1.000 câu ở `artifacts/public-shadow-business24/submission.json
 Runner có tùy chọn `--reuse-run artifacts/broad-train-business24` để tái dùng raw response chỉ khi provenance, generation config, frozen source hashes và full prompt hash khớp; vẫn kiểm guard/thực thi SQL lại. Mọi network/cache calls được đếm riêng.
 
 Đang chờ URL tunnel mới: endpoint cũ NXDOMAIN ngay preflight nên chưa có lượt live mới. Khi có URL, chạy `scripts/diagnose_hybrid.py` với `--dataset train --output-dir artifacts/broad-train-paraphrases --reuse-run artifacts/broad-train-business24`, rồi `--dataset public_test --output-dir artifacts/public-shadow-paraphrases` (cùng `--base-url` mới). Sau đó kiểm score Train, preservation Fast, IDs/format/Public null labels và root submission trước cân nhắc candidate. Không upload portal trong bước này. Chi tiết trạng thái ở ROADMAP.
+
+## Bàn giao cuối phiên / notebook recovery (02/11/2026)
+
+Theo yêu cầu người dùng, tạm dừng phần cần Colab đến khi GPU khả dụng; ngân sách báo còn 120 units, ưu tiên backup, không train lại. Notebook mới `notebooks/04_business24_restore_and_serve.ipynb` tự chứa 8 cell: preflight → venv riêng → upload/verify/restore ZIP → merge/reuse → API/reopen tunnel → provenance → log → optional stop (mặc định tắt). Đường dẫn ZIP local đã ghi trong notebook. Toàn bộ helper đi kèm trong notebook, không cần upload source riêng.
+
+113 tests pass; thử restore/reuse từ ZIP thật và dependency compatibility resolution Python 3.13/CUDA Torch build thành công. Chưa chạy merge/inference notebook mới trên GPU. Runbook `docs/runbooks/business24-resume.md`, bằng chứng `artifacts/business24-recovery-readiness/verification.json`. Phiên sau dùng notebook 04 thay cho việc chạy lại notebook training 03; sau khi có endpoint mới tiếp tục hai lượt đo đang chờ. Không có thay đổi checkpoint/prompt/guard hoặc portal submission.

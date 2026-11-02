@@ -1,0 +1,36 @@
+{
+  "date": "2026-11-02",
+  "backup_sha256": "65914f4369f8409854b75c220ef3999077d4f73b2761c4c48dc71dbde7604965",
+  "backup_bytes": 153802369,
+  "backup_crc_verified": true,
+  "backup_manifest_data_split_verified": true,
+  "real_restore_and_reuse_verified": true,
+  "full_tests": {
+    "passed": 113,
+    "elapsed_seconds": 23.75
+  },
+  "dependency_resolution": {
+    "passed": true,
+    "target_python": "3.13",
+    "target_platform": "x86_64-manylinux_2_28",
+    "cuda_torch": "2.11.0+cu130",
+    "method": "uv pip compile with official CUDA index; compatibility resolution, not Colab installation"
+  },
+  "notebook": {
+    "path": "notebooks/04_business24_restore_and_serve.ipynb",
+    "code_cells": 8,
+    "embedded_sources_match": true,
+    "all_cells_compile": true,
+    "training_cells": 0
+  },
+  "root_submission_preserved": true,
+  "baseline_v2_8_sha256": "288ed868fde9175d36afd8995cdaf0e2c5f978a716be5c2a845f35c5e89afb9f",
+  "gpu_merge_generation_tested": false,
+  "colab_started": false,
+  "portal_uploaded": false,
+  "limitations": [
+    "CUDA import, merge and real model serving in the new venv await next Colab runtime.",
+    "GPU availability and unit duration not guaranteed.",
+    "Backup ZIP remains local and is not tracked by git."
+  ]
+}

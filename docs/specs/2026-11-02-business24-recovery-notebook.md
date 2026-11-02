@@ -1,0 +1,9 @@
+# Business24 recovery notebook
+
+User-authorized scope: a new, standalone Colab notebook, Vietnamese numbered cells, only backup recovery/merge/inference; no training. Input is the existing local `business24-adapter-backup.zip`, with its exact local path shown. Budget reported by user: 120 units; do not estimate hours or request training without evidence.
+
+Acceptance: verify GPU before installations; use an isolated Python venv with the known Torch CUDA build and pinned merge dependencies; check ZIP SHA256/CRC plus training/split/revision provenance; restore into a fresh directory atomically, reuse valid restored state; reuse only complete compatible merged models, refuse partial outputs; embed existing merge/API code so no extra source uploads; launch one managed API process with visible logs and a restart-tunnel option; include health/provenance checks and an explicit stop cell skipped by default in Run all. No portal submission, baseline/prompt/grammar/metric changes or local GPU training.
+
+Implementation: (1) behavior tests for corrupt backup, restore/reuse and merged completeness; (2) stdlib recovery helper plus standalone notebook embedding helper/merge/API sources; (3) notebook syntax/embedded source integrity, real backup checks and existing API/full test suite; (4) runbook/ROADMAP and commit. GPU merge/generation remain unverified locally and must be checked on the next Colab runtime.
+
+Environment sources: Python venv isolation https://docs.python.org/3/library/venv.html ; official CUDA 13 Torch 2.11.0 wheels https://download.pytorch.org/whl/cu130/torch/ (matches completed training manifest); PEFT merge API https://huggingface.co/docs/peft/v0.17.0/en/developer_guides/model_merging . Existing scripts already use safe_merge and pinned Qwen revision; embed them unchanged.
