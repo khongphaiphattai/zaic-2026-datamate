@@ -54,14 +54,46 @@ def compare_baseline(baseline, actual):
                (new.get(qid,{}).get('type'),new.get(qid,{}).get('answer'))]
 
 
+def load_cached_responses(run_dir, served):
+    run_dir = Path(run_dir)
+    old = json.loads((run_dir/'served-model-provenance.json').read_text())
+    identity = ['model','base_model','base_revision','data_sha256','split_sha256',
+                'businesses','training_complete','merge_complete']
+    if any(old.get(k)!=served.get(k) for k in identity):
+        raise ValueError('Cache checkpoint provenance mismatch')
+    config = json.loads((run_dir/'run-config.json').read_text())
+    if any(config.get(k)!=v for k,v in {'model':served['model'],'temperature':0,'seed':42,'max_tokens':1024}.items()):
+        raise ValueError('Cache generation settings mismatch')
+    # Only selective_gate may change. Prompt and SQL execution semantics stay frozen.
+    for name in ['hybrid_agent.py','slow_path.py','revenue_metric.py','prompt_generator.py','intent_parser.py']:
+        actual = hashlib.sha256((Path('src/zaic_2026_datamate')/name).read_bytes()).hexdigest()
+        if config.get('sources',{}).get(name)!=actual:
+            raise ValueError(f'Cache frozen-source mismatch: {name}')
+    cached = {}
+    for row in read_rows(run_dir/'trace.jsonl'):
+        for call in row.get('llm_calls',[]):
+            if isinstance(call.get('response'),str):
+                key,value = call['prompt_sha256'],call['response']
+                if key in cached and cached[key]!=value:
+                    raise ValueError('Different recorded responses for the same prompt')
+                cached[key] = value
+    return cached
+
+
 class RecordedClient:
-    def __init__(self, client):
+    def __init__(self, client, cached_responses=None):
         self.client = client
+        self.cached_responses = cached_responses or {}
         self.calls = []
 
     def generate(self, prompt, system_prompt=None):
         record = {'prompt_sha256':hashlib.sha256(prompt.encode()).hexdigest()}
         self.calls.append(record)
+        key = record['prompt_sha256']
+        record['from_cache'] = key in self.cached_responses
+        if record['from_cache']:
+            record['response'] = self.cached_responses[key]
+            return record['response']
         try:
             result = self.client.generate(prompt,system_prompt)
             record['response'] = result
@@ -86,6 +118,7 @@ def main():
     parser.add_argument('--base-url',required=True)
     parser.add_argument('--model',default='datamate-business24')
     parser.add_argument('--output-dir',required=True)
+    parser.add_argument('--reuse-run',help='Reuse matching recorded model responses; SQL is checked and executed again')
     args = parser.parse_args()
     out = Path(args.output_dir)
     if out.exists():
@@ -96,6 +129,7 @@ def main():
     with urllib.request.urlopen(args.base_url.rstrip('/')+'/model-provenance',timeout=20) as response:
         served = json.load(response)
     verify_model_provenance(served,data_hash,hashlib.sha256(split_path.read_bytes()).hexdigest(),split['train_businesses'],args.model)
+    cached = load_cached_responses(args.reuse_run,served) if args.reuse_run else {}
     root = Path('data')/args.dataset/args.dataset
     questions = read_rows(root/'questions.jsonl')
     if len({q['id'] for q in questions})!=len(questions):
@@ -109,12 +143,12 @@ def main():
     out.mkdir(parents=True)
     (out/'served-model-provenance.json').write_text(json.dumps(served,indent=2))
     sources = ['hybrid_agent.py','slow_path.py','revenue_metric.py','selective_gate.py','prompt_generator.py','intent_parser.py']
-    run_config = {'dataset':args.dataset,'model':args.model,'endpoint':args.base_url,'temperature':0,'seed':42,'max_tokens':1024,
+    run_config = {'dataset':args.dataset,'model':args.model,'endpoint':args.base_url,'reuse_run':args.reuse_run,'temperature':0,'seed':42,'max_tokens':1024,
                   'training_data_sha256':data_hash,'split_sha256':hashlib.sha256(split_path.read_bytes()).hexdigest(),
                   'sources':{name:hashlib.sha256((Path('src/zaic_2026_datamate')/name).read_bytes()).hexdigest() for name in sources},
                   'scope':'Descriptive development diagnostics only; SFT-seen vs SFT-excluded, not untouched validation. Public correctness unknown.'}
     (out/'run-config.json').write_text(json.dumps(run_config,indent=2))
-    client = RecordedClient(OpenAICompatibleClient(base_url=args.base_url,model=args.model))
+    client = RecordedClient(OpenAICompatibleClient(base_url=args.base_url,model=args.model),cached)
     agent = HybridAgent(enable_slow_path=True,llm_client=client)
     loader = DataLoader(root/'data',root/'calendar.csv')
     cases=[]; predictions={};fast_rows={}; started=time.monotonic()
@@ -148,7 +182,10 @@ def main():
     report = {'overall':summarize(cases,labelled),
               'partitions':{p:summarize([r for r in cases if r['partition']==p],labelled) for p in sorted({r['partition'] for r in cases})},
               'businesses':{bid:summarize([r for r in cases if r['business_id']==bid],labelled) for bid in sorted(groups)},
-              'model_calls':sum(len(r['llm_calls']) for r in cases),'elapsed_seconds':time.monotonic()-started,
+              'model_calls':sum(len(r['llm_calls']) for r in cases),
+              'network_model_calls':sum(not c['from_cache'] for r in cases for c in r['llm_calls']),
+              'reused_model_calls':sum(c['from_cache'] for r in cases for c in r['llm_calls']),
+              'elapsed_seconds':time.monotonic()-started,
               'scope':run_config['scope'],'recommend_submit':False}
     expected = [q['id'] for q in questions]
     if labelled:

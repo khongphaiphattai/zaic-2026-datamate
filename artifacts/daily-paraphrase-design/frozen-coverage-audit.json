@@ -1,0 +1,177 @@
+{
+  "scope": "Offline coverage only. Frozen gate; no model calls or new predictions; no correctness estimates. Fast route from prior unchanged-code run.",
+  "gate_source_sha256": "0cf16b9630ab57e10aaf294c619899eb10fd180259452bd1c7cca5fda573ea7a",
+  "datasets": {
+    "train": {
+      "sft_excluded_6": {
+        "questions": 475,
+        "before_language_eligible": 14,
+        "after_language_eligible": 37,
+        "old_slow_candidates": 7,
+        "additional_slow_candidates": 2,
+        "new_candidates": [
+          {
+            "id": "q_afbb2701fb2e",
+            "business_id": "biz_125",
+            "question": "hom qua cua hang ban dc bnhiu tien",
+            "as_of_date": "2026-01-18",
+            "parsed_day": "2026-01-17"
+          },
+          {
+            "id": "q_f8237f56fae8",
+            "business_id": "biz_125",
+            "question": "e hom qua cua hang ban dc bao nhiu tien",
+            "as_of_date": "2025-06-08",
+            "parsed_day": "2025-06-07"
+          }
+        ]
+      },
+      "sft_seen_24": {
+        "questions": 2525,
+        "before_language_eligible": 32,
+        "after_language_eligible": 109,
+        "old_slow_candidates": 8,
+        "additional_slow_candidates": 17,
+        "new_candidates": [
+          {
+            "id": "q_1f8c7dce062c",
+            "business_id": "biz_102",
+            "question": "Tổng doanh thu trong ngày hôm nay là bao nhiêu nhỉ?",
+            "as_of_date": "2025-02-24",
+            "parsed_day": "2025-02-24"
+          },
+          {
+            "id": "q_c1c2d4383a19",
+            "business_id": "biz_107",
+            "question": "hôm nay cuwar hangf bán đươc bao nhiu tiền z",
+            "as_of_date": "2025-12-28",
+            "parsed_day": "2025-12-28"
+          },
+          {
+            "id": "q_83b6654830d3",
+            "business_id": "biz_111",
+            "question": "Giúp mình tính riêng ngày hôm nay, doanh thu của cửa hàng được bao nhiêu tiền?",
+            "as_of_date": "2025-08-13",
+            "parsed_day": "2025-08-13"
+          },
+          {
+            "id": "q_b99a2910839c",
+            "business_id": "biz_111",
+            "question": "check giùm tổng dthu hqua là nhiêu",
+            "as_of_date": "2026-04-08",
+            "parsed_day": "2026-04-07"
+          },
+          {
+            "id": "q_eb0deea184f6",
+            "business_id": "biz_111",
+            "question": "Cho tôi biết doanh thu hôm qua.",
+            "as_of_date": "2025-11-10",
+            "parsed_day": "2025-11-09"
+          },
+          {
+            "id": "q_9e6051c0fdfd",
+            "business_id": "biz_113",
+            "question": "tổng doanh thu trong ngày hôm nay là nhiêu",
+            "as_of_date": "2026-01-29",
+            "parsed_day": "2026-01-29"
+          },
+          {
+            "id": "q_1bab154ec708",
+            "business_id": "biz_115",
+            "question": "hnay cua hang ban dc bao nhiu tien vay",
+            "as_of_date": "2025-05-14",
+            "parsed_day": "2025-05-14"
+          },
+          {
+            "id": "q_d315ef9e7e01",
+            "business_id": "biz_116",
+            "question": "hôm qua cửa hàng bán dc bn tiền",
+            "as_of_date": "2025-12-06",
+            "parsed_day": "2025-12-05"
+          },
+          {
+            "id": "q_c3a500850ebb",
+            "business_id": "biz_124",
+            "question": "check giùm tính riêng ngày hôm nay, doanh thu của cửa hàng đươc bn tiền ta",
+            "as_of_date": "2025-09-25",
+            "parsed_day": "2025-09-25"
+          },
+          {
+            "id": "q_fa7a082fc6b6",
+            "business_id": "biz_127",
+            "question": "xem giúp tổng dthu trong ngày hôm nay là bn",
+            "as_of_date": "2025-07-22",
+            "parsed_day": "2025-07-22"
+          },
+          {
+            "id": "q_01a47607f90c",
+            "business_id": "biz_128",
+            "question": "tổng dthu trong ngày hôm nay là bao nhiêu vaayj",
+            "as_of_date": "2026-08-11",
+            "parsed_day": "2026-08-11"
+          },
+          {
+            "id": "q_5b2ef4e4d0c0",
+            "business_id": "biz_128",
+            "question": "coi giumf toongr dthu trong ngày hôm nay là bnhiu",
+            "as_of_date": "2025-04-27",
+            "parsed_day": "2025-04-27"
+          },
+          {
+            "id": "q_1e6f3a8dece0",
+            "business_id": "biz_129",
+            "question": "hom nay cua hang ban duoc bn tien ta",
+            "as_of_date": "2026-07-10",
+            "parsed_day": "2026-07-10"
+          },
+          {
+            "id": "q_4dc24191967d",
+            "business_id": "biz_129",
+            "question": "e tinh rieng ngay hom nay, doanh thu cua cua hang dc bao nhieu tien",
+            "as_of_date": "2026-04-28",
+            "parsed_day": "2026-04-28"
+          },
+          {
+            "id": "q_9aba8eb100b3",
+            "business_id": "biz_129",
+            "question": "hqua cửa hàng bán đươc bao nhiêu tiền ta",
+            "as_of_date": "2026-04-21",
+            "parsed_day": "2026-04-20"
+          },
+          {
+            "id": "q_a0e0238cd1f7",
+            "business_id": "biz_129",
+            "question": "dthu hqua cua cua hang la bnhiu",
+            "as_of_date": "2025-05-07",
+            "parsed_day": "2025-05-06"
+          },
+          {
+            "id": "q_e9aff6f7b58e",
+            "business_id": "biz_129",
+            "question": "Cho tôi biết doanh thu hôm qua.",
+            "as_of_date": "2025-05-23",
+            "parsed_day": "2025-05-22"
+          }
+        ]
+      }
+    },
+    "public_test": {
+      "public_unlabelled": {
+        "questions": 1000,
+        "before_language_eligible": 2,
+        "after_language_eligible": 11,
+        "old_slow_candidates": 0,
+        "additional_slow_candidates": 1,
+        "new_candidates": [
+          {
+            "id": "q_acb6a360a60d",
+            "business_id": "dev_010",
+            "question": "Doanh thu của cửa hàng ngày hôm qua là bao nhiêu?",
+            "as_of_date": "2026-01-15",
+            "parsed_day": "2026-01-14"
+          }
+        ]
+      }
+    }
+  }
+}

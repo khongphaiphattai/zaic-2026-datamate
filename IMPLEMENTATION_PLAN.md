@@ -322,3 +322,11 @@ Replay và live development evaluation đều giữ 5 câu đúng, chặn 2 câu
 Đã chạy 3.000 Train: Fast PA 0.25000 → Hybrid PA 0.2523333, thêm 7 đúng/0 sai, 8 abstain trên 15 eligible. Tách 24 business SFT-seen và 6 SFT-excluded trong `artifacts/broad-train-business24/report.json`; đây là development diagnostics.
 
 Public shadow 1.000 câu ở `artifacts/public-shadow-business24/submission.jsonl` trùng byte snapshot v2.8: 204 trả lời, 796 abstain, 0 model calls, 0 đáp án mới. Hai câu khớp gate đã được Fast trả lời. Không nộp lại; root submission không đổi. Nút thắt đang là độ phủ ngôn ngữ của gate, chưa có bằng chứng cần train thêm. Đề xuất tiếp theo: mở rộng cùng intent trên train partition, không thêm metric/intent mới hoặc nới guard, rồi đo lại trước cân nhắc Public.
+
+## Mở rộng diễn đạt doanh thu ngày (02/11/2026)
+
+Đã triển khai grammar nhận trọn câu từ Train-24, giữ nguyên checkpoint, prompt, metric guard và Fast Path. Chốt source hash trước kiểm tra các nhóm còn lại; 108 tests pass. Audit offline mở thêm 19 Slow candidates trên Train (17 Train-24, 2 SFT-excluded) và 1 Public; đây là độ phủ, chưa phải chất lượng trả lời. Không tune từ Public/nhóm 6 sau khi chốt grammar.
+
+Runner có tùy chọn `--reuse-run artifacts/broad-train-business24` để tái dùng raw response chỉ khi provenance, generation config, frozen source hashes và full prompt hash khớp; vẫn kiểm guard/thực thi SQL lại. Mọi network/cache calls được đếm riêng.
+
+Đang chờ URL tunnel mới: endpoint cũ NXDOMAIN ngay preflight nên chưa có lượt live mới. Khi có URL, chạy `scripts/diagnose_hybrid.py` với `--dataset train --output-dir artifacts/broad-train-paraphrases --reuse-run artifacts/broad-train-business24`, rồi `--dataset public_test --output-dir artifacts/public-shadow-paraphrases` (cùng `--base-url` mới). Sau đó kiểm score Train, preservation Fast, IDs/format/Public null labels và root submission trước cân nhắc candidate. Không upload portal trong bước này. Chi tiết trạng thái ở ROADMAP.
