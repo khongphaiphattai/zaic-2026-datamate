@@ -566,3 +566,21 @@
 - Thêm `notebooks/business24_merge_cell.py` để dán vào cell mới cuối notebook 03: kiểm manifest và hash trước load, base Qwen đúng revision, merge trên CPU RAM với `safe_merge=True`, lưu safetensors vào thư mục mới `/content/qwen2.5-coder-7b-datamate-business24` và ghi merge manifest khi lưu xong.
 - Cell không ghi đè adapter/model cũ; không dùng endpoint cũ để đánh giá checkpoint mới. Cú pháp AST qua; chưa thực thi merge weights 7B trên runtime Colab.
 - Nguồn API: PEFT v0.17.0 model merging (`https://huggingface.co/docs/peft/v0.17.0/en/developer_guides/model_merging`). Bước sau merge là mở API model business24 và chạy đánh giá 6 business với training provenance 633 mẫu.
+
+### 02/11/2026 — Khôi phục adapter sau khi mất runtime Colab
+- Người dùng mở lại notebook 03 và kiểm tra: cả `/content/qwen2.5-coder-7b-lora-business24/adapter_model.safetensors` lẫn `training_manifest.json` đều không còn. Chưa khẳng định runtime cũ đã terminate hay notebook nối runtime khác; dữ liệu không có trên runtime hiện tại.
+- Không train lại. Dùng ZIP backup local đã xác minh (SHA256 `65914f4369f8409854b75c220ef3999077d4f73b2761c4c48dc71dbde7604965`) để phục hồi adapter, sau đó khôi phục dependencies của môi trường và chạy cell merge đúng base revision. Chưa xác nhận người dùng khôi phục xong.
+
+### 02/11/2026 — Triage cảnh báo dependency khi khôi phục môi trường merge
+- Người dùng cài bộ merge `transformers==4.57.1`, `peft==0.17.1`, `accelerate==1.11.0`; pip báo Gradio/Gradio-client/Diffusers có sẵn cần Hugging Face Hub 1.x trong khi môi trường nhận `huggingface-hub==0.36.2`.
+- Chưa có traceback import hoặc lỗi merge. Không nâng huggingface-hub chỉ để giải xung đột các gói không dùng trong merge; cần giữ đúng giới hạn dependency của Transformers 4.57.1 rồi kiểm import AutoModelForCausalLM/AutoTokenizer/PeftModel trước khi chạy merge.
+- Chưa xác nhận khôi phục môi trường/merge thành công; bước tiếp theo là import smoke check trên runtime Colab của người dùng.
+
+### 02/11/2026 — Người dùng xác nhận merge hoàn tất và chuẩn bị API business24
+- Người dùng chạy cell merge thành công, lưu model tại `/content/qwen2.5-coder-7b-datamate-business24`; cảnh báo HF_TOKEN/torch_dtype không làm dừng merge. Chưa có endpoint business24 hoặc kết quả PA mới.
+- Thêm `notebooks/business24_api_cell.py`: copy vào cell mới notebook 03; chỉ nạp merged model đúng manifest, CUDA bfloat16, greedy seed42, context trần 8.192; trả model ID riêng `datamate-business24` và `/v1/model-provenance`.
+- API giới hạn request, model ID, seed/temperature, số token và serialize inference; chỉ bind localhost rồi mở tunnel. cloudflared nếu chưa có được tải từ release chính thức kèm kiểm SHA256 công bố. Chưa chạy model/tunnel thực tế trên runtime của người dùng.
+- `evaluate_selective.py` khi đánh giá không-exploratory sẽ kiểm provenance của model đang serve trước suy luận để tránh dùng endpoint model cũ; hash dataset/split, base revision và training businesses phải khớp. Metadata này là bằng chứng khai báo của server, không phải attestation độc lập về weights.
+- Hai kiểm thử HTTP contract và provenance đã qua (request hợp lệ, sai model/seed/temperature/token/message và sai checkpoint metadata). Chuẩn bị chạy toàn bộ tests.
+- Precheck phát hiện GitHub REST API bị rate limit 403 ở môi trường local. Cell tunnel đã chuyển sang release cố định **cloudflared 2026.10.7**, kiểm SHA256 từ release chính thức (`1f99fb518b83dec2ba8d870a7cc991d82a77e6196295a3d2754ba17ab9f91872`), không phụ thuộc API latest. Test xác nhận từ chối binary sai hash.
+- Full suite trước thay đổi downloader: **60 passed** (21.92 giây). Kiểm riêng API/provenance sau thay đổi: **3 passed**. Chưa có bằng chứng GPU generation/tunnel thực tế của cell mới; cần người dùng chạy và gửi URL.

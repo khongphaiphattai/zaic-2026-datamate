@@ -7,6 +7,7 @@ from collections import Counter
 import hashlib
 import json
 from pathlib import Path
+import urllib.request
 
 from zaic_2026_datamate.data_loader import DataLoader
 from zaic_2026_datamate.evaluation import evaluate_match
@@ -17,6 +18,17 @@ from zaic_2026_datamate.selective_gate import daily_revenue_date
 
 def read_rows(path):
     return [json.loads(l) for l in Path(path).read_text().splitlines() if l.strip()]
+
+
+def verify_model_provenance(metadata, data_sha256, split_sha256, businesses, model):
+    expected = {'model':model, 'training_complete':True, 'merge_complete':True,
+                'data_sha256':data_sha256, 'split_sha256':split_sha256,
+                'base_model':'Qwen/Qwen2.5-Coder-7B-Instruct',
+                'base_revision':'c03e6d358207e414f1eca0bb1891e29f1db0e242'}
+    if not isinstance(metadata,dict) or any(metadata.get(k)!=v for k,v in expected.items()):
+        raise ValueError('Served model provenance does not match the requested trained checkpoint')
+    if sorted(metadata.get('businesses',[])) != sorted(businesses):
+        raise ValueError('Served model training businesses differ from the training partition')
 
 
 def main():
@@ -50,6 +62,14 @@ def main():
         raise ValueError('Checkpoint SFT overlaps held-out businesses; retrain on split train partition first')
     if args.audit_only:
         return
+    if args.base_url and not args.exploratory:
+        with urllib.request.urlopen(args.base_url.rstrip('/')+'/model-provenance',timeout=20) as response:
+            served = json.load(response)
+        verify_model_provenance(served,provenance['training_sha256'],
+                                hashlib.sha256(manifest.read_bytes()).hexdigest(),
+                                sorted({r['business_id'] for r in training}),args.model)
+        (out/'served-model-provenance.json').write_text(json.dumps(served,indent=2))
+
     answers = {r['id']:r for r in read_rows('data/train/train/answers.jsonl')}
     loader = DataLoader('data/train/train/data','data/train/train/calendar.csv')
     agent = HybridAgent(enable_slow_path=bool(args.base_url), llm_client=OpenAICompatibleClient(base_url=args.base_url,model=args.model) if args.base_url else None)
@@ -74,7 +94,7 @@ def main():
     net = lambda k: stats[k]['correct']-stats[k]['wrong']
     report = {**stats,'fast_pa':net('fast')/stats['total'], 'hybrid_pa':(net('fast')+net('slow'))/stats['total'],
               'slow_delta_pa':net('slow')/stats['total'], 'model_attempted':bool(args.base_url), 'model_evaluated':bool(args.base_url) and stats['gate_eligible'] > stats['inference_errors'], 'exploratory':args.exploratory, 'training_overlap':overlap,
-              'recommend_enable':False, 'limitation':split['limitation']}
+              'recommend_enable':False, 'limitation':'SFT-business isolation only; historical rule/prompt/gate tuning used Train and base pretraining is unknown.'}
     (out/'report.json').write_text(json.dumps(report, indent=2))
     print(json.dumps(report, indent=2))
 
