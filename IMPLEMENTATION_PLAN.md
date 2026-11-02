@@ -336,3 +336,13 @@ Runner có tùy chọn `--reuse-run artifacts/broad-train-business24` để tái
 Theo yêu cầu người dùng, tạm dừng phần cần Colab đến khi GPU khả dụng; ngân sách báo còn 120 units, ưu tiên backup, không train lại. Notebook mới `notebooks/04_business24_restore_and_serve.ipynb` tự chứa 8 cell: preflight → venv riêng → upload/verify/restore ZIP → merge/reuse → API/reopen tunnel → provenance → log → optional stop (mặc định tắt). Đường dẫn ZIP local đã ghi trong notebook. Toàn bộ helper đi kèm trong notebook, không cần upload source riêng.
 
 113 tests pass; thử restore/reuse từ ZIP thật và dependency compatibility resolution Python 3.13/CUDA Torch build thành công. Chưa chạy merge/inference notebook mới trên GPU. Runbook `docs/runbooks/business24-resume.md`, bằng chứng `artifacts/business24-recovery-readiness/verification.json`. Phiên sau dùng notebook 04 thay cho việc chạy lại notebook training 03; sau khi có endpoint mới tiếp tục hai lượt đo đang chờ. Không có thay đổi checkpoint/prompt/guard hoặc portal submission.
+
+## Release v3.0 đã chốt, chờ score thực tế (02/11/2026)
+
+Theo tên người dùng chọn, v3.0 tích hợp business24 AI Slow Path với revenue guard và fallback whole-question count paraphrases (ngày/tuần/quý đã kết thúc/YTD). Bật fallback bằng `--order-paraphrases`; Hybrid/intent/prompt/metric cũ giữ nguyên. Source implementation `2f984d4`; 159 tests pass.
+
+Train cuối 3.000 câu: 818 đúng / 6 sai / 2.176 abstain, PA 0.2706667; thêm 13 Slow và 49 canonical count đúng, không thêm lỗi trong development. Public đủ 1.000 dòng vẫn 204 trả lời/796 abstain, 0 đáp án mới, trùng byte v2.8. Đây chưa phải cải thiện Public.
+
+Root submission đã xuất đủ 1.000 dòng để người dùng nộp; bản root 5 dòng cũ có backup nguyên byte trong `artifacts/releases/v3.0/`. Người dùng sẽ tự upload sau rồi báo score; chưa có submit ID/score mới, receipt pending tại `artifacts/releases/v3.0/submission-receipt.json`. Không tự gán score 0.13400 cho lần nộp chưa xảy ra.
+
+Kế hoạch phiên tiếp theo: `docs/plans/2026-11-03-improvement-plan.md`. Nhận receipt/score trước kết luận, ưu tiên khoảng trống coverage thực tế và tính đúng grain/date/status, không train thêm để giải quyết vấn đề do gate hoặc JOIN policy. Nếu file nộp vẫn cùng SHA với baseline, mọi score khác cần kiểm tra tham chiếu/rules trước khi nói thuật toán tốt hơn.
