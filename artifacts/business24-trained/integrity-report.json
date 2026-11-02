@@ -1,0 +1,21 @@
+{
+  "status": "local_integrity_checks_passed",
+  "backup_sha256": "65914f4369f8409854b75c220ef3999077d4f73b2761c4c48dc71dbde7604965",
+  "manifest_sha256": "2d52539549f880586b31cb9139d61e1fc2c23be3e29d2e82a1035d06b35be013",
+  "examples": 633,
+  "train_businesses": 24,
+  "validation_overlap": [],
+  "training_steps": 120,
+  "epochs": 3,
+  "train_runtime_seconds": 2391.7954,
+  "last_logged_loss": 0.0005,
+  "average_train_loss": 0.03666830688307528,
+  "lora_parameters": 40370176,
+  "lora_tensors": 392,
+  "weights_dtypes": [
+    "F32"
+  ],
+  "base_revision": "c03e6d358207e414f1eca0bb1891e29f1db0e242",
+  "base_revision_in_adapter_config": null,
+  "limitation": "Manifest and artifact integrity checked; training loss is not validation PA. Load base with manifest revision because adapter_config revision is null. GPU inference not tested."
+}

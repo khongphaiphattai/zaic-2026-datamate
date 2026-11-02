@@ -539,3 +539,30 @@
 - Đã đọc `notebooks/03_business_10h46.png`: cài dependencies returncode 0, preflight returncode 0, cell training returncode 1. Ảnh chưa có traceback của script con, chưa xác định lỗi GPU/VRAM/model/trainer.
 - Sửa cell training của notebook 03 để dùng Python unbuffered, gộp stdout/stderr và stream trực tiếp vào cell; lưu append log `/content/business24-training.log`. Giữ nguyên command, dataset, checkpoint guard và cấu hình training; người dùng có thể thay riêng cell, không cần upload lại ZIP.
 - Xác minh tất cả code cell parse thành công. Chưa có bằng chứng training GPU chạy thành công; cần log gốc từ cell mới để sửa đúng nguyên nhân.
+
+### 02/11/2026 — Xác định lỗi gốc training: PyTorch CPU / CUDA không khả dụng
+- Log người dùng cung cấp xác nhận `torch=2.11.0+cpu`, cảnh báo không có CUDA drivers; script dừng tại guard `Training requires a CUDA GPU with bfloat16 support`. Chưa bắt đầu train, không phải lỗi dữ liệu/token-length hay bằng chứng OOM.
+- Audit thực tế trên runtime đã qua: 633 mẫu, SHA256 dữ liệu/split đúng, max 5.292 tokens, không overlength; các phiên bản TRL/Transformers/PEFT khớp cấu hình.
+- Hướng khắc phục: chọn runtime GPU A100 trong Colab và kiểm tra `nvidia-smi`; sau đó kiểm tra PyTorch CUDA/bfloat16. Nếu runtime có GPU nhưng PyTorch vẫn là +cpu thì cài wheel CUDA chính thức tương thích, restart kernel rồi xác minh lại trước train. Chưa có xác nhận training CUDA chạy thành công.
+- Bổ sung từ người dùng: UI notebook hiện hiển thị khoảng 12 GB RAM / 200 GB disk, không có A100 40 GB VRAM như phiên trước. RAM UI là RAM hệ thống, không phải VRAM; cần chọn lại Hardware accelerator GPU A100 cho notebook 03 và xác minh bằng nvidia-smi trước khi thay packages.
+
+### 02/11/2026 — Người dùng xác nhận runtime A100 sẵn sàng
+- Người dùng đã chuyển runtime, xác nhận RAM hệ thống khoảng 80 GB, VRAM A100 40 GB; 3 cell đầu notebook 03 chạy thành công.
+- Gửi lại cell 4 chạy training unbuffered và ghi log để quan sát lỗi gốc nếu có. Chưa nhận xác nhận training bắt đầu hoặc hoàn tất.
+
+### 02/11/2026 — Xác minh hai runtime và training đang tiến triển
+- Đã đọc `notebooks/manage_session.png`: notebook 03 đang train **58/120 steps (~48%)**, GPU dùng khoảng **36.2/40 GB**; chưa có kết quả hoàn tất.
+- `colab sessions` xác nhận có **hai backend A100 khác nhau**: `gpu-a100-s-usc1f0-125oh8o0fkhoq` và `gpu-a100-s-usw4b0-2ah6db4anvdaf` (runtime cũ đã được quan sát từ trước). Đây là hai runtime riêng, không chỉ suy luận từ tên notebook hoặc số RAM.
+- Có thể giải phóng runtime notebook 02 mà không ngắt notebook 03, nhưng cần backup model/checkpoint cũ nếu chỉ nằm ở /content trước khi terminate. Chưa thực hiện dừng bất kỳ runtime nào.
+
+### 02/11/2026 — Xác minh checkpoint business24 đã train và backup local
+- Người dùng cung cấp `training_manifest.json` và `business24-adapter-backup.zip` (~147 MiB). Training hoàn tất **120 steps / 3 epochs**, runtime **2.391,7954 giây (~39m52s)**, mean train loss **0.0366683**, loss log cuối **0.0005**; PyTorch **2.11.0+cu130**. Đây là loss train, chưa phải PA validation.
+- Manifest khớp đủ 633 mẫu và 24 business, không overlap 6 business validation; SHA256 dữ liệu/split và base revision khớp bản đã chuẩn bị. Max tokens 5.292, overlength = 0.
+- ZIP test CRC qua; tên thành viên không traversal/trùng; manifest bên trong khớp file user gửi. Data và split trong ZIP hash khớp manifest. Safetensors có **392 tensor / 40.370.176 tham số LoRA F32**, offset nằm trong payload; config r16/alpha32 đúng base Qwen. Không deserialize `training_args.bin`.
+- Backup ZIP SHA256: `65914f4369f8409854b75c220ef3999077d4f73b2761c4c48dc71dbde7604965`. Báo cáo lưu `artifacts/business24-trained/integrity-report.json`, kèm bản manifest.
+- `adapter_config.json` có `revision=null`; khi load/merge bắt buộc lấy base revision `c03e6d358207e414f1eca0bb1891e29f1db0e242` từ manifest. Chưa load weights/inference trên GPU local, chưa đánh giá PA checkpoint mới. Bước tiếp theo: merge hoặc serve adapter mới ở runtime 03 rồi đo split giữ riêng; không dùng endpoint checkpoint cũ.
+
+### 02/11/2026 — Chuẩn bị cell merge checkpoint đã xác minh
+- Thêm `notebooks/business24_merge_cell.py` để dán vào cell mới cuối notebook 03: kiểm manifest và hash trước load, base Qwen đúng revision, merge trên CPU RAM với `safe_merge=True`, lưu safetensors vào thư mục mới `/content/qwen2.5-coder-7b-datamate-business24` và ghi merge manifest khi lưu xong.
+- Cell không ghi đè adapter/model cũ; không dùng endpoint cũ để đánh giá checkpoint mới. Cú pháp AST qua; chưa thực thi merge weights 7B trên runtime Colab.
+- Nguồn API: PEFT v0.17.0 model merging (`https://huggingface.co/docs/peft/v0.17.0/en/developer_guides/model_merging`). Bước sau merge là mở API model business24 và chạy đánh giá 6 business với training provenance 633 mẫu.
