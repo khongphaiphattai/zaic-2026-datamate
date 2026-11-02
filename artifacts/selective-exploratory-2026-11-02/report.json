@@ -1,0 +1,29 @@
+{
+  "fast": {
+    "correct": 123,
+    "wrong": 1
+  },
+  "slow": {
+    "correct": 6
+  },
+  "abstain": 345,
+  "gate_eligible": 7,
+  "total": 475,
+  "inference_errors": 0,
+  "fast_pa": 0.25684210526315787,
+  "hybrid_pa": 0.2694736842105263,
+  "slow_delta_pa": 0.01263157894736842,
+  "model_attempted": true,
+  "model_evaluated": true,
+  "exploratory": true,
+  "training_overlap": [
+    "biz_101",
+    "biz_103",
+    "biz_110",
+    "biz_118",
+    "biz_119",
+    "biz_125"
+  ],
+  "recommend_enable": false,
+  "limitation": "Prospective split only. Existing rule tuning used Train; existing SFT saw all businesses."
+}

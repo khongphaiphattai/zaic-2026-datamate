@@ -499,3 +499,15 @@
 - **56/56 tests passed** (21.58 giây); `git diff --check` sạch.
 - Rà lại giới hạn SQL bằng fresh DuckDB catalog vì `get_table_names` trên connection có DataFrame views che mất tên bảng; test nhánh hợp lệ, nhiều bảng và file ngoài đều qua.
 - Code trên nhánh `feat/selective-slow-path`; không stage/commit thay đổi 5 dòng có sẵn ở root `submission.jsonl`. Chờ endpoint tunnel mới để tiếp tục thăm dò; gate chưa được khuyến nghị bật trên Public.
+
+### 02/11/2026 — Khôi phục kết nối Colab
+- Endpoint mới do người dùng cung cấp phản hồi `/v1/models` thành công, công bố `datamate` và `/content/qwen2.5-coder-7b-datamate`.
+- Bắt đầu chạy lại đối chứng 475 câu của split cố định, gồm 7 câu đủ điều kiện Slow Path. Ghi riêng tại `artifacts/selective-exploratory-2026-11-02/`; đây là thăm dò vì SFT cũ trùng cả 6 business validation.
+
+### 02/11/2026 — Hoàn tất thăm dò Selective Slow Path trên endpoint mới
+- Chạy model `/content/qwen2.5-coder-7b-datamate` qua endpoint mới; **0 lỗi kết nối**. Không thay đổi code, prompt, gate hoặc checkpoint trong lượt chạy này.
+- Đúng 475 câu, ID duy nhất và cùng split cố định: Fast Path **123 đúng / 1 sai**, giữ nguyên từng prediction so với báo cáo đối chứng Fast-only.
+- Trong **7 câu eligible**, Slow Path **6 đúng / 0 sai / 1 abstain**; câu `q_ea71163260ae` (`biz_118`) abstain do response không phải JSON hợp lệ. Chưa xác minh response hỏng vì bị cắt token hay do lỗi sinh định dạng.
+- Tổng Hybrid: **129 đúng / 1 sai / 345 abstain**. PA từ **0.2568421 → 0.2694737**, tăng **6 điểm thuần / 475 = 0.0126316 PA**. Precision Slow Path trên các câu có trả lời là 6/6; mẫu rất nhỏ và checkpoint đã thấy dữ liệu nên không suy rộng thành “an toàn tuyệt đối”.
+- Báo cáo/provenance/split/trace tại `artifacts/selective-exploratory-2026-11-02/`, riêng 7 câu lưu ở `eligible-results.json`. `recommend_enable=false`: chưa bật gate mặc định hay tạo/nộp bài Public mới.
+- Xác minh snapshot v2.8 đúng SHA256 và root submission 5 dòng còn nguyên byte. Bước tiếp theo để đánh giá sạch hơn: đào SFT chỉ từ 24 business train rồi huấn luyện checkpoint mới; không gọi checkpoint hiện tại là unseen validation.
