@@ -624,3 +624,27 @@
 - **79/79 tests passed** (22.21 giây), `git diff --check` sạch. Không thay đổi file `intent_parser.py` hoặc prompt/checkpoint; script đánh giá ghi rõ metric guard và lý do từ chối.
 - `IMPLEMENTATION_PLAN.md` đã cập nhật trạng thái guard, số liệu development và các phần chưa được chứng minh. Các báo cáo và thiết kế được lưu cùng code để review.
 - Coverage theo **policy cuối cùng** đã chạy lại: trên 618 SQL SFT train (có cả task đếm đơn/phần trăm/AOV không thuộc metric guard), **152 SQL được xác minh ở 11 business**. Phần còn lại là unverified/ngoài scope, không diễn giải thành sai. Source SHA256 trùng policy được đối chiếu ở live report; lưu `artifacts/revenue-metric-training-coverage/report.json`.
+
+### 02/11/2026 — Hoàn tất runner chẩn đoán toàn Train và Public shadow
+- Thiết kế theo phạm vi đã duyệt tại `docs/specs/2026-11-02-broad-diagnostics.md`; thêm `scripts/diagnose_hybrid.py` với report tổng/theo partition/theo business, trace flush từng câu, SQL/evidence/raw model response và cấu hình/hash nguồn để truy vết.
+- Tách helper provenance sang module dùng chung, giữ import cũ tương thích. Test chứng minh Public không có nhãn → correct/wrong/PA là null, contribution Train tính đúng, baseline so đủ ID/scored fields và từ chối ID trùng: **4 tests passed** cùng provenance test.
+- Preflight: Train có 46 câu khớp gate ngôn ngữ trước Fast Path (upper bound model requests), Public có 2 câu; chưa biết số còn lại sau Fast Path. Endpoint business24 vẫn phản hồi đúng model/data hash.
+- Bắt đầu chạy toàn Train trước, rồi Public nối tiếp để tránh request GPU tranh nhau. Public candidate chỉ xuất nếu Fast-only khớp toàn bộ v2.8; lưu riêng trong artifact directory, không ghi đè root submission và không nộp portal.
+- Full suite sau runner/provenance refactor: **82/82 tests passed** (22.78 giây). Chẩn đoán Train đang chạy với code/hash đã chốt; không chỉnh model/prompt/gate để phản ứng với kết quả trong lượt đo.
+
+### 02/11/2026 — Hoàn tất chẩn đoán toàn bộ 3.000 câu Train
+- Full Train Fast-only: **756 đúng / 6 sai / 2.238 abstain**, PA **0.25000**. Hybrid có guard: **763 đúng / 6 sai / 2.231 abstain**, PA **0.2523333**; thêm **7 điểm thuần**, không thêm câu sai.
+- Có **15 câu eligible sau Fast Path** (so upper bound 46 theo gate ngôn ngữ), **17 model calls** gồm retry; Slow Path **7 đúng / 0 sai / 8 abstain**. 6 câu bị metric guard từ chối, 2 abstain còn lại do thực thi/SQL guard; 0 lỗi inference. Runtime **524.71 giây (~8m45s)**.
+- Nhóm **24 business đã SFT**: 2.525 câu, Fast 633 đúng/5 sai, Hybrid 635 đúng/5 sai/1.885 abstain; PA **0.2487129 → 0.2495050**. Slow Path 2 đúng/0 sai/6 abstain trên 8 eligible.
+- Nhóm **6 business không SFT**: 475 câu, Fast 123 đúng/1 sai, Hybrid 128 đúng/1 sai/346 abstain; PA **0.2568421 → 0.2673684**. Slow Path 5 đúng/0 sai/2 abstain trên 7 eligible, khớp lượt development trước.
+- Báo cáo và cấu hình tại `artifacts/broad-train-business24/`; trace ghi từng request/SQL/metric decision/raw response. Các precision 7/7 và 5/5 chỉ mô tả các câu được chấp nhận trong mẫu nhỏ; không suy rộng thành 100% generalization hoặc PA Public.
+- Bắt đầu Public shadow nối tiếp; không nộp portal, không ghi root submission.
+
+### 02/11/2026 — Hoàn tất Public shadow 1.000 câu và quyết định không nộp lại
+- Public shadow đủ **1.000 dòng / 1.000 ID duy nhất**, format hợp lệ; **204 trả lời / 796 abstain**. Fast-only khớp toàn bộ v2.8, không có thay đổi baseline.
+- **0 model calls, 0 đáp án mới**: chỉ 2 câu Public khớp gate ngôn ngữ hiện tại, cả 2 đã được Fast Path trả lời. 796 câu còn lại bị selective gate chặn trước model; không thể suy ra chất lượng model trên các câu đó.
+- Candidate tại `artifacts/public-shadow-business24/submission.jsonl` **trùng từng byte** snapshot v2.8, SHA256 `288ed868fde9175d36afd8995cdaf0e2c5f978a716be5c2a845f35c5e89afb9f`. Không có thay đổi để đáng nộp lại; `recommend_submit=false`. Không upload portal.
+- Báo cáo Public để correct/wrong/precision/PA = null vì không có nhãn; không lấy score Train để dự báo PA Public. Verification độc lập đã kiểm tra IDs/format/hash, mọi target/correct Public đều null, hai câu ngôn ngữ eligible đều Fast Path, và root submission 5 dòng vẫn nguyên byte.
+- Artifacts: `artifacts/broad-train-business24/` (3.000 câu, group 24/6, từng business); `artifacts/public-shadow-business24/` (report/trace/config/provenance/candidate/verification). Trace/prediction JSONL giữ local theo .gitignore.
+- Kết luận lượt đo: guard thêm 7 điểm thuần trên Train nhưng gate hiện tại không mở rộng Public. Đề xuất bước kế tiếp là mở rộng cách diễn đạt của cùng intent doanh thu ngày từ nhóm 24 business train, giữ guard/checkpoint cố định và đo lại; không train thêm chỉ dựa trên lượt này. Không gọi các phép đo phát triển đó là untouched evaluation.
+- Bàn giao: runner/provenance dùng chung, full Train/Public reports và verification đã lưu; **82 tests passed**, root submission được giữ nguyên. Rà whitespace cuối đã bỏ dòng trống dư cuối module provenance; không thay đổi logic hay kết quả đã đo.

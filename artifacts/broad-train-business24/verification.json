@@ -1,0 +1,7 @@
+{
+  "unique_complete_ids": true,
+  "recomputed_score_flags_match": true,
+  "root_submission_sha256": "e98f2c8e5d5600a2dec5196fbf214ade94bed9109806d983c11622b5f41a6e21",
+  "runner_source_sha256": "25b35fc5df3dfa4513b37394155914ee1f605db331373f3e8ac7292ce16f2689",
+  "status": "development diagnostic integrity checked; not external scorer validation"
+}

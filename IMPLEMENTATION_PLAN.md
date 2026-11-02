@@ -316,3 +316,9 @@ Chạy `notebooks/03_business_holdout_training.ipynb` với `artifacts/zaic-busi
 Slow Path doanh thu ngày kiểm lineage SQL bằng DuckDB AST và đối chiếu định nghĩa cột trong README đúng file/bảng trước execute. Chỉ nhận direct SUM(column), tùy chọn ROUND, với mô tả tiền hàng được hỗ trợ; thiếu/mâu thuẫn/SQL ngoài phạm vi → abstain. Không tự sửa SQL hay dùng ground truth để chọn cột. Fast Path, prompt và checkpoint không đổi.
 
 Replay và live development evaluation đều giữ 5 câu đúng, chặn 2 câu sai metric: Hybrid PA 0.2673684 trên 475 câu (128 đúng / 1 sai / 346 abstain), so với 0.2631579 trước guard. Những lỗi này đã được xem khi thiết kế, nên kết quả là regression/development evidence, không phải untouched validation. Guard chỉ kiểm metric, chưa xác minh toàn bộ WHERE/date/status/table choice; README parser có phạm vi mô tả hữu hạn, unknown sẽ từ chối. Slow Path vẫn mặc định tắt và chưa khuyến nghị bật Public. Thiết kế/phạm vi: `docs/specs/2026-11-02-revenue-metric-guard.md`.
+
+## Chẩn đoán rộng và Public shadow (02/11/2026)
+
+Đã chạy 3.000 Train: Fast PA 0.25000 → Hybrid PA 0.2523333, thêm 7 đúng/0 sai, 8 abstain trên 15 eligible. Tách 24 business SFT-seen và 6 SFT-excluded trong `artifacts/broad-train-business24/report.json`; đây là development diagnostics.
+
+Public shadow 1.000 câu ở `artifacts/public-shadow-business24/submission.jsonl` trùng byte snapshot v2.8: 204 trả lời, 796 abstain, 0 model calls, 0 đáp án mới. Hai câu khớp gate đã được Fast trả lời. Không nộp lại; root submission không đổi. Nút thắt đang là độ phủ ngôn ngữ của gate, chưa có bằng chứng cần train thêm. Đề xuất tiếp theo: mở rộng cùng intent trên train partition, không thêm metric/intent mới hoặc nới guard, rồi đo lại trước cân nhắc Public.
