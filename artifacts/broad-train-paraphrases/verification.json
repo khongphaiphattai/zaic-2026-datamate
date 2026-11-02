@@ -1,0 +1,24 @@
+{
+  "questions": 3000,
+  "unique_ids": true,
+  "shared_evaluator_recomputed": true,
+  "fast_path_predictions_unchanged": true,
+  "frozen_source_hashes_match": true,
+  "partitions": {
+    "sft_excluded_6": 475,
+    "sft_seen_24": 2525
+  },
+  "network_model_calls": 27,
+  "reused_model_calls": 16,
+  "slow_abstain_reasons": {
+    "SQL execution failed: Revenue metric rejected: so_ban_hang.tri_gia lacks unambiguous README evidence for merchandise revenue": 1,
+    "SQL execution failed: Revenue metric rejected: danh_sach_hoa_don.tong_tien lacks unambiguous README evidence for merchandise revenue": 2,
+    "SQL execution failed: Selective execution requires one registered business table": 9,
+    "SQL execution failed: Revenue metric rejected: thanh_toan.tien lacks unambiguous README evidence for merchandise revenue": 3,
+    "SQL execution failed: Revenue metric rejected: bao_cao_ban_hang_so_chi_tiet_ban_hang.thanh_tien lacks unambiguous README evidence for merchandise revenue": 1,
+    "SQL execution failed: Revenue metric rejected: danh_sach_hoa_don.tong_tien_hang lacks unambiguous README evidence for merchandise revenue": 3,
+    "SQL execution failed: Revenue metric rejected: ban_hang_hoa_don.tien_hang_truoc_giam lacks unambiguous README evidence for merchandise revenue": 1,
+    "SQL execution failed: Revenue metric rejected: chi_tiet_don.tien_ban lacks unambiguous README evidence for merchandise revenue": 1
+  },
+  "scope": "Development evidence; not untouched validation"
+}

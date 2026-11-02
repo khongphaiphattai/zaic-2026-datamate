@@ -33,9 +33,10 @@ def summarize(cases, labelled):
     fast = metrics([r for r in cases if r['route']=='fast_path'],n)
     eligible = sum(r['eligible'] for r in cases)
     slow = metrics([r for r in cases if r['route']=='slow_path'],eligible)
+    paraphrase = metrics([r for r in cases if r['route']=='paraphrase_fast_path'],n)
     hybrid = metrics([r for r in cases if r['type']!='abstain'],n)
     reasons = Counter((r.get('reason') or 'unspecified').split(':')[0][:160] for r in cases if r['type']=='abstain')
-    return {'questions':n,'fast':fast,'slow':slow,'hybrid':hybrid,
+    return {'questions':n,'fast':fast,'paraphrase':paraphrase,'slow':slow,'hybrid':hybrid,
             'slow_delta_pa':(slow['correct']-slow['wrong'])/n if labelled and n else None,
             'metric_rejected':sum(bool(r.get('revenue_metric_check')) and not r['revenue_metric_check']['allowed'] for r in cases),
             'inference_errors':sum('LLM generation failed' in (r.get('reason') or '') for r in cases),
@@ -119,6 +120,7 @@ def main():
     parser.add_argument('--model',default='datamate-business24')
     parser.add_argument('--output-dir',required=True)
     parser.add_argument('--reuse-run',help='Reuse matching recorded model responses; SQL is checked and executed again')
+    parser.add_argument('--daily-order-paraphrases',action='store_true',help='Opt in to Train-24 daily order syntax fallback')
     args = parser.parse_args()
     out = Path(args.output_dir)
     if out.exists():
@@ -143,13 +145,20 @@ def main():
     out.mkdir(parents=True)
     (out/'served-model-provenance.json').write_text(json.dumps(served,indent=2))
     sources = ['hybrid_agent.py','slow_path.py','revenue_metric.py','selective_gate.py','prompt_generator.py','intent_parser.py']
+    if args.daily_order_paraphrases:
+        sources.append('paraphrase_fast.py')
     run_config = {'dataset':args.dataset,'model':args.model,'endpoint':args.base_url,'reuse_run':args.reuse_run,'temperature':0,'seed':42,'max_tokens':1024,
+                  'daily_order_paraphrases':args.daily_order_paraphrases,
                   'training_data_sha256':data_hash,'split_sha256':hashlib.sha256(split_path.read_bytes()).hexdigest(),
                   'sources':{name:hashlib.sha256((Path('src/zaic_2026_datamate')/name).read_bytes()).hexdigest() for name in sources},
                   'scope':'Descriptive development diagnostics only; SFT-seen vs SFT-excluded, not untouched validation. Public correctness unknown.'}
     (out/'run-config.json').write_text(json.dumps(run_config,indent=2))
     client = RecordedClient(OpenAICompatibleClient(base_url=args.base_url,model=args.model),cached)
-    agent = HybridAgent(enable_slow_path=True,llm_client=client)
+    agent_class = HybridAgent
+    if args.daily_order_paraphrases:
+        from zaic_2026_datamate.paraphrase_fast import DailyOrderParaphraseAgent
+        agent_class = DailyOrderParaphraseAgent
+    agent = agent_class(enable_slow_path=True,llm_client=client)
     loader = DataLoader(root/'data',root/'calendar.csv')
     cases=[]; predictions={};fast_rows={}; started=time.monotonic()
     with (out/'trace.jsonl').open('w') as trace:
@@ -170,6 +179,7 @@ def main():
                               **prediction,'route':route,'reason':reason,'correct':correct,'target':target,
                               'eligible':route!='fast_path' and daily_revenue_date(q['question'],q.get('as_of_date')) is not None,
                               'sql':context.last_sql,'slow_sql_attempt':slow.last_sql_attempt,'slow_execution_succeeded':slow.last_execution_succeeded,
+                              'canonical_question':getattr(agent,'last_canonical_question',None),
                               'revenue_metric_check':asdict(slow.last_metric_check) if slow.last_metric_check else None,
                               'llm_calls':list(client.calls),'elapsed_seconds':time.monotonic()-t0}
                     cases.append(record)
@@ -195,7 +205,7 @@ def main():
         differences = compare_baseline(baseline,list(fast_rows.values()))
         (out/'fast-baseline-differences.json').write_text(json.dumps(differences,ensure_ascii=False,indent=2))
         report['fast_matches_v2_8'] = not differences
-        report['new_answer_ids'] = [r['id'] for r in cases if r['route']=='slow_path']
+        report['new_answer_ids'] = [r['id'] for r in cases if r['route'] in ('slow_path','paraphrase_fast_path')]
         report['candidate_created'] = False
         if not differences:
             write_submission(out/'submission.jsonl',[predictions[qid] for qid in expected],expected)

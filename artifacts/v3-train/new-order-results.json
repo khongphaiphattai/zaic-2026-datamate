@@ -1,0 +1,434 @@
+[
+  {
+    "id": "q_0cb7c9b93048",
+    "business_id": "biz_101",
+    "partition": "sft_excluded_6",
+    "question": "Cho tôi biết số đơn hôm qua.",
+    "canonical_question": "Ngày 23/09/2025 có bao nhiêu đơn hàng?",
+    "as_of_date": "2025-09-24",
+    "type": "number",
+    "answer": 37,
+    "target": {
+      "id": "q_0cb7c9b93048",
+      "type": "number",
+      "answer": 37,
+      "alias": []
+    },
+    "correct": true,
+    "sql": "SELECT COUNT(DISTINCT ma_hoa_don)\n            FROM ban_hang\n            WHERE strftime(TRY_CAST(ngay_thang AS DATE), '%Y-%m-%d') = '2025-09-23'\n              \n              AND (ma_hoa_don IS NULL OR ma_hoa_don NOT IN (SELECT ma_hoa_don FROM ban_hang WHERE ma_hoa_don IS NOT NULL AND (TRY_CAST(ket_qua AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%cancel%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%trả%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%return%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%hoàn hàng%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%hoan hang%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%hoàn trả%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%hoan tra%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%hàng trả%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%hang tra%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%đổi trả%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%doi tra%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%không giao%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%khong giao%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%thất bại%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%that bai%'))) AND (ket_qua IS NULL OR (TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%that bai%'))"
+  },
+  {
+    "id": "q_1af02cd5fe06",
+    "business_id": "biz_101",
+    "partition": "sft_excluded_6",
+    "question": "Cho tôi biết số đơn hqua",
+    "canonical_question": "Ngày 13/04/2026 có bao nhiêu đơn hàng?",
+    "as_of_date": "2026-04-14",
+    "type": "number",
+    "answer": 44,
+    "target": {
+      "id": "q_1af02cd5fe06",
+      "type": "number",
+      "answer": 44,
+      "alias": []
+    },
+    "correct": true,
+    "sql": "SELECT COUNT(DISTINCT ma_hoa_don)\n            FROM ban_hang\n            WHERE strftime(TRY_CAST(ngay_thang AS DATE), '%Y-%m-%d') = '2026-04-13'\n              \n              AND (ma_hoa_don IS NULL OR ma_hoa_don NOT IN (SELECT ma_hoa_don FROM ban_hang WHERE ma_hoa_don IS NOT NULL AND (TRY_CAST(ket_qua AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%cancel%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%trả%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%return%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%hoàn hàng%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%hoan hang%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%hoàn trả%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%hoan tra%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%hàng trả%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%hang tra%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%đổi trả%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%doi tra%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%không giao%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%khong giao%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%thất bại%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%that bai%'))) AND (ket_qua IS NULL OR (TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%that bai%'))"
+  },
+  {
+    "id": "q_b9aac187f651",
+    "business_id": "biz_101",
+    "partition": "sft_excluded_6",
+    "question": "cho tôi biết số đơn hqua",
+    "canonical_question": "Ngày 23/03/2026 có bao nhiêu đơn hàng?",
+    "as_of_date": "2026-03-24",
+    "type": "number",
+    "answer": 53,
+    "target": {
+      "id": "q_b9aac187f651",
+      "type": "number",
+      "answer": 53,
+      "alias": []
+    },
+    "correct": true,
+    "sql": "SELECT COUNT(DISTINCT ma_hoa_don)\n            FROM ban_hang\n            WHERE strftime(TRY_CAST(ngay_thang AS DATE), '%Y-%m-%d') = '2026-03-23'\n              \n              AND (ma_hoa_don IS NULL OR ma_hoa_don NOT IN (SELECT ma_hoa_don FROM ban_hang WHERE ma_hoa_don IS NOT NULL AND (TRY_CAST(ket_qua AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%cancel%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%trả%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%return%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%hoàn hàng%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%hoan hang%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%hoàn trả%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%hoan tra%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%hàng trả%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%hang tra%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%đổi trả%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%doi tra%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%không giao%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%khong giao%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%thất bại%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%that bai%'))) AND (ket_qua IS NULL OR (TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%that bai%'))"
+  },
+  {
+    "id": "q_b9ea84cf52bb",
+    "business_id": "biz_101",
+    "partition": "sft_excluded_6",
+    "question": "Cho tôi biết số đơn hqua.",
+    "canonical_question": "Ngày 24/09/2025 có bao nhiêu đơn hàng?",
+    "as_of_date": "2025-09-25",
+    "type": "number",
+    "answer": 52,
+    "target": {
+      "id": "q_b9ea84cf52bb",
+      "type": "number",
+      "answer": 52,
+      "alias": []
+    },
+    "correct": true,
+    "sql": "SELECT COUNT(DISTINCT ma_hoa_don)\n            FROM ban_hang\n            WHERE strftime(TRY_CAST(ngay_thang AS DATE), '%Y-%m-%d') = '2025-09-24'\n              \n              AND (ma_hoa_don IS NULL OR ma_hoa_don NOT IN (SELECT ma_hoa_don FROM ban_hang WHERE ma_hoa_don IS NOT NULL AND (TRY_CAST(ket_qua AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%cancel%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%trả%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%return%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%hoàn hàng%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%hoan hang%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%hoàn trả%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%hoan tra%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%hàng trả%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%hang tra%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%đổi trả%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%doi tra%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%không giao%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%khong giao%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%thất bại%' OR TRY_CAST(ket_qua AS VARCHAR) ILIKE '%that bai%'))) AND (ket_qua IS NULL OR (TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(ket_qua AS VARCHAR) NOT ILIKE '%that bai%'))"
+  },
+  {
+    "id": "q_5d99ee0b8553",
+    "business_id": "biz_102",
+    "partition": "sft_seen_24",
+    "question": "Số đơn hnay là bao nhiêu?",
+    "canonical_question": "Ngày 25/03/2025 có bao nhiêu đơn hàng?",
+    "as_of_date": "2025-03-25",
+    "type": "number",
+    "answer": 56,
+    "target": {
+      "id": "q_5d99ee0b8553",
+      "type": "number",
+      "answer": 56,
+      "alias": []
+    },
+    "correct": true,
+    "sql": "SELECT COUNT(DISTINCT ma_don_hang)\n            FROM don_hang_chi_tiet\n            WHERE strftime(TRY_CAST(ngay_dat_hang AS DATE), '%Y-%m-%d') = '2025-03-25'\n              \n              AND (ma_don_hang IS NULL OR ma_don_hang NOT IN (SELECT ma_don_hang FROM don_hang_chi_tiet WHERE ma_don_hang IS NOT NULL AND (TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%cancel%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%return%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoàn hàng%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoan hang%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoàn trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoan tra%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hàng trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hang tra%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%đổi trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%doi tra%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%không giao%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%khong giao%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%thất bại%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%that bai%'))) AND (trang_thai_don_hang IS NULL OR (TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%that bai%'))"
+  },
+  {
+    "id": "q_a48f818e0e97",
+    "business_id": "biz_102",
+    "partition": "sft_seen_24",
+    "question": "Cho mình biết số đơn hôm qua.",
+    "canonical_question": "Ngày 13/04/2025 có bao nhiêu đơn hàng?",
+    "as_of_date": "2025-04-14",
+    "type": "number",
+    "answer": 46,
+    "target": {
+      "id": "q_a48f818e0e97",
+      "type": "number",
+      "answer": 46,
+      "alias": []
+    },
+    "correct": true,
+    "sql": "SELECT COUNT(DISTINCT ma_don_hang)\n            FROM don_hang_chi_tiet\n            WHERE strftime(TRY_CAST(ngay_dat_hang AS DATE), '%Y-%m-%d') = '2025-04-13'\n              \n              AND (ma_don_hang IS NULL OR ma_don_hang NOT IN (SELECT ma_don_hang FROM don_hang_chi_tiet WHERE ma_don_hang IS NOT NULL AND (TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%cancel%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%return%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoàn hàng%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoan hang%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoàn trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoan tra%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hàng trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hang tra%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%đổi trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%doi tra%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%không giao%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%khong giao%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%thất bại%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%that bai%'))) AND (trang_thai_don_hang IS NULL OR (TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%that bai%'))"
+  },
+  {
+    "id": "q_c4f1e9a60a10",
+    "business_id": "biz_103",
+    "partition": "sft_excluded_6",
+    "question": "Số đơn hàng hqua là bao nhiêu",
+    "canonical_question": "Ngày 16/12/2025 có bao nhiêu đơn hàng?",
+    "as_of_date": "2025-12-17",
+    "type": "number",
+    "answer": 38,
+    "target": {
+      "id": "q_c4f1e9a60a10",
+      "type": "number",
+      "answer": 38,
+      "alias": []
+    },
+    "correct": true,
+    "sql": "SELECT COUNT(DISTINCT ma_don_hang)\n            FROM don_hang_chi_tiet\n            WHERE strftime(TRY_CAST(ngay_dat_hang AS DATE), '%Y-%m-%d') = '2025-12-16'\n              \n              AND (ma_don_hang IS NULL OR ma_don_hang NOT IN (SELECT ma_don_hang FROM don_hang_chi_tiet WHERE ma_don_hang IS NOT NULL AND (TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%cancel%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%return%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoàn hàng%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoan hang%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoàn trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoan tra%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hàng trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hang tra%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%đổi trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%doi tra%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%không giao%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%khong giao%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%thất bại%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%that bai%'))) AND (trang_thai_don_hang IS NULL OR (TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%that bai%'))"
+  },
+  {
+    "id": "q_159e84d3a61e",
+    "business_id": "biz_104",
+    "partition": "sft_seen_24",
+    "question": "số đơn hnay là bao nhiêu",
+    "canonical_question": "Ngày 15/10/2025 có bao nhiêu đơn hàng?",
+    "as_of_date": "2025-10-15",
+    "type": "number",
+    "answer": 57,
+    "target": {
+      "id": "q_159e84d3a61e",
+      "type": "number",
+      "answer": 57,
+      "alias": []
+    },
+    "correct": true,
+    "sql": "SELECT COUNT(DISTINCT ma_don_hang)\n            FROM don_hang_chi_tiet\n            WHERE strftime(TRY_CAST(ngay_dat_hang AS DATE), '%Y-%m-%d') = '2025-10-15'\n              \n              AND (ma_don_hang IS NULL OR ma_don_hang NOT IN (SELECT ma_don_hang FROM don_hang_chi_tiet WHERE ma_don_hang IS NOT NULL AND (TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%cancel%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%return%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoàn hàng%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoan hang%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoàn trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoan tra%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hàng trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hang tra%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%đổi trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%doi tra%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%không giao%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%khong giao%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%thất bại%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%that bai%'))) AND (trang_thai_don_hang IS NULL OR (TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%that bai%'))"
+  },
+  {
+    "id": "q_54a0ebc48c6a",
+    "business_id": "biz_104",
+    "partition": "sft_seen_24",
+    "question": "Số đơn hàng hnay là bao nhiêu?",
+    "canonical_question": "Ngày 29/01/2026 có bao nhiêu đơn hàng?",
+    "as_of_date": "2026-01-29",
+    "type": "number",
+    "answer": 96,
+    "target": {
+      "id": "q_54a0ebc48c6a",
+      "type": "number",
+      "answer": 96,
+      "alias": []
+    },
+    "correct": true,
+    "sql": "SELECT COUNT(DISTINCT ma_don_hang)\n            FROM don_hang_chi_tiet\n            WHERE strftime(TRY_CAST(ngay_dat_hang AS DATE), '%Y-%m-%d') = '2026-01-29'\n              \n              AND (ma_don_hang IS NULL OR ma_don_hang NOT IN (SELECT ma_don_hang FROM don_hang_chi_tiet WHERE ma_don_hang IS NOT NULL AND (TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%cancel%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%return%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoàn hàng%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoan hang%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoàn trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoan tra%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hàng trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hang tra%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%đổi trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%doi tra%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%không giao%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%khong giao%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%thất bại%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%that bai%'))) AND (trang_thai_don_hang IS NULL OR (TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%that bai%'))"
+  },
+  {
+    "id": "q_5781f219101c",
+    "business_id": "biz_104",
+    "partition": "sft_seen_24",
+    "question": "cho tôi biết số đơn hqua",
+    "canonical_question": "Ngày 28/01/2026 có bao nhiêu đơn hàng?",
+    "as_of_date": "2026-01-29",
+    "type": "number",
+    "answer": 81,
+    "target": {
+      "id": "q_5781f219101c",
+      "type": "number",
+      "answer": 81,
+      "alias": []
+    },
+    "correct": true,
+    "sql": "SELECT COUNT(DISTINCT ma_don_hang)\n            FROM don_hang_chi_tiet\n            WHERE strftime(TRY_CAST(ngay_dat_hang AS DATE), '%Y-%m-%d') = '2026-01-28'\n              \n              AND (ma_don_hang IS NULL OR ma_don_hang NOT IN (SELECT ma_don_hang FROM don_hang_chi_tiet WHERE ma_don_hang IS NOT NULL AND (TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%cancel%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%return%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoàn hàng%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoan hang%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoàn trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoan tra%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hàng trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hang tra%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%đổi trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%doi tra%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%không giao%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%khong giao%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%thất bại%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%that bai%'))) AND (trang_thai_don_hang IS NULL OR (TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%that bai%'))"
+  },
+  {
+    "id": "q_da9d95857b32",
+    "business_id": "biz_104",
+    "partition": "sft_seen_24",
+    "question": "Số đơn hàng hôm nay là bao nhiêu?",
+    "canonical_question": "Ngày 26/07/2025 có bao nhiêu đơn hàng?",
+    "as_of_date": "2025-07-26",
+    "type": "number",
+    "answer": 130,
+    "target": {
+      "id": "q_da9d95857b32",
+      "type": "number",
+      "answer": 130,
+      "alias": []
+    },
+    "correct": true,
+    "sql": "SELECT COUNT(DISTINCT ma_don_hang)\n            FROM don_hang_chi_tiet\n            WHERE strftime(TRY_CAST(ngay_dat_hang AS DATE), '%Y-%m-%d') = '2025-07-26'\n              \n              AND (ma_don_hang IS NULL OR ma_don_hang NOT IN (SELECT ma_don_hang FROM don_hang_chi_tiet WHERE ma_don_hang IS NOT NULL AND (TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%cancel%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%return%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoàn hàng%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoan hang%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoàn trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoan tra%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hàng trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hang tra%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%đổi trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%doi tra%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%không giao%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%khong giao%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%thất bại%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%that bai%'))) AND (trang_thai_don_hang IS NULL OR (TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%that bai%'))"
+  },
+  {
+    "id": "q_3790a635bd18",
+    "business_id": "biz_110",
+    "partition": "sft_excluded_6",
+    "question": "Cho tôi biết số đơn hqua.",
+    "canonical_question": "Ngày 09/02/2026 có bao nhiêu đơn hàng?",
+    "as_of_date": "2026-02-10",
+    "type": "number",
+    "answer": 63,
+    "target": {
+      "id": "q_3790a635bd18",
+      "type": "number",
+      "answer": 63,
+      "alias": []
+    },
+    "correct": true,
+    "sql": "SELECT COUNT(DISTINCT ma_bill)\n            FROM danh_sach_hoa_don\n            WHERE strftime(TRY_CAST(ngay_giao_dich AS DATE), '%Y-%m-%d') = '2026-02-09'\n              \n              AND (ma_bill IS NULL OR ma_bill NOT IN (SELECT ma_bill FROM danh_sach_hoa_don WHERE ma_bill IS NOT NULL AND (TRY_CAST(status AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(status AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(status AS VARCHAR) ILIKE '%cancel%' OR TRY_CAST(status AS VARCHAR) ILIKE '%trả%' OR TRY_CAST(status AS VARCHAR) ILIKE '%return%' OR TRY_CAST(status AS VARCHAR) ILIKE '%hoàn hàng%' OR TRY_CAST(status AS VARCHAR) ILIKE '%hoan hang%' OR TRY_CAST(status AS VARCHAR) ILIKE '%hoàn trả%' OR TRY_CAST(status AS VARCHAR) ILIKE '%hoan tra%' OR TRY_CAST(status AS VARCHAR) ILIKE '%hàng trả%' OR TRY_CAST(status AS VARCHAR) ILIKE '%hang tra%' OR TRY_CAST(status AS VARCHAR) ILIKE '%đổi trả%' OR TRY_CAST(status AS VARCHAR) ILIKE '%doi tra%' OR TRY_CAST(status AS VARCHAR) ILIKE '%không giao%' OR TRY_CAST(status AS VARCHAR) ILIKE '%khong giao%' OR TRY_CAST(status AS VARCHAR) ILIKE '%thất bại%' OR TRY_CAST(status AS VARCHAR) ILIKE '%that bai%'))) AND (status IS NULL OR (TRY_CAST(status AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(status AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(status AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(status AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(status AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(status AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(status AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(status AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(status AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(status AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(status AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(status AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(status AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(status AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(status AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(status AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(status AS VARCHAR) NOT ILIKE '%that bai%'))"
+  },
+  {
+    "id": "q_19ca0034af55",
+    "business_id": "biz_111",
+    "partition": "sft_seen_24",
+    "question": "Số đơn hnay là bao nhiêu",
+    "canonical_question": "Ngày 04/10/2025 có bao nhiêu đơn hàng?",
+    "as_of_date": "2025-10-04",
+    "type": "number",
+    "answer": 125,
+    "target": {
+      "id": "q_19ca0034af55",
+      "type": "number",
+      "answer": 125,
+      "alias": []
+    },
+    "correct": true,
+    "sql": "SELECT COUNT(DISTINCT ma_chung_tu)\n            FROM don_hang\n            WHERE strftime(TRY_CAST(ngay_ban AS DATE), '%Y-%m-%d') = '2025-10-04'\n              \n              AND (ma_chung_tu IS NULL OR ma_chung_tu NOT IN (SELECT ma_chung_tu FROM don_hang WHERE ma_chung_tu IS NOT NULL AND (TRY_CAST(xu_ly AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(xu_ly AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(xu_ly AS VARCHAR) ILIKE '%cancel%' OR TRY_CAST(xu_ly AS VARCHAR) ILIKE '%trả%' OR TRY_CAST(xu_ly AS VARCHAR) ILIKE '%return%' OR TRY_CAST(xu_ly AS VARCHAR) ILIKE '%hoàn hàng%' OR TRY_CAST(xu_ly AS VARCHAR) ILIKE '%hoan hang%' OR TRY_CAST(xu_ly AS VARCHAR) ILIKE '%hoàn trả%' OR TRY_CAST(xu_ly AS VARCHAR) ILIKE '%hoan tra%' OR TRY_CAST(xu_ly AS VARCHAR) ILIKE '%hàng trả%' OR TRY_CAST(xu_ly AS VARCHAR) ILIKE '%hang tra%' OR TRY_CAST(xu_ly AS VARCHAR) ILIKE '%đổi trả%' OR TRY_CAST(xu_ly AS VARCHAR) ILIKE '%doi tra%' OR TRY_CAST(xu_ly AS VARCHAR) ILIKE '%không giao%' OR TRY_CAST(xu_ly AS VARCHAR) ILIKE '%khong giao%' OR TRY_CAST(xu_ly AS VARCHAR) ILIKE '%thất bại%' OR TRY_CAST(xu_ly AS VARCHAR) ILIKE '%that bai%'))) AND (xu_ly IS NULL OR (TRY_CAST(xu_ly AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(xu_ly AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(xu_ly AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(xu_ly AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(xu_ly AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(xu_ly AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(xu_ly AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(xu_ly AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(xu_ly AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(xu_ly AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(xu_ly AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(xu_ly AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(xu_ly AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(xu_ly AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(xu_ly AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(xu_ly AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(xu_ly AS VARCHAR) NOT ILIKE '%that bai%'))"
+  },
+  {
+    "id": "q_57589d5f98b1",
+    "business_id": "biz_114",
+    "partition": "sft_seen_24",
+    "question": "Cho tôi biết số đơn hôm qua.",
+    "canonical_question": "Ngày 08/06/2025 có bao nhiêu đơn hàng?",
+    "as_of_date": "2025-06-09",
+    "type": "number",
+    "answer": 11,
+    "target": {
+      "id": "q_57589d5f98b1",
+      "type": "number",
+      "answer": 11,
+      "alias": []
+    },
+    "correct": true,
+    "sql": "SELECT COUNT(DISTINCT ma_gd)\n            FROM ban_hang\n            WHERE strftime(TRY_CAST(ngay AS DATE), '%Y-%m-%d') = '2025-06-08'\n              \n              AND (ma_gd IS NULL OR ma_gd NOT IN (SELECT ma_gd FROM ban_hang WHERE ma_gd IS NOT NULL AND (TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%cancel%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%return%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoàn hàng%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoan hang%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoàn trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoan tra%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hàng trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hang tra%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%đổi trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%doi tra%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%không giao%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%khong giao%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%thất bại%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%that bai%'))) AND (trang_thai IS NULL OR (TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%that bai%'))"
+  },
+  {
+    "id": "q_653d87082ae4",
+    "business_id": "biz_114",
+    "partition": "sft_seen_24",
+    "question": "Số đơn hàng hnay là bao nhiêu?",
+    "canonical_question": "Ngày 23/08/2025 có bao nhiêu đơn hàng?",
+    "as_of_date": "2025-08-23",
+    "type": "number",
+    "answer": 27,
+    "target": {
+      "id": "q_653d87082ae4",
+      "type": "number",
+      "answer": 27,
+      "alias": []
+    },
+    "correct": true,
+    "sql": "SELECT COUNT(DISTINCT ma_gd)\n            FROM ban_hang\n            WHERE strftime(TRY_CAST(ngay AS DATE), '%Y-%m-%d') = '2025-08-23'\n              \n              AND (ma_gd IS NULL OR ma_gd NOT IN (SELECT ma_gd FROM ban_hang WHERE ma_gd IS NOT NULL AND (TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%cancel%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%return%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoàn hàng%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoan hang%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoàn trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoan tra%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hàng trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hang tra%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%đổi trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%doi tra%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%không giao%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%khong giao%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%thất bại%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%that bai%'))) AND (trang_thai IS NULL OR (TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%that bai%'))"
+  },
+  {
+    "id": "q_7d460ecdd402",
+    "business_id": "biz_115",
+    "partition": "sft_seen_24",
+    "question": "Cho mình hỏi số đơn hàng hôm qua là bao nhiêu?",
+    "canonical_question": "Ngày 12/01/2026 có bao nhiêu đơn hàng?",
+    "as_of_date": "2026-01-13",
+    "type": "number",
+    "answer": 32,
+    "target": {
+      "id": "q_7d460ecdd402",
+      "type": "number",
+      "answer": 32,
+      "alias": []
+    },
+    "correct": true,
+    "sql": "SELECT COUNT(DISTINCT ma_don_hang)\n            FROM so_chi_tiet_ban_hang\n            WHERE strftime(TRY_CAST(ngay AS DATE), '%Y-%m-%d') = '2026-01-12'\n              \n              AND (ma_don_hang IS NULL OR ma_don_hang NOT IN (SELECT ma_don_hang FROM so_chi_tiet_ban_hang WHERE ma_don_hang IS NOT NULL AND (TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%cancel%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%return%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoàn hàng%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoan hang%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoàn trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoan tra%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hàng trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hang tra%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%đổi trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%doi tra%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%không giao%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%khong giao%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%thất bại%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%that bai%'))) AND (trang_thai IS NULL OR (TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%that bai%'))"
+  },
+  {
+    "id": "q_ab53ef991019",
+    "business_id": "biz_115",
+    "partition": "sft_seen_24",
+    "question": "Số đơn hàng hôm nay là bao nhiêu?",
+    "canonical_question": "Ngày 24/01/2026 có bao nhiêu đơn hàng?",
+    "as_of_date": "2026-01-24",
+    "type": "number",
+    "answer": 28,
+    "target": {
+      "id": "q_ab53ef991019",
+      "type": "number",
+      "answer": 28,
+      "alias": []
+    },
+    "correct": true,
+    "sql": "SELECT COUNT(DISTINCT ma_don_hang)\n            FROM so_chi_tiet_ban_hang\n            WHERE strftime(TRY_CAST(ngay AS DATE), '%Y-%m-%d') = '2026-01-24'\n              \n              AND (ma_don_hang IS NULL OR ma_don_hang NOT IN (SELECT ma_don_hang FROM so_chi_tiet_ban_hang WHERE ma_don_hang IS NOT NULL AND (TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%cancel%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%return%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoàn hàng%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoan hang%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoàn trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoan tra%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hàng trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hang tra%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%đổi trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%doi tra%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%không giao%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%khong giao%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%thất bại%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%that bai%'))) AND (trang_thai IS NULL OR (TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%that bai%'))"
+  },
+  {
+    "id": "q_40c60df4f99d",
+    "business_id": "biz_116",
+    "partition": "sft_seen_24",
+    "question": "Cho mình biết số đơn hôm qua.",
+    "canonical_question": "Ngày 02/08/2026 có bao nhiêu đơn hàng?",
+    "as_of_date": "2026-08-03",
+    "type": "number",
+    "answer": 29,
+    "target": {
+      "id": "q_40c60df4f99d",
+      "type": "number",
+      "answer": 29,
+      "alias": []
+    },
+    "correct": true,
+    "sql": "SELECT COUNT(DISTINCT ma_don_hang)\n            FROM bao_cao_ban_hang_so_chi_tiet_ban_hang\n            WHERE strftime(TRY_CAST(ngay AS DATE), '%Y-%m-%d') = '2026-08-02'\n              \n              AND (ma_don_hang IS NULL OR ma_don_hang NOT IN (SELECT ma_don_hang FROM bao_cao_ban_hang_so_chi_tiet_ban_hang WHERE ma_don_hang IS NOT NULL AND (TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%cancel%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%return%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoàn hàng%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoan hang%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoàn trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoan tra%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hàng trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hang tra%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%đổi trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%doi tra%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%không giao%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%khong giao%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%thất bại%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%that bai%'))) AND (trang_thai IS NULL OR (TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%that bai%'))"
+  },
+  {
+    "id": "q_6639dbf30814",
+    "business_id": "biz_128",
+    "partition": "sft_seen_24",
+    "question": "cho tôi biết số đơn hôm qua",
+    "canonical_question": "Ngày 21/01/2026 có bao nhiêu đơn hàng?",
+    "as_of_date": "2026-01-22",
+    "type": "number",
+    "answer": 54,
+    "target": {
+      "id": "q_6639dbf30814",
+      "type": "number",
+      "answer": 54,
+      "alias": []
+    },
+    "correct": true,
+    "sql": "SELECT COUNT(DISTINCT ma_hoa_don)\n            FROM danh_sach_hoa_don\n            WHERE strftime(TRY_CAST(thoi_gian_tao AS DATE), '%Y-%m-%d') = '2026-01-21'\n              \n              AND (ma_hoa_don IS NULL OR ma_hoa_don NOT IN (SELECT ma_hoa_don FROM danh_sach_hoa_don WHERE ma_hoa_don IS NOT NULL AND (TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%cancel%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%return%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoàn hàng%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoan hang%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoàn trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoan tra%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hàng trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hang tra%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%đổi trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%doi tra%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%không giao%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%khong giao%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%thất bại%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%that bai%'))) AND (trang_thai IS NULL OR (TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%that bai%'))"
+  },
+  {
+    "id": "q_6ba2569c233f",
+    "business_id": "biz_128",
+    "partition": "sft_seen_24",
+    "question": "Số đơn hôm nay là bao nhiêu?",
+    "canonical_question": "Ngày 22/06/2026 có bao nhiêu đơn hàng?",
+    "as_of_date": "2026-06-22",
+    "type": "number",
+    "answer": 58,
+    "target": {
+      "id": "q_6ba2569c233f",
+      "type": "number",
+      "answer": 58,
+      "alias": []
+    },
+    "correct": true,
+    "sql": "SELECT COUNT(DISTINCT ma_hoa_don)\n            FROM danh_sach_hoa_don\n            WHERE strftime(TRY_CAST(thoi_gian_tao AS DATE), '%Y-%m-%d') = '2026-06-22'\n              \n              AND (ma_hoa_don IS NULL OR ma_hoa_don NOT IN (SELECT ma_hoa_don FROM danh_sach_hoa_don WHERE ma_hoa_don IS NOT NULL AND (TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%cancel%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%return%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoàn hàng%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoan hang%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoàn trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoan tra%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hàng trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hang tra%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%đổi trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%doi tra%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%không giao%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%khong giao%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%thất bại%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%that bai%'))) AND (trang_thai IS NULL OR (TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%that bai%'))"
+  },
+  {
+    "id": "q_94cb5e6611ed",
+    "business_id": "biz_128",
+    "partition": "sft_seen_24",
+    "question": "Số đơn hàng hôm nay là bao nhiêu ạ?",
+    "canonical_question": "Ngày 18/07/2025 có bao nhiêu đơn hàng?",
+    "as_of_date": "2025-07-18",
+    "type": "number",
+    "answer": 49,
+    "target": {
+      "id": "q_94cb5e6611ed",
+      "type": "number",
+      "answer": 49,
+      "alias": []
+    },
+    "correct": true,
+    "sql": "SELECT COUNT(DISTINCT ma_hoa_don)\n            FROM danh_sach_hoa_don\n            WHERE strftime(TRY_CAST(thoi_gian_tao AS DATE), '%Y-%m-%d') = '2025-07-18'\n              \n              AND (ma_hoa_don IS NULL OR ma_hoa_don NOT IN (SELECT ma_hoa_don FROM danh_sach_hoa_don WHERE ma_hoa_don IS NOT NULL AND (TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%cancel%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%return%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoàn hàng%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoan hang%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoàn trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoan tra%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hàng trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hang tra%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%đổi trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%doi tra%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%không giao%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%khong giao%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%thất bại%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%that bai%'))) AND (trang_thai IS NULL OR (TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%that bai%'))"
+  },
+  {
+    "id": "q_113fb704f84d",
+    "business_id": "biz_129",
+    "partition": "sft_seen_24",
+    "question": "Số đơn hôm qua là bao nhiêu",
+    "canonical_question": "Ngày 24/04/2025 có bao nhiêu đơn hàng?",
+    "as_of_date": "2025-04-25",
+    "type": "number",
+    "answer": 65,
+    "target": {
+      "id": "q_113fb704f84d",
+      "type": "number",
+      "answer": 65,
+      "alias": []
+    },
+    "correct": true,
+    "sql": "SELECT COUNT(DISTINCT so_phieu)\n            FROM don_hang\n            WHERE strftime(TRY_CAST(ngay_ban AS DATE), '%Y-%m-%d') = '2025-04-24'\n              \n              AND (so_phieu IS NULL OR so_phieu NOT IN (SELECT so_phieu FROM don_hang WHERE so_phieu IS NOT NULL AND (TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%cancel%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%trả%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%return%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%hoàn hàng%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%hoan hang%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%hoàn trả%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%hoan tra%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%hàng trả%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%hang tra%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%đổi trả%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%doi tra%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%không giao%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%khong giao%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%thất bại%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%that bai%'))) AND (tinh_trang_don IS NULL OR (TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%that bai%'))"
+  },
+  {
+    "id": "q_7a0a2623efab",
+    "business_id": "biz_129",
+    "partition": "sft_seen_24",
+    "question": "Cho tôi biết số đơn hôm qua.",
+    "canonical_question": "Ngày 24/12/2025 có bao nhiêu đơn hàng?",
+    "as_of_date": "2025-12-25",
+    "type": "number",
+    "answer": 55,
+    "target": {
+      "id": "q_7a0a2623efab",
+      "type": "number",
+      "answer": 55,
+      "alias": []
+    },
+    "correct": true,
+    "sql": "SELECT COUNT(DISTINCT so_phieu)\n            FROM don_hang\n            WHERE strftime(TRY_CAST(ngay_ban AS DATE), '%Y-%m-%d') = '2025-12-24'\n              \n              AND (so_phieu IS NULL OR so_phieu NOT IN (SELECT so_phieu FROM don_hang WHERE so_phieu IS NOT NULL AND (TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%cancel%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%trả%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%return%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%hoàn hàng%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%hoan hang%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%hoàn trả%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%hoan tra%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%hàng trả%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%hang tra%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%đổi trả%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%doi tra%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%không giao%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%khong giao%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%thất bại%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%that bai%'))) AND (tinh_trang_don IS NULL OR (TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%that bai%'))"
+  },
+  {
+    "id": "q_88a224ef1656",
+    "business_id": "biz_129",
+    "partition": "sft_seen_24",
+    "question": "số đơn hàng hnay là bao nhiêu",
+    "canonical_question": "Ngày 20/02/2025 có bao nhiêu đơn hàng?",
+    "as_of_date": "2025-02-20",
+    "type": "number",
+    "answer": 71,
+    "target": {
+      "id": "q_88a224ef1656",
+      "type": "number",
+      "answer": 71,
+      "alias": []
+    },
+    "correct": true,
+    "sql": "SELECT COUNT(DISTINCT so_phieu)\n            FROM don_hang\n            WHERE strftime(TRY_CAST(ngay_ban AS DATE), '%Y-%m-%d') = '2025-02-20'\n              \n              AND (so_phieu IS NULL OR so_phieu NOT IN (SELECT so_phieu FROM don_hang WHERE so_phieu IS NOT NULL AND (TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%cancel%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%trả%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%return%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%hoàn hàng%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%hoan hang%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%hoàn trả%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%hoan tra%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%hàng trả%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%hang tra%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%đổi trả%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%doi tra%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%không giao%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%khong giao%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%thất bại%' OR TRY_CAST(tinh_trang_don AS VARCHAR) ILIKE '%that bai%'))) AND (tinh_trang_don IS NULL OR (TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(tinh_trang_don AS VARCHAR) NOT ILIKE '%that bai%'))"
+  }
+]

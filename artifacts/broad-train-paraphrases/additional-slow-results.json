@@ -1,0 +1,260 @@
+[
+  {
+    "id": "q_1f8c7dce062c",
+    "business_id": "biz_102",
+    "partition": "sft_seen_24",
+    "question": "Tổng doanh thu trong ngày hôm nay là bao nhiêu nhỉ?",
+    "as_of_date": "2025-02-24",
+    "type": "number",
+    "answer": 9078100,
+    "route": "slow_path",
+    "reason": null,
+    "correct": true,
+    "target": {
+      "id": "q_1f8c7dce062c",
+      "type": "number",
+      "answer": 9078100,
+      "alias": []
+    },
+    "eligible": true,
+    "sql": "SELECT ROUND(SUM(tong_tien))\n                FROM don_hang_chi_tiet\n                WHERE strftime(TRY_CAST(ngay_dat_hang AS DATE), '%Y-%m-%d') = '2025-02-24'\n                  \n                  AND (ma_don_hang IS NULL OR ma_don_hang NOT IN (SELECT ma_don_hang FROM don_hang_chi_tiet WHERE ma_don_hang IS NOT NULL AND (TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%cancel%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%return%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoàn hàng%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoan hang%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoàn trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoan tra%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hàng trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hang tra%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%đổi trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%doi tra%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%không giao%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%khong giao%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%thất bại%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%that bai%'))) AND (trang_thai_don_hang IS NULL OR (TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%that bai%'))",
+    "slow_sql_attempt": "SELECT ROUND(SUM(tong_tien))\n                FROM don_hang_chi_tiet\n                WHERE strftime(TRY_CAST(ngay_dat_hang AS DATE), '%Y-%m-%d') = '2025-02-24'\n                  \n                  AND (ma_don_hang IS NULL OR ma_don_hang NOT IN (SELECT ma_don_hang FROM don_hang_chi_tiet WHERE ma_don_hang IS NOT NULL AND (TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%cancel%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%return%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoàn hàng%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoan hang%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoàn trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoan tra%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hàng trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hang tra%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%đổi trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%doi tra%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%không giao%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%khong giao%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%thất bại%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%that bai%'))) AND (trang_thai_don_hang IS NULL OR (TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%that bai%'))",
+    "slow_execution_succeeded": true,
+    "revenue_metric_check": {
+      "allowed": true,
+      "reason": "Revenue column matches scoped README evidence",
+      "table": "don_hang_chi_tiet",
+      "column": "tong_tien",
+      "evidence": [
+        "thanh tien sau giam"
+      ],
+      "coverage": "partial",
+      "residual_unknowns": [
+        "row filters, date anchor, status semantics and table selection are not verified"
+      ]
+    },
+    "llm_calls": [
+      {
+        "prompt_sha256": "828591fb2250b7f5a070059cd5a61291eeb9ee7d2251155b8795c99e685960a1",
+        "from_cache": false,
+        "response": "{\"thought\": \"Truy vấn DuckDB tính number cho biz_102\", \"type\": \"number\", \"sql\": \"SELECT ROUND(SUM(tong_tien))\\n                FROM don_hang_chi_tiet\\n                WHERE strftime(TRY_CAST(ngay_dat_hang AS DATE), '%Y-%m-%d') = '2025-02-24'\\n                  \\n                  AND (ma_don_hang IS NULL OR ma_don_hang NOT IN (SELECT ma_don_hang FROM don_hang_chi_tiet WHERE ma_don_hang IS NOT NULL AND (TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%cancel%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%return%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoàn hàng%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoan hang%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoàn trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hoan tra%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hàng trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%hang tra%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%đổi trả%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%doi tra%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%không giao%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%khong giao%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%thất bại%' OR TRY_CAST(trang_thai_don_hang AS VARCHAR) ILIKE '%that bai%'))) AND (trang_thai_don_hang IS NULL OR (TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(trang_thai_don_hang AS VARCHAR) NOT ILIKE '%that bai%'))\", \"confidence\": 0.98}"
+      }
+    ],
+    "elapsed_seconds": 26.396398555999895
+  },
+  {
+    "id": "q_c1c2d4383a19",
+    "business_id": "biz_107",
+    "partition": "sft_seen_24",
+    "question": "hôm nay cuwar hangf bán đươc bao nhiu tiền z",
+    "as_of_date": "2025-12-28",
+    "type": "number",
+    "answer": 4152200,
+    "route": "slow_path",
+    "reason": null,
+    "correct": true,
+    "target": {
+      "id": "q_c1c2d4383a19",
+      "type": "number",
+      "answer": 4152200,
+      "alias": []
+    },
+    "eligible": true,
+    "sql": "SELECT ROUND(SUM(tong_tien))\n                FROM so_ban_hang\n                WHERE strftime(TRY_CAST(ngay_ban AS DATE), '%Y-%m-%d') = '2025-12-28'\n                  \n                  AND (trang_thai_xu_ly IS NULL OR (TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%that bai%'))",
+    "slow_sql_attempt": "SELECT ROUND(SUM(tong_tien))\n                FROM so_ban_hang\n                WHERE strftime(TRY_CAST(ngay_ban AS DATE), '%Y-%m-%d') = '2025-12-28'\n                  \n                  AND (trang_thai_xu_ly IS NULL OR (TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%that bai%'))",
+    "slow_execution_succeeded": true,
+    "revenue_metric_check": {
+      "allowed": true,
+      "reason": "Revenue column matches scoped README evidence",
+      "table": "so_ban_hang",
+      "column": "tong_tien",
+      "evidence": [
+        "thanh tien sau giam"
+      ],
+      "coverage": "partial",
+      "residual_unknowns": [
+        "row filters, date anchor, status semantics and table selection are not verified"
+      ]
+    },
+    "llm_calls": [
+      {
+        "prompt_sha256": "8cb33697cca4266c2181594f00c81db4590b16d05c7f1f1391b89085540d0cad",
+        "from_cache": false,
+        "response": "{\"thought\": \"Truy vấn DuckDB tính number cho biz_107\", \"type\": \"number\", \"sql\": \"SELECT ROUND(SUM(tong_tien))\\n                FROM so_ban_hang\\n                WHERE strftime(TRY_CAST(ngay_ban AS DATE), '%Y-%m-%d') = '2025-12-28'\\n                  \\n                  AND (trang_thai_xu_ly IS NULL OR (TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%that bai%'))\", \"confidence\": 0.98}"
+      }
+    ],
+    "elapsed_seconds": 14.898672996999949
+  },
+  {
+    "id": "q_9e6051c0fdfd",
+    "business_id": "biz_113",
+    "partition": "sft_seen_24",
+    "question": "tổng doanh thu trong ngày hôm nay là nhiêu",
+    "as_of_date": "2026-01-29",
+    "type": "number",
+    "answer": 26905700,
+    "route": "slow_path",
+    "reason": null,
+    "correct": true,
+    "target": {
+      "id": "q_9e6051c0fdfd",
+      "type": "number",
+      "answer": 26905700,
+      "alias": []
+    },
+    "eligible": true,
+    "sql": "SELECT ROUND(SUM(thanh_tien))\n                FROM so_ban_hang\n                WHERE strftime(TRY_CAST(ngay_mua AS DATE), '%Y-%m-%d') = '2026-01-29'\n                  \n                  AND (ghi_chu_tt IS NULL OR (TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%that bai%'))",
+    "slow_sql_attempt": "SELECT ROUND(SUM(thanh_tien))\n                FROM so_ban_hang\n                WHERE strftime(TRY_CAST(ngay_mua AS DATE), '%Y-%m-%d') = '2026-01-29'\n                  \n                  AND (ghi_chu_tt IS NULL OR (TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%that bai%'))",
+    "slow_execution_succeeded": true,
+    "revenue_metric_check": {
+      "allowed": true,
+      "reason": "Revenue column matches scoped README evidence",
+      "table": "so_ban_hang",
+      "column": "thanh_tien",
+      "evidence": [
+        "thanh tien sau giam"
+      ],
+      "coverage": "partial",
+      "residual_unknowns": [
+        "row filters, date anchor, status semantics and table selection are not verified"
+      ]
+    },
+    "llm_calls": [
+      {
+        "prompt_sha256": "408440dcca1b82a215b2a252ce70152eb589a9694ede48f3bb20dacd62759dbe",
+        "from_cache": false,
+        "response": "{\"thought\": \"Truy vấn DuckDB tính number cho biz_113\", \"type\": \"number\", \"sql\": \"SELECT ROUND(SUM(thanh_tien))\\n                FROM so_ban_hang\\n                WHERE strftime(TRY_CAST(ngay_mua AS DATE), '%Y-%m-%d') = '2026-01-29'\\n                  \\n                  AND (ghi_chu_tt IS NULL OR (TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(ghi_chu_tt AS VARCHAR) NOT ILIKE '%that bai%'))\", \"confidence\": 0.98}"
+      }
+    ],
+    "elapsed_seconds": 13.364442597999869
+  },
+  {
+    "id": "q_1bab154ec708",
+    "business_id": "biz_115",
+    "partition": "sft_seen_24",
+    "question": "hnay cua hang ban dc bao nhiu tien vay",
+    "as_of_date": "2025-05-14",
+    "type": "number",
+    "answer": 25120700,
+    "route": "slow_path",
+    "reason": null,
+    "correct": true,
+    "target": {
+      "id": "q_1bab154ec708",
+      "type": "number",
+      "answer": 25120700,
+      "alias": []
+    },
+    "eligible": true,
+    "sql": "SELECT ROUND(SUM(thanh_tien))\n                FROM so_chi_tiet_ban_hang\n                WHERE strftime(TRY_CAST(ngay AS DATE), '%Y-%m-%d') = '2025-05-14'\n                  \n                  AND (ma_don_hang IS NULL OR ma_don_hang NOT IN (SELECT ma_don_hang FROM so_chi_tiet_ban_hang WHERE ma_don_hang IS NOT NULL AND (TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%cancel%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%return%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoàn hàng%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoan hang%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoàn trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoan tra%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hàng trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hang tra%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%đổi trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%doi tra%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%không giao%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%khong giao%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%thất bại%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%that bai%'))) AND (trang_thai IS NULL OR (TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%that bai%'))",
+    "slow_sql_attempt": "SELECT ROUND(SUM(thanh_tien))\n                FROM so_chi_tiet_ban_hang\n                WHERE strftime(TRY_CAST(ngay AS DATE), '%Y-%m-%d') = '2025-05-14'\n                  \n                  AND (ma_don_hang IS NULL OR ma_don_hang NOT IN (SELECT ma_don_hang FROM so_chi_tiet_ban_hang WHERE ma_don_hang IS NOT NULL AND (TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%cancel%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%return%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoàn hàng%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoan hang%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoàn trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoan tra%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hàng trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hang tra%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%đổi trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%doi tra%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%không giao%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%khong giao%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%thất bại%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%that bai%'))) AND (trang_thai IS NULL OR (TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%that bai%'))",
+    "slow_execution_succeeded": true,
+    "revenue_metric_check": {
+      "allowed": true,
+      "reason": "Revenue column matches scoped README evidence",
+      "table": "so_chi_tiet_ban_hang",
+      "column": "thanh_tien",
+      "evidence": [
+        "thanh tien sau giam"
+      ],
+      "coverage": "partial",
+      "residual_unknowns": [
+        "row filters, date anchor, status semantics and table selection are not verified"
+      ]
+    },
+    "llm_calls": [
+      {
+        "prompt_sha256": "58987cccadfac42b242472680c313ca3a171c2cd22c3bdcb33bc461f4c9b378e",
+        "from_cache": false,
+        "response": "{\"thought\": \"Truy vấn DuckDB tính number cho biz_115\", \"type\": \"number\", \"sql\": \"SELECT ROUND(SUM(thanh_tien))\\n                FROM so_chi_tiet_ban_hang\\n                WHERE strftime(TRY_CAST(ngay AS DATE), '%Y-%m-%d') = '2025-05-14'\\n                  \\n                  AND (ma_don_hang IS NULL OR ma_don_hang NOT IN (SELECT ma_don_hang FROM so_chi_tiet_ban_hang WHERE ma_don_hang IS NOT NULL AND (TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%cancel%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%return%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoàn hàng%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoan hang%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoàn trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hoan tra%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hàng trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%hang tra%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%đổi trả%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%doi tra%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%không giao%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%khong giao%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%thất bại%' OR TRY_CAST(trang_thai AS VARCHAR) ILIKE '%that bai%'))) AND (trang_thai IS NULL OR (TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(trang_thai AS VARCHAR) NOT ILIKE '%that bai%'))\", \"confidence\": 0.98}"
+      }
+    ],
+    "elapsed_seconds": 24.233331799000098
+  },
+  {
+    "id": "q_afbb2701fb2e",
+    "business_id": "biz_125",
+    "partition": "sft_excluded_6",
+    "question": "hom qua cua hang ban dc bnhiu tien",
+    "as_of_date": "2026-01-18",
+    "type": "number",
+    "answer": 28230000,
+    "route": "slow_path",
+    "reason": null,
+    "correct": true,
+    "target": {
+      "id": "q_afbb2701fb2e",
+      "type": "number",
+      "answer": 28230000,
+      "alias": []
+    },
+    "eligible": true,
+    "sql": "SELECT ROUND(SUM(amount))\n                FROM ban_hang\n                WHERE strftime(TRY_CAST(ngay_ban AS DATE), '%Y-%m-%d') = '2026-01-17'\n                  \n                  AND (so_phieu IS NULL OR so_phieu NOT IN (SELECT so_phieu FROM ban_hang WHERE so_phieu IS NOT NULL AND (TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%cancel%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%trả%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%return%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hoàn hàng%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hoan hang%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hoàn trả%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hoan tra%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hàng trả%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hang tra%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%đổi trả%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%doi tra%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%không giao%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%khong giao%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%thất bại%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%that bai%'))) AND (trang_thai_xu_ly IS NULL OR (TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%that bai%'))",
+    "slow_sql_attempt": "SELECT ROUND(SUM(amount))\n                FROM ban_hang\n                WHERE strftime(TRY_CAST(ngay_ban AS DATE), '%Y-%m-%d') = '2026-01-17'\n                  \n                  AND (so_phieu IS NULL OR so_phieu NOT IN (SELECT so_phieu FROM ban_hang WHERE so_phieu IS NOT NULL AND (TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%cancel%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%trả%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%return%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hoàn hàng%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hoan hang%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hoàn trả%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hoan tra%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hàng trả%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hang tra%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%đổi trả%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%doi tra%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%không giao%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%khong giao%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%thất bại%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%that bai%'))) AND (trang_thai_xu_ly IS NULL OR (TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%that bai%'))",
+    "slow_execution_succeeded": true,
+    "revenue_metric_check": {
+      "allowed": true,
+      "reason": "Revenue column matches scoped README evidence",
+      "table": "ban_hang",
+      "column": "amount",
+      "evidence": [
+        "thanh tien sau giam"
+      ],
+      "coverage": "partial",
+      "residual_unknowns": [
+        "row filters, date anchor, status semantics and table selection are not verified"
+      ]
+    },
+    "llm_calls": [
+      {
+        "prompt_sha256": "e628c1d1eb250e1bf6f27060f8d81202b98eeb0c2d72c392d21020eff1f3be5b",
+        "from_cache": false,
+        "response": "{\"thought\": \"Truy vấn DuckDB tính number cho biz_125\", \"type\": \"number\", \"sql\": \"SELECT ROUND(SUM(amount))\\n                FROM ban_hang\\n                WHERE strftime(TRY_CAST(ngay_ban AS DATE), '%Y-%m-%d') = '2026-01-17'\\n                  \\n                  AND (so_phieu IS NULL OR so_phieu NOT IN (SELECT so_phieu FROM ban_hang WHERE so_phieu IS NOT NULL AND (TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%cancel%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%trả%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%return%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hoàn hàng%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hoan hang%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hoàn trả%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hoan tra%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hàng trả%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hang tra%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%đổi trả%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%doi tra%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%không giao%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%khong giao%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%thất bại%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%that bai%'))) AND (trang_thai_xu_ly IS NULL OR (TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%that bai%'))\", \"confidence\": 0.98}"
+      }
+    ],
+    "elapsed_seconds": 29.560005851999904
+  },
+  {
+    "id": "q_f8237f56fae8",
+    "business_id": "biz_125",
+    "partition": "sft_excluded_6",
+    "question": "e hom qua cua hang ban dc bao nhiu tien",
+    "as_of_date": "2025-06-08",
+    "type": "number",
+    "answer": 21476000,
+    "route": "slow_path",
+    "reason": null,
+    "correct": true,
+    "target": {
+      "id": "q_f8237f56fae8",
+      "type": "number",
+      "answer": 21476000,
+      "alias": []
+    },
+    "eligible": true,
+    "sql": "SELECT ROUND(SUM(amount))\n                FROM ban_hang\n                WHERE strftime(TRY_CAST(ngay_ban AS DATE), '%Y-%m-%d') = '2025-06-07'\n                  \n                  AND (so_phieu IS NULL OR so_phieu NOT IN (SELECT so_phieu FROM ban_hang WHERE so_phieu IS NOT NULL AND (TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%cancel%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%trả%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%return%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hoàn hàng%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hoan hang%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hoàn trả%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hoan tra%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hàng trả%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hang tra%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%đổi trả%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%doi tra%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%không giao%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%khong giao%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%thất bại%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%that bai%'))) AND (trang_thai_xu_ly IS NULL OR (TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%that bai%'))",
+    "slow_sql_attempt": "SELECT ROUND(SUM(amount))\n                FROM ban_hang\n                WHERE strftime(TRY_CAST(ngay_ban AS DATE), '%Y-%m-%d') = '2025-06-07'\n                  \n                  AND (so_phieu IS NULL OR so_phieu NOT IN (SELECT so_phieu FROM ban_hang WHERE so_phieu IS NOT NULL AND (TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%cancel%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%trả%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%return%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hoàn hàng%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hoan hang%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hoàn trả%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hoan tra%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hàng trả%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hang tra%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%đổi trả%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%doi tra%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%không giao%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%khong giao%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%thất bại%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%that bai%'))) AND (trang_thai_xu_ly IS NULL OR (TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%that bai%'))",
+    "slow_execution_succeeded": true,
+    "revenue_metric_check": {
+      "allowed": true,
+      "reason": "Revenue column matches scoped README evidence",
+      "table": "ban_hang",
+      "column": "amount",
+      "evidence": [
+        "thanh tien sau giam"
+      ],
+      "coverage": "partial",
+      "residual_unknowns": [
+        "row filters, date anchor, status semantics and table selection are not verified"
+      ]
+    },
+    "llm_calls": [
+      {
+        "prompt_sha256": "4bddcd90283062cb3aef6211199113c6574fc7bd7d7f909bdcccf4527f651ae8",
+        "from_cache": false,
+        "response": "{\"thought\": \"Truy vấn DuckDB tính number cho biz_125\", \"type\": \"number\", \"sql\": \"SELECT ROUND(SUM(amount))\\n                FROM ban_hang\\n                WHERE strftime(TRY_CAST(ngay_ban AS DATE), '%Y-%m-%d') = '2025-06-07'\\n                  \\n                  AND (so_phieu IS NULL OR so_phieu NOT IN (SELECT so_phieu FROM ban_hang WHERE so_phieu IS NOT NULL AND (TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%cancel%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%trả%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%return%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hoàn hàng%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hoan hang%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hoàn trả%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hoan tra%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hàng trả%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%hang tra%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%đổi trả%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%doi tra%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%không giao%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%khong giao%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%thất bại%' OR TRY_CAST(trang_thai_xu_ly AS VARCHAR) ILIKE '%that bai%'))) AND (trang_thai_xu_ly IS NULL OR (TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hủy%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%huỷ%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%cancel%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%trả%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%return%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hoàn hàng%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hoan hang%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hoàn trả%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hoan tra%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hàng trả%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%hang tra%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%đổi trả%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%doi tra%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%không giao%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%khong giao%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%thất bại%' AND TRY_CAST(trang_thai_xu_ly AS VARCHAR) NOT ILIKE '%that bai%'))\", \"confidence\": 0.98}"
+      }
+    ],
+    "elapsed_seconds": 26.243235468999956
+  }
+]

@@ -23,6 +23,16 @@ def test_public_has_no_quality_claims():
  assert r['slow_delta_pa'] is None and r['hybrid']['answered']==1
 
 
+def test_paraphrase_route_is_separate_from_original_fast_and_slow():
+ row={**case('paraphrase_fast_path','number',True),'eligible':False}
+ report=summarize([row],True)
+ assert report['paraphrase']['correct']==1
+ assert report['fast']['answered']==report['slow']['answered']==0
+ assert report['slow']['total']==0 and report['hybrid']['pa']==1
+ public=summarize([{**row,'correct':None}],False)
+ assert public['paraphrase']['correct'] is None and public['paraphrase']['pa'] is None
+
+
 def test_baseline_compares_scored_fields_and_all_ids():
  old=[{'id':'a','type':'number','answer':3},{'id':'b','type':'abstain'}]
  assert compare_baseline(old,old)==[]

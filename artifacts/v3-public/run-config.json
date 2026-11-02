@@ -1,0 +1,22 @@
+{
+  "dataset": "public_test",
+  "model": "datamate-business24",
+  "endpoint": "https://postposted-boats-equipment-pins.trycloudflare.com/v1",
+  "reuse_run": "artifacts/public-shadow-paraphrases",
+  "temperature": 0,
+  "seed": 42,
+  "max_tokens": 1024,
+  "daily_order_paraphrases": true,
+  "training_data_sha256": "55c2918798e68452be79cf69bc9244311d900af60533554d2fa436bb414a908e",
+  "split_sha256": "ba0a70ea94ecf36c6d74b308ba7bcf29358f1ec693fc6cf73167c0e59b6c4ffa",
+  "sources": {
+    "hybrid_agent.py": "adb5dbddc38b55f3372e5f544056c871ab640a9def01455564044c81057fae2d",
+    "slow_path.py": "df8391319fd160f466e1674ed8a910d73234bb89b00a3757b11fa1b7ceb222f2",
+    "revenue_metric.py": "b65da3cf88ee0390ebc5428fba10b2c3455d9ef43d920fe0af65ff00949105c0",
+    "selective_gate.py": "0cf16b9630ab57e10aaf294c619899eb10fd180259452bd1c7cca5fda573ea7a",
+    "prompt_generator.py": "bfb80b6cf73e51f3f5f029d9906f528af44a6abf086d50b763b9614bf28f6a35",
+    "intent_parser.py": "5168704acf46a4a3309488a8ad7e33fe42185e928bce23957db001ba3f690a68",
+    "paraphrase_fast.py": "3ce953a20b6e94b7062d08a75fd5c6c630290bd40be42ac7c02528db28118fab"
+  },
+  "scope": "Descriptive development diagnostics only; SFT-seen vs SFT-excluded, not untouched validation. Public correctness unknown."
+}

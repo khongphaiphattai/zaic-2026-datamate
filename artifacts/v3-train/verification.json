@@ -1,0 +1,14 @@
+{
+  "release": "v3.0",
+  "questions": 3000,
+  "shared_evaluator_recomputed": true,
+  "all_original_non_abstain_answers_preserved": true,
+  "original_fast_and_slow_predictions_unchanged": true,
+  "frozen_source_hashes_match": true,
+  "new_order_answers": 24,
+  "new_order_correct": 24,
+  "new_order_wrong": 0,
+  "network_model_calls": 0,
+  "reused_model_calls": 43,
+  "scope": "Development regression, not untouched evaluation"
+}
