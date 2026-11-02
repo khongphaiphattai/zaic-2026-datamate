@@ -1,0 +1,108 @@
+{
+  "checked_at_utc": "2026-11-02T17:05:45.053012+00:00",
+  "scope": "Focused release and routing audit; not exhaustive repository/security review or untouched validation.",
+  "funnels": {
+    "sft_excluded_6": {
+      "questions": 475,
+      "routes": {
+        "abstain": 334,
+        "paraphrase_fast_path": 10,
+        "fast_path": 124,
+        "slow_path": 7
+      },
+      "revenue": {
+        "matched": 37,
+        "already_fast": 28,
+        "after_fast": 9
+      },
+      "count": {
+        "matched": 15,
+        "already_fast": 5,
+        "after_fast": 10
+      }
+    },
+    "sft_seen_24": {
+      "questions": 2525,
+      "routes": {
+        "fast_path": 638,
+        "abstain": 1842,
+        "slow_path": 6,
+        "paraphrase_fast_path": 39
+      },
+      "revenue": {
+        "matched": 109,
+        "already_fast": 84,
+        "after_fast": 25
+      },
+      "count": {
+        "matched": 62,
+        "already_fast": 20,
+        "after_fast": 42
+      }
+    },
+    "public_unlabelled": {
+      "questions": 1000,
+      "routes": {
+        "abstain": 796,
+        "fast_path": 204
+      },
+      "revenue": {
+        "matched": 11,
+        "already_fast": 10,
+        "after_fast": 1
+      },
+      "count": {
+        "matched": 2,
+        "already_fast": 2,
+        "after_fast": 0
+      }
+    }
+  },
+  "live_cases": [
+    {
+      "dataset": "train",
+      "id": "q_1f8c7dce062c",
+      "business_id": "biz_102",
+      "type": "number",
+      "answer": 9078100,
+      "reason": null,
+      "route": "slow_path",
+      "network_calls": 1,
+      "elapsed_seconds": 25.95,
+      "matches_recorded_prediction": true,
+      "correct": true
+    },
+    {
+      "dataset": "public",
+      "id": "q_acb6a360a60d",
+      "business_id": "dev_010",
+      "type": "abstain",
+      "answer": null,
+      "reason": "SQL execution failed: Selective execution requires one registered business table",
+      "route": "abstain",
+      "network_calls": 2,
+      "elapsed_seconds": 26.58,
+      "matches_recorded_prediction": true,
+      "correct": null
+    }
+  ],
+  "train": {
+    "correct": 818,
+    "wrong": 6,
+    "abstain": 2176
+  },
+  "release_hashes": {
+    "submission.jsonl": "288ed868fde9175d36afd8995cdaf0e2c5f978a716be5c2a845f35c5e89afb9f",
+    "artifacts/baseline-v2.8/submission.jsonl": "288ed868fde9175d36afd8995cdaf0e2c5f978a716be5c2a845f35c5e89afb9f",
+    "artifacts/releases/v3.0/submission.jsonl": "288ed868fde9175d36afd8995cdaf0e2c5f978a716be5c2a845f35c5e89afb9f",
+    "artifacts/v3-period-public/submission.jsonl": "288ed868fde9175d36afd8995cdaf0e2c5f978a716be5c2a845f35c5e89afb9f"
+  },
+  "submission_types": {
+    "abstain": 796,
+    "number": 182,
+    "percent": 19,
+    "unanswerable": 3
+  },
+  "provenance_verified": true,
+  "provenance_limitation": "Server-declared metadata; not independent weight attestation."
+}

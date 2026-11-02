@@ -1,4 +1,4 @@
-# Kế hoạch phiên tiếp theo — v3.0, 03/11/2026
+# Kế hoạch v3.1 — sau khi chốt v3.0, 03/11/2026
 
 ## Trạng thái chốt
 
@@ -10,7 +10,7 @@ Public: **204 trả lời / 796 abstain**, **0 đáp án mới**, file trùng by
 
 ## Thứ tự công việc
 
-1. **Nhận score và khóa receipt.** Ghi submit ID/thời điểm, score và SHA file thực sự nộp. Dữ liệu user-report phải ghi rõ nguồn, không giả đã đọc portal. Tính delta so 0.13400 nhưng diễn giải theo việc file trùng baseline. Không thay file chốt sau upload rồi gán score cho bản khác.
+1. **Nhận score và khóa receipt khi người dùng gửi.** Ghi submit ID/thời điểm, score và SHA file thực sự nộp. Dữ liệu user-report phải ghi rõ nguồn, không giả đã đọc portal. Tính delta so 0.13400 nhưng diễn giải theo việc file trùng baseline. Không thay file chốt sau upload rồi gán score cho bản khác. Score pending không cản trở kiểm kê/spec/local tests độc lập.
 2. **Giải quyết độ phủ trước khi training.** Nút thắt đo được là 795 câu Public bị language gate chặn và 1 câu cần cấu trúc ngoài policy; các mở rộng cú pháp tăng Train nhưng chưa tăng Public. Kiểm kê intent/schema ở mức tổng hợp, dùng Train-24 để thiết kế các capability có thể kiểm chứng; Public chỉ hỗ trợ chẩn đoán độ phủ, không điền/sửa đáp án theo ID. Chọn một intent hỗ trợ được qua nhiều business, chốt spec/counterexamples rồi mới code. Không tiếp tục thêm polite phrase chỉ vì Train đẹp hơn.
 3. **Điều tra lỗi percent từ Train-24.** Năm câu tỷ lệ hủy ở biz_105/biz_117 thấp hơn target 0.01 điểm phần trăm. Tỷ lệ COUNT DISTINCT thực tế: 124/5650, 83/4431, 11/913, 18/666, 20/1024; thay row-count không khớp. Kiểm README về grain, ngày đại diện của đơn nhiều dòng, duplicate/status không nhất quán và mẫu số. Chưa kết luận chỉ do rounding; không cộng 0.01 hoặc hardcode ID/business. Có negative controls trên câu đã đúng và regression test trước sửa.
 4. **Tách policy rejection khỏi lỗi cú pháp để tiết kiệm units.** 9 câu Train bị chặn vì SQL cần JOIN đã dùng 18 calls, gồm 9 retry; policy hiện không hỗ trợ JOIN nên sửa cú pháp không giải quyết được phạm vi. Thiết kế fail-closed không retry cho policy shape, giữ retry cho lỗi syntax thật; replay/test bảo đảm không làm nhận SQL sai và không làm mất đáp án đúng đã có.
@@ -25,3 +25,24 @@ Người dùng báo còn 120 units trước phiên khôi phục; số dư hiện
 Chuẩn bị local trước bật GPU, gom request, chỉ reuse raw responses khi provenance/config/frozen-source/full-prompt hash khớp; thực thi SQL lại, không cache labels/results. V3 replay cuối dùng 43 cached responses Train và 2 Public, 0 network inference. Ngắt runtime sau khi hết việc GPU.
 
 Bản chốt tái tạo bằng `scripts/diagnose_hybrid.py --order-paraphrases` với business24/provenance đúng; source commit `2f984d4`, hash/config trong `artifacts/v3-period-{train,public}/`. `docs/runbooks/business24-resume.md` và notebook 04 dùng khi mất Colab. Bản này chưa phải gói Docker offline cuối cùng; cần kiểm toàn bộ inference/container offline trước solution freeze.
+
+## Bổ sung sau review chốt phiên
+
+Audit tại `artifacts/v3-closeout-review/`: Public revenue gate nhận 11 câu nhưng 10 đã được Fast xử lý; count grammar nhận 2 câu và cả hai đã được Fast xử lý. Hai ca gọi trực tiếp Colab (3 calls, không cache) tái hiện một Train trả lời đúng qua model và một Public bị JOIN policy chặn. Model hoạt động; chưa có bằng chứng tăng điểm Public. 13 đáp án Slow không chứng minh riêng hiệu quả fine-tuning vì chưa so với base model cùng điều kiện.
+
+Intent của v3.1: mở thêm một capability có kiểm chứng trên các câu Fast còn abstain, đồng thời thống nhất đường xuất file với đường đánh giá. Không đặt mục tiêu thêm model cho đủ kiến trúc hoặc tiếp tục mở rộng câu chữ chỉ để tăng Train.
+
+Các bước cụ thể phiên sau:
+
+1. Kiểm kê intent/schema từ Train-24 còn abstain; xếp ưu tiên theo số business có dữ liệu đủ, khả năng chứng minh phép tính và chi phí. Public chỉ dùng thống kê độ phủ, không suy target theo ID. Chốt spec một capability cùng counterexamples trước code. JOIN header/detail là ứng viên cần khảo sát, chưa mặc định chọn chỉ vì một câu Public.
+2. Thống nhất cấu hình/factory cho generator và diagnostics (model business24, provenance, Slow opt-in, count wrapper, route accounting). Kiểm cùng input/config cho cùng output; mặc định an toàn phải được ghi rõ. Sửa các docstring chất lượng/latency cũ, cập nhật source hashes/cache theo đúng thay đổi.
+3. Tách policy/syntax retry và kiểm temporal/status trước mở rộng inference. Nếu cần JOIN, chứng minh khóa/quan hệ/grain và chống nhân dòng; nếu không đủ bằng chứng thì abstain. Điều tra năm lỗi percent bằng đối chứng, không cộng 0.01 theo target.
+4. Đo từng thay đổi: local/replay trước, model live chỉ cho prompt mới hoặc thí nghiệm cần phân biệt. Không chạy lại training hoặc toàn bộ GPU benchmark chỉ để xác nhận kết quả cache đã có.
+
+Tiêu chí nghiệm thu v3.1:
+
+- Có spec và test cho ranh giới capability, phản ví dụ sai ngày/status/metric/cardinality và đường từ chối.
+- Full Train ghi delta đúng/sai/abstain theo 24/6 và từng route; bảo toàn đáp án cũ trừ sửa lỗi có bằng chứng. Không gọi nhóm đã tune là unseen hoặc bảo đảm precision tuyệt đối.
+- Generator và diagnostics tái lập cùng pipeline; report phân biệt model với deterministic fallback, network với cache, confidence với measured accuracy.
+- Candidate Public đủ 1.000 ID, format hợp lệ; có diff/SHA và nguyên nhân thay đổi từ pipeline. File vẫn trùng thì không gọi là cải tiến đáp án Public. File khác cũng chưa bảo đảm tăng score; chỉ xác nhận bằng lượt nộp thực tế.
+- Giữ nguyên snapshot/receipt v3.0; chỉ gán score mới cho SHA đã nộp. Chưa huấn luyện thêm nếu chưa chứng minh checkpoint là nút thắt.

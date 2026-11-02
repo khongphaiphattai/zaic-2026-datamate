@@ -346,3 +346,7 @@ Train cuối 3.000 câu: 818 đúng / 6 sai / 2.176 abstain, PA 0.2706667; thêm
 Root submission đã xuất đủ 1.000 dòng để người dùng nộp; bản root 5 dòng cũ có backup nguyên byte trong `artifacts/releases/v3.0/`. Người dùng sẽ tự upload sau rồi báo score; chưa có submit ID/score mới, receipt pending tại `artifacts/releases/v3.0/submission-receipt.json`. Không tự gán score 0.13400 cho lần nộp chưa xảy ra.
 
 Kế hoạch phiên tiếp theo: `docs/plans/2026-11-03-improvement-plan.md`. Nhận receipt/score trước kết luận, ưu tiên khoảng trống coverage thực tế và tính đúng grain/date/status, không train thêm để giải quyết vấn đề do gate hoặc JOIN policy. Nếu file nộp vẫn cùng SHA với baseline, mọi score khác cần kiểm tra tham chiếu/rules trước khi nói thuật toán tốt hơn.
+
+## Review chốt phiên và chuyển sang v3.1 (03/11/2026)
+
+Review `artifacts/v3-closeout-review/README.md` xác nhận model chạy trực tiếp qua Colab, file release không đổi và nút thắt Public là coverage/policy. Kế hoạch v3.1 đã bổ sung spec một capability, guard date/status/cardinality, giảm policy retry, thống nhất generator/diagnostics và sửa tài liệu source lỗi thời. Phiên này chỉ audit/tài liệu, chưa thay inference hoặc training. Không phải chờ score mới để làm các bước local độc lập; chỉ kết luận tăng điểm sau receipt gắn đúng SHA.
