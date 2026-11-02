@@ -1,0 +1,8 @@
+{
+  "training_sha256": "55c2918798e68452be79cf69bc9244311d900af60533554d2fa436bb414a908e",
+  "training_examples": 633,
+  "overlap_businesses": [],
+  "checkpoint_training_provenance": "Caller must attest this is the complete training data; base pretraining unknown",
+  "model": "datamate-business24",
+  "eligible_for_model_holdout_evaluation": true
+}

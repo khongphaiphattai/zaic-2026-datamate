@@ -20,6 +20,7 @@ import pandas as pd
 
 from zaic_2026_datamate.data_loader import BusinessContext
 from zaic_2026_datamate.engine import DuckDBAgentEngine
+from zaic_2026_datamate.revenue_metric import MetricCheck, verify_revenue_metric
 from zaic_2026_datamate.llm_client import LLMClient
 from zaic_2026_datamate.prompt_generator import SYSTEM_PROMPT, generate_text_to_sql_prompt
 
@@ -37,10 +38,18 @@ class SlowPathEngine:
         llm_client: LLMClient,
         confidence_threshold: float = 0.95,
         enable_self_correction: bool = True,
+        verify_daily_revenue: bool = False,
     ):
         self.client = llm_client
         self.confidence_threshold = confidence_threshold
         self.enable_self_correction = enable_self_correction
+        self.verify_daily_revenue = verify_daily_revenue
+        self.reset_audit()
+
+    def reset_audit(self) -> None:
+        self.last_metric_check: Optional[MetricCheck] = None
+        self.last_sql_attempt: Optional[str] = None
+        self.last_execution_succeeded = False
 
     def resolve_slow_path(
         self,
@@ -54,6 +63,7 @@ class SlowPathEngine:
             Tuple of (answer_type, answer_value, reason).
             If execution fails or is uncertain, returns ('abstain', None, reason).
         """
+        self.reset_audit()
         # 1. Build prompt
         prompt = generate_text_to_sql_prompt(
             question=question,
@@ -106,7 +116,8 @@ class SlowPathEngine:
         success, res_df, err = self._execute_read_only(context, engine, cleaned_sql)
 
         # Optional self-correction loop (1 retry)
-        if not success and self.enable_self_correction and err:
+        if (not success and self.enable_self_correction and err
+                and not (self.last_metric_check and not self.last_metric_check.allowed)):
             logger.info("Retrying SQL with self-correction feedback: %s", err)
             correction_prompt = f"{prompt}\n\nLệnh SQL sau bị lỗi: `{cleaned_sql}`\nThông báo lỗi DuckDB: `{err}`\nHãy sửa lại câu lệnh SQL để khắc phục lỗi trên."
             try:
@@ -132,6 +143,9 @@ class SlowPathEngine:
         return self._format_result(res_df, ans_type)
 
     def _execute_read_only(self, context, engine, sql):
+        self.last_sql_attempt = sql
+        self.last_metric_check = None
+        self.last_execution_succeeded = False
         try:
             statements = context.duckdb_conn.extract_statements(sql)
             if len(statements) != 1 or statements[0].type != duckdb.StatementType.SELECT:
@@ -145,9 +159,15 @@ class SlowPathEngine:
                 parser.close()
             if len(tables) != 1 or not tables.issubset(context.tables):
                 return False, None, "Selective execution requires one registered business table"
+            if self.verify_daily_revenue:
+                self.last_metric_check = verify_revenue_metric(context, sql)
+                if not self.last_metric_check.allowed:
+                    return False, None, f"Revenue metric rejected: {self.last_metric_check.reason}"
             context.duckdb_conn.execute("SET enable_external_access = false")
             context.last_sql = sql
-            return engine.execute_query(sql)
+            result = engine.execute_query(sql)
+            self.last_execution_succeeded = result[0]
+            return result
         except Exception as exc:
             return False, None, str(exc)
 

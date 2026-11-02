@@ -227,6 +227,7 @@ def test_slow_path_rejects_invalid_or_unsafe_response(sample_context,payload):
 def test_selective_daily_calls_model_after_fast_abstains(sample_context):
  from unittest.mock import patch
  calls=[]
+ sample_context.readme = "Mỗi dòng một sản phẩm.\n## Cột trong `don_hang.csv`\n- **tien**: thành tiền sau giảm"
  def handler(prompt):
   calls.append(prompt)
   return json.dumps({'type':'number','sql':"SELECT SUM(tien) FROM don_hang WHERE ngay='2025-06-02'",'confidence':0.99})

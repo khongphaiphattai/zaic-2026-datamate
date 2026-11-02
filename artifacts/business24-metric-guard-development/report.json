@@ -1,0 +1,27 @@
+{
+  "fast": {
+    "correct": 123,
+    "wrong": 1
+  },
+  "slow": {
+    "correct": 5
+  },
+  "abstain": 346,
+  "gate_eligible": 7,
+  "total": 475,
+  "inference_errors": 0,
+  "metric_rejected": 2,
+  "fast_pa": 0.25684210526315787,
+  "hybrid_pa": 0.2673684210526316,
+  "slow_delta_pa": 0.010526315789473684,
+  "model_attempted": true,
+  "model_evaluated": true,
+  "exploratory": false,
+  "training_overlap": [],
+  "revenue_metric_guard": true,
+  "recommend_enable": false,
+  "limitation": "SFT-business isolation only; historical rule/prompt/gate tuning used Train and base pretraining is unknown.",
+  "scope": "development/regression only; these failures were inspected before guard design",
+  "final_policy_verified_on_live_sql": true,
+  "final_policy_source_sha256": "b65da3cf88ee0390ebc5428fba10b2c3455d9ef43d920fe0af65ff00949105c0"
+}

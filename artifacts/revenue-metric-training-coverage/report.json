@@ -1,0 +1,208 @@
+{
+  "scope": "Final policy SQL shape/evidence coverage only; includes non-revenue tasks, not accuracy or new model calls",
+  "policy_source_sha256": "b65da3cf88ee0390ebc5428fba10b2c3455d9ef43d920fe0af65ff00949105c0",
+  "total_sql": 618,
+  "accepted": 152,
+  "businesses_with_accepted": 11,
+  "businesses": [
+    {
+      "business_id": "biz_102",
+      "unverified": 37,
+      "accepted": 23,
+      "reasons": {
+        "Expected plain SUM expression": 29,
+        "Only ROUND(SUM(column)) is verified": 8
+      }
+    },
+    {
+      "business_id": "biz_104",
+      "unverified": 36,
+      "accepted": 11,
+      "reasons": {
+        "Expected plain SUM expression": 26,
+        "Only ROUND(SUM(column)) is verified": 10
+      }
+    },
+    {
+      "business_id": "biz_105",
+      "unverified": 20,
+      "reasons": {
+        "Only ROUND(SUM(column)) is verified": 5,
+        "Expected plain SUM expression": 10,
+        "so_ban_hang.tri_gia lacks unambiguous README evidence for merchandise revenue": 4,
+        "so_nhap_hang.thanh_tien lacks unambiguous README evidence for merchandise revenue": 1
+      }
+    },
+    {
+      "business_id": "biz_106",
+      "unverified": 17,
+      "reasons": {
+        "danh_sach_hoa_don.tong_tien_hang lacks unambiguous README evidence for merchandise revenue": 6,
+        "danh_sach_nhap_hang.can_tra_ncc lacks unambiguous README evidence for merchandise revenue": 2,
+        "Expected plain SUM expression": 5,
+        "Only ROUND(SUM(column)) is verified": 4
+      }
+    },
+    {
+      "business_id": "biz_107",
+      "accepted": 15,
+      "reasons": {}
+    },
+    {
+      "business_id": "biz_108",
+      "unverified": 33,
+      "reasons": {
+        "Expected plain SUM expression": 15,
+        "danh_sach_hoa_don.tong_tien_hang lacks unambiguous README evidence for merchandise revenue": 9,
+        "Only ROUND(SUM(column)) is verified": 6,
+        "danh_sach_nhap_hang.can_tra_ncc lacks unambiguous README evidence for merchandise revenue": 3
+      }
+    },
+    {
+      "business_id": "biz_111",
+      "unverified": 18,
+      "reasons": {
+        "Expected plain SUM expression": 12,
+        "Only ROUND(SUM(column)) is verified": 6
+      }
+    },
+    {
+      "business_id": "biz_112",
+      "unverified": 17,
+      "accepted": 13,
+      "reasons": {
+        "Only ROUND(SUM(column)) is verified": 4,
+        "Expected plain SUM expression": 13
+      }
+    },
+    {
+      "business_id": "biz_113",
+      "accepted": 18,
+      "reasons": {}
+    },
+    {
+      "business_id": "biz_114",
+      "accepted": 10,
+      "unverified": 5,
+      "reasons": {
+        "Expected plain SUM expression": 5
+      }
+    },
+    {
+      "business_id": "biz_115",
+      "unverified": 31,
+      "accepted": 15,
+      "reasons": {
+        "Expected plain SUM expression": 23,
+        "Only ROUND(SUM(column)) is verified": 8
+      }
+    },
+    {
+      "business_id": "biz_116",
+      "unverified": 39,
+      "reasons": {
+        "Expected plain SUM expression": 20,
+        "bao_cao_ban_hang_so_chi_tiet_ban_hang.thanh_tien lacks unambiguous README evidence for merchandise revenue": 16,
+        "Only ROUND(SUM(column)) is verified": 3
+      }
+    },
+    {
+      "business_id": "biz_117",
+      "unverified": 15,
+      "reasons": {
+        "Expected plain SUM expression": 7,
+        "so_ban_hang.tien lacks unambiguous README evidence for merchandise revenue": 4,
+        "so_nhap_hang.thanh_tien lacks unambiguous README evidence for merchandise revenue": 2,
+        "Only ROUND(SUM(column)) is verified": 2
+      }
+    },
+    {
+      "business_id": "biz_120",
+      "unverified": 26,
+      "reasons": {
+        "Only ROUND(SUM(column)) is verified": 7,
+        "Expected plain SUM expression": 8,
+        "danh_sach_nhap_hang.can_tra_ncc lacks unambiguous README evidence for merchandise revenue": 2,
+        "danh_sach_hoa_don.tong_tien_hang lacks unambiguous README evidence for merchandise revenue": 9
+      }
+    },
+    {
+      "business_id": "biz_121",
+      "unverified": 16,
+      "accepted": 10,
+      "reasons": {
+        "Expected plain SUM expression": 8,
+        "Only ROUND(SUM(column)) is verified": 8
+      }
+    },
+    {
+      "business_id": "biz_122",
+      "unverified": 13,
+      "accepted": 13,
+      "reasons": {
+        "Only ROUND(SUM(column)) is verified": 9,
+        "Expected plain SUM expression": 4
+      }
+    },
+    {
+      "business_id": "biz_123",
+      "unverified": 12,
+      "reasons": {
+        "phieu_nhap.tong_gia_tri_nhap lacks unambiguous README evidence for merchandise revenue": 2,
+        "Only ROUND(SUM(column)) is verified": 1,
+        "don_hang.tong_tien_hang lacks unambiguous README evidence for merchandise revenue": 6,
+        "Expected plain SUM expression": 3
+      }
+    },
+    {
+      "business_id": "biz_124",
+      "unverified": 6,
+      "reasons": {
+        "Expected plain SUM expression": 3,
+        "ban_hang_hoa_don.tien_hang_truoc_giam lacks unambiguous README evidence for merchandise revenue": 2,
+        "so_tay_nhap_hang.thanh_tien lacks unambiguous README evidence for merchandise revenue": 1
+      }
+    },
+    {
+      "business_id": "biz_126",
+      "accepted": 15,
+      "reasons": {}
+    },
+    {
+      "business_id": "biz_127",
+      "unverified": 42,
+      "reasons": {
+        "Expected a direct registered base table": 21,
+        "Only ROUND(SUM(column)) is verified": 8,
+        "Expected plain SUM expression": 13
+      }
+    },
+    {
+      "business_id": "biz_128",
+      "unverified": 41,
+      "reasons": {
+        "danh_sach_nhap_hang.can_tra_ncc lacks unambiguous README evidence for merchandise revenue": 5,
+        "danh_sach_hoa_don.tong_tien_hang lacks unambiguous README evidence for merchandise revenue": 13,
+        "Expected plain SUM expression": 19,
+        "Only ROUND(SUM(column)) is verified": 4
+      }
+    },
+    {
+      "business_id": "biz_129",
+      "unverified": 19,
+      "reasons": {
+        "Expected plain SUM expression": 15,
+        "Only ROUND(SUM(column)) is verified": 4
+      }
+    },
+    {
+      "business_id": "biz_130",
+      "unverified": 23,
+      "accepted": 9,
+      "reasons": {
+        "Expected plain SUM expression": 14,
+        "Only ROUND(SUM(column)) is verified": 9
+      }
+    }
+  ]
+}

@@ -43,6 +43,7 @@ class HybridAgent:
             self.slow_engine = SlowPathEngine(
                 llm_client=llm_client,
                 confidence_threshold=confidence_threshold,
+                verify_daily_revenue=True,
             )
 
     def answer_query(
@@ -57,6 +58,8 @@ class HybridAgent:
             Tuple: (ans_type, ans_value, reason, route_source)
             route_source: 'fast_path' | 'slow_path' | 'abstain'
         """
+        if self.slow_engine is not None:
+            self.slow_engine.reset_audit()
         # =====================================================================
         # ROUTE 1: FAST PATH (Deterministic Router & DuckDB Engine)
         # =====================================================================

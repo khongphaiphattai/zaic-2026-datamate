@@ -4,6 +4,7 @@ Existing SFT/checkpoints have seen all businesses; a new split cannot erase that
 """
 import argparse
 from collections import Counter
+from dataclasses import asdict
 import hashlib
 import json
 from pathlib import Path
@@ -73,7 +74,7 @@ def main():
     answers = {r['id']:r for r in read_rows('data/train/train/answers.jsonl')}
     loader = DataLoader('data/train/train/data','data/train/train/calendar.csv')
     agent = HybridAgent(enable_slow_path=bool(args.base_url), llm_client=OpenAICompatibleClient(base_url=args.base_url,model=args.model) if args.base_url else None)
-    stats = {'fast':Counter(), 'slow':Counter(), 'abstain':0, 'gate_eligible':0, 'total':0, 'inference_errors':0}
+    stats = {'fast':Counter(), 'slow':Counter(), 'abstain':0, 'gate_eligible':0, 'total':0, 'inference_errors':0, 'metric_rejected':0}
     with (out/'trace.jsonl').open('w') as trace:
         for bid in split['validation_businesses']:
             ctx = loader.load_business(bid)
@@ -89,12 +90,20 @@ def main():
                 correct = evaluate_match(kind,value,target['type'],target.get('answer'))
                 if kind=='abstain': stats['abstain']+=1
                 else: stats['fast' if route=='fast_path' else 'slow']['correct' if correct else 'wrong']+=1
-                trace.write(json.dumps({'id':q['id'],'business_id':bid,'type':kind,'answer':value,'route':route,'reason':reason,'sql':ctx.last_sql,'correct':correct},ensure_ascii=False,default=str)+'\n')
+                slow = agent.slow_engine
+                metric_check = asdict(slow.last_metric_check) if slow and slow.last_metric_check else None
+                if metric_check and not metric_check['allowed']:
+                    stats['metric_rejected'] += 1
+                trace.write(json.dumps({'id':q['id'],'business_id':bid,'type':kind,'answer':value,
+                                        'route':route,'reason':reason,'sql':ctx.last_sql,'correct':correct,
+                                        'slow_sql_attempt':slow.last_sql_attempt if slow else None,
+                                        'slow_execution_succeeded':slow.last_execution_succeeded if slow else False,
+                                        'revenue_metric_check':metric_check},ensure_ascii=False,default=str)+'\n')
             ctx.duckdb_conn.close()
     net = lambda k: stats[k]['correct']-stats[k]['wrong']
     report = {**stats,'fast_pa':net('fast')/stats['total'], 'hybrid_pa':(net('fast')+net('slow'))/stats['total'],
               'slow_delta_pa':net('slow')/stats['total'], 'model_attempted':bool(args.base_url), 'model_evaluated':bool(args.base_url) and stats['gate_eligible'] > stats['inference_errors'], 'exploratory':args.exploratory, 'training_overlap':overlap,
-              'recommend_enable':False, 'limitation':'SFT-business isolation only; historical rule/prompt/gate tuning used Train and base pretraining is unknown.'}
+              'revenue_metric_guard':True, 'recommend_enable':False, 'limitation':'SFT-business isolation only; historical rule/prompt/gate tuning used Train and base pretraining is unknown.'}
     (out/'report.json').write_text(json.dumps(report, indent=2))
     print(json.dumps(report, indent=2))
 

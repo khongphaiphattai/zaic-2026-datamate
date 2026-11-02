@@ -598,3 +598,29 @@
 - `biz_118` từng invalid JSON ở checkpoint cũ nay trả lời đúng; không kết luận checkpoint mới tốt hơn/chắc chắn khái quát hóa vì cỡ mẫu nhỏ và các điều kiện train khác nhau.
 - Lưu report, served-model-provenance, split, provenance và trace ở `artifacts/business24-heldout-evaluation/`; 7 câu chi tiết ở `eligible-results.json`, chẩn đoán ở `error-analysis.json`. Đã đối chiếu đầy đủ 475 ID duy nhất và toàn bộ Fast Path không đổi; root submission vẫn nguyên byte.
 - **Quyết định:** `recommend_enable=false`; gate vẫn mặc định tắt, không nộp Public mới. Đề xuất tiếp theo là kiểm chứng ngữ nghĩa metric doanh thu / canonical schema trước mở rộng hoặc train thêm. Các lỗi validation vừa xem không được dùng tune rồi tuyên bố là phép đo mới trên tập untouched.
+
+### 02/11/2026 — Hoàn tất triển khai revenue metric guard trước thực thi
+- Thiết kế đã ghi tại `docs/specs/2026-11-02-revenue-metric-guard.md`. Không sửa Fast Path, checkpoint hoặc prompt; không hardcode business ID, không viết lại SQL hoặc thay kết quả bằng ground truth.
+- Thêm `revenue_metric.py`: dùng DuckDB `json_serialize_sql` để kiểm lineage của SELECT SUM(column), tùy chọn ROUND, trực tiếp từ một bảng. CTE/subquery ở FROM, arithmetic, DISTINCT/FILTER, nhiều output và cấu trúc chưa kiểm chứng bị từ chối. Nguồn API: https://duckdb.org/docs/current/data/json/sql_to_and_from_json.
+- Phân giải bằng định nghĩa cột README đúng file/bảng, chỉ nhận các mẫu mô tả tiền hàng rõ ràng hoặc thành tiền sau giảm khi README xác nhận grain dòng hàng. Không dùng tên cột đơn thuần; thiếu/mâu thuẫn/ngoài mẫu hỗ trợ → abstain. Kiểm này chỉ chứng minh metric được chọn, không chứng minh WHERE/time/status/table-choice đúng toàn bộ.
+- Hybrid bật guard chỉ cho Slow Path doanh thu ngày; kiểm trước execute và sau retry cú pháp. Metric bị từ chối dừng ngay, không gọi model tự sửa metric trong đợt này.
+- Thêm audit: SQL model đã thử, kết quả kiểm metric và trạng thái execute; reset mỗi câu để tránh log stale. Trace phân biệt SQL đã thử với SQL đã execute.
+- Regression tests đã tái hiện lỗi trước sửa (bao gồm định nghĩa có mệnh đề VAT mâu thuẫn), và kiểm alias/comment giả, CTE che lineage, cùng giá trị nhưng sai cột, thiếu/sai file README, grain đơn/dòng, retry SQL sai metric.
+
+### 02/11/2026 — Hoàn tất replay kiểm chứng metric trên 7 output đã lưu
+- Không gọi model, không sửa SQL: guard nhận đúng **5 câu đã đúng**, từ chối **2 câu cộng tong_tien sai metric**. Không sử dụng nhãn chuẩn để ra quyết định guard; nhãn chỉ dùng chấm sau quyết định.
+- Đối chứng 475 câu tương ứng: Fast giữ 123 đúng/1 sai; Hybrid sau guard **128 đúng / 1 sai / 346 abstain**, PA **0.2673684**, tăng từ **0.2631579** (+2 điểm thuần), so Fast-only +5 điểm thuần.
+- Báo cáo `artifacts/revenue-metric-replay/report.json`, chi tiết evidence ở `cases.json`. Đây là development regression trên lỗi đã xem, không phải untouched validation; không tuyên bố precision ngoài mẫu.
+- Full suite trước điều chỉnh nhỏ reset/audit cuối: **77 passed** (22.33 giây). Bắt đầu lượt live với cùng checkpoint/endpoint/gate/prompt tại `artifacts/business24-metric-guard-development/`, đồng thời kiểm thử lại sau điều chỉnh audit. Gate vẫn mặc định tắt, không xuất/nộp Public.
+
+### 02/11/2026 — Hoàn tất live development evaluation với metric guard
+- Cùng endpoint/checkpoint business24, prompt, gate ngôn ngữ và split: **7 eligible**, **5 Slow Path đúng / 0 sai / 2 abstain vì metric**, 0 lỗi inference. Hai request sai cột bị chặn trước execute; không gọi model sửa metric.
+- Tổng 475 câu: **128 đúng / 1 sai / 346 abstain**, PA **0.2673684**; tăng +2 điểm thuần so bản Hybrid chưa guard (0.2631579), +5 điểm thuần so Fast-only (0.2568421). Toàn bộ Fast Path khớp từng prediction trước thay đổi.
+- Trong rà soát đã siết thêm: định nghĩa file không được áp cho bảng phụ chỉ trùng tiền tố, mô tả grain của section khác không được dùng cho bảng bán hàng. Phát lại toàn bộ 7 SQL của lượt live bằng mã policy cuối cùng xác nhận tất cả quyết định unchanged; không cần gọi lại model. Report ghi source SHA256 của guard cuối.
+- Báo cáo `artifacts/business24-metric-guard-development/report.json`, provenance, SQL attempts/metric decisions/evidence ở trace và `eligible-results.json`. `coverage=partial`, ghi rõ không xác minh toàn bộ WHERE/status/date/table-choice. Đây là development/regression trên lỗi đã xem, không untouched-test performance. `recommend_enable=false`, Slow Path vẫn mặc định tắt và không nộp Public.
+- Kiểm tra sơ bộ shape/evidence trên 618 SQL SFT train (gồm cả task không phải revenue) trước hai siết scope cuối: 152 được nhận ở 11 business, còn lại unverified. Đây là coverage trung gian, không phải recall/accuracy; sẽ ghi lại coverage theo policy cuối trước bàn giao.
+
+### 02/11/2026 — Chốt kiểm thử metric guard
+- **79/79 tests passed** (22.21 giây), `git diff --check` sạch. Không thay đổi file `intent_parser.py` hoặc prompt/checkpoint; script đánh giá ghi rõ metric guard và lý do từ chối.
+- `IMPLEMENTATION_PLAN.md` đã cập nhật trạng thái guard, số liệu development và các phần chưa được chứng minh. Các báo cáo và thiết kế được lưu cùng code để review.
+- Coverage theo **policy cuối cùng** đã chạy lại: trên 618 SQL SFT train (có cả task đếm đơn/phần trăm/AOV không thuộc metric guard), **152 SQL được xác minh ở 11 business**. Phần còn lại là unverified/ngoài scope, không diễn giải thành sai. Source SHA256 trùng policy được đối chiếu ở live report; lưu `artifacts/revenue-metric-training-coverage/report.json`.

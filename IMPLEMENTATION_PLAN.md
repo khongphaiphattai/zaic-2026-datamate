@@ -310,3 +310,9 @@ Checkpoint cũ chứa cả 30 doanh nghiệp Train. Thử endpoint Colab trên 7
 Đã đào 633 mẫu SFT từ 24 business (512 number, 106 percent, 15 unanswerable), overlap validation bằng 0. Tokenizer audit phát hiện nguy cơ truncation ở cấu hình 2.048 token cũ; mẫu mới dài tối đa 5.292 nên notebook mới dùng trần 8.192, kiểm toàn bộ length trước train và completion-only loss.
 
 Chạy `notebooks/03_business_holdout_training.ipynb` với `artifacts/zaic-business24-training.zip` trong tab Colab A100; runtime hiện tại không attach được từ CLI. Chưa train hoặc tạo checkpoint mới. Sau train: lấy `training_manifest.json`, xác minh data hash/revision, phục vụ adapter mới trên endpoint mới, đánh giá split 6 business bằng `--training-data artifacts/train-only-sft.jsonl`. Ranh giới này chỉ kiểm soát SFT; lịch sử tune rule/prompt chưa được giữ riêng.
+
+## Revenue metric guard đã triển khai (02/11/2026)
+
+Slow Path doanh thu ngày kiểm lineage SQL bằng DuckDB AST và đối chiếu định nghĩa cột trong README đúng file/bảng trước execute. Chỉ nhận direct SUM(column), tùy chọn ROUND, với mô tả tiền hàng được hỗ trợ; thiếu/mâu thuẫn/SQL ngoài phạm vi → abstain. Không tự sửa SQL hay dùng ground truth để chọn cột. Fast Path, prompt và checkpoint không đổi.
+
+Replay và live development evaluation đều giữ 5 câu đúng, chặn 2 câu sai metric: Hybrid PA 0.2673684 trên 475 câu (128 đúng / 1 sai / 346 abstain), so với 0.2631579 trước guard. Những lỗi này đã được xem khi thiết kế, nên kết quả là regression/development evidence, không phải untouched validation. Guard chỉ kiểm metric, chưa xác minh toàn bộ WHERE/date/status/table choice; README parser có phạm vi mô tả hữu hạn, unknown sẽ từ chối. Slow Path vẫn mặc định tắt và chưa khuyến nghị bật Public. Thiết kế/phạm vi: `docs/specs/2026-11-02-revenue-metric-guard.md`.

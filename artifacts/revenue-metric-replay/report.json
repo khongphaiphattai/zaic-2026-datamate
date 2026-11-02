@@ -1,0 +1,19 @@
+{
+  "mode": "saved-output replay; no model calls or SQL rewrites",
+  "scope": "development regression, not untouched validation",
+  "slow": {
+    "accepted": 5,
+    "correct": 5,
+    "rejected": 2
+  },
+  "total_questions": 475,
+  "fast_correct": 123,
+  "fast_wrong": 1,
+  "guarded_hybrid_correct": 128,
+  "guarded_hybrid_wrong": 1,
+  "guarded_hybrid_abstain": 346,
+  "guarded_hybrid_pa": 0.2673684210526316,
+  "fast_only_pa": 0.25684210526315787,
+  "before_guard_pa": 0.2631578947368421,
+  "recommend_enable": false
+}
