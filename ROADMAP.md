@@ -530,3 +530,12 @@
 - **58/58 tests passed** (21.63 giây); `git diff --check` sạch. Kiểm tra bundle hash, source trong ZIP trùng script hiện tại, dữ liệu trong ZIP trùng tập 633 mẫu và partition không overlap đều qua.
 - Root submission vẫn nguyên byte. Bộ SFT/ZIP nằm local theo .gitignore; commit notebook, script, tests, manifest và hướng dẫn, không đưa dữ liệu Train vào lịch sử Git.
 - Việc cần người dùng thực hiện: mở notebook mới trong Colab A100, restart kernel, upload bundle khi cell yêu cầu và chạy. Sau khi có manifest training hoàn tất mới tiến hành phục vụ/evaluate checkpoint mới; không coi việc chuẩn bị notebook là đã train thành công.
+
+### 02/11/2026 — Triage lỗi training Colab
+- Người dùng báo cell `subprocess.run(TRAIN, check=True)` trả `CalledProcessError`, exit status 1, runtime Python 3.13. Traceback hiện chỉ là wrapper subprocess; chưa có stderr/traceback từ `holdout_training.py`, chưa xác định nguyên nhân (không kết luận OOM hay dependency).
+- Rà script xác nhận có guard không ghi đè output và preflight riêng; hướng xử lý là lấy log stdout/stderr của tiến trình train, giữ nguyên checkpoint/output, không restart/xoá dữ liệu hoặc sửa hyperparameter khi chưa có lỗi gốc.
+
+### 02/11/2026 — Rà ảnh Colab và sửa hiển thị log training
+- Đã đọc `notebooks/03_business_10h46.png`: cài dependencies returncode 0, preflight returncode 0, cell training returncode 1. Ảnh chưa có traceback của script con, chưa xác định lỗi GPU/VRAM/model/trainer.
+- Sửa cell training của notebook 03 để dùng Python unbuffered, gộp stdout/stderr và stream trực tiếp vào cell; lưu append log `/content/business24-training.log`. Giữ nguyên command, dataset, checkpoint guard và cấu hình training; người dùng có thể thay riêng cell, không cần upload lại ZIP.
+- Xác minh tất cả code cell parse thành công. Chưa có bằng chứng training GPU chạy thành công; cần log gốc từ cell mới để sửa đúng nguyên nhân.
