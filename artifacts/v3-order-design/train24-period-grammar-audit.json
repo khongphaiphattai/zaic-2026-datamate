@@ -1,0 +1,504 @@
+{
+  "derivation": "Train-24 question text only; frozen before period-grammar measurement on excluded/Public",
+  "language_eligible": 62,
+  "additional_candidates_after_daily_wrapper": 24,
+  "source_sha256": "5b893fb65f6c45bc4c48461c0709f9fdb148d12bae87ec5391ba22bf9f643bd6",
+  "cases": [
+    {
+      "id": "q_5d99ee0b8553",
+      "business_id": "biz_102",
+      "question": "Số đơn hnay là bao nhiêu?",
+      "as_of_date": "2025-03-25",
+      "canonical_question": "Ngày 25/03/2025 có bao nhiêu đơn hàng?",
+      "old_route": "paraphrase_fast_path"
+    },
+    {
+      "id": "q_7e2a021bc2fd",
+      "business_id": "biz_102",
+      "question": "số đơn quys 3/2025 là nhiêu",
+      "as_of_date": "2026-06-16",
+      "canonical_question": "Quý 3/2025 có bao nhiêu đơn hàng?",
+      "old_route": "abstain"
+    },
+    {
+      "id": "q_9b52148d7940",
+      "business_id": "biz_102",
+      "question": "Cho mình hỏi hôm nay cửa hàng có bao nhiêu đơn?",
+      "as_of_date": "2025-10-08",
+      "canonical_question": "Ngày 08/10/2025 có bao nhiêu đơn hàng?",
+      "old_route": "fast_path"
+    },
+    {
+      "id": "q_a48f818e0e97",
+      "business_id": "biz_102",
+      "question": "Cho mình biết số đơn hôm qua.",
+      "as_of_date": "2025-04-14",
+      "canonical_question": "Ngày 13/04/2025 có bao nhiêu đơn hàng?",
+      "old_route": "paraphrase_fast_path"
+    },
+    {
+      "id": "q_a5a340993cfd",
+      "business_id": "biz_102",
+      "question": "Hôm qua cửa hàng có bao nhiêu đơn hàng?",
+      "as_of_date": "2025-08-24",
+      "canonical_question": "Ngày 23/08/2025 có bao nhiêu đơn hàng?",
+      "old_route": "fast_path"
+    },
+    {
+      "id": "q_d01cb7fdf84a",
+      "business_id": "biz_102",
+      "question": "Số đơn quý 1/2026 là bao nhiêu?",
+      "as_of_date": "2026-06-16",
+      "canonical_question": "Quý 1/2026 có bao nhiêu đơn hàng?",
+      "old_route": "abstain"
+    },
+    {
+      "id": "q_10e47ea13db9",
+      "business_id": "biz_104",
+      "question": "Cửa hàng bán được bao nhiêu đơn trong quý 1 năm 2026?",
+      "as_of_date": "2026-06-02",
+      "canonical_question": "Quý 1/2026 có bao nhiêu đơn hàng?",
+      "old_route": "fast_path"
+    },
+    {
+      "id": "q_159e84d3a61e",
+      "business_id": "biz_104",
+      "question": "số đơn hnay là bao nhiêu",
+      "as_of_date": "2025-10-15",
+      "canonical_question": "Ngày 15/10/2025 có bao nhiêu đơn hàng?",
+      "old_route": "paraphrase_fast_path"
+    },
+    {
+      "id": "q_54a0ebc48c6a",
+      "business_id": "biz_104",
+      "question": "Số đơn hàng hnay là bao nhiêu?",
+      "as_of_date": "2026-01-29",
+      "canonical_question": "Ngày 29/01/2026 có bao nhiêu đơn hàng?",
+      "old_route": "paraphrase_fast_path"
+    },
+    {
+      "id": "q_5781f219101c",
+      "business_id": "biz_104",
+      "question": "cho tôi biết số đơn hqua",
+      "as_of_date": "2026-01-29",
+      "canonical_question": "Ngày 28/01/2026 có bao nhiêu đơn hàng?",
+      "old_route": "paraphrase_fast_path"
+    },
+    {
+      "id": "q_da9d95857b32",
+      "business_id": "biz_104",
+      "question": "Số đơn hàng hôm nay là bao nhiêu?",
+      "as_of_date": "2025-07-26",
+      "canonical_question": "Ngày 26/07/2025 có bao nhiêu đơn hàng?",
+      "old_route": "paraphrase_fast_path"
+    },
+    {
+      "id": "q_5b5c9f36b825",
+      "business_id": "biz_105",
+      "question": "số đơn quý 1/2026 là bao nhiu",
+      "as_of_date": "2026-06-24",
+      "canonical_question": "Quý 1/2026 có bao nhiêu đơn hàng?",
+      "old_route": "abstain"
+    },
+    {
+      "id": "q_967a2d6503b4",
+      "business_id": "biz_105",
+      "question": "Cho tôi biết số đơn tuần trước.",
+      "as_of_date": "2026-02-28",
+      "canonical_question": "Tuần trước có bao nhiêu đơn hàng?",
+      "old_route": "abstain"
+    },
+    {
+      "id": "q_a1a58dc249cf",
+      "business_id": "biz_105",
+      "question": "Từ 1/1 năm nay đến hết hnay đã bán đc bao nhiêu đơn?",
+      "as_of_date": "2026-04-17",
+      "canonical_question": "Từ đầu năm đến hết hôm nay có bao nhiêu đơn hàng?",
+      "old_route": "abstain"
+    },
+    {
+      "id": "q_4362460c082a",
+      "business_id": "biz_108",
+      "question": "Hôm nay cửa hàng có bao nhiêu đơn?",
+      "as_of_date": "2026-05-11",
+      "canonical_question": "Ngày 11/05/2026 có bao nhiêu đơn hàng?",
+      "old_route": "fast_path"
+    },
+    {
+      "id": "q_2d390a634c19",
+      "business_id": "biz_109",
+      "question": "Cho tôi biết số đơn hôm qua.",
+      "as_of_date": "2026-08-03",
+      "canonical_question": "Ngày 02/08/2026 có bao nhiêu đơn hàng?",
+      "old_route": "abstain"
+    },
+    {
+      "id": "q_55e037221ed7",
+      "business_id": "biz_109",
+      "question": "Tính từ đầu năm đến hết hnay, cửa hàng đã có tổng cộng bao nhiêu đơn?",
+      "as_of_date": "2026-07-08",
+      "canonical_question": "Từ đầu năm đến hết hôm nay có bao nhiêu đơn hàng?",
+      "old_route": "abstain"
+    },
+    {
+      "id": "q_cc99936968b3",
+      "business_id": "biz_109",
+      "question": "Hôm qua cửa hàng có bao nhiêu đơn",
+      "as_of_date": "2026-05-03",
+      "canonical_question": "Ngày 02/05/2026 có bao nhiêu đơn hàng?",
+      "old_route": "abstain"
+    },
+    {
+      "id": "q_19ca0034af55",
+      "business_id": "biz_111",
+      "question": "Số đơn hnay là bao nhiêu",
+      "as_of_date": "2025-10-04",
+      "canonical_question": "Ngày 04/10/2025 có bao nhiêu đơn hàng?",
+      "old_route": "paraphrase_fast_path"
+    },
+    {
+      "id": "q_2c97f6f308e9",
+      "business_id": "biz_111",
+      "question": "cửa hàng bán được bao nhiêu đơn trong quý 3 năm 2025",
+      "as_of_date": "2026-08-19",
+      "canonical_question": "Quý 3/2025 có bao nhiêu đơn hàng?",
+      "old_route": "fast_path"
+    },
+    {
+      "id": "q_4bf431361cac",
+      "business_id": "biz_111",
+      "question": "hom nay cua hang co bao nhieu don",
+      "as_of_date": "2025-05-10",
+      "canonical_question": "Ngày 10/05/2025 có bao nhiêu đơn hàng?",
+      "old_route": "fast_path"
+    },
+    {
+      "id": "q_181453dd6752",
+      "business_id": "biz_112",
+      "question": "so don tu dau nam toi het hnay la bnhiu",
+      "as_of_date": "2026-02-22",
+      "canonical_question": "Từ đầu năm đến hết hôm nay có bao nhiêu đơn hàng?",
+      "old_route": "abstain"
+    },
+    {
+      "id": "q_7689df0a8440",
+      "business_id": "biz_112",
+      "question": "tinh tu dau nam den het hnay, cua hang da co tong cong bao nhieu don",
+      "as_of_date": "2026-07-08",
+      "canonical_question": "Từ đầu năm đến hết hôm nay có bao nhiêu đơn hàng?",
+      "old_route": "fast_path"
+    },
+    {
+      "id": "q_57589d5f98b1",
+      "business_id": "biz_114",
+      "question": "Cho tôi biết số đơn hôm qua.",
+      "as_of_date": "2025-06-09",
+      "canonical_question": "Ngày 08/06/2025 có bao nhiêu đơn hàng?",
+      "old_route": "paraphrase_fast_path"
+    },
+    {
+      "id": "q_653d87082ae4",
+      "business_id": "biz_114",
+      "question": "Số đơn hàng hnay là bao nhiêu?",
+      "as_of_date": "2025-08-23",
+      "canonical_question": "Ngày 23/08/2025 có bao nhiêu đơn hàng?",
+      "old_route": "paraphrase_fast_path"
+    },
+    {
+      "id": "q_9a9d18b10b6e",
+      "business_id": "biz_114",
+      "question": "Hôm qua có tổng cộng bao nhiêu đơn?",
+      "as_of_date": "2025-04-06",
+      "canonical_question": "Ngày 05/04/2025 có bao nhiêu đơn hàng?",
+      "old_route": "fast_path"
+    },
+    {
+      "id": "q_39862a30b7df",
+      "business_id": "biz_115",
+      "question": "so don quy 2/2025 la bn",
+      "as_of_date": "2026-05-16",
+      "canonical_question": "Quý 2/2025 có bao nhiêu đơn hàng?",
+      "old_route": "abstain"
+    },
+    {
+      "id": "q_5d3ed455f3c8",
+      "business_id": "biz_115",
+      "question": "cho hoi so don quy 1/2026 la bn",
+      "as_of_date": "2026-05-16",
+      "canonical_question": "Quý 1/2026 có bao nhiêu đơn hàng?",
+      "old_route": "abstain"
+    },
+    {
+      "id": "q_7d460ecdd402",
+      "business_id": "biz_115",
+      "question": "Cho mình hỏi số đơn hàng hôm qua là bao nhiêu?",
+      "as_of_date": "2026-01-13",
+      "canonical_question": "Ngày 12/01/2026 có bao nhiêu đơn hàng?",
+      "old_route": "paraphrase_fast_path"
+    },
+    {
+      "id": "q_9af38217de13",
+      "business_id": "biz_115",
+      "question": "cua hang ban duoc bn don trong quy 3 nam 2025",
+      "as_of_date": "2026-05-16",
+      "canonical_question": "Quý 3/2025 có bao nhiêu đơn hàng?",
+      "old_route": "abstain"
+    },
+    {
+      "id": "q_ab53ef991019",
+      "business_id": "biz_115",
+      "question": "Số đơn hàng hôm nay là bao nhiêu?",
+      "as_of_date": "2026-01-24",
+      "canonical_question": "Ngày 24/01/2026 có bao nhiêu đơn hàng?",
+      "old_route": "paraphrase_fast_path"
+    },
+    {
+      "id": "q_d538d96dbbfa",
+      "business_id": "biz_115",
+      "question": "Cửa hàng bán được bao nhiêu đơn trong quý 4 năm 2025?",
+      "as_of_date": "2026-05-16",
+      "canonical_question": "Quý 4/2025 có bao nhiêu đơn hàng?",
+      "old_route": "fast_path"
+    },
+    {
+      "id": "q_08b2b7708de5",
+      "business_id": "biz_116",
+      "question": "hom qua co tong cong bao nhiu don",
+      "as_of_date": "2026-03-03",
+      "canonical_question": "Ngày 02/03/2026 có bao nhiêu đơn hàng?",
+      "old_route": "fast_path"
+    },
+    {
+      "id": "q_13cac41b4c0a",
+      "business_id": "biz_116",
+      "question": "hqua có tổng cộng bao nhiêu đơn?",
+      "as_of_date": "2026-03-29",
+      "canonical_question": "Ngày 28/03/2026 có bao nhiêu đơn hàng?",
+      "old_route": "fast_path"
+    },
+    {
+      "id": "q_16a738e45720",
+      "business_id": "biz_116",
+      "question": "Quý 4/2025 cửa hàng có bao nhiêu đơn hàng nhỉ?",
+      "as_of_date": "2026-09-03",
+      "canonical_question": "Quý 4/2025 có bao nhiêu đơn hàng?",
+      "old_route": "fast_path"
+    },
+    {
+      "id": "q_40c60df4f99d",
+      "business_id": "biz_116",
+      "question": "Cho mình biết số đơn hôm qua.",
+      "as_of_date": "2026-08-03",
+      "canonical_question": "Ngày 02/08/2026 có bao nhiêu đơn hàng?",
+      "old_route": "paraphrase_fast_path"
+    },
+    {
+      "id": "q_99b8b2aa4dc8",
+      "business_id": "biz_116",
+      "question": "Số đơn hàng quý 3/2025 là bao nhiêu?",
+      "as_of_date": "2026-09-03",
+      "canonical_question": "Quý 3/2025 có bao nhiêu đơn hàng?",
+      "old_route": "abstain"
+    },
+    {
+      "id": "q_b9febb40e782",
+      "business_id": "biz_116",
+      "question": "số đơn hoom nay là nhiêu",
+      "as_of_date": "2025-10-28",
+      "canonical_question": "Ngày 28/10/2025 có bao nhiêu đơn hàng?",
+      "old_route": "abstain"
+    },
+    {
+      "id": "q_cadf39898df8",
+      "business_id": "biz_116",
+      "question": "hnay cua hang co bao nhiu don",
+      "as_of_date": "2025-06-04",
+      "canonical_question": "Ngày 04/06/2025 có bao nhiêu đơn hàng?",
+      "old_route": "fast_path"
+    },
+    {
+      "id": "q_161977821933",
+      "business_id": "biz_120",
+      "question": "Hôm qua cửa hàng có bao nhiêu đơn hàng?",
+      "as_of_date": "2026-03-05",
+      "canonical_question": "Ngày 04/03/2026 có bao nhiêu đơn hàng?",
+      "old_route": "fast_path"
+    },
+    {
+      "id": "q_0ea59e7dddea",
+      "business_id": "biz_122",
+      "question": "Cho mình hỏi số đơn từ đầu năm tới hết hôm nay là bao nhiêu?",
+      "as_of_date": "2025-10-18",
+      "canonical_question": "Từ đầu năm đến hết hôm nay có bao nhiêu đơn hàng?",
+      "old_route": "abstain"
+    },
+    {
+      "id": "q_3cca47985bbe",
+      "business_id": "biz_122",
+      "question": "cho toi biet so don tuan nay",
+      "as_of_date": "2025-12-18",
+      "canonical_question": "Tuần này có bao nhiêu đơn hàng?",
+      "old_route": "abstain"
+    },
+    {
+      "id": "q_512c57b3c93d",
+      "business_id": "biz_122",
+      "question": "tinh tu dau nam den het hom nay, cua hang da co tong cong bn don hang do",
+      "as_of_date": "2025-02-24",
+      "canonical_question": "Từ đầu năm đến hết hôm nay có bao nhiêu đơn hàng?",
+      "old_route": "abstain"
+    },
+    {
+      "id": "q_52f9d6ee8d83",
+      "business_id": "biz_122",
+      "question": "Từ 1/1 năm nay đến hết hôm nay đã bán đc bao nhiêu đơn?",
+      "as_of_date": "2025-07-18",
+      "canonical_question": "Từ đầu năm đến hết hôm nay có bao nhiêu đơn hàng?",
+      "old_route": "abstain"
+    },
+    {
+      "id": "q_d9d3aff4fe7f",
+      "business_id": "biz_122",
+      "question": "so don tu dau nam toi het hnay la bn",
+      "as_of_date": "2026-04-26",
+      "canonical_question": "Từ đầu năm đến hết hôm nay có bao nhiêu đơn hàng?",
+      "old_route": "abstain"
+    },
+    {
+      "id": "q_4470cd3d68b2",
+      "business_id": "biz_124",
+      "question": "số đơn từ đầu nawm tới hết bữa nay là bao nhiêu",
+      "as_of_date": "2025-05-08",
+      "canonical_question": "Từ đầu năm đến hết hôm nay có bao nhiêu đơn hàng?",
+      "old_route": "abstain"
+    },
+    {
+      "id": "q_a216b24ccdfd",
+      "business_id": "biz_127",
+      "question": "cho hỏi bữa qua có tổng cộng bao nhiêu đơn nhỉ",
+      "as_of_date": "2025-09-03",
+      "canonical_question": "Ngày 02/09/2025 có bao nhiêu đơn hàng?",
+      "old_route": "fast_path"
+    },
+    {
+      "id": "q_1f89d8d8fb78",
+      "business_id": "biz_128",
+      "question": "hqua có tổng cộng bao nhiêu đơn?",
+      "as_of_date": "2025-11-26",
+      "canonical_question": "Ngày 25/11/2025 có bao nhiêu đơn hàng?",
+      "old_route": "fast_path"
+    },
+    {
+      "id": "q_4379ec5b27a2",
+      "business_id": "biz_128",
+      "question": "Hôm qua có tổng cộng bao nhiêu đơn?",
+      "as_of_date": "2026-06-25",
+      "canonical_question": "Ngày 24/06/2026 có bao nhiêu đơn hàng?",
+      "old_route": "fast_path"
+    },
+    {
+      "id": "q_6639dbf30814",
+      "business_id": "biz_128",
+      "question": "cho tôi biết số đơn hôm qua",
+      "as_of_date": "2026-01-22",
+      "canonical_question": "Ngày 21/01/2026 có bao nhiêu đơn hàng?",
+      "old_route": "paraphrase_fast_path"
+    },
+    {
+      "id": "q_6ba2569c233f",
+      "business_id": "biz_128",
+      "question": "Số đơn hôm nay là bao nhiêu?",
+      "as_of_date": "2026-06-22",
+      "canonical_question": "Ngày 22/06/2026 có bao nhiêu đơn hàng?",
+      "old_route": "paraphrase_fast_path"
+    },
+    {
+      "id": "q_94cb5e6611ed",
+      "business_id": "biz_128",
+      "question": "Số đơn hàng hôm nay là bao nhiêu ạ?",
+      "as_of_date": "2025-07-18",
+      "canonical_question": "Ngày 18/07/2025 có bao nhiêu đơn hàng?",
+      "old_route": "paraphrase_fast_path"
+    },
+    {
+      "id": "q_af3626a4166e",
+      "business_id": "biz_128",
+      "question": "bua qua co tong cong bnhiu don",
+      "as_of_date": "2026-05-22",
+      "canonical_question": "Ngày 21/05/2026 có bao nhiêu đơn hàng?",
+      "old_route": "fast_path"
+    },
+    {
+      "id": "q_eba1135546c4",
+      "business_id": "biz_128",
+      "question": "cua hang ban duoc bn don trong quy 1 nam 2026 nhi",
+      "as_of_date": "2026-09-07",
+      "canonical_question": "Quý 1/2026 có bao nhiêu đơn hàng?",
+      "old_route": "abstain"
+    },
+    {
+      "id": "q_113fb704f84d",
+      "business_id": "biz_129",
+      "question": "Số đơn hôm qua là bao nhiêu",
+      "as_of_date": "2025-04-25",
+      "canonical_question": "Ngày 24/04/2025 có bao nhiêu đơn hàng?",
+      "old_route": "paraphrase_fast_path"
+    },
+    {
+      "id": "q_7a0a2623efab",
+      "business_id": "biz_129",
+      "question": "Cho tôi biết số đơn hôm qua.",
+      "as_of_date": "2025-12-25",
+      "canonical_question": "Ngày 24/12/2025 có bao nhiêu đơn hàng?",
+      "old_route": "paraphrase_fast_path"
+    },
+    {
+      "id": "q_88a224ef1656",
+      "business_id": "biz_129",
+      "question": "số đơn hàng hnay là bao nhiêu",
+      "as_of_date": "2025-02-20",
+      "canonical_question": "Ngày 20/02/2025 có bao nhiêu đơn hàng?",
+      "old_route": "paraphrase_fast_path"
+    },
+    {
+      "id": "q_137ebe6e6af4",
+      "business_id": "biz_130",
+      "question": "Tính từ đầu năm đến hết hôm nay, cửa hàng đã có tổng cộng bao nhiêu đơn hàng?",
+      "as_of_date": "2026-03-08",
+      "canonical_question": "Từ đầu năm đến hết hôm nay có bao nhiêu đơn hàng?",
+      "old_route": "fast_path"
+    },
+    {
+      "id": "q_162ac7bd3642",
+      "business_id": "biz_130",
+      "question": "quy 2/2026 cua hang co bn don hang ta",
+      "as_of_date": "2026-08-29",
+      "canonical_question": "Quý 2/2026 có bao nhiêu đơn hàng?",
+      "old_route": "abstain"
+    },
+    {
+      "id": "q_19b422be1d9b",
+      "business_id": "biz_130",
+      "question": "cho tooi bieets số đơn tuần trước",
+      "as_of_date": "2025-06-27",
+      "canonical_question": "Tuần trước có bao nhiêu đơn hàng?",
+      "old_route": "abstain"
+    },
+    {
+      "id": "q_d29157035ff7",
+      "business_id": "biz_130",
+      "question": "tu dau nam den het bua nay cua hang co bn don hang",
+      "as_of_date": "2026-04-06",
+      "canonical_question": "Từ đầu năm đến hết hôm nay có bao nhiêu đơn hàng?",
+      "old_route": "abstain"
+    },
+    {
+      "id": "q_e88a5c5df7f1",
+      "business_id": "biz_130",
+      "question": "Từ đầu năm đến hết hôm nay cửa hàng có bao nhiêu đơn",
+      "as_of_date": "2026-07-10",
+      "canonical_question": "Từ đầu năm đến hết hôm nay có bao nhiêu đơn hàng?",
+      "old_route": "fast_path"
+    }
+  ]
+}

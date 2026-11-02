@@ -120,7 +120,7 @@ def main():
     parser.add_argument('--model',default='datamate-business24')
     parser.add_argument('--output-dir',required=True)
     parser.add_argument('--reuse-run',help='Reuse matching recorded model responses; SQL is checked and executed again')
-    parser.add_argument('--daily-order-paraphrases',action='store_true',help='Opt in to Train-24 daily order syntax fallback')
+    parser.add_argument('--order-paraphrases','--daily-order-paraphrases',dest='daily_order_paraphrases',action='store_true',help='Opt in to Train-24 order syntax fallback')
     args = parser.parse_args()
     out = Path(args.output_dir)
     if out.exists():

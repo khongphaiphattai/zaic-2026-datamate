@@ -23,7 +23,7 @@ def test_train24_daily_order_phrases(question, expected):
     'Số đơn thành công hôm nay là bao nhiêu?',
     'Số đơn hàng hôm nay của khách Lan là bao nhiêu?',
     'Số đơn hôm nay mua bia là bao nhiêu?',
-    'Số đơn từ đầu năm đến hôm nay là bao nhiêu?',
+    'Số đơn từ đầu năm đến hôm nay của khách Lan là bao nhiêu?',
     'Số đơn hôm nay so với hôm qua là bao nhiêu?',
     'Số đơn hôm nay trên 500k là bao nhiêu?',
     'Số đơn hôm nay trả tiền mặt là bao nhiêu?',
@@ -38,6 +38,38 @@ def test_conditions_and_invalid_dates_stay_blocked(question):
 
 def test_missing_anchor_stays_blocked():
     assert canonical_daily_order_count('Số đơn hôm nay là bao nhiêu?', None) is None
+
+
+@pytest.mark.parametrize('question,expected', [
+    ('số đơn quys 3/2025 là nhiêu', 'Quý 3/2025 có bao nhiêu đơn hàng?'),
+    ('Số đơn hàng quý 1/2026 là bao nhiêu?', 'Quý 1/2026 có bao nhiêu đơn hàng?'),
+    ('cho hỏi số đơn quý 1/2026 là bn', 'Quý 1/2026 có bao nhiêu đơn hàng?'),
+    ('cua hang ban duoc bn don trong quy 3 nam 2025', 'Quý 3/2025 có bao nhiêu đơn hàng?'),
+    ('quy 2/2026 cua hang co bn don hang ta', 'Quý 2/2026 có bao nhiêu đơn hàng?'),
+    ('Cho tôi biết số đơn tuần trước.', 'Tuần trước có bao nhiêu đơn hàng?'),
+    ('cho toi biet so don tuan nay', 'Tuần này có bao nhiêu đơn hàng?'),
+    ('so don tu dau nam toi het hnay la bnhiu', 'Từ đầu năm đến hết hôm nay có bao nhiêu đơn hàng?'),
+    ('Từ 1/1 năm nay đến hết hnay đã bán đc bao nhiêu đơn?', 'Từ đầu năm đến hết hôm nay có bao nhiêu đơn hàng?'),
+    ('tinh tu dau nam den het hom nay, cua hang da co tong cong bn don hang do', 'Từ đầu năm đến hết hôm nay có bao nhiêu đơn hàng?'),
+    ('số đơn từ đầu nawm tới hết bữa nay là bao nhiêu', 'Từ đầu năm đến hết hôm nay có bao nhiêu đơn hàng?'),
+])
+def test_train24_period_order_phrases(question, expected):
+    assert canonical_daily_order_count(question, '2026-09-07') == expected
+
+
+@pytest.mark.parametrize('question', [
+    'Số đơn quý 4/2026 là bao nhiêu?',
+    'Số đơn quý 3/2026 là bao nhiêu?',
+    'Số đơn quý 0/2026 là bao nhiêu?',
+    'Số đơn tuần trước ca sáng là bao nhiêu?',
+    'Số đơn tuần trước hủy là bao nhiêu?',
+    'Số đơn tuần trước so với tuần này là bao nhiêu?',
+    'Số đơn 30 ngày gần nhất là bao nhiêu?',
+    'Số đơn từ đầu năm tới hết hôm nay trên 500k là bao nhiêu?',
+    'Số đơn từ đầu năm tới hết hôm qua là bao nhiêu?',
+])
+def test_period_guards_remain_strict(question):
+    assert canonical_daily_order_count(question, '2026-09-07') is None
 
 
 def test_wrapper_preserves_original_answer_without_fallback():
