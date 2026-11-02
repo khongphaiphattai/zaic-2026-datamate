@@ -2,7 +2,7 @@
 
 ## Trạng thái chốt
 
-Người dùng đã chọn tên **v3.0**, xác nhận sẽ tự nộp sau và gửi kết quả ngay khi có. **Chưa có score mới/submit ID, chưa có upload được xác nhận.** File chốt `submission.jsonl` đủ 1.000 dòng, SHA256 `288ed868fde9175d36afd8995cdaf0e2c5f978a716be5c2a845f35c5e89afb9f`. Receipt tại `artifacts/releases/v3.0/submission-receipt.json`. Mốc Public 0.13400 là người dùng báo cho v2.8.
+**v3.0 đã nộp và có Public score 0.13400**, delta **0.00000** so v2.8. Đã xem ảnh người dùng cung cấp `submitv3.0.png`: portal hiển thị lúc **03/11/2026 00:12:27** (không hiện timezone), model **SLM**, filename `cf843efb-cc80-4fdb-b28a-1d0c730a4f8a.jsonl`. Cả hàng v3.0 và v2.8 đều 0.13400. File local chốt đủ 1.000 dòng, SHA256 `288ed868fde9175d36afd8995cdaf0e2c5f978a716be5c2a845f35c5e89afb9f`; ảnh không cho xác minh hash của bytes đã upload. Receipt: `artifacts/releases/v3.0/submission-receipt.json`.
 
 v3.0 tích hợp Qwen business24, selective revenue/metric guard và fallback nhận diễn đạt đếm đơn theo ngày/tuần/quý/YTD. Full Train: **818 đúng / 6 sai / 2.176 abstain**, PA **0.2706667** so Fast-only 0.25000. Slow thêm 13 đúng, fallback đếm đơn thêm 49 đúng, không thêm lỗi trong lượt đo và giữ mọi đáp án cũ. **159 tests pass**. Đây là development evidence; nhóm 6 đã tham gia debugging, không phải untouched validation.
 
@@ -10,7 +10,7 @@ Public: **204 trả lời / 796 abstain**, **0 đáp án mới**, file trùng by
 
 ## Thứ tự công việc
 
-1. **Nhận score và khóa receipt khi người dùng gửi.** Ghi submit ID/thời điểm, score và SHA file thực sự nộp. Dữ liệu user-report phải ghi rõ nguồn, không giả đã đọc portal. Tính delta so 0.13400 nhưng diễn giải theo việc file trùng baseline. Không thay file chốt sau upload rồi gán score cho bản khác. Score pending không cản trở kiểm kê/spec/local tests độc lập.
+1. **Đã nhận score và cập nhật receipt.** Ảnh portal xác nhận v3.0 = 0.13400, bằng v2.8. Giữ snapshot và ghi đúng nguồn screenshot/user report; không suy nhãn từng câu từ tổng điểm. Bắt đầu phiên sau từ bước kiểm kê độ phủ bên dưới.
 2. **Giải quyết độ phủ trước khi training.** Nút thắt đo được là 795 câu Public bị language gate chặn và 1 câu cần cấu trúc ngoài policy; các mở rộng cú pháp tăng Train nhưng chưa tăng Public. Kiểm kê intent/schema ở mức tổng hợp, dùng Train-24 để thiết kế các capability có thể kiểm chứng; Public chỉ hỗ trợ chẩn đoán độ phủ, không điền/sửa đáp án theo ID. Chọn một intent hỗ trợ được qua nhiều business, chốt spec/counterexamples rồi mới code. Không tiếp tục thêm polite phrase chỉ vì Train đẹp hơn.
 3. **Điều tra lỗi percent từ Train-24.** Năm câu tỷ lệ hủy ở biz_105/biz_117 thấp hơn target 0.01 điểm phần trăm. Tỷ lệ COUNT DISTINCT thực tế: 124/5650, 83/4431, 11/913, 18/666, 20/1024; thay row-count không khớp. Kiểm README về grain, ngày đại diện của đơn nhiều dòng, duplicate/status không nhất quán và mẫu số. Chưa kết luận chỉ do rounding; không cộng 0.01 hoặc hardcode ID/business. Có negative controls trên câu đã đúng và regression test trước sửa.
 4. **Tách policy rejection khỏi lỗi cú pháp để tiết kiệm units.** 9 câu Train bị chặn vì SQL cần JOIN đã dùng 18 calls, gồm 9 retry; policy hiện không hỗ trợ JOIN nên sửa cú pháp không giải quyết được phạm vi. Thiết kế fail-closed không retry cho policy shape, giữ retry cho lỗi syntax thật; replay/test bảo đảm không làm nhận SQL sai và không làm mất đáp án đúng đã có.

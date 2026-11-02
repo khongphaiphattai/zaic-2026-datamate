@@ -350,3 +350,7 @@ Kế hoạch phiên tiếp theo: `docs/plans/2026-11-03-improvement-plan.md`. Nh
 ## Review chốt phiên và chuyển sang v3.1 (03/11/2026)
 
 Review `artifacts/v3-closeout-review/README.md` xác nhận model chạy trực tiếp qua Colab, file release không đổi và nút thắt Public là coverage/policy. Kế hoạch v3.1 đã bổ sung spec một capability, guard date/status/cardinality, giảm policy retry, thống nhất generator/diagnostics và sửa tài liệu source lỗi thời. Phiên này chỉ audit/tài liệu, chưa thay inference hoặc training. Không phải chờ score mới để làm các bước local độc lập; chỉ kết luận tăng điểm sau receipt gắn đúng SHA.
+
+### Kết quả nộp v3.0 (03/11/2026)
+
+Ảnh `submitv3.0.png` do người dùng gửi xác nhận **Public score 0.13400**, bằng v2.8, loại **SLM**, thời điểm portal **03/11/2026 00:12:27**. Receipt đã cập nhật `submitted_scored`; bản v3.0 được chốt làm baseline, không còn chờ score. Tiếp tục kế hoạch v3.1 từ kiểm kê độ phủ; không thay file v3.0 hoặc train lại trong bước ghi nhận kết quả này.
