@@ -1,0 +1,23 @@
+{
+  "fast": {
+    "correct": 123,
+    "wrong": 1
+  },
+  "slow": {
+    "correct": 5,
+    "wrong": 2
+  },
+  "abstain": 344,
+  "gate_eligible": 7,
+  "total": 475,
+  "inference_errors": 0,
+  "fast_pa": 0.25684210526315787,
+  "hybrid_pa": 0.2631578947368421,
+  "slow_delta_pa": 0.00631578947368421,
+  "model_attempted": true,
+  "model_evaluated": true,
+  "exploratory": false,
+  "training_overlap": [],
+  "recommend_enable": false,
+  "limitation": "SFT-business isolation only; historical rule/prompt/gate tuning used Train and base pretraining is unknown."
+}

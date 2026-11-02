@@ -584,3 +584,17 @@
 - Hai kiểm thử HTTP contract và provenance đã qua (request hợp lệ, sai model/seed/temperature/token/message và sai checkpoint metadata). Chuẩn bị chạy toàn bộ tests.
 - Precheck phát hiện GitHub REST API bị rate limit 403 ở môi trường local. Cell tunnel đã chuyển sang release cố định **cloudflared 2026.10.7**, kiểm SHA256 từ release chính thức (`1f99fb518b83dec2ba8d870a7cc991d82a77e6196295a3d2754ba17ab9f91872`), không phụ thuộc API latest. Test xác nhận từ chối binary sai hash.
 - Full suite trước thay đổi downloader: **60 passed** (21.92 giây). Kiểm riêng API/provenance sau thay đổi: **3 passed**. Chưa có bằng chứng GPU generation/tunnel thực tế của cell mới; cần người dùng chạy và gửi URL.
+
+### 02/11/2026 — Endpoint business24 đúng provenance, bắt đầu đánh giá
+- Endpoint mới người dùng cung cấp: `https://affiliate-pcs-rates-monitored.trycloudflare.com/v1`. `/models` trả model ID riêng `datamate-business24`.
+- `/model-provenance` đã khớp 633 mẫu train, training_complete/merge_complete, SHA256 dữ liệu/split, base Qwen revision cố định và đúng 24 business train. Không dùng endpoint checkpoint cũ. Đây là kiểm tra metadata server khai báo, không attestation độc lập về weights.
+- Bắt đầu đánh giá 475 câu trên 6 business giữ riêng khỏi SFT với cùng gate/evaluator, lưu riêng ở `artifacts/business24-heldout-evaluation/`. Không dùng `--exploratory`; vẫn ghi giới hạn lịch sử đã tune rule/prompt/gate trên Train.
+
+### 02/11/2026 — Hoàn tất đánh giá checkpoint business24 trên split giữ riêng khỏi SFT
+- 475 câu cùng split, 7 câu eligible: **Slow Path 5 đúng / 2 sai / 0 abstain**, precision **71.43%** trên 7 câu có trả lời; **0 lỗi inference**, không có invalid JSON được ghi nhận.
+- Fast Path giữ nguyên từng prediction đối chứng: **123 đúng / 1 sai**. Tổng Hybrid **128 đúng / 3 sai / 344 abstain**, điểm thuần **125/475**, PA **0.2631579**. Fast-only PA **0.2568421**; Slow Path thêm **3 điểm thuần**, delta PA **0.0063158**.
+- Chỉ 7 request model thuộc 4 business (`biz_103`, `biz_110`, `biz_118`, `biz_125`); 2 business validation còn lại không có request model eligible. Không suy rộng precision này ra toàn bộ long-tail hoặc Public. Đây là giữ riêng khỏi SFT; lịch sử rule/prompt/gate tuning đã dùng Train vẫn là giới hạn.
+- Hai lỗi đều ở `biz_110`: `q_0ddb6dcd7d01` trả 6.180.000 thay vì 6.030.000; `q_72c84fa63b2a` trả 5.092.000 thay vì 5.002.000. SQL cộng `tong_tien` (tổng khách phải trả), trong khi README quy định doanh thu là `tien_hang` (tiền hàng trước giảm giá toàn đơn, chưa gồm phí giao). Truy vấn trực tiếp xác nhận chênh 150.000đ và 90.000đ đúng với hai sai số.
+- `biz_118` từng invalid JSON ở checkpoint cũ nay trả lời đúng; không kết luận checkpoint mới tốt hơn/chắc chắn khái quát hóa vì cỡ mẫu nhỏ và các điều kiện train khác nhau.
+- Lưu report, served-model-provenance, split, provenance và trace ở `artifacts/business24-heldout-evaluation/`; 7 câu chi tiết ở `eligible-results.json`, chẩn đoán ở `error-analysis.json`. Đã đối chiếu đầy đủ 475 ID duy nhất và toàn bộ Fast Path không đổi; root submission vẫn nguyên byte.
+- **Quyết định:** `recommend_enable=false`; gate vẫn mặc định tắt, không nộp Public mới. Đề xuất tiếp theo là kiểm chứng ngữ nghĩa metric doanh thu / canonical schema trước mở rộng hoặc train thêm. Các lỗi validation vừa xem không được dùng tune rồi tuyên bố là phép đo mới trên tập untouched.

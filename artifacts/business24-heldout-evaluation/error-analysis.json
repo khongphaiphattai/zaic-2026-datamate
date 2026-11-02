@@ -1,0 +1,28 @@
+{
+  "failure_mode": "Wrong metric column: customer payable instead of merchandise revenue",
+  "source": "data/train/train/data/biz_110/README.md and direct SQL comparison on supplied data",
+  "wrong_cases": [
+    {
+      "id": "q_0ddb6dcd7d01",
+      "business_id": "biz_110",
+      "as_of_date": "2025-10-01",
+      "actual_column": "tong_tien",
+      "required_column": "tien_hang",
+      "predicted": 6180000,
+      "expected": 6030000,
+      "difference": 150000
+    },
+    {
+      "id": "q_72c84fa63b2a",
+      "business_id": "biz_110",
+      "as_of_date": "2025-06-13",
+      "actual_column": "tong_tien",
+      "required_column": "tien_hang",
+      "predicted": 5092000,
+      "expected": 5002000,
+      "difference": 90000
+    }
+  ],
+  "recommend_enable": false,
+  "limitation": "Only 7 gated requests across 4 validation businesses; gate/rules have historical Train exposure. Inspecting these failures makes subsequent tuning development-driven, not a new untouched test."
+}
