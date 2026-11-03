@@ -754,3 +754,8 @@
 - Người dùng tự nộp và gửi `submitv3.0.png`; đã xem ảnh. Hàng v3.0 hiển thị **0.13400**, model **SLM**, thời điểm **03/11/2026 00:12:27** (ảnh không hiện timezone), filename `cf843efb-cc80-4fdb-b28a-1d0c730a4f8a.jsonl`. Hàng v2.8 trong cùng ảnh cũng **0.13400**; delta **0.00000**.
 - Receipt chuyển sang `submitted_scored`, uploads_confirmed=1, kèm nguồn screenshot và SHA ảnh. UUID ghi theo filename hiển thị, không giả đã gọi API portal. Hash local release vẫn `288ed868fde9175d36afd8995cdaf0e2c5f978a716be5c2a845f35c5e89afb9f`; screenshot không xác minh độc lập bytes đã upload.
 - Đã cập nhật release README và trạng thái kế hoạch v3.1. Kết quả phù hợp với việc output Public giữ nguyên; không chứng minh AI tăng điểm hoặc suy nhãn từng câu từ điểm tổng. Chốt v3.0 làm baseline 0.13400, không cần nộp lại cùng file. Phiên tiếp theo bắt đầu kiểm kê độ phủ/spec capability, chưa cần train thêm.
+
+### 03/11/2026 — v3.1 local: phân loại policy retry
+- Bắt đầu theo yêu cầu “Ok triển khai”, chưa cần Colab. Spec/acceptance criteria tại `docs/plans/2026-11-03-v31-local-design.md` dựa trên kế hoạch đã duyệt; file release v3.0 giữ nguyên.
+- Test hồi quy tái hiện 6 ca policy đang được retry rồi có thể nhận đáp án correction (sau khi sửa fixture test dùng đúng keyword fields). Đã chặn retry cho single-SELECT/table policy và DuckDB PermissionException; parser/binder vẫn được sửa đúng một lần. Reset trạng thái giữa hai câu hỏi.
+- **42 tests pass** cho retry/hybrid/metric. Chưa suy mức tiết kiệm trên full dataset từ unit test; tiếp theo replay raw responses để đo số calls và bảo toàn output, đồng thời thống nhất cấu hình entrypoint.

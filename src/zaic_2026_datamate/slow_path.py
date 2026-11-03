@@ -50,6 +50,7 @@ class SlowPathEngine:
         self.last_metric_check: Optional[MetricCheck] = None
         self.last_sql_attempt: Optional[str] = None
         self.last_execution_succeeded = False
+        self.last_policy_rejection = False
 
     def resolve_slow_path(
         self,
@@ -117,6 +118,7 @@ class SlowPathEngine:
 
         # Optional self-correction loop (1 retry)
         if (not success and self.enable_self_correction and err
+                and not self.last_policy_rejection
                 and not (self.last_metric_check and not self.last_metric_check.allowed)):
             logger.info("Retrying SQL with self-correction feedback: %s", err)
             correction_prompt = f"{prompt}\n\nLệnh SQL sau bị lỗi: `{cleaned_sql}`\nThông báo lỗi DuckDB: `{err}`\nHãy sửa lại câu lệnh SQL để khắc phục lỗi trên."
@@ -146,9 +148,11 @@ class SlowPathEngine:
         self.last_sql_attempt = sql
         self.last_metric_check = None
         self.last_execution_succeeded = False
+        self.last_policy_rejection = False
         try:
             statements = context.duckdb_conn.extract_statements(sql)
             if len(statements) != 1 or statements[0].type != duckdb.StatementType.SELECT:
+                self.last_policy_rejection = True
                 return False, None, "Only a single SELECT is permitted"
             # A fresh catalog is required: DuckDB expands registered DataFrame views
             # in get_table_names, hiding their original names on the live connection.
@@ -158,6 +162,7 @@ class SlowPathEngine:
             finally:
                 parser.close()
             if len(tables) != 1 or not tables.issubset(context.tables):
+                self.last_policy_rejection = True
                 return False, None, "Selective execution requires one registered business table"
             if self.verify_daily_revenue:
                 self.last_metric_check = verify_revenue_metric(context, sql)
@@ -168,6 +173,9 @@ class SlowPathEngine:
             result = engine.execute_query(sql)
             self.last_execution_succeeded = result[0]
             return result
+        except duckdb.PermissionException as exc:
+            self.last_policy_rejection = True
+            return False, None, str(exc)
         except Exception as exc:
             return False, None, str(exc)
 
