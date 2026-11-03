@@ -46,3 +46,16 @@ Tiêu chí nghiệm thu v3.1:
 - Generator và diagnostics tái lập cùng pipeline; report phân biệt model với deterministic fallback, network với cache, confidence với measured accuracy.
 - Candidate Public đủ 1.000 ID, format hợp lệ; có diff/SHA và nguyên nhân thay đổi từ pipeline. File vẫn trùng thì không gọi là cải tiến đáp án Public. File khác cũng chưa bảo đảm tăng score; chỉ xác nhận bằng lượt nộp thực tế.
 - Giữ nguyên snapshot/receipt v3.0; chỉ gán score mới cho SHA đã nộp. Chưa huấn luyện thêm nếu chưa chứng minh checkpoint là nút thắt.
+
+## Tiến độ triển khai 03/11/2026
+
+- Hoàn tất cấu hình chung, provenance generator, count route accounting và đóng contexts; policy rejection không retry, parser/binder vẫn một retry.
+- Offline replay migration kiểm đủ 4.000 câu giữ nguyên prediction, Train43→34/Public2→1 logical calls, 0 network. Đây là đo số lần gọi cần thiết trên raw cache, không đo units thực tế.
+- Chọn tháng hoàn tất so tháng liền trước sau inventory/probe Train-24. Spec `2026-11-03-monthly-growth-design.md`, opt-in `--monthly-growth`. Full Train thêm22 đúng/0 sai, tổng840 đúng/6 sai, PA0.27800. Tất cả22 ở Train-24; nhóm6 không thêm đáp án. Không gọi là unseen hoặc tăng Public.
+- Public đang đo đúng source đã freeze. Root v3.0 và score0.13400 không đổi; candidate mới chưa nộp. Khi đo xong cập nhật verdict theo diff/guards, không train thêm hoặc mở gate chỉ để có file khác.
+
+### Kết quả cuối bước local
+
+Public đã đo xong: **0 đáp án mới**, vẫn204 trả lời/796 abstain, cùng SHA v3.0. Monthly chỉ1 candidate sau Fast và bị contract từ chối; không phát hành/nộp v3.1 ở trạng thái này. Việc tăng22 đúng trên Train-24 chưa chuyển sang nhóm6/Public.
+
+Phiên tiếp theo: ưu tiên phân biệt lỗi nhận diện intent/period với lỗi schema contract bằng tập Train-24 đã chọn; xem xét extraction có cấu trúc từ model rồi compiler/guard deterministic, thay vì tiếp tục bổ sung regex câu chữ. Chốt spec/counterexamples và bảng đo số eligible→verified→answered trước mở Colab. Kiểm mapping README từ Train; không nới theo một câu Public. Giữ các cải tiến local đã kiểm và root v3.0 đã nộp.

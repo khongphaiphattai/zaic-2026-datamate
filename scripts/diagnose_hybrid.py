@@ -34,9 +34,10 @@ def summarize(cases, labelled):
     eligible = sum(r['eligible'] for r in cases)
     slow = metrics([r for r in cases if r['route']=='slow_path'],eligible)
     paraphrase = metrics([r for r in cases if r['route']=='paraphrase_fast_path'],n)
+    growth = metrics([r for r in cases if r['route']=='monthly_growth_path'],n)
     hybrid = metrics([r for r in cases if r['type']!='abstain'],n)
     reasons = Counter((r.get('reason') or 'unspecified').split(':')[0][:160] for r in cases if r['type']=='abstain')
-    return {'questions':n,'fast':fast,'paraphrase':paraphrase,'slow':slow,'hybrid':hybrid,
+    return {'questions':n,'fast':fast,'paraphrase':paraphrase,'monthly_growth':growth,'slow':slow,'hybrid':hybrid,
             'slow_delta_pa':(slow['correct']-slow['wrong'])/n if labelled and n else None,
             'metric_rejected':sum(bool(r.get('revenue_metric_check')) and not r['revenue_metric_check']['allowed'] for r in cases),
             'inference_errors':sum('LLM generation failed' in (r.get('reason') or '') for r in cases),
@@ -129,6 +130,7 @@ def main():
     parser.add_argument('--base-url')
     parser.add_argument('--model',default='datamate-business24')
     parser.add_argument('--confidence-threshold',type=float,default=0.95)
+    parser.add_argument('--monthly-growth', action='store_true')
     parser.add_argument('--output-dir',required=True)
     parser.add_argument('--reuse-run',help='Reuse matching recorded model responses; SQL is checked and executed again')
     parser.add_argument('--offline-replay', action='store_true', help='Use saved provenance/responses only; fail on any missing prompt')
@@ -168,6 +170,8 @@ def main():
     sources = ['pipeline.py','provenance.py','hybrid_agent.py','slow_path.py','revenue_metric.py','selective_gate.py','prompt_generator.py','intent_parser.py']
     if args.daily_order_paraphrases:
         sources.append('paraphrase_fast.py')
+    if args.monthly_growth:
+        sources.append('monthly_growth.py')
     run_config = {'dataset':args.dataset,'model':args.model,'endpoint':args.base_url,'reuse_run':args.reuse_run,'temperature':0,'seed':42,'max_tokens':1024,
                   'offline_replay':args.offline_replay,'allow_execution_changes':args.allow_execution_changes,
                   'reused_trace_sha256':hashlib.sha256((Path(args.reuse_run)/'trace.jsonl').read_bytes()).hexdigest() if args.reuse_run else None,
@@ -179,7 +183,8 @@ def main():
     backend = None if args.offline_replay else OpenAICompatibleClient(base_url=args.base_url,model=args.model)
     client = RecordedClient(backend,cached,offline=args.offline_replay)
     pipeline_config = PipelineConfig(enable_slow_path=True, order_paraphrases=args.daily_order_paraphrases,
-                                     model=args.model, confidence_threshold=args.confidence_threshold)
+                                     model=args.model, confidence_threshold=args.confidence_threshold,
+                                     monthly_growth=args.monthly_growth)
     run_config['pipeline'] = asdict(pipeline_config)
     (out/'run-config.json').write_text(json.dumps(run_config,indent=2))
     agent = build_agent(pipeline_config, client)
@@ -207,6 +212,7 @@ def main():
                               'eligible':route!='fast_path' and daily_revenue_date(q['question'],q.get('as_of_date')) is not None,
                               'sql':context.last_sql,'slow_sql_attempt':slow.last_sql_attempt,'slow_execution_succeeded':slow.last_execution_succeeded,
                               'canonical_question':getattr(agent,'last_canonical_question',None),
+                              'monthly_growth_audit':getattr(agent,'last_monthly_growth',None),
                               'revenue_metric_check':asdict(slow.last_metric_check) if slow.last_metric_check else None,
                               'llm_calls':list(client.calls),'elapsed_seconds':time.monotonic()-t0}
                     cases.append(record)
@@ -233,7 +239,7 @@ def main():
         differences = compare_baseline(baseline,list(fast_rows.values()))
         (out/'fast-baseline-differences.json').write_text(json.dumps(differences,ensure_ascii=False,indent=2))
         report['fast_matches_v2_8'] = not differences
-        report['new_answer_ids'] = [r['id'] for r in cases if r['route'] in ('slow_path','paraphrase_fast_path')]
+        report['new_answer_ids'] = [r['id'] for r in cases if r['route'] in ('slow_path','paraphrase_fast_path','monthly_growth_path')]
         report['candidate_created'] = False
         if not differences:
             write_submission(out/'submission.jsonl',[predictions[qid] for qid in expected],expected)

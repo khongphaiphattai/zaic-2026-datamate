@@ -354,3 +354,13 @@ Review `artifacts/v3-closeout-review/README.md` xác nhận model chạy trực 
 ### Kết quả nộp v3.0 (03/11/2026)
 
 Ảnh `submitv3.0.png` do người dùng gửi xác nhận **Public score 0.13400**, bằng v2.8, loại **SLM**, thời điểm portal **03/11/2026 00:12:27**. Receipt đã cập nhật `submitted_scored`; bản v3.0 được chốt làm baseline, không còn chờ score. Tiếp tục kế hoạch v3.1 từ kiểm kê độ phủ; không thay file v3.0 hoặc train lại trong bước ghi nhận kết quả này.
+
+## v3.1 đang triển khai local (03/11/2026)
+
+Đã hoàn tất cấu hình chung generator/diagnostics, provenance check và giảm policy retry; replay 4.000 câu giữ nguyên output, logical calls Train 43→34/Public 2→1, 0 network inference. Có chế độ offline replay migration minh bạch khi execution source thay đổi, vẫn khóa model/generation/prompt và lỗi khi thiếu response.
+
+Capability mới opt-in `--monthly-growth`: whole-question tháng hoàn tất so tháng liền trước, SQL tự sinh và kiểm schema/metric/date/status/data boundaries. Spec `docs/plans/2026-11-03-monthly-growth-design.md`; runbook `docs/runbooks/v31-local-evaluation.md`. Full Train 840 đúng/6 sai, PA 0.27800; thêm22 đúng đều ở Train-24, không thêm lỗi trong lượt đo. Chưa có score Public v3.1, root release v3.0 giữ nguyên.
+
+Các mục còn lại: Public candidate verification, live smoke khi thực sự cần model; điều tra lỗi percent cũ; temporal/status guard cho SQL do model sinh; JOIN chỉ sau chứng minh cardinality; offline container trước freeze. Không training lại để giải quyết coverage do policy.
+
+Public v3.1 local đã hoàn tất: 0 đáp án mới, file trùng v3.0; chưa đủ để phát hành v3.1 hoặc nộp lại. Monthly có1 candidate sau Fast, từ chối do README role chưa được chứng minh. Chốt theo yêu cầu tiết kiệm limit; bước tiếp theo là spec structured intent/period extraction + compiler/guard, đo Train trước khi cần Colab. Chi tiết hiện trạng ở ROADMAP cuối phiên.

@@ -1,0 +1,13 @@
+{
+  "ids": 1000,
+  "predictions_and_routes_unchanged": true,
+  "new_public_answers": 0,
+  "monthly_grammar_after_fast_candidates": 1,
+  "monthly_rejections": {
+    "Unverified README role: hd": 1
+  },
+  "sha256": "288ed868fde9175d36afd8995cdaf0e2c5f978a716be5c2a845f35c5e89afb9f",
+  "root_v3_0_unchanged": true,
+  "recommend_submit": false,
+  "public_score_v31": null
+}

@@ -38,6 +38,7 @@ def generate_submission(
     limit: Optional[int] = None,
     overwrite: bool = False,
     order_paraphrases: bool = False,
+    monthly_growth: bool = False,
 ) -> Dict[str, int]:
     questions_path = Path(questions_path)
     data_dir = Path(data_dir)
@@ -55,7 +56,7 @@ def generate_submission(
     business_cache: Dict[str, BusinessContext] = {}
 
     config = PipelineConfig(enable_slow_path=enable_slow_path, order_paraphrases=order_paraphrases,
-                            model=model, confidence_threshold=confidence_threshold)
+                            model=model, confidence_threshold=confidence_threshold, monthly_growth=monthly_growth)
     llm_client = None
     if enable_slow_path:
         url = base_url or os.getenv("LLM_BASE_URL", "http://localhost:8000/v1")
@@ -74,6 +75,7 @@ def generate_submission(
         "fast_path": 0,
         "slow_path": 0,
         "paraphrase_fast_path": 0,
+        "monthly_growth_path": 0,
         "abstain": 0,
         "unanswerable": 0,
         "number": 0,
@@ -162,6 +164,7 @@ def generate_submission(
     print(f"   ⚡ Fast Path:    {stats['fast_path']}")
     print(f"   🧠 Slow Path:    {stats['slow_path']}")
     print(f"   Count fallback: {stats['paraphrase_fast_path']}")
+    print(f"   Monthly growth: {stats['monthly_growth_path']}")
     print(f"   - number:        {stats['number']}")
     print(f"   - percent:       {stats['percent']}")
     print(f"   - string:        {stats['string']}")
@@ -183,6 +186,7 @@ if __name__ == "__main__":
     parser.add_argument("--base-url", default=None)
     parser.add_argument("--model", default="datamate-business24")
     parser.add_argument("--order-paraphrases", "--daily-order-paraphrases", action="store_true")
+    parser.add_argument("--monthly-growth", action="store_true")
     parser.add_argument("--confidence-threshold", type=float, default=0.95)
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--limit", type=int, default=None)
@@ -200,4 +204,5 @@ if __name__ == "__main__":
         limit=args.limit,
         overwrite=args.overwrite,
         order_paraphrases=args.order_paraphrases,
+        monthly_growth=args.monthly_growth,
     )

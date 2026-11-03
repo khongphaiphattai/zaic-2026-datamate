@@ -1,0 +1,17 @@
+{
+  "ids": 3000,
+  "old_non_abstain_predictions_and_routes_preserved": true,
+  "new_correct": 22,
+  "new_wrong": 0,
+  "partitions": {
+    "sft_seen_24": 22
+  },
+  "businesses": {
+    "biz_102": 7,
+    "biz_104": 6,
+    "biz_115": 7,
+    "biz_122": 2
+  },
+  "network_calls": 0,
+  "source_hash_matches_frozen_design": true
+}

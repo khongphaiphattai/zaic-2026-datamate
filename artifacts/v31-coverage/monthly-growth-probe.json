@@ -1,0 +1,986 @@
+{
+  "selected": 61,
+  "businesses": 15,
+  "accepted": 22,
+  "correct": 22,
+  "wrong": 0,
+  "results": [
+    {
+      "id": "q_112c84a433a5",
+      "business_id": "biz_102",
+      "totals": [
+        275687800,
+        280724700
+      ],
+      "accepted": true,
+      "prediction": -1.79,
+      "correct": true,
+      "target": -1.79,
+      "metric_checks": [
+        "Revenue column matches scoped README evidence",
+        "Revenue column matches scoped README evidence"
+      ]
+    },
+    {
+      "id": "q_a06ecb8ca547",
+      "business_id": "biz_102",
+      "totals": [
+        280331200,
+        274547600
+      ],
+      "accepted": true,
+      "prediction": 2.11,
+      "correct": true,
+      "target": 2.11,
+      "metric_checks": [
+        "Revenue column matches scoped README evidence",
+        "Revenue column matches scoped README evidence"
+      ]
+    },
+    {
+      "id": "q_a812c50a1220",
+      "business_id": "biz_102",
+      "totals": [
+        281381900,
+        468619600
+      ],
+      "accepted": true,
+      "prediction": -39.96,
+      "correct": true,
+      "target": -39.96,
+      "metric_checks": [
+        "Revenue column matches scoped README evidence",
+        "Revenue column matches scoped README evidence"
+      ]
+    },
+    {
+      "id": "q_c081925709b7",
+      "business_id": "biz_102",
+      "totals": [
+        357633200,
+        435803500
+      ],
+      "accepted": true,
+      "prediction": -17.94,
+      "correct": true,
+      "target": -17.94,
+      "metric_checks": [
+        "Revenue column matches scoped README evidence",
+        "Revenue column matches scoped README evidence"
+      ]
+    },
+    {
+      "id": "q_d20c286fa40f",
+      "business_id": "biz_102",
+      "totals": [
+        274547600,
+        287270000
+      ],
+      "accepted": true,
+      "prediction": -4.43,
+      "correct": true,
+      "target": -4.43,
+      "metric_checks": [
+        "Revenue column matches scoped README evidence",
+        "Revenue column matches scoped README evidence"
+      ]
+    },
+    {
+      "id": "q_d3f2e5421f28",
+      "business_id": "biz_102",
+      "totals": [
+        274050700,
+        286967300
+      ],
+      "accepted": true,
+      "prediction": -4.5,
+      "correct": true,
+      "target": -4.5,
+      "metric_checks": [
+        "Revenue column matches scoped README evidence",
+        "Revenue column matches scoped README evidence"
+      ]
+    },
+    {
+      "id": "q_fcfafaa99bb4",
+      "business_id": "biz_102",
+      "totals": [
+        278031800,
+        282063000
+      ],
+      "accepted": true,
+      "prediction": -1.43,
+      "correct": true,
+      "target": -1.43,
+      "metric_checks": [
+        "Revenue column matches scoped README evidence",
+        "Revenue column matches scoped README evidence"
+      ]
+    },
+    {
+      "id": "q_0872d9f34f31",
+      "business_id": "biz_104",
+      "totals": [
+        135511000,
+        198041000
+      ],
+      "accepted": true,
+      "prediction": -31.57,
+      "correct": true,
+      "target": -31.57,
+      "metric_checks": [
+        "Revenue column matches scoped README evidence",
+        "Revenue column matches scoped README evidence"
+      ]
+    },
+    {
+      "id": "q_307ac5840cca",
+      "business_id": "biz_104",
+      "totals": [
+        192664000,
+        185781000
+      ],
+      "accepted": true,
+      "prediction": 3.7,
+      "correct": true,
+      "target": 3.7,
+      "metric_checks": [
+        "Revenue column matches scoped README evidence",
+        "Revenue column matches scoped README evidence"
+      ]
+    },
+    {
+      "id": "q_3b29ba188ca3",
+      "business_id": "biz_104",
+      "totals": [
+        193051500,
+        135511000
+      ],
+      "accepted": true,
+      "prediction": 42.46,
+      "correct": true,
+      "target": 42.46,
+      "metric_checks": [
+        "Revenue column matches scoped README evidence",
+        "Revenue column matches scoped README evidence"
+      ]
+    },
+    {
+      "id": "q_6b684641ac51",
+      "business_id": "biz_104",
+      "totals": [
+        195454000,
+        193201000
+      ],
+      "accepted": true,
+      "prediction": 1.17,
+      "correct": true,
+      "target": 1.17,
+      "metric_checks": [
+        "Revenue column matches scoped README evidence",
+        "Revenue column matches scoped README evidence"
+      ]
+    },
+    {
+      "id": "q_852a88cb4c90",
+      "business_id": "biz_104",
+      "totals": [
+        193201000,
+        205193000
+      ],
+      "accepted": true,
+      "prediction": -5.84,
+      "correct": true,
+      "target": -5.84,
+      "metric_checks": [
+        "Revenue column matches scoped README evidence",
+        "Revenue column matches scoped README evidence"
+      ]
+    },
+    {
+      "id": "q_a39f397a9580",
+      "business_id": "biz_104",
+      "totals": [
+        185781000,
+        193051500
+      ],
+      "accepted": true,
+      "prediction": -3.77,
+      "correct": true,
+      "target": -3.77,
+      "metric_checks": [
+        "Revenue column matches scoped README evidence",
+        "Revenue column matches scoped README evidence"
+      ]
+    },
+    {
+      "id": "q_147e7a072dc7",
+      "business_id": "biz_106",
+      "totals": [
+        216045000,
+        null
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": null,
+      "metric_checks": [
+        "danh_sach_hoa_don.tong_tien_hang lacks unambiguous README evidence for merchandise revenue",
+        "no numeric aggregate"
+      ]
+    },
+    {
+      "id": "q_3401f1835289",
+      "business_id": "biz_108",
+      "totals": [
+        295846000,
+        353301700
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": -16.26,
+      "metric_checks": [
+        "danh_sach_hoa_don.tong_tien_hang lacks unambiguous README evidence for merchandise revenue",
+        "danh_sach_hoa_don.tong_tien_hang lacks unambiguous README evidence for merchandise revenue"
+      ]
+    },
+    {
+      "id": "q_64e2ac42f1d6",
+      "business_id": "biz_108",
+      "totals": [
+        262632000,
+        234638200
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": 11.93,
+      "metric_checks": [
+        "danh_sach_hoa_don.tong_tien_hang lacks unambiguous README evidence for merchandise revenue",
+        "danh_sach_hoa_don.tong_tien_hang lacks unambiguous README evidence for merchandise revenue"
+      ]
+    },
+    {
+      "id": "q_e0287c87f366",
+      "business_id": "biz_108",
+      "totals": [
+        280370400,
+        267253900
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": 4.91,
+      "metric_checks": [
+        "danh_sach_hoa_don.tong_tien_hang lacks unambiguous README evidence for merchandise revenue",
+        "danh_sach_hoa_don.tong_tien_hang lacks unambiguous README evidence for merchandise revenue"
+      ]
+    },
+    {
+      "id": "q_f0b0bd1cfc0c",
+      "business_id": "biz_108",
+      "totals": [
+        277235000,
+        458365900
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": -39.52,
+      "metric_checks": [
+        "danh_sach_hoa_don.tong_tien_hang lacks unambiguous README evidence for merchandise revenue",
+        "danh_sach_hoa_don.tong_tien_hang lacks unambiguous README evidence for merchandise revenue"
+      ]
+    },
+    {
+      "id": "q_f47b3edba33e",
+      "business_id": "biz_108",
+      "totals": [
+        300106900,
+        277235000
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": 8.25,
+      "metric_checks": [
+        "danh_sach_hoa_don.tong_tien_hang lacks unambiguous README evidence for merchandise revenue",
+        "danh_sach_hoa_don.tong_tien_hang lacks unambiguous README evidence for merchandise revenue"
+      ]
+    },
+    {
+      "id": "q_18adf5dc2e3f",
+      "business_id": "biz_109",
+      "totals": [
+        null,
+        null
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": 6.8,
+      "metric_checks": [
+        "no numeric aggregate",
+        "no numeric aggregate"
+      ]
+    },
+    {
+      "id": "q_42707c40bd19",
+      "business_id": "biz_109",
+      "totals": [
+        null,
+        null
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": -1.21,
+      "metric_checks": [
+        "no numeric aggregate",
+        "no numeric aggregate"
+      ]
+    },
+    {
+      "id": "q_ca469cc6d8c0",
+      "business_id": "biz_109",
+      "totals": [
+        null,
+        null
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": 5.96,
+      "metric_checks": [
+        "no numeric aggregate",
+        "no numeric aggregate"
+      ]
+    },
+    {
+      "id": "q_55ded7aefe2e",
+      "business_id": "biz_111",
+      "totals": [
+        null,
+        null
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": 8.13,
+      "metric_checks": [
+        "no numeric aggregate",
+        "no numeric aggregate"
+      ]
+    },
+    {
+      "id": "q_841d6a6359f9",
+      "business_id": "biz_111",
+      "totals": [
+        null,
+        null
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": 1.49,
+      "metric_checks": [
+        "no numeric aggregate",
+        "no numeric aggregate"
+      ]
+    },
+    {
+      "id": "q_8cb56eea9997",
+      "business_id": "biz_111",
+      "totals": [
+        null,
+        null
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": 1.98,
+      "metric_checks": [
+        "no numeric aggregate",
+        "no numeric aggregate"
+      ]
+    },
+    {
+      "id": "q_a26d79f3e08a",
+      "business_id": "biz_111",
+      "totals": [
+        null,
+        null
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": 2.18,
+      "metric_checks": [
+        "no numeric aggregate",
+        "no numeric aggregate"
+      ]
+    },
+    {
+      "id": "q_ab9ee17a32b3",
+      "business_id": "biz_111",
+      "totals": [
+        null,
+        null
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": -3.56,
+      "metric_checks": [
+        "no numeric aggregate",
+        "no numeric aggregate"
+      ]
+    },
+    {
+      "id": "q_0ef3574c2b44",
+      "business_id": "biz_115",
+      "totals": [
+        1094464400,
+        659259300
+      ],
+      "accepted": true,
+      "prediction": 66.01,
+      "correct": true,
+      "target": 66.01,
+      "metric_checks": [
+        "Revenue column matches scoped README evidence",
+        "Revenue column matches scoped README evidence"
+      ]
+    },
+    {
+      "id": "q_2f1cdd6dfdd2",
+      "business_id": "biz_115",
+      "totals": [
+        1053370500,
+        1179496000
+      ],
+      "accepted": true,
+      "prediction": -10.69,
+      "correct": true,
+      "target": -10.69,
+      "metric_checks": [
+        "Revenue column matches scoped README evidence",
+        "Revenue column matches scoped README evidence"
+      ]
+    },
+    {
+      "id": "q_538c300ffd10",
+      "business_id": "biz_115",
+      "totals": [
+        1179496000,
+        1087422200
+      ],
+      "accepted": true,
+      "prediction": 8.47,
+      "correct": true,
+      "target": 8.47,
+      "metric_checks": [
+        "Revenue column matches scoped README evidence",
+        "Revenue column matches scoped README evidence"
+      ]
+    },
+    {
+      "id": "q_5c7a3aed2f4f",
+      "business_id": "biz_115",
+      "totals": [
+        1087422200,
+        1123310800
+      ],
+      "accepted": true,
+      "prediction": -3.19,
+      "correct": true,
+      "target": -3.19,
+      "metric_checks": [
+        "Revenue column matches scoped README evidence",
+        "Revenue column matches scoped README evidence"
+      ]
+    },
+    {
+      "id": "q_5fa8f7834d32",
+      "business_id": "biz_115",
+      "totals": [
+        1123310800,
+        1126531000
+      ],
+      "accepted": true,
+      "prediction": -0.29,
+      "correct": true,
+      "target": -0.29,
+      "metric_checks": [
+        "Revenue column matches scoped README evidence",
+        "Revenue column matches scoped README evidence"
+      ]
+    },
+    {
+      "id": "q_9749171b4480",
+      "business_id": "biz_115",
+      "totals": [
+        659259300,
+        1095368000
+      ],
+      "accepted": true,
+      "prediction": -39.81,
+      "correct": true,
+      "target": -39.81,
+      "metric_checks": [
+        "Revenue column matches scoped README evidence",
+        "Revenue column matches scoped README evidence"
+      ]
+    },
+    {
+      "id": "q_a8ac54bdbe06",
+      "business_id": "biz_115",
+      "totals": [
+        1141157100,
+        1039387700
+      ],
+      "accepted": true,
+      "prediction": 9.79,
+      "correct": true,
+      "target": 9.79,
+      "metric_checks": [
+        "Revenue column matches scoped README evidence",
+        "Revenue column matches scoped README evidence"
+      ]
+    },
+    {
+      "id": "q_23e155632945",
+      "business_id": "biz_116",
+      "totals": [
+        1672378000,
+        1526413100
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": 9.56,
+      "metric_checks": [
+        "bao_cao_ban_hang_so_chi_tiet_ban_hang.thanh_tien lacks unambiguous README evidence for merchandise revenue",
+        "bao_cao_ban_hang_so_chi_tiet_ban_hang.thanh_tien lacks unambiguous README evidence for merchandise revenue"
+      ]
+    },
+    {
+      "id": "q_7c2331330d42",
+      "business_id": "biz_116",
+      "totals": [
+        1069913200,
+        1565438800
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": -31.65,
+      "metric_checks": [
+        "bao_cao_ban_hang_so_chi_tiet_ban_hang.thanh_tien lacks unambiguous README evidence for merchandise revenue",
+        "bao_cao_ban_hang_so_chi_tiet_ban_hang.thanh_tien lacks unambiguous README evidence for merchandise revenue"
+      ]
+    },
+    {
+      "id": "q_cdbf2bbaa37d",
+      "business_id": "biz_116",
+      "totals": [
+        1677825700,
+        1069913200
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": 56.82,
+      "metric_checks": [
+        "bao_cao_ban_hang_so_chi_tiet_ban_hang.thanh_tien lacks unambiguous README evidence for merchandise revenue",
+        "bao_cao_ban_hang_so_chi_tiet_ban_hang.thanh_tien lacks unambiguous README evidence for merchandise revenue"
+      ]
+    },
+    {
+      "id": "q_ee9961b2c073",
+      "business_id": "biz_116",
+      "totals": [
+        1588804700,
+        1614026000
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": -1.56,
+      "metric_checks": [
+        "bao_cao_ban_hang_so_chi_tiet_ban_hang.thanh_tien lacks unambiguous README evidence for merchandise revenue",
+        "bao_cao_ban_hang_so_chi_tiet_ban_hang.thanh_tien lacks unambiguous README evidence for merchandise revenue"
+      ]
+    },
+    {
+      "id": "q_ff3b413d7346",
+      "business_id": "biz_116",
+      "totals": [
+        1331078300,
+        1651773800
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": -19.42,
+      "metric_checks": [
+        "bao_cao_ban_hang_so_chi_tiet_ban_hang.thanh_tien lacks unambiguous README evidence for merchandise revenue",
+        "bao_cao_ban_hang_so_chi_tiet_ban_hang.thanh_tien lacks unambiguous README evidence for merchandise revenue"
+      ]
+    },
+    {
+      "id": "q_cfd5205df249",
+      "business_id": "biz_120",
+      "totals": [
+        297454900,
+        319228000
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": -6.82,
+      "metric_checks": [
+        "danh_sach_hoa_don.tong_tien_hang lacks unambiguous README evidence for merchandise revenue",
+        "danh_sach_hoa_don.tong_tien_hang lacks unambiguous README evidence for merchandise revenue"
+      ]
+    },
+    {
+      "id": "q_2a9f4fc5fb1f",
+      "business_id": "biz_122",
+      "totals": [
+        262562500,
+        273745000
+      ],
+      "accepted": true,
+      "prediction": -4.09,
+      "correct": true,
+      "target": -4.09,
+      "metric_checks": [
+        "Revenue column matches scoped README evidence",
+        "Revenue column matches scoped README evidence"
+      ]
+    },
+    {
+      "id": "q_f1f68541c1b6",
+      "business_id": "biz_122",
+      "totals": [
+        226124900,
+        252225000
+      ],
+      "accepted": true,
+      "prediction": -10.35,
+      "correct": true,
+      "target": -10.35,
+      "metric_checks": [
+        "Revenue column matches scoped README evidence",
+        "Revenue column matches scoped README evidence"
+      ]
+    },
+    {
+      "id": "q_1dfefb6201cf",
+      "business_id": "biz_123",
+      "totals": [
+        202163300,
+        202375900
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": -0.11,
+      "metric_checks": [
+        "don_hang.tong_tien_hang lacks unambiguous README evidence for merchandise revenue",
+        "don_hang.tong_tien_hang lacks unambiguous README evidence for merchandise revenue"
+      ]
+    },
+    {
+      "id": "q_46c28b67e33a",
+      "business_id": "biz_123",
+      "totals": [
+        214253000,
+        186484900
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": 14.89,
+      "metric_checks": [
+        "don_hang.tong_tien_hang lacks unambiguous README evidence for merchandise revenue",
+        "don_hang.tong_tien_hang lacks unambiguous README evidence for merchandise revenue"
+      ]
+    },
+    {
+      "id": "q_c4f58d6b9d7d",
+      "business_id": "biz_124",
+      "totals": [
+        287349800,
+        314535600
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": -8.64,
+      "metric_checks": [
+        "ban_hang_hoa_don.tien_hang_truoc_giam lacks unambiguous README evidence for merchandise revenue",
+        "ban_hang_hoa_don.tien_hang_truoc_giam lacks unambiguous README evidence for merchandise revenue"
+      ]
+    },
+    {
+      "id": "q_e76fa95d61b6",
+      "business_id": "biz_124",
+      "totals": [
+        370908900,
+        360104700
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": 3.0,
+      "metric_checks": [
+        "ban_hang_hoa_don.tien_hang_truoc_giam lacks unambiguous README evidence for merchandise revenue",
+        "ban_hang_hoa_don.tien_hang_truoc_giam lacks unambiguous README evidence for merchandise revenue"
+      ]
+    },
+    {
+      "id": "q_261be063aa99",
+      "business_id": "biz_127",
+      "totals": [
+        1055674500,
+        1040423000
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": 1.47,
+      "metric_checks": [
+        "Expected a direct registered base table",
+        "Expected a direct registered base table"
+      ]
+    },
+    {
+      "id": "q_341ef54de645",
+      "business_id": "biz_127",
+      "totals": [
+        1063460500,
+        1055674500
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": 0.74,
+      "metric_checks": [
+        "Expected a direct registered base table",
+        "Expected a direct registered base table"
+      ]
+    },
+    {
+      "id": "q_46e5d20e6422",
+      "business_id": "biz_127",
+      "totals": [
+        1080551000,
+        1134206500
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": -4.73,
+      "metric_checks": [
+        "Expected a direct registered base table",
+        "Expected a direct registered base table"
+      ]
+    },
+    {
+      "id": "q_b68591b17d24",
+      "business_id": "biz_127",
+      "totals": [
+        1040423000,
+        1087322500
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": -4.31,
+      "metric_checks": [
+        "Expected a direct registered base table",
+        "Expected a direct registered base table"
+      ]
+    },
+    {
+      "id": "q_b862f909a477",
+      "business_id": "biz_127",
+      "totals": [
+        1102424000,
+        1045637500
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": 5.43,
+      "metric_checks": [
+        "Expected a direct registered base table",
+        "Expected a direct registered base table"
+      ]
+    },
+    {
+      "id": "q_e1ee13d4c98c",
+      "business_id": "biz_127",
+      "totals": [
+        1052284500,
+        1098707000
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": -4.23,
+      "metric_checks": [
+        "Expected a direct registered base table",
+        "Expected a direct registered base table"
+      ]
+    },
+    {
+      "id": "q_3de3612a7279",
+      "business_id": "biz_128",
+      "totals": [
+        802316000,
+        804812000
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": -0.31,
+      "metric_checks": [
+        "danh_sach_hoa_don.tong_tien_hang lacks unambiguous README evidence for merchandise revenue",
+        "danh_sach_hoa_don.tong_tien_hang lacks unambiguous README evidence for merchandise revenue"
+      ]
+    },
+    {
+      "id": "q_42ecf5280436",
+      "business_id": "biz_128",
+      "totals": [
+        889569100,
+        876263100
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": 1.52,
+      "metric_checks": [
+        "danh_sach_hoa_don.tong_tien_hang lacks unambiguous README evidence for merchandise revenue",
+        "danh_sach_hoa_don.tong_tien_hang lacks unambiguous README evidence for merchandise revenue"
+      ]
+    },
+    {
+      "id": "q_805e7ed807cc",
+      "business_id": "biz_128",
+      "totals": [
+        795859000,
+        792916000
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": 0.37,
+      "metric_checks": [
+        "danh_sach_hoa_don.tong_tien_hang lacks unambiguous README evidence for merchandise revenue",
+        "danh_sach_hoa_don.tong_tien_hang lacks unambiguous README evidence for merchandise revenue"
+      ]
+    },
+    {
+      "id": "q_c131e600dc25",
+      "business_id": "biz_128",
+      "totals": [
+        843275000,
+        835296500
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": 0.96,
+      "metric_checks": [
+        "danh_sach_hoa_don.tong_tien_hang lacks unambiguous README evidence for merchandise revenue",
+        "danh_sach_hoa_don.tong_tien_hang lacks unambiguous README evidence for merchandise revenue"
+      ]
+    },
+    {
+      "id": "q_f8463af39982",
+      "business_id": "biz_128",
+      "totals": [
+        805540100,
+        833963000
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": -3.41,
+      "metric_checks": [
+        "danh_sach_hoa_don.tong_tien_hang lacks unambiguous README evidence for merchandise revenue",
+        "danh_sach_hoa_don.tong_tien_hang lacks unambiguous README evidence for merchandise revenue"
+      ]
+    },
+    {
+      "id": "q_1c2e8610ac47",
+      "business_id": "biz_129",
+      "totals": [
+        null,
+        null
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": 42.69,
+      "metric_checks": [
+        "no numeric aggregate",
+        "no numeric aggregate"
+      ]
+    },
+    {
+      "id": "q_4b46c3ac2b47",
+      "business_id": "biz_129",
+      "totals": [
+        null,
+        null
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": -8.26,
+      "metric_checks": [
+        "no numeric aggregate",
+        "no numeric aggregate"
+      ]
+    },
+    {
+      "id": "q_8a6f40f8b51b",
+      "business_id": "biz_129",
+      "totals": [
+        null,
+        null
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": -33.1,
+      "metric_checks": [
+        "no numeric aggregate",
+        "no numeric aggregate"
+      ]
+    },
+    {
+      "id": "q_91256346c432",
+      "business_id": "biz_129",
+      "totals": [
+        null,
+        null
+      ],
+      "accepted": false,
+      "prediction": null,
+      "correct": null,
+      "target": 6.72,
+      "metric_checks": [
+        "no numeric aggregate",
+        "no numeric aggregate"
+      ]
+    }
+  ],
+  "limitation": "Exploratory Train-24 only. Shared revenue resolver still needs temporal/status/data-completeness proof; no production promotion."
+}
