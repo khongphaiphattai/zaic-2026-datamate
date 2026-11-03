@@ -1,0 +1,740 @@
+{
+  "overall": {
+    "questions": 1000,
+    "fast": {
+      "total": 1000,
+      "answered": 204,
+      "abstain": 796,
+      "correct": null,
+      "wrong": null,
+      "precision": null,
+      "pa": null
+    },
+    "paraphrase": {
+      "total": 1000,
+      "answered": 0,
+      "abstain": 1000,
+      "correct": null,
+      "wrong": null,
+      "precision": null,
+      "pa": null
+    },
+    "slow": {
+      "total": 1,
+      "answered": 0,
+      "abstain": 1,
+      "correct": null,
+      "wrong": null,
+      "precision": null,
+      "pa": null
+    },
+    "hybrid": {
+      "total": 1000,
+      "answered": 204,
+      "abstain": 796,
+      "correct": null,
+      "wrong": null,
+      "precision": null,
+      "pa": null
+    },
+    "slow_delta_pa": null,
+    "metric_rejected": 0,
+    "inference_errors": 0,
+    "abstain_reasons": {
+      "Selective gate": 795,
+      "SQL execution failed": 1
+    }
+  },
+  "partitions": {
+    "public_unlabelled": {
+      "questions": 1000,
+      "fast": {
+        "total": 1000,
+        "answered": 204,
+        "abstain": 796,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "paraphrase": {
+        "total": 1000,
+        "answered": 0,
+        "abstain": 1000,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "slow": {
+        "total": 1,
+        "answered": 0,
+        "abstain": 1,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "hybrid": {
+        "total": 1000,
+        "answered": 204,
+        "abstain": 796,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "slow_delta_pa": null,
+      "metric_rejected": 0,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 795,
+        "SQL execution failed": 1
+      }
+    }
+  },
+  "businesses": {
+    "dev_001": {
+      "questions": 87,
+      "fast": {
+        "total": 87,
+        "answered": 20,
+        "abstain": 67,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "paraphrase": {
+        "total": 87,
+        "answered": 0,
+        "abstain": 87,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "slow": {
+        "total": 0,
+        "answered": 0,
+        "abstain": 0,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "hybrid": {
+        "total": 87,
+        "answered": 20,
+        "abstain": 67,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "slow_delta_pa": null,
+      "metric_rejected": 0,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 67
+      }
+    },
+    "dev_002": {
+      "questions": 41,
+      "fast": {
+        "total": 41,
+        "answered": 20,
+        "abstain": 21,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "paraphrase": {
+        "total": 41,
+        "answered": 0,
+        "abstain": 41,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "slow": {
+        "total": 0,
+        "answered": 0,
+        "abstain": 0,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "hybrid": {
+        "total": 41,
+        "answered": 20,
+        "abstain": 21,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "slow_delta_pa": null,
+      "metric_rejected": 0,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 21
+      }
+    },
+    "dev_003": {
+      "questions": 129,
+      "fast": {
+        "total": 129,
+        "answered": 14,
+        "abstain": 115,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "paraphrase": {
+        "total": 129,
+        "answered": 0,
+        "abstain": 129,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "slow": {
+        "total": 0,
+        "answered": 0,
+        "abstain": 0,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "hybrid": {
+        "total": 129,
+        "answered": 14,
+        "abstain": 115,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "slow_delta_pa": null,
+      "metric_rejected": 0,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 115
+      }
+    },
+    "dev_004": {
+      "questions": 96,
+      "fast": {
+        "total": 96,
+        "answered": 21,
+        "abstain": 75,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "paraphrase": {
+        "total": 96,
+        "answered": 0,
+        "abstain": 96,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "slow": {
+        "total": 0,
+        "answered": 0,
+        "abstain": 0,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "hybrid": {
+        "total": 96,
+        "answered": 21,
+        "abstain": 75,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "slow_delta_pa": null,
+      "metric_rejected": 0,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 75
+      }
+    },
+    "dev_005": {
+      "questions": 87,
+      "fast": {
+        "total": 87,
+        "answered": 18,
+        "abstain": 69,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "paraphrase": {
+        "total": 87,
+        "answered": 0,
+        "abstain": 87,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "slow": {
+        "total": 0,
+        "answered": 0,
+        "abstain": 0,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "hybrid": {
+        "total": 87,
+        "answered": 18,
+        "abstain": 69,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "slow_delta_pa": null,
+      "metric_rejected": 0,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 69
+      }
+    },
+    "dev_006": {
+      "questions": 111,
+      "fast": {
+        "total": 111,
+        "answered": 12,
+        "abstain": 99,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "paraphrase": {
+        "total": 111,
+        "answered": 0,
+        "abstain": 111,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "slow": {
+        "total": 0,
+        "answered": 0,
+        "abstain": 0,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "hybrid": {
+        "total": 111,
+        "answered": 12,
+        "abstain": 99,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "slow_delta_pa": null,
+      "metric_rejected": 0,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 99
+      }
+    },
+    "dev_007": {
+      "questions": 60,
+      "fast": {
+        "total": 60,
+        "answered": 20,
+        "abstain": 40,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "paraphrase": {
+        "total": 60,
+        "answered": 0,
+        "abstain": 60,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "slow": {
+        "total": 0,
+        "answered": 0,
+        "abstain": 0,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "hybrid": {
+        "total": 60,
+        "answered": 20,
+        "abstain": 40,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "slow_delta_pa": null,
+      "metric_rejected": 0,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 40
+      }
+    },
+    "dev_008": {
+      "questions": 99,
+      "fast": {
+        "total": 99,
+        "answered": 14,
+        "abstain": 85,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "paraphrase": {
+        "total": 99,
+        "answered": 0,
+        "abstain": 99,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "slow": {
+        "total": 0,
+        "answered": 0,
+        "abstain": 0,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "hybrid": {
+        "total": 99,
+        "answered": 14,
+        "abstain": 85,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "slow_delta_pa": null,
+      "metric_rejected": 0,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 85
+      }
+    },
+    "dev_009": {
+      "questions": 21,
+      "fast": {
+        "total": 21,
+        "answered": 16,
+        "abstain": 5,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "paraphrase": {
+        "total": 21,
+        "answered": 0,
+        "abstain": 21,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "slow": {
+        "total": 0,
+        "answered": 0,
+        "abstain": 0,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "hybrid": {
+        "total": 21,
+        "answered": 16,
+        "abstain": 5,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "slow_delta_pa": null,
+      "metric_rejected": 0,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 5
+      }
+    },
+    "dev_010": {
+      "questions": 59,
+      "fast": {
+        "total": 59,
+        "answered": 18,
+        "abstain": 41,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "paraphrase": {
+        "total": 59,
+        "answered": 0,
+        "abstain": 59,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "slow": {
+        "total": 1,
+        "answered": 0,
+        "abstain": 1,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "hybrid": {
+        "total": 59,
+        "answered": 18,
+        "abstain": 41,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "slow_delta_pa": null,
+      "metric_rejected": 0,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 40,
+        "SQL execution failed": 1
+      }
+    },
+    "dev_011": {
+      "questions": 40,
+      "fast": {
+        "total": 40,
+        "answered": 13,
+        "abstain": 27,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "paraphrase": {
+        "total": 40,
+        "answered": 0,
+        "abstain": 40,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "slow": {
+        "total": 0,
+        "answered": 0,
+        "abstain": 0,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "hybrid": {
+        "total": 40,
+        "answered": 13,
+        "abstain": 27,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "slow_delta_pa": null,
+      "metric_rejected": 0,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 27
+      }
+    },
+    "dev_012": {
+      "questions": 50,
+      "fast": {
+        "total": 50,
+        "answered": 5,
+        "abstain": 45,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "paraphrase": {
+        "total": 50,
+        "answered": 0,
+        "abstain": 50,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "slow": {
+        "total": 0,
+        "answered": 0,
+        "abstain": 0,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "hybrid": {
+        "total": 50,
+        "answered": 5,
+        "abstain": 45,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "slow_delta_pa": null,
+      "metric_rejected": 0,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 45
+      }
+    },
+    "dev_013": {
+      "questions": 57,
+      "fast": {
+        "total": 57,
+        "answered": 9,
+        "abstain": 48,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "paraphrase": {
+        "total": 57,
+        "answered": 0,
+        "abstain": 57,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "slow": {
+        "total": 0,
+        "answered": 0,
+        "abstain": 0,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "hybrid": {
+        "total": 57,
+        "answered": 9,
+        "abstain": 48,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "slow_delta_pa": null,
+      "metric_rejected": 0,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 48
+      }
+    },
+    "dev_014": {
+      "questions": 63,
+      "fast": {
+        "total": 63,
+        "answered": 4,
+        "abstain": 59,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "paraphrase": {
+        "total": 63,
+        "answered": 0,
+        "abstain": 63,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "slow": {
+        "total": 0,
+        "answered": 0,
+        "abstain": 0,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "hybrid": {
+        "total": 63,
+        "answered": 4,
+        "abstain": 59,
+        "correct": null,
+        "wrong": null,
+        "precision": null,
+        "pa": null
+      },
+      "slow_delta_pa": null,
+      "metric_rejected": 0,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 59
+      }
+    }
+  },
+  "model_calls": 1,
+  "network_model_calls": 0,
+  "reused_model_calls": 1,
+  "elapsed_seconds": 89.698521637,
+  "scope": "Descriptive development diagnostics only; SFT-seen vs SFT-excluded, not untouched validation. Public correctness unknown.",
+  "recommend_submit": false,
+  "offline_replay": true,
+  "fast_matches_v2_8": true,
+  "new_answer_ids": [],
+  "candidate_created": true,
+  "candidate_sha256": "288ed868fde9175d36afd8995cdaf0e2c5f978a716be5c2a845f35c5e89afb9f"
+}

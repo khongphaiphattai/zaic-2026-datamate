@@ -1,0 +1,1510 @@
+{
+  "overall": {
+    "questions": 3000,
+    "fast": {
+      "total": 3000,
+      "answered": 762,
+      "abstain": 2238,
+      "correct": 756,
+      "wrong": 6,
+      "precision": 0.9921259842519685,
+      "pa": 0.25
+    },
+    "paraphrase": {
+      "total": 3000,
+      "answered": 49,
+      "abstain": 2951,
+      "correct": 49,
+      "wrong": 0,
+      "precision": 1.0,
+      "pa": 0.01633333333333333
+    },
+    "slow": {
+      "total": 34,
+      "answered": 13,
+      "abstain": 21,
+      "correct": 13,
+      "wrong": 0,
+      "precision": 1.0,
+      "pa": 0.38235294117647056
+    },
+    "hybrid": {
+      "total": 3000,
+      "answered": 824,
+      "abstain": 2176,
+      "correct": 818,
+      "wrong": 6,
+      "precision": 0.9927184466019418,
+      "pa": 0.27066666666666667
+    },
+    "slow_delta_pa": 0.004333333333333333,
+    "metric_rejected": 12,
+    "inference_errors": 0,
+    "abstain_reasons": {
+      "Selective gate": 2155,
+      "SQL execution failed": 21
+    }
+  },
+  "partitions": {
+    "sft_excluded_6": {
+      "questions": 475,
+      "fast": {
+        "total": 475,
+        "answered": 124,
+        "abstain": 351,
+        "correct": 123,
+        "wrong": 1,
+        "precision": 0.9919354838709677,
+        "pa": 0.25684210526315787
+      },
+      "paraphrase": {
+        "total": 475,
+        "answered": 10,
+        "abstain": 465,
+        "correct": 10,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.021052631578947368
+      },
+      "slow": {
+        "total": 9,
+        "answered": 7,
+        "abstain": 2,
+        "correct": 7,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.7777777777777778
+      },
+      "hybrid": {
+        "total": 475,
+        "answered": 141,
+        "abstain": 334,
+        "correct": 140,
+        "wrong": 1,
+        "precision": 0.9929078014184397,
+        "pa": 0.2926315789473684
+      },
+      "slow_delta_pa": 0.014736842105263158,
+      "metric_rejected": 2,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 332,
+        "SQL execution failed": 2
+      }
+    },
+    "sft_seen_24": {
+      "questions": 2525,
+      "fast": {
+        "total": 2525,
+        "answered": 638,
+        "abstain": 1887,
+        "correct": 633,
+        "wrong": 5,
+        "precision": 0.9921630094043887,
+        "pa": 0.2487128712871287
+      },
+      "paraphrase": {
+        "total": 2525,
+        "answered": 39,
+        "abstain": 2486,
+        "correct": 39,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.015445544554455445
+      },
+      "slow": {
+        "total": 25,
+        "answered": 6,
+        "abstain": 19,
+        "correct": 6,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.24
+      },
+      "hybrid": {
+        "total": 2525,
+        "answered": 683,
+        "abstain": 1842,
+        "correct": 678,
+        "wrong": 5,
+        "precision": 0.9926793557833089,
+        "pa": 0.26653465346534655
+      },
+      "slow_delta_pa": 0.002376237623762376,
+      "metric_rejected": 10,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 1823,
+        "SQL execution failed": 19
+      }
+    }
+  },
+  "businesses": {
+    "biz_101": {
+      "questions": 40,
+      "fast": {
+        "total": 40,
+        "answered": 13,
+        "abstain": 27,
+        "correct": 12,
+        "wrong": 1,
+        "precision": 0.9230769230769231,
+        "pa": 0.275
+      },
+      "paraphrase": {
+        "total": 40,
+        "answered": 4,
+        "abstain": 36,
+        "correct": 4,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.1
+      },
+      "slow": {
+        "total": 0,
+        "answered": 0,
+        "abstain": 0,
+        "correct": 0,
+        "wrong": 0,
+        "precision": null,
+        "pa": null
+      },
+      "hybrid": {
+        "total": 40,
+        "answered": 17,
+        "abstain": 23,
+        "correct": 16,
+        "wrong": 1,
+        "precision": 0.9411764705882353,
+        "pa": 0.375
+      },
+      "slow_delta_pa": 0.0,
+      "metric_rejected": 0,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 23
+      }
+    },
+    "biz_102": {
+      "questions": 119,
+      "fast": {
+        "total": 119,
+        "answered": 60,
+        "abstain": 59,
+        "correct": 60,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.5042016806722689
+      },
+      "paraphrase": {
+        "total": 119,
+        "answered": 4,
+        "abstain": 115,
+        "correct": 4,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.03361344537815126
+      },
+      "slow": {
+        "total": 1,
+        "answered": 1,
+        "abstain": 0,
+        "correct": 1,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 1.0
+      },
+      "hybrid": {
+        "total": 119,
+        "answered": 65,
+        "abstain": 54,
+        "correct": 65,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.5462184873949579
+      },
+      "slow_delta_pa": 0.008403361344537815,
+      "metric_rejected": 0,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 54
+      }
+    },
+    "biz_103": {
+      "questions": 119,
+      "fast": {
+        "total": 119,
+        "answered": 29,
+        "abstain": 90,
+        "correct": 29,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.24369747899159663
+      },
+      "paraphrase": {
+        "total": 119,
+        "answered": 3,
+        "abstain": 116,
+        "correct": 3,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.025210084033613446
+      },
+      "slow": {
+        "total": 1,
+        "answered": 1,
+        "abstain": 0,
+        "correct": 1,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 1.0
+      },
+      "hybrid": {
+        "total": 119,
+        "answered": 33,
+        "abstain": 86,
+        "correct": 33,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.2773109243697479
+      },
+      "slow_delta_pa": 0.008403361344537815,
+      "metric_rejected": 0,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 86
+      }
+    },
+    "biz_104": {
+      "questions": 119,
+      "fast": {
+        "total": 119,
+        "answered": 47,
+        "abstain": 72,
+        "correct": 47,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.3949579831932773
+      },
+      "paraphrase": {
+        "total": 119,
+        "answered": 4,
+        "abstain": 115,
+        "correct": 4,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.03361344537815126
+      },
+      "slow": {
+        "total": 0,
+        "answered": 0,
+        "abstain": 0,
+        "correct": 0,
+        "wrong": 0,
+        "precision": null,
+        "pa": null
+      },
+      "hybrid": {
+        "total": 119,
+        "answered": 51,
+        "abstain": 68,
+        "correct": 51,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.42857142857142855
+      },
+      "slow_delta_pa": 0.0,
+      "metric_rejected": 0,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 68
+      }
+    },
+    "biz_105": {
+      "questions": 119,
+      "fast": {
+        "total": 119,
+        "answered": 23,
+        "abstain": 96,
+        "correct": 21,
+        "wrong": 2,
+        "precision": 0.9130434782608695,
+        "pa": 0.15966386554621848
+      },
+      "paraphrase": {
+        "total": 119,
+        "answered": 3,
+        "abstain": 116,
+        "correct": 3,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.025210084033613446
+      },
+      "slow": {
+        "total": 1,
+        "answered": 0,
+        "abstain": 1,
+        "correct": 0,
+        "wrong": 0,
+        "precision": null,
+        "pa": 0.0
+      },
+      "hybrid": {
+        "total": 119,
+        "answered": 26,
+        "abstain": 93,
+        "correct": 24,
+        "wrong": 2,
+        "precision": 0.9230769230769231,
+        "pa": 0.18487394957983194
+      },
+      "slow_delta_pa": 0.0,
+      "metric_rejected": 1,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 92,
+        "SQL execution failed": 1
+      }
+    },
+    "biz_106": {
+      "questions": 119,
+      "fast": {
+        "total": 119,
+        "answered": 20,
+        "abstain": 99,
+        "correct": 20,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.16806722689075632
+      },
+      "paraphrase": {
+        "total": 119,
+        "answered": 0,
+        "abstain": 119,
+        "correct": 0,
+        "wrong": 0,
+        "precision": null,
+        "pa": 0.0
+      },
+      "slow": {
+        "total": 0,
+        "answered": 0,
+        "abstain": 0,
+        "correct": 0,
+        "wrong": 0,
+        "precision": null,
+        "pa": null
+      },
+      "hybrid": {
+        "total": 119,
+        "answered": 20,
+        "abstain": 99,
+        "correct": 20,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.16806722689075632
+      },
+      "slow_delta_pa": 0.0,
+      "metric_rejected": 0,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 99
+      }
+    },
+    "biz_107": {
+      "questions": 40,
+      "fast": {
+        "total": 40,
+        "answered": 15,
+        "abstain": 25,
+        "correct": 15,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.375
+      },
+      "paraphrase": {
+        "total": 40,
+        "answered": 0,
+        "abstain": 40,
+        "correct": 0,
+        "wrong": 0,
+        "precision": null,
+        "pa": 0.0
+      },
+      "slow": {
+        "total": 1,
+        "answered": 1,
+        "abstain": 0,
+        "correct": 1,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 1.0
+      },
+      "hybrid": {
+        "total": 40,
+        "answered": 16,
+        "abstain": 24,
+        "correct": 16,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.4
+      },
+      "slow_delta_pa": 0.025,
+      "metric_rejected": 0,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 24
+      }
+    },
+    "biz_108": {
+      "questions": 119,
+      "fast": {
+        "total": 119,
+        "answered": 33,
+        "abstain": 86,
+        "correct": 33,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.2773109243697479
+      },
+      "paraphrase": {
+        "total": 119,
+        "answered": 0,
+        "abstain": 119,
+        "correct": 0,
+        "wrong": 0,
+        "precision": null,
+        "pa": 0.0
+      },
+      "slow": {
+        "total": 0,
+        "answered": 0,
+        "abstain": 0,
+        "correct": 0,
+        "wrong": 0,
+        "precision": null,
+        "pa": null
+      },
+      "hybrid": {
+        "total": 119,
+        "answered": 33,
+        "abstain": 86,
+        "correct": 33,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.2773109243697479
+      },
+      "slow_delta_pa": 0.0,
+      "metric_rejected": 0,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 86
+      }
+    },
+    "biz_109": {
+      "questions": 118,
+      "fast": {
+        "total": 118,
+        "answered": 1,
+        "abstain": 117,
+        "correct": 1,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.00847457627118644
+      },
+      "paraphrase": {
+        "total": 118,
+        "answered": 0,
+        "abstain": 118,
+        "correct": 0,
+        "wrong": 0,
+        "precision": null,
+        "pa": 0.0
+      },
+      "slow": {
+        "total": 0,
+        "answered": 0,
+        "abstain": 0,
+        "correct": 0,
+        "wrong": 0,
+        "precision": null,
+        "pa": null
+      },
+      "hybrid": {
+        "total": 118,
+        "answered": 1,
+        "abstain": 117,
+        "correct": 1,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.00847457627118644
+      },
+      "slow_delta_pa": 0.0,
+      "metric_rejected": 0,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 117
+      }
+    },
+    "biz_110": {
+      "questions": 40,
+      "fast": {
+        "total": 40,
+        "answered": 20,
+        "abstain": 20,
+        "correct": 20,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.5
+      },
+      "paraphrase": {
+        "total": 40,
+        "answered": 2,
+        "abstain": 38,
+        "correct": 2,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.05
+      },
+      "slow": {
+        "total": 4,
+        "answered": 2,
+        "abstain": 2,
+        "correct": 2,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.5
+      },
+      "hybrid": {
+        "total": 40,
+        "answered": 24,
+        "abstain": 16,
+        "correct": 24,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.6
+      },
+      "slow_delta_pa": 0.05,
+      "metric_rejected": 2,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 14,
+        "SQL execution failed": 2
+      }
+    },
+    "biz_111": {
+      "questions": 118,
+      "fast": {
+        "total": 118,
+        "answered": 18,
+        "abstain": 100,
+        "correct": 18,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.15254237288135594
+      },
+      "paraphrase": {
+        "total": 118,
+        "answered": 1,
+        "abstain": 117,
+        "correct": 1,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.00847457627118644
+      },
+      "slow": {
+        "total": 5,
+        "answered": 0,
+        "abstain": 5,
+        "correct": 0,
+        "wrong": 0,
+        "precision": null,
+        "pa": 0.0
+      },
+      "hybrid": {
+        "total": 118,
+        "answered": 19,
+        "abstain": 99,
+        "correct": 19,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.16101694915254236
+      },
+      "slow_delta_pa": 0.0,
+      "metric_rejected": 3,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 94,
+        "SQL execution failed": 5
+      }
+    },
+    "biz_112": {
+      "questions": 118,
+      "fast": {
+        "total": 118,
+        "answered": 34,
+        "abstain": 84,
+        "correct": 34,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.288135593220339
+      },
+      "paraphrase": {
+        "total": 118,
+        "answered": 1,
+        "abstain": 117,
+        "correct": 1,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.00847457627118644
+      },
+      "slow": {
+        "total": 0,
+        "answered": 0,
+        "abstain": 0,
+        "correct": 0,
+        "wrong": 0,
+        "precision": null,
+        "pa": null
+      },
+      "hybrid": {
+        "total": 118,
+        "answered": 35,
+        "abstain": 83,
+        "correct": 35,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.2966101694915254
+      },
+      "slow_delta_pa": 0.0,
+      "metric_rejected": 0,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 83
+      }
+    },
+    "biz_113": {
+      "questions": 40,
+      "fast": {
+        "total": 40,
+        "answered": 18,
+        "abstain": 22,
+        "correct": 18,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.45
+      },
+      "paraphrase": {
+        "total": 40,
+        "answered": 0,
+        "abstain": 40,
+        "correct": 0,
+        "wrong": 0,
+        "precision": null,
+        "pa": 0.0
+      },
+      "slow": {
+        "total": 1,
+        "answered": 1,
+        "abstain": 0,
+        "correct": 1,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 1.0
+      },
+      "hybrid": {
+        "total": 40,
+        "answered": 19,
+        "abstain": 21,
+        "correct": 19,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.475
+      },
+      "slow_delta_pa": 0.025,
+      "metric_rejected": 0,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 21
+      }
+    },
+    "biz_114": {
+      "questions": 40,
+      "fast": {
+        "total": 40,
+        "answered": 15,
+        "abstain": 25,
+        "correct": 15,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.375
+      },
+      "paraphrase": {
+        "total": 40,
+        "answered": 2,
+        "abstain": 38,
+        "correct": 2,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.05
+      },
+      "slow": {
+        "total": 1,
+        "answered": 1,
+        "abstain": 0,
+        "correct": 1,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 1.0
+      },
+      "hybrid": {
+        "total": 40,
+        "answered": 18,
+        "abstain": 22,
+        "correct": 18,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.45
+      },
+      "slow_delta_pa": 0.025,
+      "metric_rejected": 0,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 22
+      }
+    },
+    "biz_115": {
+      "questions": 118,
+      "fast": {
+        "total": 118,
+        "answered": 46,
+        "abstain": 72,
+        "correct": 46,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.3898305084745763
+      },
+      "paraphrase": {
+        "total": 118,
+        "answered": 5,
+        "abstain": 113,
+        "correct": 5,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.0423728813559322
+      },
+      "slow": {
+        "total": 2,
+        "answered": 2,
+        "abstain": 0,
+        "correct": 2,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 1.0
+      },
+      "hybrid": {
+        "total": 118,
+        "answered": 53,
+        "abstain": 65,
+        "correct": 53,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.4491525423728814
+      },
+      "slow_delta_pa": 0.01694915254237288,
+      "metric_rejected": 0,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 65
+      }
+    },
+    "biz_116": {
+      "questions": 118,
+      "fast": {
+        "total": 118,
+        "answered": 39,
+        "abstain": 79,
+        "correct": 39,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.3305084745762712
+      },
+      "paraphrase": {
+        "total": 118,
+        "answered": 3,
+        "abstain": 115,
+        "correct": 3,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.025423728813559324
+      },
+      "slow": {
+        "total": 1,
+        "answered": 0,
+        "abstain": 1,
+        "correct": 0,
+        "wrong": 0,
+        "precision": null,
+        "pa": 0.0
+      },
+      "hybrid": {
+        "total": 118,
+        "answered": 42,
+        "abstain": 76,
+        "correct": 42,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.3559322033898305
+      },
+      "slow_delta_pa": 0.0,
+      "metric_rejected": 1,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 75,
+        "SQL execution failed": 1
+      }
+    },
+    "biz_117": {
+      "questions": 118,
+      "fast": {
+        "total": 118,
+        "answered": 19,
+        "abstain": 99,
+        "correct": 16,
+        "wrong": 3,
+        "precision": 0.8421052631578947,
+        "pa": 0.11016949152542373
+      },
+      "paraphrase": {
+        "total": 118,
+        "answered": 0,
+        "abstain": 118,
+        "correct": 0,
+        "wrong": 0,
+        "precision": null,
+        "pa": 0.0
+      },
+      "slow": {
+        "total": 0,
+        "answered": 0,
+        "abstain": 0,
+        "correct": 0,
+        "wrong": 0,
+        "precision": null,
+        "pa": null
+      },
+      "hybrid": {
+        "total": 118,
+        "answered": 19,
+        "abstain": 99,
+        "correct": 16,
+        "wrong": 3,
+        "precision": 0.8421052631578947,
+        "pa": 0.11016949152542373
+      },
+      "slow_delta_pa": 0.0,
+      "metric_rejected": 0,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 99
+      }
+    },
+    "biz_118": {
+      "questions": 118,
+      "fast": {
+        "total": 118,
+        "answered": 19,
+        "abstain": 99,
+        "correct": 19,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.16101694915254236
+      },
+      "paraphrase": {
+        "total": 118,
+        "answered": 0,
+        "abstain": 118,
+        "correct": 0,
+        "wrong": 0,
+        "precision": null,
+        "pa": 0.0
+      },
+      "slow": {
+        "total": 1,
+        "answered": 1,
+        "abstain": 0,
+        "correct": 1,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 1.0
+      },
+      "hybrid": {
+        "total": 118,
+        "answered": 20,
+        "abstain": 98,
+        "correct": 20,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.1694915254237288
+      },
+      "slow_delta_pa": 0.00847457627118644,
+      "metric_rejected": 0,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 98
+      }
+    },
+    "biz_119": {
+      "questions": 118,
+      "fast": {
+        "total": 118,
+        "answered": 28,
+        "abstain": 90,
+        "correct": 28,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.23728813559322035
+      },
+      "paraphrase": {
+        "total": 118,
+        "answered": 0,
+        "abstain": 118,
+        "correct": 0,
+        "wrong": 0,
+        "precision": null,
+        "pa": 0.0
+      },
+      "slow": {
+        "total": 0,
+        "answered": 0,
+        "abstain": 0,
+        "correct": 0,
+        "wrong": 0,
+        "precision": null,
+        "pa": null
+      },
+      "hybrid": {
+        "total": 118,
+        "answered": 28,
+        "abstain": 90,
+        "correct": 28,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.23728813559322035
+      },
+      "slow_delta_pa": 0.0,
+      "metric_rejected": 0,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 90
+      }
+    },
+    "biz_120": {
+      "questions": 118,
+      "fast": {
+        "total": 118,
+        "answered": 26,
+        "abstain": 92,
+        "correct": 26,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.22033898305084745
+      },
+      "paraphrase": {
+        "total": 118,
+        "answered": 0,
+        "abstain": 118,
+        "correct": 0,
+        "wrong": 0,
+        "precision": null,
+        "pa": 0.0
+      },
+      "slow": {
+        "total": 1,
+        "answered": 0,
+        "abstain": 1,
+        "correct": 0,
+        "wrong": 0,
+        "precision": null,
+        "pa": 0.0
+      },
+      "hybrid": {
+        "total": 118,
+        "answered": 26,
+        "abstain": 92,
+        "correct": 26,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.22033898305084745
+      },
+      "slow_delta_pa": 0.0,
+      "metric_rejected": 1,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "SQL execution failed": 1,
+        "Selective gate": 91
+      }
+    },
+    "biz_121": {
+      "questions": 118,
+      "fast": {
+        "total": 118,
+        "answered": 30,
+        "abstain": 88,
+        "correct": 30,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.2542372881355932
+      },
+      "paraphrase": {
+        "total": 118,
+        "answered": 0,
+        "abstain": 118,
+        "correct": 0,
+        "wrong": 0,
+        "precision": null,
+        "pa": 0.0
+      },
+      "slow": {
+        "total": 0,
+        "answered": 0,
+        "abstain": 0,
+        "correct": 0,
+        "wrong": 0,
+        "precision": null,
+        "pa": null
+      },
+      "hybrid": {
+        "total": 118,
+        "answered": 30,
+        "abstain": 88,
+        "correct": 30,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.2542372881355932
+      },
+      "slow_delta_pa": 0.0,
+      "metric_rejected": 0,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 88
+      }
+    },
+    "biz_122": {
+      "questions": 118,
+      "fast": {
+        "total": 118,
+        "answered": 27,
+        "abstain": 91,
+        "correct": 27,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.2288135593220339
+      },
+      "paraphrase": {
+        "total": 118,
+        "answered": 5,
+        "abstain": 113,
+        "correct": 5,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.0423728813559322
+      },
+      "slow": {
+        "total": 0,
+        "answered": 0,
+        "abstain": 0,
+        "correct": 0,
+        "wrong": 0,
+        "precision": null,
+        "pa": null
+      },
+      "hybrid": {
+        "total": 118,
+        "answered": 32,
+        "abstain": 86,
+        "correct": 32,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.2711864406779661
+      },
+      "slow_delta_pa": 0.0,
+      "metric_rejected": 0,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 86
+      }
+    },
+    "biz_123": {
+      "questions": 118,
+      "fast": {
+        "total": 118,
+        "answered": 12,
+        "abstain": 106,
+        "correct": 12,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.1016949152542373
+      },
+      "paraphrase": {
+        "total": 118,
+        "answered": 0,
+        "abstain": 118,
+        "correct": 0,
+        "wrong": 0,
+        "precision": null,
+        "pa": 0.0
+      },
+      "slow": {
+        "total": 0,
+        "answered": 0,
+        "abstain": 0,
+        "correct": 0,
+        "wrong": 0,
+        "precision": null,
+        "pa": null
+      },
+      "hybrid": {
+        "total": 118,
+        "answered": 12,
+        "abstain": 106,
+        "correct": 12,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.1016949152542373
+      },
+      "slow_delta_pa": 0.0,
+      "metric_rejected": 0,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 106
+      }
+    },
+    "biz_124": {
+      "questions": 118,
+      "fast": {
+        "total": 118,
+        "answered": 6,
+        "abstain": 112,
+        "correct": 6,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.05084745762711865
+      },
+      "paraphrase": {
+        "total": 118,
+        "answered": 1,
+        "abstain": 117,
+        "correct": 1,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.00847457627118644
+      },
+      "slow": {
+        "total": 1,
+        "answered": 0,
+        "abstain": 1,
+        "correct": 0,
+        "wrong": 0,
+        "precision": null,
+        "pa": 0.0
+      },
+      "hybrid": {
+        "total": 118,
+        "answered": 7,
+        "abstain": 111,
+        "correct": 7,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.059322033898305086
+      },
+      "slow_delta_pa": 0.0,
+      "metric_rejected": 1,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 110,
+        "SQL execution failed": 1
+      }
+    },
+    "biz_125": {
+      "questions": 40,
+      "fast": {
+        "total": 40,
+        "answered": 15,
+        "abstain": 25,
+        "correct": 15,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.375
+      },
+      "paraphrase": {
+        "total": 40,
+        "answered": 1,
+        "abstain": 39,
+        "correct": 1,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.025
+      },
+      "slow": {
+        "total": 3,
+        "answered": 3,
+        "abstain": 0,
+        "correct": 3,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 1.0
+      },
+      "hybrid": {
+        "total": 40,
+        "answered": 19,
+        "abstain": 21,
+        "correct": 19,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.475
+      },
+      "slow_delta_pa": 0.075,
+      "metric_rejected": 0,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 21
+      }
+    },
+    "biz_126": {
+      "questions": 40,
+      "fast": {
+        "total": 40,
+        "answered": 15,
+        "abstain": 25,
+        "correct": 15,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.375
+      },
+      "paraphrase": {
+        "total": 40,
+        "answered": 0,
+        "abstain": 40,
+        "correct": 0,
+        "wrong": 0,
+        "precision": null,
+        "pa": 0.0
+      },
+      "slow": {
+        "total": 0,
+        "answered": 0,
+        "abstain": 0,
+        "correct": 0,
+        "wrong": 0,
+        "precision": null,
+        "pa": null
+      },
+      "hybrid": {
+        "total": 40,
+        "answered": 15,
+        "abstain": 25,
+        "correct": 15,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.375
+      },
+      "slow_delta_pa": 0.0,
+      "metric_rejected": 0,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 25
+      }
+    },
+    "biz_127": {
+      "questions": 118,
+      "fast": {
+        "total": 118,
+        "answered": 42,
+        "abstain": 76,
+        "correct": 42,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.3559322033898305
+      },
+      "paraphrase": {
+        "total": 118,
+        "answered": 0,
+        "abstain": 118,
+        "correct": 0,
+        "wrong": 0,
+        "precision": null,
+        "pa": 0.0
+      },
+      "slow": {
+        "total": 1,
+        "answered": 0,
+        "abstain": 1,
+        "correct": 0,
+        "wrong": 0,
+        "precision": null,
+        "pa": 0.0
+      },
+      "hybrid": {
+        "total": 118,
+        "answered": 42,
+        "abstain": 76,
+        "correct": 42,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.3559322033898305
+      },
+      "slow_delta_pa": 0.0,
+      "metric_rejected": 0,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 75,
+        "SQL execution failed": 1
+      }
+    },
+    "biz_128": {
+      "questions": 118,
+      "fast": {
+        "total": 118,
+        "answered": 41,
+        "abstain": 77,
+        "correct": 41,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.3474576271186441
+      },
+      "paraphrase": {
+        "total": 118,
+        "answered": 4,
+        "abstain": 114,
+        "correct": 4,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.03389830508474576
+      },
+      "slow": {
+        "total": 2,
+        "answered": 0,
+        "abstain": 2,
+        "correct": 0,
+        "wrong": 0,
+        "precision": null,
+        "pa": 0.0
+      },
+      "hybrid": {
+        "total": 118,
+        "answered": 45,
+        "abstain": 73,
+        "correct": 45,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.3813559322033898
+      },
+      "slow_delta_pa": 0.0,
+      "metric_rejected": 2,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "SQL execution failed": 2,
+        "Selective gate": 71
+      }
+    },
+    "biz_129": {
+      "questions": 118,
+      "fast": {
+        "total": 118,
+        "answered": 19,
+        "abstain": 99,
+        "correct": 19,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.16101694915254236
+      },
+      "paraphrase": {
+        "total": 118,
+        "answered": 3,
+        "abstain": 115,
+        "correct": 3,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.025423728813559324
+      },
+      "slow": {
+        "total": 7,
+        "answered": 0,
+        "abstain": 7,
+        "correct": 0,
+        "wrong": 0,
+        "precision": null,
+        "pa": 0.0
+      },
+      "hybrid": {
+        "total": 118,
+        "answered": 22,
+        "abstain": 96,
+        "correct": 22,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.1864406779661017
+      },
+      "slow_delta_pa": 0.0,
+      "metric_rejected": 1,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 89,
+        "SQL execution failed": 7
+      }
+    },
+    "biz_130": {
+      "questions": 118,
+      "fast": {
+        "total": 118,
+        "answered": 32,
+        "abstain": 86,
+        "correct": 32,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.2711864406779661
+      },
+      "paraphrase": {
+        "total": 118,
+        "answered": 3,
+        "abstain": 115,
+        "correct": 3,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.025423728813559324
+      },
+      "slow": {
+        "total": 0,
+        "answered": 0,
+        "abstain": 0,
+        "correct": 0,
+        "wrong": 0,
+        "precision": null,
+        "pa": null
+      },
+      "hybrid": {
+        "total": 118,
+        "answered": 35,
+        "abstain": 83,
+        "correct": 35,
+        "wrong": 0,
+        "precision": 1.0,
+        "pa": 0.2966101694915254
+      },
+      "slow_delta_pa": 0.0,
+      "metric_rejected": 0,
+      "inference_errors": 0,
+      "abstain_reasons": {
+        "Selective gate": 83
+      }
+    }
+  },
+  "model_calls": 34,
+  "network_model_calls": 0,
+  "reused_model_calls": 34,
+  "elapsed_seconds": 189.74940075899997,
+  "scope": "Descriptive development diagnostics only; SFT-seen vs SFT-excluded, not untouched validation. Public correctness unknown.",
+  "recommend_submit": false,
+  "offline_replay": true
+}

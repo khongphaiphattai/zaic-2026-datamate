@@ -3,12 +3,13 @@ hybrid_agent.py: Hybrid Fast-Slow Architecture for ZAIC 2026 DataMate.
 
 Orchestrates:
 1. Fast Path (Deterministic Rule-based + DuckDB In-Memory):
-   - Handles the 204 core queries (Revenue, Pure Order Count, Cancellations, AOV, OOD)
-   - 0ms latency, 0 token cost, 99.87% LBO precision.
+   - Handles supported revenue, order count, cancellations, AOV and OOD rules.
+   - Makes no model calls; measured accuracy and latency belong in run reports.
 2. Slow Path (SLM Qwen2.5-Coder-7B/14B + DuckDB Execution Sandbox):
-   - Invoked ONLY when Fast Path safely abstains (~796 long-tail queries)
-   - Translates complex conditions, date sorting, group by, debt, inventory into SQL
-   - Double Refusal Gate: abstains safely on execution errors, null results, or low confidence.
+   - Opt-in after Fast abstains AND the single-day store-revenue grammar matches.
+   - Executes a single registered-table SELECT with a README-backed metric check.
+   - Abstains on policy/execution failures, null results or low declared confidence.
+   - Metric verification is partial: date/status/table selection remain unverified.
 """
 
 from __future__ import annotations

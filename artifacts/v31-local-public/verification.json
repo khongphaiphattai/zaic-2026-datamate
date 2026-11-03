@@ -1,0 +1,9 @@
+{
+  "ids": 1000,
+  "scored_fields_and_routes_unchanged": true,
+  "old_logical_calls": 2,
+  "new_logical_calls": 1,
+  "avoided_retries": 1,
+  "network_calls": 0,
+  "scope": "Offline raw-response replay with reviewed execution-source migration; no GPU units measured."
+}

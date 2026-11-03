@@ -1,4 +1,25 @@
 """Validate served checkpoint identity against declared training provenance."""
+import hashlib
+import json
+from pathlib import Path
+import urllib.request
+
+
+def verify_training_artifacts(metadata, model, *,
+                              split_path='artifacts/selective-evaluation/split.json',
+                              data_path='artifacts/train-only-sft.jsonl'):
+    """Compare declared provenance to the local business-isolated training files."""
+    split_bytes = Path(split_path).read_bytes()
+    verify_model_provenance(metadata, hashlib.sha256(Path(data_path).read_bytes()).hexdigest(),
+                           hashlib.sha256(split_bytes).hexdigest(),
+                           json.loads(split_bytes)['train_businesses'], model)
+
+
+def fetch_model_provenance(base_url, model):
+    with urllib.request.urlopen(base_url.rstrip('/')+'/model-provenance', timeout=20) as response:
+        served = json.load(response)
+    verify_training_artifacts(served, model)
+    return served
 
 def verify_model_provenance(metadata, data_sha256, split_sha256, businesses, model):
     expected = {'model':model, 'training_complete':True, 'merge_complete':True,

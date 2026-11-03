@@ -1,0 +1,33 @@
+{
+  "dataset": "train",
+  "model": "datamate-business24",
+  "endpoint": null,
+  "reuse_run": "artifacts/v3-period-train",
+  "temperature": 0,
+  "seed": 42,
+  "max_tokens": 1024,
+  "offline_replay": true,
+  "allow_execution_changes": true,
+  "reused_trace_sha256": "917bccdd774007c57894a547be94a0b16081f7a41f36af65f8c8ea1d686d2600",
+  "daily_order_paraphrases": true,
+  "training_data_sha256": "55c2918798e68452be79cf69bc9244311d900af60533554d2fa436bb414a908e",
+  "split_sha256": "ba0a70ea94ecf36c6d74b308ba7bcf29358f1ec693fc6cf73167c0e59b6c4ffa",
+  "sources": {
+    "pipeline.py": "e7e2cc99d7967480fd97b101c9edf47eea08ceba96a623f9090e9ea13c16c914",
+    "provenance.py": "7be996aea12ea550c5ed3960807ad357e7f5627e0facec3fb5c06471bde0e4de",
+    "hybrid_agent.py": "68d5ae8a609bdbca046db054544cbbbe74eaa3dc23dc478bbe29e7be8dc23ae6",
+    "slow_path.py": "14882ddc284221296303a84662111bec4a50a150f87c9855d75b86a93b4eba62",
+    "revenue_metric.py": "b65da3cf88ee0390ebc5428fba10b2c3455d9ef43d920fe0af65ff00949105c0",
+    "selective_gate.py": "0cf16b9630ab57e10aaf294c619899eb10fd180259452bd1c7cca5fda573ea7a",
+    "prompt_generator.py": "bfb80b6cf73e51f3f5f029d9906f528af44a6abf086d50b763b9614bf28f6a35",
+    "intent_parser.py": "5168704acf46a4a3309488a8ad7e33fe42185e928bce23957db001ba3f690a68",
+    "paraphrase_fast.py": "5b893fb65f6c45bc4c48461c0709f9fdb148d12bae87ec5391ba22bf9f643bd6"
+  },
+  "scope": "Descriptive development diagnostics only; SFT-seen vs SFT-excluded, not untouched validation. Public correctness unknown.",
+  "pipeline": {
+    "enable_slow_path": true,
+    "order_paraphrases": true,
+    "model": "datamate-business24",
+    "confidence_threshold": 0.95
+  }
+}

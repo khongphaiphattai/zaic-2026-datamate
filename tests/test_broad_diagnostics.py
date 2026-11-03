@@ -81,3 +81,36 @@ def test_cache_checks_identity_and_settings(tmp_path):
   {'prompt_sha256':'p','response':'SQL'},
   {'prompt_sha256':'p','response':'different SQL'}]})+'\n')
  with pytest.raises(ValueError,match='Different recorded responses'): load_cached_responses(tmp_path,meta)
+
+
+def test_offline_cache_misses_and_system_prompt_changes_fail():
+ from scripts.diagnose_hybrid import RecordedClient
+ from zaic_2026_datamate.prompt_generator import SYSTEM_PROMPT
+ import hashlib
+ key=hashlib.sha256(b'known').hexdigest()
+ client=RecordedClient(None,{key:'SQL'},offline=True)
+ assert client.generate('known',SYSTEM_PROMPT)=='SQL'
+ with pytest.raises(RuntimeError,match='missing'):
+  client.generate('unknown',SYSTEM_PROMPT)
+ with pytest.raises(ValueError,match='system prompt'):
+  client.generate('known','changed')
+
+
+def test_execution_migration_keeps_prompt_and_checkpoint_guards(tmp_path):
+ import hashlib,json
+ from pathlib import Path
+ from scripts.diagnose_hybrid import load_cached_responses
+ meta={'model':'m'}
+ config={'model':'m','temperature':0,'seed':42,'max_tokens':1024,'sources':{
+  'prompt_generator.py':hashlib.sha256(Path('src/zaic_2026_datamate/prompt_generator.py').read_bytes()).hexdigest(),
+  'slow_path.py':'old execution'}}
+ (tmp_path/'served-model-provenance.json').write_text(json.dumps(meta))
+ (tmp_path/'run-config.json').write_text(json.dumps(config))
+ (tmp_path/'trace.jsonl').write_text(json.dumps({'llm_calls':[{'prompt_sha256':'p','response':'SQL'}]})+'\n')
+ with pytest.raises(ValueError,match='frozen-source'):
+  load_cached_responses(tmp_path,meta)
+ assert load_cached_responses(tmp_path,meta,allow_execution_changes=True)=={'p':'SQL'}
+ config['sources']['prompt_generator.py']='changed'
+ (tmp_path/'run-config.json').write_text(json.dumps(config))
+ with pytest.raises(ValueError,match='frozen-source'):
+  load_cached_responses(tmp_path,meta,allow_execution_changes=True)

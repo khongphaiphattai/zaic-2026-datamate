@@ -1,0 +1,57 @@
+{
+  "scope": "Overlapping lexical inventory, not executable eligibility or accuracy. Train-24 design; Public aggregates only.",
+  "groups": {
+    "train": {
+      "revenue": {
+        "questions": 713,
+        "businesses": 24
+      },
+      "ranking": {
+        "questions": 159,
+        "businesses": 24
+      },
+      "inventory": {
+        "questions": 27,
+        "businesses": 11
+      },
+      "debt": {
+        "questions": 66,
+        "businesses": 10
+      },
+      "rolling_orders": {
+        "questions": 6,
+        "businesses": 4
+      },
+      "monthly_growth": {
+        "questions": 118,
+        "businesses": 20
+      }
+    },
+    "public": {
+      "revenue": {
+        "questions": 276,
+        "businesses": 14
+      },
+      "ranking": {
+        "questions": 58,
+        "businesses": 14
+      },
+      "inventory": {
+        "questions": 2,
+        "businesses": 1
+      },
+      "debt": {
+        "questions": 26,
+        "businesses": 5
+      },
+      "rolling_orders": {
+        "questions": 6,
+        "businesses": 5
+      },
+      "monthly_growth": {
+        "questions": 53,
+        "businesses": 12
+      }
+    }
+  }
+}

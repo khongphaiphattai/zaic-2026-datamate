@@ -6,13 +6,13 @@ import hashlib
 import json
 from pathlib import Path
 import time
-import urllib.request
 
 from zaic_2026_datamate.data_loader import DataLoader
 from zaic_2026_datamate.evaluation import evaluate_match
-from zaic_2026_datamate.hybrid_agent import HybridAgent
+from zaic_2026_datamate.pipeline import PipelineConfig, build_agent
 from zaic_2026_datamate.llm_client import OpenAICompatibleClient
-from zaic_2026_datamate.provenance import verify_model_provenance
+from zaic_2026_datamate.provenance import fetch_model_provenance, verify_training_artifacts
+from zaic_2026_datamate.prompt_generator import SYSTEM_PROMPT
 from zaic_2026_datamate.selective_gate import daily_revenue_date
 from zaic_2026_datamate.submission import write_submission
 
@@ -55,7 +55,7 @@ def compare_baseline(baseline, actual):
                (new.get(qid,{}).get('type'),new.get(qid,{}).get('answer'))]
 
 
-def load_cached_responses(run_dir, served):
+def load_cached_responses(run_dir, served, *, allow_execution_changes=False):
     run_dir = Path(run_dir)
     old = json.loads((run_dir/'served-model-provenance.json').read_text())
     identity = ['model','base_model','base_revision','data_sha256','split_sha256',
@@ -65,8 +65,11 @@ def load_cached_responses(run_dir, served):
     config = json.loads((run_dir/'run-config.json').read_text())
     if any(config.get(k)!=v for k,v in {'model':served['model'],'temperature':0,'seed':42,'max_tokens':1024}.items()):
         raise ValueError('Cache generation settings mismatch')
-    # Only selective_gate may change. Prompt and SQL execution semantics stay frozen.
-    for name in ['hybrid_agent.py','slow_path.py','revenue_metric.py','prompt_generator.py','intent_parser.py']:
+    # Normal reuse freezes execution. Explicit offline migration reexecutes raw
+    # responses under changed execution, while still freezing prompt construction.
+    frozen = ['prompt_generator.py'] if allow_execution_changes else [
+        'hybrid_agent.py','slow_path.py','revenue_metric.py','prompt_generator.py','intent_parser.py']
+    for name in frozen:
         actual = hashlib.sha256((Path('src/zaic_2026_datamate')/name).read_bytes()).hexdigest()
         if config.get('sources',{}).get(name)!=actual:
             raise ValueError(f'Cache frozen-source mismatch: {name}')
@@ -82,19 +85,26 @@ def load_cached_responses(run_dir, served):
 
 
 class RecordedClient:
-    def __init__(self, client, cached_responses=None):
+    def __init__(self, client, cached_responses=None, *, offline=False):
         self.client = client
         self.cached_responses = cached_responses or {}
         self.calls = []
+        self.offline = offline
 
     def generate(self, prompt, system_prompt=None):
         record = {'prompt_sha256':hashlib.sha256(prompt.encode()).hexdigest()}
         self.calls.append(record)
+        if self.offline and system_prompt != SYSTEM_PROMPT:
+            record['error'] = 'Offline replay requires the frozen system prompt'
+            raise ValueError(record['error'])
         key = record['prompt_sha256']
         record['from_cache'] = key in self.cached_responses
         if record['from_cache']:
             record['response'] = self.cached_responses[key]
             return record['response']
+        if self.offline:
+            record['error'] = 'Offline replay missing response for prompt'
+            raise RuntimeError(record['error'])
         try:
             result = self.client.generate(prompt,system_prompt)
             record['response'] = result
@@ -116,22 +126,33 @@ def output_row(qid, kind, value, reason):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--dataset',choices=['train','public_test'],required=True)
-    parser.add_argument('--base-url',required=True)
+    parser.add_argument('--base-url')
     parser.add_argument('--model',default='datamate-business24')
+    parser.add_argument('--confidence-threshold',type=float,default=0.95)
     parser.add_argument('--output-dir',required=True)
     parser.add_argument('--reuse-run',help='Reuse matching recorded model responses; SQL is checked and executed again')
+    parser.add_argument('--offline-replay', action='store_true', help='Use saved provenance/responses only; fail on any missing prompt')
+    parser.add_argument('--allow-execution-changes', action='store_true', help='Explicit offline migration: freeze model/prompts but reexecute under changed source')
     parser.add_argument('--order-paraphrases','--daily-order-paraphrases',dest='daily_order_paraphrases',action='store_true',help='Opt in to Train-24 order syntax fallback')
     args = parser.parse_args()
+    if args.offline_replay and (not args.reuse_run or args.base_url):
+        parser.error('--offline-replay requires --reuse-run and no --base-url')
+    if not args.offline_replay and not args.base_url:
+        parser.error('--base-url is required for live runs')
+    if args.allow_execution_changes and not args.offline_replay:
+        parser.error('--allow-execution-changes requires --offline-replay')
     out = Path(args.output_dir)
     if out.exists():
         raise FileExistsError(f'Use a fresh output directory: {out}')
     split_path = Path('artifacts/selective-evaluation/split.json')
     split = json.loads(split_path.read_text())
     data_hash = hashlib.sha256(Path('artifacts/train-only-sft.jsonl').read_bytes()).hexdigest()
-    with urllib.request.urlopen(args.base_url.rstrip('/')+'/model-provenance',timeout=20) as response:
-        served = json.load(response)
-    verify_model_provenance(served,data_hash,hashlib.sha256(split_path.read_bytes()).hexdigest(),split['train_businesses'],args.model)
-    cached = load_cached_responses(args.reuse_run,served) if args.reuse_run else {}
+    if args.offline_replay:
+        served = json.loads((Path(args.reuse_run)/'served-model-provenance.json').read_text())
+        verify_training_artifacts(served, args.model)
+    else:
+        served = fetch_model_provenance(args.base_url, args.model)
+    cached = load_cached_responses(args.reuse_run,served,allow_execution_changes=args.allow_execution_changes) if args.reuse_run else {}
     root = Path('data')/args.dataset/args.dataset
     questions = read_rows(root/'questions.jsonl')
     if len({q['id'] for q in questions})!=len(questions):
@@ -144,21 +165,24 @@ def main():
     for q in questions:groups[q['business_id']].append(q)
     out.mkdir(parents=True)
     (out/'served-model-provenance.json').write_text(json.dumps(served,indent=2))
-    sources = ['hybrid_agent.py','slow_path.py','revenue_metric.py','selective_gate.py','prompt_generator.py','intent_parser.py']
+    sources = ['pipeline.py','provenance.py','hybrid_agent.py','slow_path.py','revenue_metric.py','selective_gate.py','prompt_generator.py','intent_parser.py']
     if args.daily_order_paraphrases:
         sources.append('paraphrase_fast.py')
     run_config = {'dataset':args.dataset,'model':args.model,'endpoint':args.base_url,'reuse_run':args.reuse_run,'temperature':0,'seed':42,'max_tokens':1024,
+                  'offline_replay':args.offline_replay,'allow_execution_changes':args.allow_execution_changes,
+                  'reused_trace_sha256':hashlib.sha256((Path(args.reuse_run)/'trace.jsonl').read_bytes()).hexdigest() if args.reuse_run else None,
                   'daily_order_paraphrases':args.daily_order_paraphrases,
                   'training_data_sha256':data_hash,'split_sha256':hashlib.sha256(split_path.read_bytes()).hexdigest(),
                   'sources':{name:hashlib.sha256((Path('src/zaic_2026_datamate')/name).read_bytes()).hexdigest() for name in sources},
                   'scope':'Descriptive development diagnostics only; SFT-seen vs SFT-excluded, not untouched validation. Public correctness unknown.'}
     (out/'run-config.json').write_text(json.dumps(run_config,indent=2))
-    client = RecordedClient(OpenAICompatibleClient(base_url=args.base_url,model=args.model),cached)
-    agent_class = HybridAgent
-    if args.daily_order_paraphrases:
-        from zaic_2026_datamate.paraphrase_fast import DailyOrderParaphraseAgent
-        agent_class = DailyOrderParaphraseAgent
-    agent = agent_class(enable_slow_path=True,llm_client=client)
+    backend = None if args.offline_replay else OpenAICompatibleClient(base_url=args.base_url,model=args.model)
+    client = RecordedClient(backend,cached,offline=args.offline_replay)
+    pipeline_config = PipelineConfig(enable_slow_path=True, order_paraphrases=args.daily_order_paraphrases,
+                                     model=args.model, confidence_threshold=args.confidence_threshold)
+    run_config['pipeline'] = asdict(pipeline_config)
+    (out/'run-config.json').write_text(json.dumps(run_config,indent=2))
+    agent = build_agent(pipeline_config, client)
     loader = DataLoader(root/'data',root/'calendar.csv')
     cases=[]; predictions={};fast_rows={}; started=time.monotonic()
     with (out/'trace.jsonl').open('w') as trace:
@@ -168,6 +192,9 @@ def main():
                 for q in qs:
                     client.calls=[];context.last_sql=None;t0=time.monotonic()
                     kind,value,reason,route = agent.answer_query(q['question'],context,q.get('as_of_date'))
+                    if args.offline_replay and (any('error' in c for c in client.calls) or
+                                               'LLM generation failed' in (reason or '')):
+                        raise RuntimeError(f'Incomplete offline replay for {q["id"]}: {reason}')
                     prediction = output_row(q['id'],kind,value,reason)
                     predictions[q['id']] = prediction
                     fast_rows[q['id']] = prediction if route=='fast_path' else {'id':q['id'],'type':'abstain'}
@@ -197,6 +224,7 @@ def main():
               'reused_model_calls':sum(c['from_cache'] for r in cases for c in r['llm_calls']),
               'elapsed_seconds':time.monotonic()-started,
               'scope':run_config['scope'],'recommend_submit':False}
+    report['offline_replay'] = args.offline_replay
     expected = [q['id'] for q in questions]
     if labelled:
         write_submission(out/'predictions.jsonl',[predictions[qid] for qid in expected],expected)
