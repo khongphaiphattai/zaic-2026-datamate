@@ -1,0 +1,29 @@
+{
+  "verified": true,
+  "scope": "Six selected Train-24 positives; diagnostic normalization only, not new automatic answers or Public evidence. No numeric MTD execution.",
+  "network_calls": 0,
+  "cases": 6,
+  "full_month_computed_matching_train": 2,
+  "already_answered": 1,
+  "newly_computable_with_manual_normalization": 1,
+  "blocked_role_or_metric_contract": 3,
+  "mtd_roles_metric_pass_execution_unverified": 1,
+  "source_hashes": {
+    "src/zaic_2026_datamate/monthly_growth.py": "0fe37f77beb08c470c91127aa7b79910d7526c1e4517fb44177a6d99c0d26890",
+    "src/zaic_2026_datamate/intent_parser.py": "5168704acf46a4a3309488a8ad7e33fe42185e928bce23957db001ba3f690a68",
+    "src/zaic_2026_datamate/revenue_metric.py": "b65da3cf88ee0390ebc5428fba10b2c3455d9ef43d920fe0af65ff00949105c0",
+    "src/zaic_2026_datamate/data_loader.py": "4e157d81bfe5a9af894ceb3c1649d909d0c48db73d7b80091df602d9999fe256",
+    "artifacts/structured-intent-probe/cases.json": "49289c6953246e075658039e6034ef8fbba672d5bd8ba6a680c3ff13d422cc2a",
+    "artifacts/v31-growth-train/trace.jsonl": "a87a673e728bdd5fc8f54dbbf0bd6f0c57aba12b0fe8c861999c70e3b1af2b29",
+    "data/train/train/data/biz_102/README.md": "6d857ce98b60e60a31147247c7339a5d9ac935987da3042faa14fb4022e04551",
+    "data/train/train/data/biz_104/README.md": "70955b88b93c4d4d4b5de1806ed212a9599b9cf9fb959afdc3a042c301af3ab2",
+    "data/train/train/data/biz_120/README.md": "4e6629c7ebc7470383ffeccdbffb5454ff5e14759cdb887c98d5e9fa64bd6cab",
+    "data/train/train/data/biz_105/README.md": "a73db6b16c8768c2fca49d10e6e8dcb6cc1054881c63c8afcbef487ae025a326",
+    "data/train/train/data/biz_117/README.md": "0e237a73fe29dcd5a8e4aab110e8d9b6abf2fd5be9555e1f25a2a242ee463e26",
+    "data/train/train/data/biz_122/README.md": "2ea579b13f08f31fcf21f6dca27ca35c4671bab764f4e435c593b3375e2abe51"
+  },
+  "audit_sha256": "b3af96cd90fe16122c11085b60a22ced3dbb3c983bd9e6021abf41d2568aeebe",
+  "submission_sha256": "288ed868fde9175d36afd8995cdaf0e2c5f978a716be5c2a845f35c5e89afb9f",
+  "production_code_changed": false,
+  "tests": "No new test run: review/artifacts/docs only; checks above rerun in this review."
+}

@@ -22,3 +22,8 @@ Gate fail; không triển khai compiler/pipeline trong bước này. Không có 
 network/OOM;54 local tests pass. Giữ model/prompt/parser đã đo để bảo toàn bằng
 chứng. Phân tích và đề xuất thí nghiệm prompt tiếp theo (14regression rồi tối
 đa24ca mới nếu qua gate) tại `artifacts/structured-intent-live-01/README.md`.
+
+Review sau đó thay thứ tự prompt-first bằng
+`docs/plans/2026-11-04-capability-first-review.md`: chứng minh đường dữ liệu/
+compiler có giá trị trước lượt prompt tiếp. Kết quả probe gốc vẫn fail;
+không đổi labels hoặc validator để hồi tố pass.

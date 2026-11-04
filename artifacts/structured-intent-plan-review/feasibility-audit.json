@@ -1,0 +1,295 @@
+{
+  "scope": "Selected six Train-24 positives only. Frozen existing guards; no source changes, model calls or Public question inspection. MTD roles/metric only, not full execution feasibility.",
+  "results": [
+    {
+      "id": "q_112c84a433a5",
+      "business_id": "biz_102",
+      "period": "full_month",
+      "previous_route": "monthly_growth_path",
+      "previous_type": "percent",
+      "table": "don_hang_chi_tiet",
+      "revenue_column": "tong_tien",
+      "roles": {
+        "order": {
+          "column": "ma_don_hang",
+          "definition": [
+            "ma don"
+          ],
+          "expected": "ma don",
+          "verified": true
+        },
+        "date": {
+          "column": "ngay_dat_hang",
+          "definition": [
+            "ngay ban"
+          ],
+          "expected": "ngay ban",
+          "verified": true
+        },
+        "status": {
+          "column": "trang_thai_don_hang",
+          "definition": [
+            "trang thai don"
+          ],
+          "expected": "trang thai don",
+          "verified": true
+        }
+      },
+      "metric_guard": {
+        "allowed": true,
+        "reason": "Revenue column matches scoped README evidence"
+      },
+      "diagnostic_known_intent_execution": {
+        "normalized_question": "Doanh thu tháng 5/2026 tăng hay giảm bao nhiêu phần trăm so với tháng trước?",
+        "type": "percent",
+        "value": -1.79,
+        "reason": null,
+        "audit": {
+          "previous_start": "2026-04-01",
+          "current_start": "2026-05-01",
+          "current_end": "2026-05-31",
+          "table": "don_hang_chi_tiet",
+          "revenue_column": "tong_tien",
+          "previous_revenue": 280724700.0,
+          "current_revenue": 275687800.0,
+          "coverage": "boundary/schema checks; internal export completeness is not proven"
+        },
+        "scope": "Manual question-derived normalization for diagnosis only; not production output or measured automatic model integration."
+      }
+    },
+    {
+      "id": "q_de3c8bc640c2",
+      "business_id": "biz_104",
+      "period": "full_month",
+      "previous_route": "abstain",
+      "previous_type": "abstain",
+      "table": "don_hang_chi_tiet",
+      "revenue_column": "tong_tien",
+      "roles": {
+        "order": {
+          "column": "ma_don_hang",
+          "definition": [
+            "ma don"
+          ],
+          "expected": "ma don",
+          "verified": true
+        },
+        "date": {
+          "column": "ngay_dat_hang",
+          "definition": [
+            "ngay ban"
+          ],
+          "expected": "ngay ban",
+          "verified": true
+        },
+        "status": {
+          "column": "trang_thai_don_hang",
+          "definition": [
+            "trang thai don"
+          ],
+          "expected": "trang thai don",
+          "verified": true
+        }
+      },
+      "metric_guard": {
+        "allowed": true,
+        "reason": "Revenue column matches scoped README evidence"
+      },
+      "diagnostic_known_intent_execution": {
+        "normalized_question": "Doanh thu tháng 11/2025 tăng hay giảm bao nhiêu phần trăm so với tháng trước?",
+        "type": "percent",
+        "value": 1.54,
+        "reason": null,
+        "audit": {
+          "previous_start": "2025-10-01",
+          "current_start": "2025-11-01",
+          "current_end": "2025-11-30",
+          "table": "don_hang_chi_tiet",
+          "revenue_column": "tong_tien",
+          "previous_revenue": 195454000.0,
+          "current_revenue": 198458500.0,
+          "coverage": "boundary/schema checks; internal export completeness is not proven"
+        },
+        "scope": "Manual question-derived normalization for diagnosis only; not production output or measured automatic model integration."
+      }
+    },
+    {
+      "id": "q_9bf4d9e880d9",
+      "business_id": "biz_120",
+      "period": "full_month",
+      "previous_route": "abstain",
+      "previous_type": "abstain",
+      "table": "danh_sach_hoa_don",
+      "revenue_column": "tong_tien_hang",
+      "roles": {
+        "order": {
+          "column": "ma_hoa_don",
+          "definition": [
+            "ma don"
+          ],
+          "expected": "ma don",
+          "verified": true
+        },
+        "date": {
+          "column": "thoi_gian_tao",
+          "definition": [
+            "thoi diem dat don (ngay gio)"
+          ],
+          "expected": "ngay ban",
+          "verified": false
+        },
+        "status": {
+          "column": "trang_thai",
+          "definition": [
+            "trang thai don"
+          ],
+          "expected": "trang thai don",
+          "verified": true
+        }
+      },
+      "metric_guard": {
+        "allowed": false,
+        "reason": "danh_sach_hoa_don.tong_tien_hang lacks unambiguous README evidence for merchandise revenue"
+      },
+      "diagnostic_known_intent_execution": {
+        "normalized_question": "Doanh thu tháng 1/2026 tăng hay giảm bao nhiêu phần trăm so với tháng trước?",
+        "type": "abstain",
+        "value": null,
+        "reason": "Monthly growth rejected: Unverified README role: thoi_gian_tao",
+        "audit": {
+          "previous_start": "2025-12-01",
+          "current_start": "2026-01-01",
+          "current_end": "2026-01-31",
+          "rejection": "Unverified README role: thoi_gian_tao"
+        },
+        "scope": "Manual question-derived normalization for diagnosis only; not production output or measured automatic model integration."
+      }
+    },
+    {
+      "id": "q_48d55e816a7d",
+      "business_id": "biz_105",
+      "period": "month_to_date",
+      "previous_route": "abstain",
+      "previous_type": "abstain",
+      "table": "so_ban_hang",
+      "revenue_column": "tri_gia",
+      "roles": {
+        "order": {
+          "column": "ma_hoa_don",
+          "definition": [
+            "ma don"
+          ],
+          "expected": "ma don",
+          "verified": true
+        },
+        "date": {
+          "column": "gio",
+          "definition": [
+            "gio dat don (dong tra hang: luc tra)"
+          ],
+          "expected": "ngay ban",
+          "verified": false
+        },
+        "status": {
+          "column": "status",
+          "definition": [
+            "trang thai don"
+          ],
+          "expected": "trang thai don",
+          "verified": true
+        }
+      },
+      "metric_guard": {
+        "allowed": false,
+        "reason": "so_ban_hang.tri_gia lacks unambiguous README evidence for merchandise revenue"
+      },
+      "diagnostic_known_intent_execution": {
+        "status": "MTD compiler absent; no numeric execution attempted"
+      }
+    },
+    {
+      "id": "q_f4c328691e9b",
+      "business_id": "biz_117",
+      "period": "month_to_date",
+      "previous_route": "abstain",
+      "previous_type": "abstain",
+      "table": "so_ban_hang",
+      "revenue_column": "tien",
+      "roles": {
+        "order": {
+          "column": "ma_phieu",
+          "definition": [
+            "ma don"
+          ],
+          "expected": "ma don",
+          "verified": true
+        },
+        "date": {
+          "column": "gio",
+          "definition": [
+            "gio dat don (dong tra hang: luc tra)"
+          ],
+          "expected": "ngay ban",
+          "verified": false
+        },
+        "status": {
+          "column": "ghi_chu_tt",
+          "definition": [
+            "trang thai don"
+          ],
+          "expected": "trang thai don",
+          "verified": true
+        }
+      },
+      "metric_guard": {
+        "allowed": false,
+        "reason": "so_ban_hang.tien lacks unambiguous README evidence for merchandise revenue"
+      },
+      "diagnostic_known_intent_execution": {
+        "status": "MTD compiler absent; no numeric execution attempted"
+      }
+    },
+    {
+      "id": "q_7ebd4d633970",
+      "business_id": "biz_122",
+      "period": "month_to_date",
+      "previous_route": "abstain",
+      "previous_type": "abstain",
+      "table": "don_hang_chi_tiet",
+      "revenue_column": "tong_tien",
+      "roles": {
+        "order": {
+          "column": "ma_don_hang",
+          "definition": [
+            "ma don"
+          ],
+          "expected": "ma don",
+          "verified": true
+        },
+        "date": {
+          "column": "ngay_dat_hang",
+          "definition": [
+            "ngay ban"
+          ],
+          "expected": "ngay ban",
+          "verified": true
+        },
+        "status": {
+          "column": "trang_thai_don_hang",
+          "definition": [
+            "trang thai don"
+          ],
+          "expected": "trang thai don",
+          "verified": true
+        }
+      },
+      "metric_guard": {
+        "allowed": true,
+        "reason": "Revenue column matches scoped README evidence"
+      },
+      "diagnostic_known_intent_execution": {
+        "status": "MTD compiler absent; no numeric execution attempted"
+      }
+    }
+  ]
+}

@@ -378,3 +378,7 @@ Notebook04 hiện hỗ trợ L4 24GB hoặc A100 cho BF16 inference, có kiểm 
 Đã chạy14case trên L4:6/6 positive đúng,1/8 negative abstain đúng,4 negative bị validator chặn,3 semantic false accepts (ca/kênh/YoY). Không lỗi API/OOM; median client latency1.875s. **Không đạt gate**, chưa mở compiler MTD/pipeline. 54 tests liên quan pass; submission v3.0 không đổi.
 
 Bước tiếp theo là prompt kiểm loại trừ trước, regression14câu và bộ24development mới chốt trước đo; không training hoặc chuyển A100 để sửa lỗi ngữ nghĩa. Kế hoạch chi tiết, điều kiện dừng và bằng chứng tại `artifacts/structured-intent-live-01/README.md`. Các ghi chú chờ URL phía trên là lịch sử; probe đầu đã hoàn tất.
+
+### Điều chỉnh sau review trọng tâm (04/11/2026)
+
+Đề xuất prompt-first phía trên được thay bằng `docs/plans/2026-11-04-capability-first-review.md`: kiểm cơ hội thực thi trên Train-24 → resolver/metric và compiler offline → semantic contract model–compiler → đo lợi ích model → full Train/Public. Audit sáu positive cho thấy1đã trả lời,1có thể thêm khi chuẩn hóa câu,3vướng roles/metric,1MTD chưa kiểm phép tính. Chưa sửa production hoặc gọi GPU. Không dùng pass14+24 làm bằng chứng chất lượng hoặc nới guard để cứu cột chọn sai.

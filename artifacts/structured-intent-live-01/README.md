@@ -48,6 +48,12 @@ cần đổi GPU để xử lý ba lỗi ngữ nghĩa hiện tại.
 
 ## Bước tiếp theo theo kết quả fail
 
+**Đã thay thứ tự sau review:** xem
+`docs/plans/2026-11-04-capability-first-review.md`. Các mục dưới là đề xuất ban
+đầu, không còn là lệnh chạy prompt14+24ngay. Kiểm khả năng thực thi/schema và
+giá trị tăng thêm trước; compiler offline có thể được kiểm riêng với intent
+đã biết đúng mà không promote extractor đang fail.
+
 1. Giữ bộ14 làm regression đã biết. Thiết kế một prompt sửa, kiểm điều kiện loại trừ trước khi điền intent: giữ mọi bộ lọc và kiểm rõ cả kỳ hiện tại lẫn kỳ so sánh. Ví dụ hướng dẫn phải khác câu kiểm thử; không hardcode ID/Shopee/ca sáng để làm đẹp kết quả. Giữ strict JSON/date validator.
 2. Chốt prompt/hash và chuẩn bị24 câu development mới trước khi đo: 8 positive,16 negative, gồm biến thể MTD/tháng hoàn tất/năm nhuận/chuyển năm và điều kiện khách/sản phẩm/ca/kênh/YoY/boolean/thời gian tương lai/thiếu kỳ/prompt injection. Lưu lịch sử tuning; không gọi bộ mới là untouched vì thiết kế từ lỗi đã xem.
 3. Phiên đo kế tiếp đề xuất tối đa38 calls:14 regression với prompt mới trước; chỉ nếu6/6 positive,8/8 negative,0 schema/date errors thì đo24 câu mới một lần/câu. Có false accept thì dừng mở rộng; không tự train. Chưa thực hiện các calls này trong phiên hiện tại.
