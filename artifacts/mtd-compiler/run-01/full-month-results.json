@@ -1,0 +1,1162 @@
+[
+  {
+    "id": "q_112c84a433a5",
+    "business_id": "biz_102",
+    "type": "percent",
+    "answer": -1.79,
+    "reason": null,
+    "audit": {
+      "previous_start": "2026-04-01",
+      "previous_end": "2026-04-30",
+      "current_start": "2026-05-01",
+      "current_end": "2026-05-31",
+      "period": "full_month",
+      "table": "don_hang_chi_tiet",
+      "revenue_column": "tong_tien",
+      "previous_revenue": 280724700.0,
+      "current_revenue": 275687800.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_a06ecb8ca547",
+    "business_id": "biz_102",
+    "type": "percent",
+    "answer": 2.11,
+    "reason": null,
+    "audit": {
+      "previous_start": "2025-04-01",
+      "previous_end": "2025-04-30",
+      "current_start": "2025-05-01",
+      "current_end": "2025-05-31",
+      "period": "full_month",
+      "table": "don_hang_chi_tiet",
+      "revenue_column": "tong_tien",
+      "previous_revenue": 274547600.0,
+      "current_revenue": 280331200.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_a812c50a1220",
+    "business_id": "biz_102",
+    "type": "percent",
+    "answer": -39.96,
+    "reason": null,
+    "audit": {
+      "previous_start": "2026-02-01",
+      "previous_end": "2026-02-28",
+      "current_start": "2026-03-01",
+      "current_end": "2026-03-31",
+      "period": "full_month",
+      "table": "don_hang_chi_tiet",
+      "revenue_column": "tong_tien",
+      "previous_revenue": 468619600.0,
+      "current_revenue": 281381900.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_c081925709b7",
+    "business_id": "biz_102",
+    "type": "percent",
+    "answer": -17.94,
+    "reason": null,
+    "audit": {
+      "previous_start": "2025-01-01",
+      "previous_end": "2025-01-31",
+      "current_start": "2025-02-01",
+      "current_end": "2025-02-28",
+      "period": "full_month",
+      "table": "don_hang_chi_tiet",
+      "revenue_column": "tong_tien",
+      "previous_revenue": 435803500.0,
+      "current_revenue": 357633200.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_d20c286fa40f",
+    "business_id": "biz_102",
+    "type": "percent",
+    "answer": -4.43,
+    "reason": null,
+    "audit": {
+      "previous_start": "2025-03-01",
+      "previous_end": "2025-03-31",
+      "current_start": "2025-04-01",
+      "current_end": "2025-04-30",
+      "period": "full_month",
+      "table": "don_hang_chi_tiet",
+      "revenue_column": "tong_tien",
+      "previous_revenue": 287270000.0,
+      "current_revenue": 274547600.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_d3f2e5421f28",
+    "business_id": "biz_102",
+    "type": "percent",
+    "answer": -4.5,
+    "reason": null,
+    "audit": {
+      "previous_start": "2025-11-01",
+      "previous_end": "2025-11-30",
+      "current_start": "2025-12-01",
+      "current_end": "2025-12-31",
+      "period": "full_month",
+      "table": "don_hang_chi_tiet",
+      "revenue_column": "tong_tien",
+      "previous_revenue": 286967300.0,
+      "current_revenue": 274050700.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_fcfafaa99bb4",
+    "business_id": "biz_102",
+    "type": "percent",
+    "answer": -1.43,
+    "reason": null,
+    "audit": {
+      "previous_start": "2025-07-01",
+      "previous_end": "2025-07-31",
+      "current_start": "2025-08-01",
+      "current_end": "2025-08-31",
+      "period": "full_month",
+      "table": "don_hang_chi_tiet",
+      "revenue_column": "tong_tien",
+      "previous_revenue": 282063000.0,
+      "current_revenue": 278031800.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_bf862acc15f6",
+    "business_id": "biz_103",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unsupported sales status",
+    "audit": {
+      "previous_start": "2025-05-01",
+      "previous_end": "2025-05-31",
+      "current_start": "2025-06-01",
+      "current_end": "2025-06-30",
+      "period": "full_month",
+      "rejection": "Unsupported sales status"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_0872d9f34f31",
+    "business_id": "biz_104",
+    "type": "percent",
+    "answer": -31.57,
+    "reason": null,
+    "audit": {
+      "previous_start": "2026-01-01",
+      "previous_end": "2026-01-31",
+      "current_start": "2026-02-01",
+      "current_end": "2026-02-28",
+      "period": "full_month",
+      "table": "don_hang_chi_tiet",
+      "revenue_column": "tong_tien",
+      "previous_revenue": 198041000.0,
+      "current_revenue": 135511000.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_307ac5840cca",
+    "business_id": "biz_104",
+    "type": "percent",
+    "answer": 3.7,
+    "reason": null,
+    "audit": {
+      "previous_start": "2026-04-01",
+      "previous_end": "2026-04-30",
+      "current_start": "2026-05-01",
+      "current_end": "2026-05-31",
+      "period": "full_month",
+      "table": "don_hang_chi_tiet",
+      "revenue_column": "tong_tien",
+      "previous_revenue": 185781000.0,
+      "current_revenue": 192664000.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_3b29ba188ca3",
+    "business_id": "biz_104",
+    "type": "percent",
+    "answer": 42.46,
+    "reason": null,
+    "audit": {
+      "previous_start": "2026-02-01",
+      "previous_end": "2026-02-28",
+      "current_start": "2026-03-01",
+      "current_end": "2026-03-31",
+      "period": "full_month",
+      "table": "don_hang_chi_tiet",
+      "revenue_column": "tong_tien",
+      "previous_revenue": 135511000.0,
+      "current_revenue": 193051500.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_6b684641ac51",
+    "business_id": "biz_104",
+    "type": "percent",
+    "answer": 1.17,
+    "reason": null,
+    "audit": {
+      "previous_start": "2025-09-01",
+      "previous_end": "2025-09-30",
+      "current_start": "2025-10-01",
+      "current_end": "2025-10-31",
+      "period": "full_month",
+      "table": "don_hang_chi_tiet",
+      "revenue_column": "tong_tien",
+      "previous_revenue": 193201000.0,
+      "current_revenue": 195454000.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_852a88cb4c90",
+    "business_id": "biz_104",
+    "type": "percent",
+    "answer": -5.84,
+    "reason": null,
+    "audit": {
+      "previous_start": "2025-08-01",
+      "previous_end": "2025-08-31",
+      "current_start": "2025-09-01",
+      "current_end": "2025-09-30",
+      "period": "full_month",
+      "table": "don_hang_chi_tiet",
+      "revenue_column": "tong_tien",
+      "previous_revenue": 205193000.0,
+      "current_revenue": 193201000.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_a39f397a9580",
+    "business_id": "biz_104",
+    "type": "percent",
+    "answer": -3.77,
+    "reason": null,
+    "audit": {
+      "previous_start": "2026-03-01",
+      "previous_end": "2026-03-31",
+      "current_start": "2026-04-01",
+      "current_end": "2026-04-30",
+      "period": "full_month",
+      "table": "don_hang_chi_tiet",
+      "revenue_column": "tong_tien",
+      "previous_revenue": 193051500.0,
+      "current_revenue": 185781000.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_147e7a072dc7",
+    "business_id": "biz_106",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: ma_hoa_don",
+    "audit": {
+      "previous_start": "2025-01-01",
+      "previous_end": "2025-01-31",
+      "current_start": "2025-02-01",
+      "current_end": "2025-02-28",
+      "period": "full_month",
+      "rejection": "Unverified README role: ma_hoa_don"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_3401f1835289",
+    "business_id": "biz_108",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: thoi_gian_tao",
+    "audit": {
+      "previous_start": "2025-01-01",
+      "previous_end": "2025-01-31",
+      "current_start": "2025-02-01",
+      "current_end": "2025-02-28",
+      "period": "full_month",
+      "rejection": "Unverified README role: thoi_gian_tao"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_64e2ac42f1d6",
+    "business_id": "biz_108",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: thoi_gian_tao",
+    "audit": {
+      "previous_start": "2025-04-01",
+      "previous_end": "2025-04-30",
+      "current_start": "2025-05-01",
+      "current_end": "2025-05-31",
+      "period": "full_month",
+      "rejection": "Unverified README role: thoi_gian_tao"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_e0287c87f366",
+    "business_id": "biz_108",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: thoi_gian_tao",
+    "audit": {
+      "previous_start": "2025-07-01",
+      "previous_end": "2025-07-31",
+      "current_start": "2025-08-01",
+      "current_end": "2025-08-31",
+      "period": "full_month",
+      "rejection": "Unverified README role: thoi_gian_tao"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_f0b0bd1cfc0c",
+    "business_id": "biz_108",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: thoi_gian_tao",
+    "audit": {
+      "previous_start": "2026-02-01",
+      "previous_end": "2026-02-28",
+      "current_start": "2026-03-01",
+      "current_end": "2026-03-31",
+      "period": "full_month",
+      "rejection": "Unverified README role: thoi_gian_tao"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_f47b3edba33e",
+    "business_id": "biz_108",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: thoi_gian_tao",
+    "audit": {
+      "previous_start": "2026-03-01",
+      "previous_end": "2026-03-31",
+      "current_start": "2026-04-01",
+      "current_end": "2026-04-30",
+      "period": "full_month",
+      "rejection": "Unverified README role: thoi_gian_tao"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_18adf5dc2e3f",
+    "business_id": "biz_109",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Missing sales columns",
+    "audit": {
+      "previous_start": "2025-09-01",
+      "previous_end": "2025-09-30",
+      "current_start": "2025-10-01",
+      "current_end": "2025-10-31",
+      "period": "full_month",
+      "rejection": "Missing sales columns"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_42707c40bd19",
+    "business_id": "biz_109",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Missing sales columns",
+    "audit": {
+      "previous_start": "2025-03-01",
+      "previous_end": "2025-03-31",
+      "current_start": "2025-04-01",
+      "current_end": "2025-04-30",
+      "period": "full_month",
+      "rejection": "Missing sales columns"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_ca469cc6d8c0",
+    "business_id": "biz_109",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Missing sales columns",
+    "audit": {
+      "previous_start": "2026-04-01",
+      "previous_end": "2026-04-30",
+      "current_start": "2026-05-01",
+      "current_end": "2026-05-31",
+      "period": "full_month",
+      "rejection": "Missing sales columns"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_55ded7aefe2e",
+    "business_id": "biz_111",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Missing sales columns",
+    "audit": {
+      "previous_start": "2026-06-01",
+      "previous_end": "2026-06-30",
+      "current_start": "2026-07-01",
+      "current_end": "2026-07-31",
+      "period": "full_month",
+      "rejection": "Missing sales columns"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_841d6a6359f9",
+    "business_id": "biz_111",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Missing sales columns",
+    "audit": {
+      "previous_start": "2026-03-01",
+      "previous_end": "2026-03-31",
+      "current_start": "2026-04-01",
+      "current_end": "2026-04-30",
+      "period": "full_month",
+      "rejection": "Missing sales columns"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_8cb56eea9997",
+    "business_id": "biz_111",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Missing sales columns",
+    "audit": {
+      "previous_start": "2025-05-01",
+      "previous_end": "2025-05-31",
+      "current_start": "2025-06-01",
+      "current_end": "2025-06-30",
+      "period": "full_month",
+      "rejection": "Missing sales columns"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_a26d79f3e08a",
+    "business_id": "biz_111",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Missing sales columns",
+    "audit": {
+      "previous_start": "2025-07-01",
+      "previous_end": "2025-07-31",
+      "current_start": "2025-08-01",
+      "current_end": "2025-08-31",
+      "period": "full_month",
+      "rejection": "Missing sales columns"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_ab9ee17a32b3",
+    "business_id": "biz_111",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Missing sales columns",
+    "audit": {
+      "previous_start": "2025-06-01",
+      "previous_end": "2025-06-30",
+      "current_start": "2025-07-01",
+      "current_end": "2025-07-31",
+      "period": "full_month",
+      "rejection": "Missing sales columns"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_0ef3574c2b44",
+    "business_id": "biz_115",
+    "type": "percent",
+    "answer": 66.01,
+    "reason": null,
+    "audit": {
+      "previous_start": "2026-02-01",
+      "previous_end": "2026-02-28",
+      "current_start": "2026-03-01",
+      "current_end": "2026-03-31",
+      "period": "full_month",
+      "table": "so_chi_tiet_ban_hang",
+      "revenue_column": "thanh_tien",
+      "previous_revenue": 659259300.0,
+      "current_revenue": 1094464400.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_2f1cdd6dfdd2",
+    "business_id": "biz_115",
+    "type": "percent",
+    "answer": -10.69,
+    "reason": null,
+    "audit": {
+      "previous_start": "2025-09-01",
+      "previous_end": "2025-09-30",
+      "current_start": "2025-10-01",
+      "current_end": "2025-10-31",
+      "period": "full_month",
+      "table": "so_chi_tiet_ban_hang",
+      "revenue_column": "thanh_tien",
+      "previous_revenue": 1179496000.0,
+      "current_revenue": 1053370500.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_538c300ffd10",
+    "business_id": "biz_115",
+    "type": "percent",
+    "answer": 8.47,
+    "reason": null,
+    "audit": {
+      "previous_start": "2025-08-01",
+      "previous_end": "2025-08-31",
+      "current_start": "2025-09-01",
+      "current_end": "2025-09-30",
+      "period": "full_month",
+      "table": "so_chi_tiet_ban_hang",
+      "revenue_column": "thanh_tien",
+      "previous_revenue": 1087422200.0,
+      "current_revenue": 1179496000.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_5c7a3aed2f4f",
+    "business_id": "biz_115",
+    "type": "percent",
+    "answer": -3.19,
+    "reason": null,
+    "audit": {
+      "previous_start": "2025-07-01",
+      "previous_end": "2025-07-31",
+      "current_start": "2025-08-01",
+      "current_end": "2025-08-31",
+      "period": "full_month",
+      "table": "so_chi_tiet_ban_hang",
+      "revenue_column": "thanh_tien",
+      "previous_revenue": 1123310800.0,
+      "current_revenue": 1087422200.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_5fa8f7834d32",
+    "business_id": "biz_115",
+    "type": "percent",
+    "answer": -0.29,
+    "reason": null,
+    "audit": {
+      "previous_start": "2025-06-01",
+      "previous_end": "2025-06-30",
+      "current_start": "2025-07-01",
+      "current_end": "2025-07-31",
+      "period": "full_month",
+      "table": "so_chi_tiet_ban_hang",
+      "revenue_column": "thanh_tien",
+      "previous_revenue": 1126531000.0,
+      "current_revenue": 1123310800.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_9749171b4480",
+    "business_id": "biz_115",
+    "type": "percent",
+    "answer": -39.81,
+    "reason": null,
+    "audit": {
+      "previous_start": "2026-01-01",
+      "previous_end": "2026-01-31",
+      "current_start": "2026-02-01",
+      "current_end": "2026-02-28",
+      "period": "full_month",
+      "table": "so_chi_tiet_ban_hang",
+      "revenue_column": "thanh_tien",
+      "previous_revenue": 1095368000.0,
+      "current_revenue": 659259300.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_a8ac54bdbe06",
+    "business_id": "biz_115",
+    "type": "percent",
+    "answer": 9.79,
+    "reason": null,
+    "audit": {
+      "previous_start": "2025-02-01",
+      "previous_end": "2025-02-28",
+      "current_start": "2025-03-01",
+      "current_end": "2025-03-31",
+      "period": "full_month",
+      "table": "so_chi_tiet_ban_hang",
+      "revenue_column": "thanh_tien",
+      "previous_revenue": 1039387700.0,
+      "current_revenue": 1141157100.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_23e155632945",
+    "business_id": "biz_116",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: ma_don_hang",
+    "audit": {
+      "previous_start": "2026-04-01",
+      "previous_end": "2026-04-30",
+      "current_start": "2026-05-01",
+      "current_end": "2026-05-31",
+      "period": "full_month",
+      "rejection": "Unverified README role: ma_don_hang"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_7c2331330d42",
+    "business_id": "biz_116",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: ma_don_hang",
+    "audit": {
+      "previous_start": "2026-01-01",
+      "previous_end": "2026-01-31",
+      "current_start": "2026-02-01",
+      "current_end": "2026-02-28",
+      "period": "full_month",
+      "rejection": "Unverified README role: ma_don_hang"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_cdbf2bbaa37d",
+    "business_id": "biz_116",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: ma_don_hang",
+    "audit": {
+      "previous_start": "2026-02-01",
+      "previous_end": "2026-02-28",
+      "current_start": "2026-03-01",
+      "current_end": "2026-03-31",
+      "period": "full_month",
+      "rejection": "Unverified README role: ma_don_hang"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_ee9961b2c073",
+    "business_id": "biz_116",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: ma_don_hang",
+    "audit": {
+      "previous_start": "2026-07-01",
+      "previous_end": "2026-07-31",
+      "current_start": "2026-08-01",
+      "current_end": "2026-08-31",
+      "period": "full_month",
+      "rejection": "Unverified README role: ma_don_hang"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_ff3b413d7346",
+    "business_id": "biz_116",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: ma_don_hang",
+    "audit": {
+      "previous_start": "2025-05-01",
+      "previous_end": "2025-05-31",
+      "current_start": "2025-06-01",
+      "current_end": "2025-06-30",
+      "period": "full_month",
+      "rejection": "Unverified README role: ma_don_hang"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_5178da2e9933",
+    "business_id": "biz_118",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unsupported sales status",
+    "audit": {
+      "previous_start": "2026-07-01",
+      "previous_end": "2026-07-31",
+      "current_start": "2026-08-01",
+      "current_end": "2026-08-31",
+      "period": "full_month",
+      "rejection": "Unsupported sales status"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_64912d7a8d99",
+    "business_id": "biz_118",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unsupported sales status",
+    "audit": {
+      "previous_start": "2025-12-01",
+      "previous_end": "2025-12-31",
+      "current_start": "2026-01-01",
+      "current_end": "2026-01-31",
+      "period": "full_month",
+      "rejection": "Unsupported sales status"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_20aa716764dc",
+    "business_id": "biz_119",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: thoi_gian_tao",
+    "audit": {
+      "previous_start": "2026-02-01",
+      "previous_end": "2026-02-28",
+      "current_start": "2026-03-01",
+      "current_end": "2026-03-31",
+      "period": "full_month",
+      "rejection": "Unverified README role: thoi_gian_tao"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_6114fa7b1534",
+    "business_id": "biz_119",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: thoi_gian_tao",
+    "audit": {
+      "previous_start": "2026-05-01",
+      "previous_end": "2026-05-31",
+      "current_start": "2026-06-01",
+      "current_end": "2026-06-30",
+      "period": "full_month",
+      "rejection": "Unverified README role: thoi_gian_tao"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_7dded87ba54e",
+    "business_id": "biz_119",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: thoi_gian_tao",
+    "audit": {
+      "previous_start": "2026-03-01",
+      "previous_end": "2026-03-31",
+      "current_start": "2026-04-01",
+      "current_end": "2026-04-30",
+      "period": "full_month",
+      "rejection": "Unverified README role: thoi_gian_tao"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_cfd5205df249",
+    "business_id": "biz_120",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: thoi_gian_tao",
+    "audit": {
+      "previous_start": "2025-08-01",
+      "previous_end": "2025-08-31",
+      "current_start": "2025-09-01",
+      "current_end": "2025-09-30",
+      "period": "full_month",
+      "rejection": "Unverified README role: thoi_gian_tao"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_2a9f4fc5fb1f",
+    "business_id": "biz_122",
+    "type": "percent",
+    "answer": -4.09,
+    "reason": null,
+    "audit": {
+      "previous_start": "2026-04-01",
+      "previous_end": "2026-04-30",
+      "current_start": "2026-05-01",
+      "current_end": "2026-05-31",
+      "period": "full_month",
+      "table": "don_hang_chi_tiet",
+      "revenue_column": "tong_tien",
+      "previous_revenue": 273745000.0,
+      "current_revenue": 262562500.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_f1f68541c1b6",
+    "business_id": "biz_122",
+    "type": "percent",
+    "answer": -10.35,
+    "reason": null,
+    "audit": {
+      "previous_start": "2025-07-01",
+      "previous_end": "2025-07-31",
+      "current_start": "2025-08-01",
+      "current_end": "2025-08-31",
+      "period": "full_month",
+      "table": "don_hang_chi_tiet",
+      "revenue_column": "tong_tien",
+      "previous_revenue": 252225000.0,
+      "current_revenue": 226124900.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_1dfefb6201cf",
+    "business_id": "biz_123",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: ma_hoa_don",
+    "audit": {
+      "previous_start": "2025-10-01",
+      "previous_end": "2025-10-31",
+      "current_start": "2025-11-01",
+      "current_end": "2025-11-30",
+      "period": "full_month",
+      "rejection": "Unverified README role: ma_hoa_don"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_46c28b67e33a",
+    "business_id": "biz_123",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: ma_hoa_don",
+    "audit": {
+      "previous_start": "2026-02-01",
+      "previous_end": "2026-02-28",
+      "current_start": "2026-03-01",
+      "current_end": "2026-03-31",
+      "period": "full_month",
+      "rejection": "Unverified README role: ma_hoa_don"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_c4f58d6b9d7d",
+    "business_id": "biz_124",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: order_id",
+    "audit": {
+      "previous_start": "2025-01-01",
+      "previous_end": "2025-01-31",
+      "current_start": "2025-02-01",
+      "current_end": "2025-02-28",
+      "period": "full_month",
+      "rejection": "Unverified README role: order_id"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_e76fa95d61b6",
+    "business_id": "biz_124",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: order_id",
+    "audit": {
+      "previous_start": "2025-12-01",
+      "previous_end": "2025-12-31",
+      "current_start": "2026-01-01",
+      "current_end": "2026-01-31",
+      "period": "full_month",
+      "rejection": "Unverified README role: order_id"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_261be063aa99",
+    "business_id": "biz_127",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: don_hang.tong_don lacks unambiguous README evidence for merchandise revenue",
+    "audit": {
+      "previous_start": "2025-09-01",
+      "previous_end": "2025-09-30",
+      "current_start": "2025-10-01",
+      "current_end": "2025-10-31",
+      "period": "full_month",
+      "rejection": "don_hang.tong_don lacks unambiguous README evidence for merchandise revenue"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_341ef54de645",
+    "business_id": "biz_127",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: don_hang.tong_don lacks unambiguous README evidence for merchandise revenue",
+    "audit": {
+      "previous_start": "2025-10-01",
+      "previous_end": "2025-10-31",
+      "current_start": "2025-11-01",
+      "current_end": "2025-11-30",
+      "period": "full_month",
+      "rejection": "don_hang.tong_don lacks unambiguous README evidence for merchandise revenue"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_46e5d20e6422",
+    "business_id": "biz_127",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: don_hang.tong_don lacks unambiguous README evidence for merchandise revenue",
+    "audit": {
+      "previous_start": "2026-05-01",
+      "previous_end": "2026-05-31",
+      "current_start": "2026-06-01",
+      "current_end": "2026-06-30",
+      "period": "full_month",
+      "rejection": "don_hang.tong_don lacks unambiguous README evidence for merchandise revenue"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_b68591b17d24",
+    "business_id": "biz_127",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: don_hang.tong_don lacks unambiguous README evidence for merchandise revenue",
+    "audit": {
+      "previous_start": "2025-08-01",
+      "previous_end": "2025-08-31",
+      "current_start": "2025-09-01",
+      "current_end": "2025-09-30",
+      "period": "full_month",
+      "rejection": "don_hang.tong_don lacks unambiguous README evidence for merchandise revenue"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_b862f909a477",
+    "business_id": "biz_127",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: don_hang.tong_don lacks unambiguous README evidence for merchandise revenue",
+    "audit": {
+      "previous_start": "2025-12-01",
+      "previous_end": "2025-12-31",
+      "current_start": "2026-01-01",
+      "current_end": "2026-01-31",
+      "period": "full_month",
+      "rejection": "don_hang.tong_don lacks unambiguous README evidence for merchandise revenue"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_e1ee13d4c98c",
+    "business_id": "biz_127",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: don_hang.tong_don lacks unambiguous README evidence for merchandise revenue",
+    "audit": {
+      "previous_start": "2026-03-01",
+      "previous_end": "2026-03-31",
+      "current_start": "2026-04-01",
+      "current_end": "2026-04-30",
+      "period": "full_month",
+      "rejection": "don_hang.tong_don lacks unambiguous README evidence for merchandise revenue"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_3de3612a7279",
+    "business_id": "biz_128",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: thoi_gian_tao",
+    "audit": {
+      "previous_start": "2025-07-01",
+      "previous_end": "2025-07-31",
+      "current_start": "2025-08-01",
+      "current_end": "2025-08-31",
+      "period": "full_month",
+      "rejection": "Unverified README role: thoi_gian_tao"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_42ecf5280436",
+    "business_id": "biz_128",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: thoi_gian_tao",
+    "audit": {
+      "previous_start": "2026-07-01",
+      "previous_end": "2026-07-31",
+      "current_start": "2026-08-01",
+      "current_end": "2026-08-31",
+      "period": "full_month",
+      "rejection": "Unverified README role: thoi_gian_tao"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_805e7ed807cc",
+    "business_id": "biz_128",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: thoi_gian_tao",
+    "audit": {
+      "previous_start": "2025-04-01",
+      "previous_end": "2025-04-30",
+      "current_start": "2025-05-01",
+      "current_end": "2025-05-31",
+      "period": "full_month",
+      "rejection": "Unverified README role: thoi_gian_tao"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_c131e600dc25",
+    "business_id": "biz_128",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: thoi_gian_tao",
+    "audit": {
+      "previous_start": "2026-03-01",
+      "previous_end": "2026-03-31",
+      "current_start": "2026-04-01",
+      "current_end": "2026-04-30",
+      "period": "full_month",
+      "rejection": "Unverified README role: thoi_gian_tao"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_f8463af39982",
+    "business_id": "biz_128",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: thoi_gian_tao",
+    "audit": {
+      "previous_start": "2026-05-01",
+      "previous_end": "2026-05-31",
+      "current_start": "2026-06-01",
+      "current_end": "2026-06-30",
+      "period": "full_month",
+      "rejection": "Unverified README role: thoi_gian_tao"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_1c2e8610ac47",
+    "business_id": "biz_129",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Missing sales columns",
+    "audit": {
+      "previous_start": "2026-02-01",
+      "previous_end": "2026-02-28",
+      "current_start": "2026-03-01",
+      "current_end": "2026-03-31",
+      "period": "full_month",
+      "rejection": "Missing sales columns"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_4b46c3ac2b47",
+    "business_id": "biz_129",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Missing sales columns",
+    "audit": {
+      "previous_start": "2025-05-01",
+      "previous_end": "2025-05-31",
+      "current_start": "2025-06-01",
+      "current_end": "2025-06-30",
+      "period": "full_month",
+      "rejection": "Missing sales columns"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_8a6f40f8b51b",
+    "business_id": "biz_129",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Missing sales columns",
+    "audit": {
+      "previous_start": "2026-01-01",
+      "previous_end": "2026-01-31",
+      "current_start": "2026-02-01",
+      "current_end": "2026-02-28",
+      "period": "full_month",
+      "rejection": "Missing sales columns"
+    },
+    "matches_baseline": true
+  },
+  {
+    "id": "q_91256346c432",
+    "business_id": "biz_129",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Missing sales columns",
+    "audit": {
+      "previous_start": "2026-06-01",
+      "previous_end": "2026-06-30",
+      "current_start": "2026-07-01",
+      "current_end": "2026-07-31",
+      "period": "full_month",
+      "rejection": "Missing sales columns"
+    },
+    "matches_baseline": true
+  }
+]

@@ -1,10 +1,12 @@
 """Opt-in, compiled month-over-month revenue for documented single-table sales."""
 import calendar
+from dataclasses import dataclass
 from datetime import date
 import math
 from pathlib import Path
 import re
 import unicodedata
+from typing import Literal
 
 import pandas as pd
 
@@ -33,6 +35,44 @@ _PATTERNS = tuple(re.compile(_PREFIX+p+_SUFFIX) for p in [
 ])
 _STATUSES = {'da hoan thanh', 'da huy', 'da hoan hang', 'da tra hang',
              'dang giao dich', 'dang giao hang'}
+
+
+@dataclass(frozen=True)
+class GrowthIntent:
+    """Trusted execution request; does not validate semantics of a raw question."""
+    period: Literal['full_month', 'month_to_date']
+    year: int
+    month: int
+
+
+@dataclass(frozen=True)
+class GrowthWindows:
+    previous_start: date
+    previous_end: date
+    current_start: date
+    current_end: date
+
+
+def compile_growth_windows(intent: GrowthIntent, as_of_date: str) -> GrowthWindows:
+    anchor = date.fromisoformat(as_of_date)
+    if not isinstance(intent, GrowthIntent) or intent.period not in ('full_month', 'month_to_date'):
+        raise ValueError('Unsupported growth intent')
+    y, m = intent.year, intent.month
+    if type(y) is not int or type(m) is not int or not 1901 <= y <= 2099 or not 1 <= m <= 12:
+        raise ValueError('Invalid year/month')
+    py, pm = (y, m-1) if m > 1 else (y-1, 12)
+    previous_last = calendar.monthrange(py, pm)[1]
+    if intent.period == 'month_to_date':
+        if (y, m) != (anchor.year, anchor.month):
+            raise ValueError('MTD must use anchor month')
+        end = anchor
+        previous_end = date(py, pm, min(anchor.day, previous_last))
+    else:
+        end = date(y, m, calendar.monthrange(y, m)[1])
+        if end > anchor:
+            raise ValueError('Month is not complete')
+        previous_end = date(py, pm, previous_last)
+    return GrowthWindows(date(py, pm, 1), previous_end, date(y, m, 1), end)
 
 
 def monthly_growth_period(question, as_of_date):
@@ -65,16 +105,24 @@ def _documented_columns(context, table):
 
 
 def resolve_monthly_growth(question, context, as_of_date, audit=None):
-    audit = audit if audit is not None else {}
     period = monthly_growth_period(question, as_of_date)
     if period is None:
         return 'abstain', None, 'Monthly growth grammar/date not supported'
     y, m = period
-    py, pm = (y, m-1) if m > 1 else (y-1, 12)
-    start = date(py, pm, 1)
-    boundary = date(y, m, 1)
-    end = date(y, m, calendar.monthrange(y, m)[1])
-    audit.update(previous_start=start.isoformat(), current_start=boundary.isoformat(), current_end=end.isoformat())
+    return resolve_growth_intent(GrowthIntent('full_month', y, m), context, as_of_date, audit)
+
+
+def resolve_growth_intent(intent: GrowthIntent, context, as_of_date: str, audit=None):
+    """Execute a trusted intent; raw/model questions need a separate semantic gate."""
+    audit = audit if audit is not None else {}
+    try:
+        windows = compile_growth_windows(intent, as_of_date)
+    except (TypeError, ValueError) as exc:
+        audit['rejection'] = str(exc)
+        return 'abstain', None, f'Growth intent rejected: {exc}'
+    start, boundary, end = windows.previous_start, windows.current_start, windows.current_end
+    audit.update(previous_start=start.isoformat(), previous_end=windows.previous_end.isoformat(),
+                 current_start=boundary.isoformat(), current_end=end.isoformat(), period=intent.period)
     try:
         table, order, day, status = find_primary_sales_table(context)
         revenue = find_revenue_column(context, table) if table else None
@@ -103,10 +151,12 @@ def resolve_monthly_growth(question, context, as_of_date, audit=None):
         if (contracts.groupby('order')[['day', 'status']].nunique() > 1).any().any():
             raise ValueError('Conflicting dates/statuses within one order')
         if dates.min().date() > start or dates.max().date() < end:
-            raise ValueError('Data does not cover both complete month boundaries')
+            reason = ('Data does not cover both complete month boundaries' if intent.period == 'full_month'
+                      else 'Data does not cover both MTD window boundaries')
+            raise ValueError(reason)
         status_clause = get_valid_sales_status_clause(qs, order_col=qo, table=qt)
         totals = []
-        for first, last in [(start, date(py, pm, calendar.monthrange(py, pm)[1])), (boundary, end)]:
+        for first, last in [(start, windows.previous_end), (boundary, end)]:
             sql = f"SELECT SUM({qr}) FROM {qt} WHERE TRY_CAST({qd} AS DATE) BETWEEN '{first}' AND '{last}' {status_clause}"
             value = context.query(sql).iloc[0, 0]
             if value is None or not math.isfinite(float(value)) or value <= 0:

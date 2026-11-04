@@ -393,3 +393,16 @@ Spec `docs/plans/2026-11-04-growth-feasibility-audit.md`, bằng chứng và quy
 định `artifacts/growth-feasibility/README.md`. Bước2 ưu tiên compiler MTD
 offline giữ contract hiện có, kiểm ngày cùng kỳ/cap tháng ngắn và numeric
 correctness trước sửa semantic extractor hoặc yêu cầu Colab.
+
+### Hoàn tất compiler MTD offline (04/11/2026)
+
+`GrowthIntent`/`compile_growth_windows`/`resolve_growth_intent` dùng chung
+guard và SQL execution với full-month, hỗ trợ MTD cap tháng ngắn. Không mở
+language gate hoặc model integration.39MTD chẩn đoán:18đúng/0sai/21abstain;
+67full-month regression giữ nguyên.264tests pass, tính lại18câu độc lập bằng
+Pandas/Decimal khớp. Fix đọc hết AST result DuckDB sau refusal, không đổi
+metric policy. Chi tiết `artifacts/mtd-compiler/README.md`.
+
+Bước tiếp theo là semantic contract giữ đủ điều kiện/kỳ so sánh và negative
+controls trước nối model; compiler đúng với intent đã biết không chứng minh
+extractor an toàn. Chưa cần Colab/training hoặc submit; v3.0 giữ nguyên.

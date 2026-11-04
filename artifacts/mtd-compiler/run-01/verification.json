@@ -1,0 +1,152 @@
+{
+  "verified": true,
+  "mtd_ids_unique_complete": true,
+  "mtd_correct": 18,
+  "mtd_wrong": 0,
+  "mtd_abstain": 21,
+  "previously_blocked_still_blocked": 21,
+  "full_month_preserved": 67,
+  "independent_check": "Pandas date masks + independent allowed-order set + Decimal sums/rounding; reuses existing loader. No SQL compiler/SQL status helper used in independent sums.",
+  "independent_totals": [
+    {
+      "id": "q_95827d19e775",
+      "previous_revenue": "125354800.0",
+      "current_revenue": "124840000.0",
+      "answer": -0.41,
+      "agrees_with_sql": true
+    },
+    {
+      "id": "q_de90d8e4c393",
+      "previous_revenue": "66771800.0",
+      "current_revenue": "81538200.0",
+      "answer": 22.11,
+      "agrees_with_sql": true
+    },
+    {
+      "id": "q_e2b37def329b",
+      "previous_revenue": "133150700.0",
+      "current_revenue": "132623200.0",
+      "answer": -0.4,
+      "agrees_with_sql": true
+    },
+    {
+      "id": "q_f1fe75cfb100",
+      "previous_revenue": "125076600.0",
+      "current_revenue": "149100400.0",
+      "answer": 19.21,
+      "agrees_with_sql": true
+    },
+    {
+      "id": "q_10c18d8f615f",
+      "previous_revenue": "97077600.0",
+      "current_revenue": "105688200.0",
+      "answer": 8.87,
+      "agrees_with_sql": true
+    },
+    {
+      "id": "q_2fd93c950188",
+      "previous_revenue": "186647300.0",
+      "current_revenue": "174008100.0",
+      "answer": -6.77,
+      "agrees_with_sql": true
+    },
+    {
+      "id": "q_301e64ea77a9",
+      "previous_revenue": "252225000.0",
+      "current_revenue": "226124900.0",
+      "answer": -10.35,
+      "agrees_with_sql": true
+    },
+    {
+      "id": "q_569bfbc0514b",
+      "previous_revenue": "39574900.0",
+      "current_revenue": "29073600.0",
+      "answer": -26.54,
+      "agrees_with_sql": true
+    },
+    {
+      "id": "q_5e0ac8c57127",
+      "previous_revenue": "69126300.0",
+      "current_revenue": "66528900.0",
+      "answer": -3.76,
+      "agrees_with_sql": true
+    },
+    {
+      "id": "q_6b6bdecc1726",
+      "previous_revenue": "88647900.0",
+      "current_revenue": "98276600.0",
+      "answer": 10.86,
+      "agrees_with_sql": true
+    },
+    {
+      "id": "q_7ebd4d633970",
+      "previous_revenue": "252287000.0",
+      "current_revenue": "264400000.0",
+      "answer": 4.8,
+      "agrees_with_sql": true
+    },
+    {
+      "id": "q_9b8e86f964ef",
+      "previous_revenue": "83567100.0",
+      "current_revenue": "79668800.0",
+      "answer": -4.66,
+      "agrees_with_sql": true
+    },
+    {
+      "id": "q_a1aa3adfb66b",
+      "previous_revenue": "215170300.0",
+      "current_revenue": "210497600.0",
+      "answer": -2.17,
+      "agrees_with_sql": true
+    },
+    {
+      "id": "q_110238617caa",
+      "previous_revenue": "803783500.0",
+      "current_revenue": "797379500.0",
+      "answer": -0.8,
+      "agrees_with_sql": true
+    },
+    {
+      "id": "q_4cb3efa8bd01",
+      "previous_revenue": "428200000.0",
+      "current_revenue": "594704000.0",
+      "answer": 38.88,
+      "agrees_with_sql": true
+    },
+    {
+      "id": "q_981a28043fd6",
+      "previous_revenue": "872922000.0",
+      "current_revenue": "884205500.0",
+      "answer": 1.29,
+      "agrees_with_sql": true
+    },
+    {
+      "id": "q_c7e48902ab25",
+      "previous_revenue": "1126737500.0",
+      "current_revenue": "1090417000.0",
+      "answer": -3.22,
+      "agrees_with_sql": true
+    },
+    {
+      "id": "q_d401c0884402",
+      "previous_revenue": "145478500.0",
+      "current_revenue": "117948000.0",
+      "answer": -18.92,
+      "agrees_with_sql": true
+    }
+  ],
+  "source_hashes_match": true,
+  "submission_sha256": "288ed868fde9175d36afd8995cdaf0e2c5f978a716be5c2a845f35c5e89afb9f",
+  "tests": {
+    "passed": 264,
+    "seconds": 25.3,
+    "command": ".venv/bin/python -m pytest -q",
+    "warning": "One known pandas date-inference warning in invalid-date fixture."
+  },
+  "versions": {
+    "python": "3.14.4",
+    "pandas": "3.1.0",
+    "duckdb": "2.0.0"
+  },
+  "scope": "Selected development with annotated intents; not automatic model integration or untouched validation. Loader/data-export completeness and semantic extractor remain limitations."
+}

@@ -91,7 +91,8 @@ def verify_revenue_metric(context: BusinessContext, sql: str) -> MetricCheck:
     """Inspect parsed output lineage before executing model-generated SQL."""
     table = column = None
     try:
-        parsed = json.loads(context.duckdb_conn.execute('SELECT json_serialize_sql(?)',[sql]).fetchone()[0])
+        # Consume the AST result completely, including when later guards refuse.
+        parsed = json.loads(context.duckdb_conn.execute('SELECT json_serialize_sql(?)',[sql]).fetchall()[0][0])
         if parsed.get('error') or len(parsed.get('statements',[]))!=1:
             raise ValueError('Expected one parseable SELECT')
         node = parsed['statements'][0]['node']

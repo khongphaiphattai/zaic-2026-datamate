@@ -1,0 +1,90 @@
+{
+  "mtd": {
+    "total": 39,
+    "correct": 18,
+    "wrong": 0,
+    "abstain": 21
+  },
+  "previously_ready": {
+    "total": 18,
+    "correct": 18,
+    "wrong": 0,
+    "abstain": 0
+  },
+  "previously_blocked": {
+    "total": 21,
+    "correct": 0,
+    "wrong": 0,
+    "abstain": 21
+  },
+  "businesses": {
+    "biz_105": {
+      "total": 5,
+      "correct": 0,
+      "wrong": 0,
+      "abstain": 5
+    },
+    "biz_106": {
+      "total": 3,
+      "correct": 0,
+      "wrong": 0,
+      "abstain": 3
+    },
+    "biz_109": {
+      "total": 1,
+      "correct": 0,
+      "wrong": 0,
+      "abstain": 1
+    },
+    "biz_112": {
+      "total": 3,
+      "correct": 0,
+      "wrong": 0,
+      "abstain": 3
+    },
+    "biz_117": {
+      "total": 7,
+      "correct": 0,
+      "wrong": 0,
+      "abstain": 7
+    },
+    "biz_121": {
+      "total": 4,
+      "correct": 4,
+      "wrong": 0,
+      "abstain": 0
+    },
+    "biz_122": {
+      "total": 9,
+      "correct": 9,
+      "wrong": 0,
+      "abstain": 0
+    },
+    "biz_124": {
+      "total": 2,
+      "correct": 0,
+      "wrong": 0,
+      "abstain": 2
+    },
+    "biz_130": {
+      "total": 5,
+      "correct": 5,
+      "wrong": 0,
+      "abstain": 0
+    }
+  },
+  "rejections": {
+    "Monthly growth rejected: Unverified README role: gio": 12,
+    "Monthly growth rejected: Unverified README role: ma_hoa_don": 3,
+    "Monthly growth rejected: Missing sales columns": 1,
+    "Monthly growth rejected: Unsupported sales status": 3,
+    "Monthly growth rejected: Unverified README role: order_id": 2
+  },
+  "full_month_regression": {
+    "total": 67,
+    "changed": 0
+  },
+  "network_calls": 0,
+  "production_promotion": false,
+  "scope": "Selected Train-24 development MTD with question-labelled intents. Not automatic coverage, unseen validation or Public gain."
+}

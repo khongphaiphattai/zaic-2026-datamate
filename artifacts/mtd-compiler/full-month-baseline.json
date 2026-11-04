@@ -1,0 +1,672 @@
+[
+  {
+    "id": "q_112c84a433a5",
+    "business_id": "biz_102",
+    "question": "Doanh thu tháng 5/2026 tăng hay giảm bao nhiêu phần trăm so với tháng trước?",
+    "as_of_date": "2026-06-16",
+    "type": "percent",
+    "answer": -1.79,
+    "reason": null,
+    "route": "monthly_growth_path"
+  },
+  {
+    "id": "q_a06ecb8ca547",
+    "business_id": "biz_102",
+    "question": "So với tháng liền trước, doanh thu tháng 5 năm 2025 thay đổi bao nhiêu %?",
+    "as_of_date": "2026-06-16",
+    "type": "percent",
+    "answer": 2.11,
+    "reason": null,
+    "route": "monthly_growth_path"
+  },
+  {
+    "id": "q_a812c50a1220",
+    "business_id": "biz_102",
+    "question": "so voi thang lien truoc, doanh thu thang 3 nam 2026 thay doi bao nhieu % ta",
+    "as_of_date": "2026-06-16",
+    "type": "percent",
+    "answer": -39.96,
+    "reason": null,
+    "route": "monthly_growth_path"
+  },
+  {
+    "id": "q_c081925709b7",
+    "business_id": "biz_102",
+    "question": "tháng 2/2025 dthu thay đổi bao nhiêu % so vs tháng liền trước",
+    "as_of_date": "2026-06-16",
+    "type": "percent",
+    "answer": -17.94,
+    "reason": null,
+    "route": "monthly_growth_path"
+  },
+  {
+    "id": "q_d20c286fa40f",
+    "business_id": "biz_102",
+    "question": "doanh thu thang 4/2025 tang hay giam bao nhieu phan tram so vs thang trc nhi",
+    "as_of_date": "2026-06-16",
+    "type": "percent",
+    "answer": -4.43,
+    "reason": null,
+    "route": "monthly_growth_path"
+  },
+  {
+    "id": "q_d3f2e5421f28",
+    "business_id": "biz_102",
+    "question": "so với tháng liền trc, dthu tháng 12 năm 2025 thay đổi bao nhiu % z",
+    "as_of_date": "2026-06-16",
+    "type": "percent",
+    "answer": -4.5,
+    "reason": null,
+    "route": "monthly_growth_path"
+  },
+  {
+    "id": "q_fcfafaa99bb4",
+    "business_id": "biz_102",
+    "question": "So với tháng liền trước, doanh thu tháng 8 năm 2025 thay đổi bao nhiêu %?",
+    "as_of_date": "2026-06-16",
+    "type": "percent",
+    "answer": -1.43,
+    "reason": null,
+    "route": "monthly_growth_path"
+  },
+  {
+    "id": "q_bf862acc15f6",
+    "business_id": "biz_103",
+    "question": "Doanh thu tháng 6/2025 hơn hay kém tháng trước bao nhiêu phần trăm?",
+    "as_of_date": "2026-07-09",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unsupported sales status",
+    "route": "abstain"
+  },
+  {
+    "id": "q_0872d9f34f31",
+    "business_id": "biz_104",
+    "question": "Cho mình hỏi so với tháng trước đó, doanh thu tháng 2/2026 tăng hay giảm mấy phần trăm?",
+    "as_of_date": "2026-06-02",
+    "type": "percent",
+    "answer": -31.57,
+    "reason": null,
+    "route": "monthly_growth_path"
+  },
+  {
+    "id": "q_307ac5840cca",
+    "business_id": "biz_104",
+    "question": "doanh thu thang 5/2026 hon hay kem thang trc bao nhiu %",
+    "as_of_date": "2026-06-02",
+    "type": "percent",
+    "answer": 3.7,
+    "reason": null,
+    "route": "monthly_growth_path"
+  },
+  {
+    "id": "q_3b29ba188ca3",
+    "business_id": "biz_104",
+    "question": "Tháng 3/2026 doanh thu thay đổi bao nhiêu % so với tháng liền trước?",
+    "as_of_date": "2026-06-02",
+    "type": "percent",
+    "answer": 42.46,
+    "reason": null,
+    "route": "monthly_growth_path"
+  },
+  {
+    "id": "q_6b684641ac51",
+    "business_id": "biz_104",
+    "question": "Tháng 10/2025 doanh thu thay đổi bao nhiêu % so với tháng liền trước?",
+    "as_of_date": "2026-06-02",
+    "type": "percent",
+    "answer": 1.17,
+    "reason": null,
+    "route": "monthly_growth_path"
+  },
+  {
+    "id": "q_852a88cb4c90",
+    "business_id": "biz_104",
+    "question": "So với tháng liền trước, doanh thu tháng 9 năm 2025 thay đổi bao nhiêu %?",
+    "as_of_date": "2026-06-02",
+    "type": "percent",
+    "answer": -5.84,
+    "reason": null,
+    "route": "monthly_growth_path"
+  },
+  {
+    "id": "q_a39f397a9580",
+    "business_id": "biz_104",
+    "question": "check giùm so vs tháng liền trc, dthu tháng 4 năm 2026 thay đổi bnhiu %",
+    "as_of_date": "2026-06-02",
+    "type": "percent",
+    "answer": -3.77,
+    "reason": null,
+    "route": "monthly_growth_path"
+  },
+  {
+    "id": "q_147e7a072dc7",
+    "business_id": "biz_106",
+    "question": "Tháng 2/2025 doanh thu thay đổi bao nhiêu % so với tháng liền trước?",
+    "as_of_date": "2026-09-14",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: ma_hoa_don",
+    "route": "abstain"
+  },
+  {
+    "id": "q_3401f1835289",
+    "business_id": "biz_108",
+    "question": "Xem giúp so với tháng trước đó, doanh thu tháng 2/2025 tăng hay giảm mấy phần trăm?",
+    "as_of_date": "2026-05-29",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: thoi_gian_tao",
+    "route": "abstain"
+  },
+  {
+    "id": "q_64e2ac42f1d6",
+    "business_id": "biz_108",
+    "question": "Doanh thu tháng 5/2025 tăng hay giảm bao nhiêu phần trăm so với tháng trước?",
+    "as_of_date": "2026-05-29",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: thoi_gian_tao",
+    "route": "abstain"
+  },
+  {
+    "id": "q_e0287c87f366",
+    "business_id": "biz_108",
+    "question": "Doanh thu tháng 8/2025 tăng hay giảm bao nhiêu phần trăm so với tháng trước?",
+    "as_of_date": "2026-05-29",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: thoi_gian_tao",
+    "route": "abstain"
+  },
+  {
+    "id": "q_f0b0bd1cfc0c",
+    "business_id": "biz_108",
+    "question": "so voi thang lien truoc, dthu thang 3 nam 2026 thay doi bao nhiu %",
+    "as_of_date": "2026-05-29",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: thoi_gian_tao",
+    "route": "abstain"
+  },
+  {
+    "id": "q_f47b3edba33e",
+    "business_id": "biz_108",
+    "question": "So với tháng liền trước, doanh thu tháng 4 năm 2026 thay đổi bao nhiêu %?",
+    "as_of_date": "2026-05-29",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: thoi_gian_tao",
+    "route": "abstain"
+  },
+  {
+    "id": "q_18adf5dc2e3f",
+    "business_id": "biz_109",
+    "question": "So với tháng trước đó, dthu tháng 10/2025 tăng hay giảm mấy phần trăm",
+    "as_of_date": "2026-08-05",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Missing sales columns",
+    "route": "abstain"
+  },
+  {
+    "id": "q_42707c40bd19",
+    "business_id": "biz_109",
+    "question": "coi giùm so vs tháng liền trc, dthu tháng 4 năm 2025 thay đổi bao nhiêu %",
+    "as_of_date": "2026-08-05",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Missing sales columns",
+    "route": "abstain"
+  },
+  {
+    "id": "q_ca469cc6d8c0",
+    "business_id": "biz_109",
+    "question": "e thang 5/2026 doanh thu thay doi bn % so vs thang lien truoc",
+    "as_of_date": "2026-08-05",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Missing sales columns",
+    "route": "abstain"
+  },
+  {
+    "id": "q_55ded7aefe2e",
+    "business_id": "biz_111",
+    "question": "So với tháng trước đó, dthu tháng 7/2026 tăng hay giảm mấy phần trăm?",
+    "as_of_date": "2026-08-19",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Missing sales columns",
+    "route": "abstain"
+  },
+  {
+    "id": "q_841d6a6359f9",
+    "business_id": "biz_111",
+    "question": "So với tháng liền trước, dthu tháng 4 năm 2026 thay đổi bao nhiêu %?",
+    "as_of_date": "2026-08-19",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Missing sales columns",
+    "route": "abstain"
+  },
+  {
+    "id": "q_8cb56eea9997",
+    "business_id": "biz_111",
+    "question": "so vs thang truoc do, doanh thu thang 6/2025 tang hay giam may phan tram",
+    "as_of_date": "2026-08-19",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Missing sales columns",
+    "route": "abstain"
+  },
+  {
+    "id": "q_a26d79f3e08a",
+    "business_id": "biz_111",
+    "question": "thang 8/2025 dthu thay doi bao nhiu % so voi thang lien trc",
+    "as_of_date": "2026-08-19",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Missing sales columns",
+    "route": "abstain"
+  },
+  {
+    "id": "q_ab9ee17a32b3",
+    "business_id": "biz_111",
+    "question": "xem giúp tháng 7/2025 dthu thay đổi bn % so vs tháng liền trc hả",
+    "as_of_date": "2026-08-19",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Missing sales columns",
+    "route": "abstain"
+  },
+  {
+    "id": "q_0ef3574c2b44",
+    "business_id": "biz_115",
+    "question": "So với tháng liền trước, doanh thu tháng 3 năm 2026 thay đổi bao nhiêu %?",
+    "as_of_date": "2026-05-16",
+    "type": "percent",
+    "answer": 66.01,
+    "reason": null,
+    "route": "monthly_growth_path"
+  },
+  {
+    "id": "q_2f1cdd6dfdd2",
+    "business_id": "biz_115",
+    "question": "thang 10/2025 dthu thay doi bao nhieu % so vs thang lien trc z",
+    "as_of_date": "2026-05-16",
+    "type": "percent",
+    "answer": -10.69,
+    "reason": null,
+    "route": "monthly_growth_path"
+  },
+  {
+    "id": "q_538c300ffd10",
+    "business_id": "biz_115",
+    "question": "So với tháng trước đó, doanh thu tháng 9/2025 tăng hay giảm mấy phần trăm?",
+    "as_of_date": "2026-05-16",
+    "type": "percent",
+    "answer": 8.47,
+    "reason": null,
+    "route": "monthly_growth_path"
+  },
+  {
+    "id": "q_5c7a3aed2f4f",
+    "business_id": "biz_115",
+    "question": "Xem giúp tháng 8/2025 doanh thu thay đổi bao nhiêu % so với tháng liền trước?",
+    "as_of_date": "2026-05-16",
+    "type": "percent",
+    "answer": -3.19,
+    "reason": null,
+    "route": "monthly_growth_path"
+  },
+  {
+    "id": "q_5fa8f7834d32",
+    "business_id": "biz_115",
+    "question": "coi gium thang 7/2025 dthu thay doi bn % so voi thang lien trc",
+    "as_of_date": "2026-05-16",
+    "type": "percent",
+    "answer": -0.29,
+    "reason": null,
+    "route": "monthly_growth_path"
+  },
+  {
+    "id": "q_9749171b4480",
+    "business_id": "biz_115",
+    "question": "So với tháng liền trước, doanh thu tháng 2 năm 2026 thay đổi bao nhiêu %?",
+    "as_of_date": "2026-05-16",
+    "type": "percent",
+    "answer": -39.81,
+    "reason": null,
+    "route": "monthly_growth_path"
+  },
+  {
+    "id": "q_a8ac54bdbe06",
+    "business_id": "biz_115",
+    "question": "So với tháng trước đó, doanh thu tháng 3/2025 tăng hay giảm mấy phần trăm?",
+    "as_of_date": "2026-05-16",
+    "type": "percent",
+    "answer": 9.79,
+    "reason": null,
+    "route": "monthly_growth_path"
+  },
+  {
+    "id": "q_23e155632945",
+    "business_id": "biz_116",
+    "question": "Tháng 5/2026 doanh thu thay đổi bao nhiêu % so với tháng liền trước?",
+    "as_of_date": "2026-09-03",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: ma_don_hang",
+    "route": "abstain"
+  },
+  {
+    "id": "q_7c2331330d42",
+    "business_id": "biz_116",
+    "question": "cho hỏi dthu tháng 2/2026 hơn hay kém tháng trc bnhiu phần trăm hả",
+    "as_of_date": "2026-09-03",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: ma_don_hang",
+    "route": "abstain"
+  },
+  {
+    "id": "q_cdbf2bbaa37d",
+    "business_id": "biz_116",
+    "question": "Doanh thu tháng 3/2026 hơn hay kém tháng trước bao nhiêu phần trăm?",
+    "as_of_date": "2026-09-03",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: ma_don_hang",
+    "route": "abstain"
+  },
+  {
+    "id": "q_ee9961b2c073",
+    "business_id": "biz_116",
+    "question": "Tháng 8/2026 dthu thay đổi bao nhiêu % so với tháng liền trước",
+    "as_of_date": "2026-09-03",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: ma_don_hang",
+    "route": "abstain"
+  },
+  {
+    "id": "q_ff3b413d7346",
+    "business_id": "biz_116",
+    "question": "So với tháng liền trước, dthu tháng 6 năm 2025 thay đổi bao nhiêu %?",
+    "as_of_date": "2026-09-03",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: ma_don_hang",
+    "route": "abstain"
+  },
+  {
+    "id": "q_5178da2e9933",
+    "business_id": "biz_118",
+    "question": "Doanh thu tháng 8/2026 hơn hay kém tháng trước bao nhiêu phần trăm?",
+    "as_of_date": "2026-09-10",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unsupported sales status",
+    "route": "abstain"
+  },
+  {
+    "id": "q_64912d7a8d99",
+    "business_id": "biz_118",
+    "question": "Tháng 1/2026 dthu thay đổi bao nhiêu % so với tháng liền trước?",
+    "as_of_date": "2026-09-10",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unsupported sales status",
+    "route": "abstain"
+  },
+  {
+    "id": "q_20aa716764dc",
+    "business_id": "biz_119",
+    "question": "so voi thang lien trc, doanh thu thang 3 nam 2026 thay doi bao nhiu %",
+    "as_of_date": "2026-07-13",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: thoi_gian_tao",
+    "route": "abstain"
+  },
+  {
+    "id": "q_6114fa7b1534",
+    "business_id": "biz_119",
+    "question": "Xem giúp so với tháng trước đó, doanh thu tháng 6/2026 tăng hay giảm mấy phần trăm?",
+    "as_of_date": "2026-07-13",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: thoi_gian_tao",
+    "route": "abstain"
+  },
+  {
+    "id": "q_7dded87ba54e",
+    "business_id": "biz_119",
+    "question": "Doanh thu tháng 4/2026 hơn hay kém tháng trước bao nhiêu phần trăm?",
+    "as_of_date": "2026-07-13",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: thoi_gian_tao",
+    "route": "abstain"
+  },
+  {
+    "id": "q_cfd5205df249",
+    "business_id": "biz_120",
+    "question": "Doanh thu tháng 9/2025 tăng hay giảm bao nhiêu phần trăm so với tháng trước?",
+    "as_of_date": "2026-06-12",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: thoi_gian_tao",
+    "route": "abstain"
+  },
+  {
+    "id": "q_2a9f4fc5fb1f",
+    "business_id": "biz_122",
+    "question": "Tháng 5/2026 doanh thu thay đổi bao nhiêu % so với tháng liền trước?",
+    "as_of_date": "2026-07-17",
+    "type": "percent",
+    "answer": -4.09,
+    "reason": null,
+    "route": "monthly_growth_path"
+  },
+  {
+    "id": "q_f1f68541c1b6",
+    "business_id": "biz_122",
+    "question": "So với tháng liền trước, doanh thu tháng 8 năm 2025 thay đổi bao nhiêu %?",
+    "as_of_date": "2026-07-17",
+    "type": "percent",
+    "answer": -10.35,
+    "reason": null,
+    "route": "monthly_growth_path"
+  },
+  {
+    "id": "q_1dfefb6201cf",
+    "business_id": "biz_123",
+    "question": "Doanh thu tháng 11/2025 hơn hay kém tháng trước bao nhiêu phần trăm?",
+    "as_of_date": "2026-06-28",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: ma_hoa_don",
+    "route": "abstain"
+  },
+  {
+    "id": "q_46c28b67e33a",
+    "business_id": "biz_123",
+    "question": "So với tháng trước đó, doanh thu tháng 3/2026 tăng hay giảm mấy phần trăm?",
+    "as_of_date": "2026-06-28",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: ma_hoa_don",
+    "route": "abstain"
+  },
+  {
+    "id": "q_c4f58d6b9d7d",
+    "business_id": "biz_124",
+    "question": "thang 2/2025 dthu thay doi bao nhiu % so voi thang lien trc",
+    "as_of_date": "2026-05-25",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: order_id",
+    "route": "abstain"
+  },
+  {
+    "id": "q_e76fa95d61b6",
+    "business_id": "biz_124",
+    "question": "Doanh thu tháng 1/2026 tăng hay giảm bao nhiêu phần trăm so với tháng trước?",
+    "as_of_date": "2026-05-25",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: order_id",
+    "route": "abstain"
+  },
+  {
+    "id": "q_261be063aa99",
+    "business_id": "biz_127",
+    "question": "thang 10/2025 doanh thu thay doi bnhiu % so vs thang lien trc",
+    "as_of_date": "2026-07-28",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: don_hang.tong_don lacks unambiguous README evidence for merchandise revenue",
+    "route": "abstain"
+  },
+  {
+    "id": "q_341ef54de645",
+    "business_id": "biz_127",
+    "question": "So với tháng trước đó, doanh thu tháng 11/2025 tăng hay giảm mấy phần trăm?",
+    "as_of_date": "2026-07-28",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: don_hang.tong_don lacks unambiguous README evidence for merchandise revenue",
+    "route": "abstain"
+  },
+  {
+    "id": "q_46e5d20e6422",
+    "business_id": "biz_127",
+    "question": "So với tháng liền trước, doanh thu tháng 6 năm 2026 thay đổi bao nhiêu %?",
+    "as_of_date": "2026-07-28",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: don_hang.tong_don lacks unambiguous README evidence for merchandise revenue",
+    "route": "abstain"
+  },
+  {
+    "id": "q_b68591b17d24",
+    "business_id": "biz_127",
+    "question": "tháng 9/2025 dthu thay đổi bnhiu % so vs tháng liền trước",
+    "as_of_date": "2026-07-28",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: don_hang.tong_don lacks unambiguous README evidence for merchandise revenue",
+    "route": "abstain"
+  },
+  {
+    "id": "q_b862f909a477",
+    "business_id": "biz_127",
+    "question": "Cho hỏi so với tháng trước đó, doanh thu tháng 1/2026 tăng hay giảm mấy phần trăm?",
+    "as_of_date": "2026-07-28",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: don_hang.tong_don lacks unambiguous README evidence for merchandise revenue",
+    "route": "abstain"
+  },
+  {
+    "id": "q_e1ee13d4c98c",
+    "business_id": "biz_127",
+    "question": "So với tháng trước đó, doanh thu tháng 4/2026 tăng hay giảm mấy phần trăm?",
+    "as_of_date": "2026-07-28",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: don_hang.tong_don lacks unambiguous README evidence for merchandise revenue",
+    "route": "abstain"
+  },
+  {
+    "id": "q_3de3612a7279",
+    "business_id": "biz_128",
+    "question": "dthu tháng 8/2025 hơn hay kém tháng trước bao nhiêu phần trăm?",
+    "as_of_date": "2026-09-07",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: thoi_gian_tao",
+    "route": "abstain"
+  },
+  {
+    "id": "q_42ecf5280436",
+    "business_id": "biz_128",
+    "question": "Tháng 8/2026 doanh thu thay đổi bao nhiêu % so với tháng liền trước ạ?",
+    "as_of_date": "2026-09-07",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: thoi_gian_tao",
+    "route": "abstain"
+  },
+  {
+    "id": "q_805e7ed807cc",
+    "business_id": "biz_128",
+    "question": "e thang 5/2025 doanh thu thay doi bao nhieu % so voi thang lien trc vay",
+    "as_of_date": "2026-09-07",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: thoi_gian_tao",
+    "route": "abstain"
+  },
+  {
+    "id": "q_c131e600dc25",
+    "business_id": "biz_128",
+    "question": "doanh thu thang 4/2026 hon hay kem thang trc bao nhieu %",
+    "as_of_date": "2026-09-07",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: thoi_gian_tao",
+    "route": "abstain"
+  },
+  {
+    "id": "q_f8463af39982",
+    "business_id": "biz_128",
+    "question": "Doanh thu tháng 6/2026 tăng hay giảm bao nhiêu phần trăm so với tháng trước?",
+    "as_of_date": "2026-09-07",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: thoi_gian_tao",
+    "route": "abstain"
+  },
+  {
+    "id": "q_1c2e8610ac47",
+    "business_id": "biz_129",
+    "question": "dthu thang 3/2026 tang hay giam bnhiu phan tram so vs thang truoc do",
+    "as_of_date": "2026-08-14",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Missing sales columns",
+    "route": "abstain"
+  },
+  {
+    "id": "q_4b46c3ac2b47",
+    "business_id": "biz_129",
+    "question": "So với tháng trước đó, dthu tháng 6/2025 tăng hay giảm mấy phần trăm?",
+    "as_of_date": "2026-08-14",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Missing sales columns",
+    "route": "abstain"
+  },
+  {
+    "id": "q_8a6f40f8b51b",
+    "business_id": "biz_129",
+    "question": "dthu tháng 2/2026 tăng hay giảm bao nhiêu phần trăm so với tháng trước?",
+    "as_of_date": "2026-08-14",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Missing sales columns",
+    "route": "abstain"
+  },
+  {
+    "id": "q_91256346c432",
+    "business_id": "biz_129",
+    "question": "So với tháng liền trước, doanh thu tháng 7 năm 2026 thay đổi bao nhiêu % vậy?",
+    "as_of_date": "2026-08-14",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Missing sales columns",
+    "route": "abstain"
+  }
+]

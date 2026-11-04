@@ -1,0 +1,1127 @@
+[
+  {
+    "id": "q_48d55e816a7d",
+    "business_id": "biz_105",
+    "question": "Cho mình hỏi từ đầu tháng này đến hết hôm nay, doanh thu thay đổi bao nhiêu % so với cùng kỳ tháng trước?",
+    "as_of_date": "2025-11-03",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2025,
+      "month": 11
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: gio",
+    "audit": {
+      "previous_start": "2025-10-01",
+      "previous_end": "2025-10-03",
+      "current_start": "2025-11-01",
+      "current_end": "2025-11-03",
+      "period": "month_to_date",
+      "rejection": "Unverified README role: gio"
+    },
+    "correct": null,
+    "previously_ready": false
+  },
+  {
+    "id": "q_4a233834954f",
+    "business_id": "biz_105",
+    "question": "Xem giúp từ đầu tháng này đến hết hôm nay, doanh thu hơn hay kém cùng kỳ tháng trước mấy %?",
+    "as_of_date": "2025-11-17",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2025,
+      "month": 11
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: gio",
+    "audit": {
+      "previous_start": "2025-10-01",
+      "previous_end": "2025-10-17",
+      "current_start": "2025-11-01",
+      "current_end": "2025-11-17",
+      "period": "month_to_date",
+      "rejection": "Unverified README role: gio"
+    },
+    "correct": null,
+    "previously_ready": false
+  },
+  {
+    "id": "q_aa9b48472c8b",
+    "business_id": "biz_105",
+    "question": "Từ đầu tháng này đến hết hôm nay, dthu thay đổi bao nhiêu % so với cùng kỳ tháng trước?",
+    "as_of_date": "2025-05-14",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2025,
+      "month": 5
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: gio",
+    "audit": {
+      "previous_start": "2025-04-01",
+      "previous_end": "2025-04-14",
+      "current_start": "2025-05-01",
+      "current_end": "2025-05-14",
+      "period": "month_to_date",
+      "rejection": "Unverified README role: gio"
+    },
+    "correct": null,
+    "previously_ready": false
+  },
+  {
+    "id": "q_b3b16e699a67",
+    "business_id": "biz_105",
+    "question": "tu dau thang nay den het bua nay, dthu thay doi bnhiu % so voi cung ky th truoc",
+    "as_of_date": "2026-06-10",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2026,
+      "month": 6
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: gio",
+    "audit": {
+      "previous_start": "2026-05-01",
+      "previous_end": "2026-05-10",
+      "current_start": "2026-06-01",
+      "current_end": "2026-06-10",
+      "period": "month_to_date",
+      "rejection": "Unverified README role: gio"
+    },
+    "correct": null,
+    "previously_ready": false
+  },
+  {
+    "id": "q_ece3c46e24d3",
+    "business_id": "biz_105",
+    "question": "dthu tu dau thang nay den het hom nay tang hay giam bao nhieu % so voi cung ky thang roi do",
+    "as_of_date": "2026-05-29",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2026,
+      "month": 5
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: gio",
+    "audit": {
+      "previous_start": "2026-04-01",
+      "previous_end": "2026-04-29",
+      "current_start": "2026-05-01",
+      "current_end": "2026-05-29",
+      "period": "month_to_date",
+      "rejection": "Unverified README role: gio"
+    },
+    "correct": null,
+    "previously_ready": false
+  },
+  {
+    "id": "q_4c7f65214480",
+    "business_id": "biz_106",
+    "question": "xem giup so voi cung ky th truoc, doanh thu tu dau thang nay den het hom nay tang hay giam bn %",
+    "as_of_date": "2026-08-31",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2026,
+      "month": 8
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: ma_hoa_don",
+    "audit": {
+      "previous_start": "2026-07-01",
+      "previous_end": "2026-07-31",
+      "current_start": "2026-08-01",
+      "current_end": "2026-08-31",
+      "period": "month_to_date",
+      "rejection": "Unverified README role: ma_hoa_don"
+    },
+    "correct": null,
+    "previously_ready": false
+  },
+  {
+    "id": "q_54ee9f17dc31",
+    "business_id": "biz_106",
+    "question": "so vs cùng kỳ tháng rồi, dthu từ đầu tháng này đến hết hnay tăng hay giảm bn %",
+    "as_of_date": "2025-08-20",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2025,
+      "month": 8
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: ma_hoa_don",
+    "audit": {
+      "previous_start": "2025-07-01",
+      "previous_end": "2025-07-20",
+      "current_start": "2025-08-01",
+      "current_end": "2025-08-20",
+      "period": "month_to_date",
+      "rejection": "Unverified README role: ma_hoa_don"
+    },
+    "correct": null,
+    "previously_ready": false
+  },
+  {
+    "id": "q_a54b40273b31",
+    "business_id": "biz_106",
+    "question": "từ đầu tháng này đến hết hôm nay, doanh thu hơn hay kém cùng kỳ tháng trc mấy %",
+    "as_of_date": "2025-12-26",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2025,
+      "month": 12
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: ma_hoa_don",
+    "audit": {
+      "previous_start": "2025-11-01",
+      "previous_end": "2025-11-26",
+      "current_start": "2025-12-01",
+      "current_end": "2025-12-26",
+      "period": "month_to_date",
+      "rejection": "Unverified README role: ma_hoa_don"
+    },
+    "correct": null,
+    "previously_ready": false
+  },
+  {
+    "id": "q_657bc80121e8",
+    "business_id": "biz_109",
+    "question": "So với cùng kỳ tháng trước, doanh thu từ đầu tháng này đến hết hôm nay tăng hay giảm bao nhiêu %?",
+    "as_of_date": "2025-08-17",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2025,
+      "month": 8
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Missing sales columns",
+    "audit": {
+      "previous_start": "2025-07-01",
+      "previous_end": "2025-07-17",
+      "current_start": "2025-08-01",
+      "current_end": "2025-08-17",
+      "period": "month_to_date",
+      "rejection": "Missing sales columns"
+    },
+    "correct": null,
+    "previously_ready": false
+  },
+  {
+    "id": "q_6b4754b099c6",
+    "business_id": "biz_112",
+    "question": "xem giúp dthu từ đầu tháng này đến hết hnay hơn hay kém cùng kỳ tháng rồi bn % vậy",
+    "as_of_date": "2025-08-11",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2025,
+      "month": 8
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unsupported sales status",
+    "audit": {
+      "previous_start": "2025-07-01",
+      "previous_end": "2025-07-11",
+      "current_start": "2025-08-01",
+      "current_end": "2025-08-11",
+      "period": "month_to_date",
+      "rejection": "Unsupported sales status"
+    },
+    "correct": null,
+    "previously_ready": false
+  },
+  {
+    "id": "q_9266ece83b4a",
+    "business_id": "biz_112",
+    "question": "Doanh thu từ đầu tháng này đến hết hôm nay tăng hay giảm bao nhiêu phần trăm so với cùng kỳ tháng trước?",
+    "as_of_date": "2025-06-08",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2025,
+      "month": 6
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unsupported sales status",
+    "audit": {
+      "previous_start": "2025-05-01",
+      "previous_end": "2025-05-08",
+      "current_start": "2025-06-01",
+      "current_end": "2025-06-08",
+      "period": "month_to_date",
+      "rejection": "Unsupported sales status"
+    },
+    "correct": null,
+    "previously_ready": false
+  },
+  {
+    "id": "q_9477fcddf45f",
+    "business_id": "biz_112",
+    "question": "dthu từ đầu tháng này đến hết hnay hơn hay kém cùng kỳ tháng trước bao nhiêu phần trăm?",
+    "as_of_date": "2025-06-15",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2025,
+      "month": 6
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unsupported sales status",
+    "audit": {
+      "previous_start": "2025-05-01",
+      "previous_end": "2025-05-15",
+      "current_start": "2025-06-01",
+      "current_end": "2025-06-15",
+      "period": "month_to_date",
+      "rejection": "Unsupported sales status"
+    },
+    "correct": null,
+    "previously_ready": false
+  },
+  {
+    "id": "q_33c1739f7daf",
+    "business_id": "biz_117",
+    "question": "Từ đầu tháng này đến hết hnay, doanh thu hơn hay kém cùng kỳ tháng trước mấy %?",
+    "as_of_date": "2026-05-07",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2026,
+      "month": 5
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: gio",
+    "audit": {
+      "previous_start": "2026-04-01",
+      "previous_end": "2026-04-07",
+      "current_start": "2026-05-01",
+      "current_end": "2026-05-07",
+      "period": "month_to_date",
+      "rejection": "Unverified README role: gio"
+    },
+    "correct": null,
+    "previously_ready": false
+  },
+  {
+    "id": "q_4726d037f8a8",
+    "business_id": "biz_117",
+    "question": "doanh thu từ đầu tháng này đến hết bữa nay hơn hay kém cùng kỳ tháng rồi bnhiu %",
+    "as_of_date": "2026-03-20",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2026,
+      "month": 3
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: gio",
+    "audit": {
+      "previous_start": "2026-02-01",
+      "previous_end": "2026-02-20",
+      "current_start": "2026-03-01",
+      "current_end": "2026-03-20",
+      "period": "month_to_date",
+      "rejection": "Unverified README role: gio"
+    },
+    "correct": null,
+    "previously_ready": false
+  },
+  {
+    "id": "q_5811b4c066de",
+    "business_id": "biz_117",
+    "question": "so vs cùng kỳ th trước, doanh thu từ đầu tháng này đến hết hôm nay tăng hay giảm bao nhiu % hả",
+    "as_of_date": "2025-04-10",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2025,
+      "month": 4
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: gio",
+    "audit": {
+      "previous_start": "2025-03-01",
+      "previous_end": "2025-03-10",
+      "current_start": "2025-04-01",
+      "current_end": "2025-04-10",
+      "period": "month_to_date",
+      "rejection": "Unverified README role: gio"
+    },
+    "correct": null,
+    "previously_ready": false
+  },
+  {
+    "id": "q_a7da814c6e88",
+    "business_id": "biz_117",
+    "question": "từ đầu tháng này đến hết hôm nay, doanh thu thay đổi bnhiu % so vs cùng kỳ th trước",
+    "as_of_date": "2026-04-23",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2026,
+      "month": 4
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: gio",
+    "audit": {
+      "previous_start": "2026-03-01",
+      "previous_end": "2026-03-23",
+      "current_start": "2026-04-01",
+      "current_end": "2026-04-23",
+      "period": "month_to_date",
+      "rejection": "Unverified README role: gio"
+    },
+    "correct": null,
+    "previously_ready": false
+  },
+  {
+    "id": "q_d00cf44a3dbd",
+    "business_id": "biz_117",
+    "question": "Từ đầu tháng này đến hết hôm nay, doanh thu hơn hay kém cùng kỳ tháng trước mấy % vậy?",
+    "as_of_date": "2026-02-21",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2026,
+      "month": 2
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: gio",
+    "audit": {
+      "previous_start": "2026-01-01",
+      "previous_end": "2026-01-21",
+      "current_start": "2026-02-01",
+      "current_end": "2026-02-21",
+      "period": "month_to_date",
+      "rejection": "Unverified README role: gio"
+    },
+    "correct": null,
+    "previously_ready": false
+  },
+  {
+    "id": "q_f063b216adce",
+    "business_id": "biz_117",
+    "question": "Từ đầu tháng này đến hết hôm nay, doanh thu thay đổi bao nhiêu % so với cùng kỳ tháng trước?",
+    "as_of_date": "2025-06-03",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2025,
+      "month": 6
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: gio",
+    "audit": {
+      "previous_start": "2025-05-01",
+      "previous_end": "2025-05-03",
+      "current_start": "2025-06-01",
+      "current_end": "2025-06-03",
+      "period": "month_to_date",
+      "rejection": "Unverified README role: gio"
+    },
+    "correct": null,
+    "previously_ready": false
+  },
+  {
+    "id": "q_f4c328691e9b",
+    "business_id": "biz_117",
+    "question": "dthu tu dau thang nay den het hom nay tang hay giam bn % so voi cung ky thang trc",
+    "as_of_date": "2025-07-20",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2025,
+      "month": 7
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: gio",
+    "audit": {
+      "previous_start": "2025-06-01",
+      "previous_end": "2025-06-20",
+      "current_start": "2025-07-01",
+      "current_end": "2025-07-20",
+      "period": "month_to_date",
+      "rejection": "Unverified README role: gio"
+    },
+    "correct": null,
+    "previously_ready": false
+  },
+  {
+    "id": "q_95827d19e775",
+    "business_id": "biz_121",
+    "question": "ê dthu từ đầu tháng này đến hết bữa nay tăng hay giảm bao nhiêu phần trăm so vs cùng kỳ th trước",
+    "as_of_date": "2025-07-15",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2025,
+      "month": 7
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "percent",
+    "answer": -0.41,
+    "reason": null,
+    "audit": {
+      "previous_start": "2025-06-01",
+      "previous_end": "2025-06-15",
+      "current_start": "2025-07-01",
+      "current_end": "2025-07-15",
+      "period": "month_to_date",
+      "table": "don_hang_chi_tiet",
+      "revenue_column": "tong_tien",
+      "previous_revenue": 125354800.0,
+      "current_revenue": 124840000.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "correct": true,
+    "previously_ready": true
+  },
+  {
+    "id": "q_de90d8e4c393",
+    "business_id": "biz_121",
+    "question": "dthu tu dau thang nay den het hnay tang hay giam bn phan tram so voi cung ky thang trc",
+    "as_of_date": "2026-06-08",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2026,
+      "month": 6
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "percent",
+    "answer": 22.11,
+    "reason": null,
+    "audit": {
+      "previous_start": "2026-05-01",
+      "previous_end": "2026-05-08",
+      "current_start": "2026-06-01",
+      "current_end": "2026-06-08",
+      "period": "month_to_date",
+      "table": "don_hang_chi_tiet",
+      "revenue_column": "tong_tien",
+      "previous_revenue": 66771800.0,
+      "current_revenue": 81538200.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "correct": true,
+    "previously_ready": true
+  },
+  {
+    "id": "q_e2b37def329b",
+    "business_id": "biz_121",
+    "question": "dthu từ đầu tháng này đến hết hôm nay tăng hay giảm bn phần trăm so với cùng kỳ th trước",
+    "as_of_date": "2025-09-17",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2025,
+      "month": 9
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "percent",
+    "answer": -0.4,
+    "reason": null,
+    "audit": {
+      "previous_start": "2025-08-01",
+      "previous_end": "2025-08-17",
+      "current_start": "2025-09-01",
+      "current_end": "2025-09-17",
+      "period": "month_to_date",
+      "table": "don_hang_chi_tiet",
+      "revenue_column": "tong_tien",
+      "previous_revenue": 133150700.0,
+      "current_revenue": 132623200.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "correct": true,
+    "previously_ready": true
+  },
+  {
+    "id": "q_f1fe75cfb100",
+    "business_id": "biz_121",
+    "question": "tu dau thang nay den het hom nay, doanh thu thay doi bao nhieu % so vs cung ky th truoc",
+    "as_of_date": "2025-10-16",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2025,
+      "month": 10
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "percent",
+    "answer": 19.21,
+    "reason": null,
+    "audit": {
+      "previous_start": "2025-09-01",
+      "previous_end": "2025-09-16",
+      "current_start": "2025-10-01",
+      "current_end": "2025-10-16",
+      "period": "month_to_date",
+      "table": "don_hang_chi_tiet",
+      "revenue_column": "tong_tien",
+      "previous_revenue": 125076600.0,
+      "current_revenue": 149100400.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "correct": true,
+    "previously_ready": true
+  },
+  {
+    "id": "q_10c18d8f615f",
+    "business_id": "biz_122",
+    "question": "doanh thu từ đầu tháng này đến hết hnay hơn hay kém cùng kỳ tháng trc nhiêu phần trăm",
+    "as_of_date": "2025-02-14",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2025,
+      "month": 2
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "percent",
+    "answer": 8.87,
+    "reason": null,
+    "audit": {
+      "previous_start": "2025-01-01",
+      "previous_end": "2025-01-14",
+      "current_start": "2025-02-01",
+      "current_end": "2025-02-14",
+      "period": "month_to_date",
+      "table": "don_hang_chi_tiet",
+      "revenue_column": "tong_tien",
+      "previous_revenue": 97077600.0,
+      "current_revenue": 105688200.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "correct": true,
+    "previously_ready": true
+  },
+  {
+    "id": "q_2fd93c950188",
+    "business_id": "biz_122",
+    "question": "Doanh thu từ đầu tháng này đến hết hôm nay hơn hay kém cùng kỳ tháng trước bao nhiêu phần trăm?",
+    "as_of_date": "2026-03-21",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2026,
+      "month": 3
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "percent",
+    "answer": -6.77,
+    "reason": null,
+    "audit": {
+      "previous_start": "2026-02-01",
+      "previous_end": "2026-02-21",
+      "current_start": "2026-03-01",
+      "current_end": "2026-03-21",
+      "period": "month_to_date",
+      "table": "don_hang_chi_tiet",
+      "revenue_column": "tong_tien",
+      "previous_revenue": 186647300.0,
+      "current_revenue": 174008100.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "correct": true,
+    "previously_ready": true
+  },
+  {
+    "id": "q_301e64ea77a9",
+    "business_id": "biz_122",
+    "question": "doanh thu tu dau thang nay den het hom nay tang hay giam bn % so vs cung ky thang roi",
+    "as_of_date": "2025-08-31",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2025,
+      "month": 8
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "percent",
+    "answer": -10.35,
+    "reason": null,
+    "audit": {
+      "previous_start": "2025-07-01",
+      "previous_end": "2025-07-31",
+      "current_start": "2025-08-01",
+      "current_end": "2025-08-31",
+      "period": "month_to_date",
+      "table": "don_hang_chi_tiet",
+      "revenue_column": "tong_tien",
+      "previous_revenue": 252225000.0,
+      "current_revenue": 226124900.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "correct": true,
+    "previously_ready": true
+  },
+  {
+    "id": "q_569bfbc0514b",
+    "business_id": "biz_122",
+    "question": "Doanh thu từ đầu tháng này đến hết hôm nay hơn hay kém cùng kỳ tháng trước bao nhiêu phần trăm?",
+    "as_of_date": "2025-11-04",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2025,
+      "month": 11
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "percent",
+    "answer": -26.54,
+    "reason": null,
+    "audit": {
+      "previous_start": "2025-10-01",
+      "previous_end": "2025-10-04",
+      "current_start": "2025-11-01",
+      "current_end": "2025-11-04",
+      "period": "month_to_date",
+      "table": "don_hang_chi_tiet",
+      "revenue_column": "tong_tien",
+      "previous_revenue": 39574900.0,
+      "current_revenue": 29073600.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "correct": true,
+    "previously_ready": true
+  },
+  {
+    "id": "q_5e0ac8c57127",
+    "business_id": "biz_122",
+    "question": "dthu tu dau thang nay den het bua nay tang hay giam bn phan tram so voi cung ky thang trc",
+    "as_of_date": "2025-03-09",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2025,
+      "month": 3
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "percent",
+    "answer": -3.76,
+    "reason": null,
+    "audit": {
+      "previous_start": "2025-02-01",
+      "previous_end": "2025-02-09",
+      "current_start": "2025-03-01",
+      "current_end": "2025-03-09",
+      "period": "month_to_date",
+      "table": "don_hang_chi_tiet",
+      "revenue_column": "tong_tien",
+      "previous_revenue": 69126300.0,
+      "current_revenue": 66528900.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "correct": true,
+    "previously_ready": true
+  },
+  {
+    "id": "q_6b6bdecc1726",
+    "business_id": "biz_122",
+    "question": "từ đầu tháng này đến hết bữa nay, doanh thu hơn hay kém cùng kỳ tháng trc mấy %",
+    "as_of_date": "2026-04-10",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2026,
+      "month": 4
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "percent",
+    "answer": 10.86,
+    "reason": null,
+    "audit": {
+      "previous_start": "2026-03-01",
+      "previous_end": "2026-03-10",
+      "current_start": "2026-04-01",
+      "current_end": "2026-04-10",
+      "period": "month_to_date",
+      "table": "don_hang_chi_tiet",
+      "revenue_column": "tong_tien",
+      "previous_revenue": 88647900.0,
+      "current_revenue": 98276600.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "correct": true,
+    "previously_ready": true
+  },
+  {
+    "id": "q_7ebd4d633970",
+    "business_id": "biz_122",
+    "question": "So với cùng kỳ tháng trước, doanh thu từ đầu tháng này đến hết hôm nay tăng hay giảm bao nhiêu %?",
+    "as_of_date": "2026-03-31",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2026,
+      "month": 3
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "percent",
+    "answer": 4.8,
+    "reason": null,
+    "audit": {
+      "previous_start": "2026-02-01",
+      "previous_end": "2026-02-28",
+      "current_start": "2026-03-01",
+      "current_end": "2026-03-31",
+      "period": "month_to_date",
+      "table": "don_hang_chi_tiet",
+      "revenue_column": "tong_tien",
+      "previous_revenue": 252287000.0,
+      "current_revenue": 264400000.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "correct": true,
+    "previously_ready": true
+  },
+  {
+    "id": "q_9b8e86f964ef",
+    "business_id": "biz_122",
+    "question": "coi gium so vs cung ky th truoc, dthu tu dau thang nay den het hom nay tang hay giam bnhiu %",
+    "as_of_date": "2025-03-11",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2025,
+      "month": 3
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "percent",
+    "answer": -4.66,
+    "reason": null,
+    "audit": {
+      "previous_start": "2025-02-01",
+      "previous_end": "2025-02-11",
+      "current_start": "2025-03-01",
+      "current_end": "2025-03-11",
+      "period": "month_to_date",
+      "table": "don_hang_chi_tiet",
+      "revenue_column": "tong_tien",
+      "previous_revenue": 83567100.0,
+      "current_revenue": 79668800.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "correct": true,
+    "previously_ready": true
+  },
+  {
+    "id": "q_a1aa3adfb66b",
+    "business_id": "biz_122",
+    "question": "e doanh thu tu dau thang nay den het hom nay hon hay kem cung ky th truoc bn %",
+    "as_of_date": "2025-11-27",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2025,
+      "month": 11
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "percent",
+    "answer": -2.17,
+    "reason": null,
+    "audit": {
+      "previous_start": "2025-10-01",
+      "previous_end": "2025-10-27",
+      "current_start": "2025-11-01",
+      "current_end": "2025-11-27",
+      "period": "month_to_date",
+      "table": "don_hang_chi_tiet",
+      "revenue_column": "tong_tien",
+      "previous_revenue": 215170300.0,
+      "current_revenue": 210497600.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "correct": true,
+    "previously_ready": true
+  },
+  {
+    "id": "q_1b0a47e42b97",
+    "business_id": "biz_124",
+    "question": "Cho mình hỏi so với cùng kỳ tháng trước, doanh thu từ đầu tháng này đến hết hôm nay tăng hay giảm bao nhiêu %?",
+    "as_of_date": "2026-02-11",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2026,
+      "month": 2
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: order_id",
+    "audit": {
+      "previous_start": "2026-01-01",
+      "previous_end": "2026-01-11",
+      "current_start": "2026-02-01",
+      "current_end": "2026-02-11",
+      "period": "month_to_date",
+      "rejection": "Unverified README role: order_id"
+    },
+    "correct": null,
+    "previously_ready": false
+  },
+  {
+    "id": "q_9960c0b5773f",
+    "business_id": "biz_124",
+    "question": "doanh thu tu dau thang nay den het hnay tang hay giam bao nhieu phan tram so vs cung ky thang roi",
+    "as_of_date": "2026-01-04",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2026,
+      "month": 1
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "abstain",
+    "answer": null,
+    "reason": "Monthly growth rejected: Unverified README role: order_id",
+    "audit": {
+      "previous_start": "2025-12-01",
+      "previous_end": "2025-12-04",
+      "current_start": "2026-01-01",
+      "current_end": "2026-01-04",
+      "period": "month_to_date",
+      "rejection": "Unverified README role: order_id"
+    },
+    "correct": null,
+    "previously_ready": false
+  },
+  {
+    "id": "q_110238617caa",
+    "business_id": "biz_130",
+    "question": "từ đầu tháng này đến hết bữa nay, dthu hown hay kém cungf kỳ th trước mấy %",
+    "as_of_date": "2025-08-20",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2025,
+      "month": 8
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "percent",
+    "answer": -0.8,
+    "reason": null,
+    "audit": {
+      "previous_start": "2025-07-01",
+      "previous_end": "2025-07-20",
+      "current_start": "2025-08-01",
+      "current_end": "2025-08-20",
+      "period": "month_to_date",
+      "table": "so_chi_tiet_ban_hang",
+      "revenue_column": "thanh_tien",
+      "previous_revenue": 803783500.0,
+      "current_revenue": 797379500.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "correct": true,
+    "previously_ready": true
+  },
+  {
+    "id": "q_4cb3efa8bd01",
+    "business_id": "biz_130",
+    "question": "tu dau thang nay den het hnay, dthu hon hay kem cung ky thang trc may %",
+    "as_of_date": "2025-03-15",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2025,
+      "month": 3
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "percent",
+    "answer": 38.88,
+    "reason": null,
+    "audit": {
+      "previous_start": "2025-02-01",
+      "previous_end": "2025-02-15",
+      "current_start": "2025-03-01",
+      "current_end": "2025-03-15",
+      "period": "month_to_date",
+      "table": "so_chi_tiet_ban_hang",
+      "revenue_column": "thanh_tien",
+      "previous_revenue": 428200000.0,
+      "current_revenue": 594704000.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "correct": true,
+    "previously_ready": true
+  },
+  {
+    "id": "q_981a28043fd6",
+    "business_id": "biz_130",
+    "question": "dthu tu dau thang nay den het hnay hon hay kem cung ky thang truoc bao nhieu phan tram",
+    "as_of_date": "2026-05-19",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2026,
+      "month": 5
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "percent",
+    "answer": 1.29,
+    "reason": null,
+    "audit": {
+      "previous_start": "2026-04-01",
+      "previous_end": "2026-04-19",
+      "current_start": "2026-05-01",
+      "current_end": "2026-05-19",
+      "period": "month_to_date",
+      "table": "so_chi_tiet_ban_hang",
+      "revenue_column": "thanh_tien",
+      "previous_revenue": 872922000.0,
+      "current_revenue": 884205500.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "correct": true,
+    "previously_ready": true
+  },
+  {
+    "id": "q_c7e48902ab25",
+    "business_id": "biz_130",
+    "question": "coi giùm từ đầu tháng này đến hết bữa nay, doanh thu hơn hay kém cùng kỳ tháng rồi mấy %",
+    "as_of_date": "2025-11-26",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2025,
+      "month": 11
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "percent",
+    "answer": -3.22,
+    "reason": null,
+    "audit": {
+      "previous_start": "2025-10-01",
+      "previous_end": "2025-10-26",
+      "current_start": "2025-11-01",
+      "current_end": "2025-11-26",
+      "period": "month_to_date",
+      "table": "so_chi_tiet_ban_hang",
+      "revenue_column": "thanh_tien",
+      "previous_revenue": 1126737500.0,
+      "current_revenue": 1090417000.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "correct": true,
+    "previously_ready": true
+  },
+  {
+    "id": "q_d401c0884402",
+    "business_id": "biz_130",
+    "question": "So với cùng kỳ tháng trước, doanh thu từ đầu tháng này đến hết hôm nay tăng hay giảm bao nhiêu %?",
+    "as_of_date": "2025-08-03",
+    "category": "month_to_date",
+    "intent": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2025,
+      "month": 8
+    },
+    "annotation_scope": "Question-only, agent-reviewed development label; not a production parser or held-out test.",
+    "type": "percent",
+    "answer": -18.92,
+    "reason": null,
+    "audit": {
+      "previous_start": "2025-07-01",
+      "previous_end": "2025-07-03",
+      "current_start": "2025-08-01",
+      "current_end": "2025-08-03",
+      "period": "month_to_date",
+      "table": "so_chi_tiet_ban_hang",
+      "revenue_column": "thanh_tien",
+      "previous_revenue": 145478500.0,
+      "current_revenue": 117948000.0,
+      "coverage": "boundary/schema checks; internal export completeness is not proven"
+    },
+    "correct": true,
+    "previously_ready": true
+  }
+]
