@@ -878,7 +878,7 @@
 {"id": "q_e2a2674f8f4d", "type": "number", "answer": 85964500}
 {"id": "q_e2ad9e83d06a", "type": "abstain"}
 {"id": "q_e2bedb87cc3d", "type": "abstain"}
-{"id": "q_e2bfd7f28a9a", "type": "abstain"}
+{"id": "q_e2bfd7f28a9a", "type": "percent", "answer": -3.27}
 {"id": "q_e2e4e0639619", "type": "abstain"}
 {"id": "q_e2f1ef732951", "type": "number", "answer": 523525}
 {"id": "q_e322d691b4be", "type": "abstain"}

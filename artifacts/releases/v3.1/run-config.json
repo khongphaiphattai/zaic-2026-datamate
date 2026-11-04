@@ -1,0 +1,39 @@
+{
+  "dataset": "public_test",
+  "model": "datamate-business24",
+  "endpoint": null,
+  "reuse_run": "artifacts/v31-mtd-public",
+  "temperature": 0,
+  "seed": 42,
+  "max_tokens": 1024,
+  "offline_replay": true,
+  "allow_execution_changes": true,
+  "reused_trace_sha256": "7d294214caf4e71602fca48caaf70f26e17270a34d9904a6ee317754ec275249",
+  "daily_order_paraphrases": true,
+  "training_data_sha256": "55c2918798e68452be79cf69bc9244311d900af60533554d2fa436bb414a908e",
+  "split_sha256": "ba0a70ea94ecf36c6d74b308ba7bcf29358f1ec693fc6cf73167c0e59b6c4ffa",
+  "sources": {
+    "pipeline.py": "072e0af3b955e8280bcb17c7e025d0c452973d9bb8cd83b5303177f50fcb9ee0",
+    "provenance.py": "7be996aea12ea550c5ed3960807ad357e7f5627e0facec3fb5c06471bde0e4de",
+    "hybrid_agent.py": "68d5ae8a609bdbca046db054544cbbbe74eaa3dc23dc478bbe29e7be8dc23ae6",
+    "slow_path.py": "14882ddc284221296303a84662111bec4a50a150f87c9855d75b86a93b4eba62",
+    "revenue_metric.py": "e7e36095654ee9b17b8a502bd54cbf660767dc7e481b575b2c81e0e91c073a0b",
+    "selective_gate.py": "0cf16b9630ab57e10aaf294c619899eb10fd180259452bd1c7cca5fda573ea7a",
+    "prompt_generator.py": "bfb80b6cf73e51f3f5f029d9906f528af44a6abf086d50b763b9614bf28f6a35",
+    "intent_parser.py": "5168704acf46a4a3309488a8ad7e33fe42185e928bce23957db001ba3f690a68",
+    "paraphrase_fast.py": "5b893fb65f6c45bc4c48461c0709f9fdb148d12bae87ec5391ba22bf9f643bd6",
+    "monthly_growth.py": "0e20ec864e7ae89990ee0f4f7f6cf91bed26bf5bc4c2fdf9a1d8d4c9e0260866",
+    "mtd_growth.py": "d17110bda0b29bc4c8d11444457f9fda9c6f4b8eccd3204245c3de2ff231647b",
+    "growth_semantics.py": "496d120b61f0e39e931442847299283a6c06cf5e500374ecb8ac5df90c07046b",
+    "sales_status.py": "245b05c4b1438d41ff272dd432bc74b1d11a4115b70f322661a9b2fcd3213110"
+  },
+  "scope": "Descriptive development diagnostics only; SFT-seen vs SFT-excluded, not untouched validation. Public correctness unknown.",
+  "pipeline": {
+    "enable_slow_path": true,
+    "order_paraphrases": true,
+    "model": "datamate-business24",
+    "confidence_threshold": 0.95,
+    "monthly_growth": true,
+    "mtd_growth": true
+  }
+}

@@ -898,3 +898,8 @@
 - Verify source/configTrain/Public giống nhau, raw prompts/responses và remaining refusals bảo toàn,0network/1cachedPubliccall. Tính lại14newTrain+1newPublic bằng Pandas/Decimal/rawstatussets khớp SQL; sharedloader còn là phụ thuộc chung.317tests pass, không khẳng định Public answer đúng từ việc sums khớp.
 - Candidate đã sẵn sàng review/nộp thủ công nếu người dùng muốn đo điểm; giữ đúng filename submission.jsonl trong artifact. Không thay root hoặc tự nộp portal. README tổng hợp `artifacts/v31-status-design/README.md`.
 - Đã hoàn tất lát cắt status có bằng chứng, auditroles được lưu riêng; chưa đoán role thiếuREADME. Hướng tiếp theo: provenance file/sheet và unique documented roles từTrain, negative tests ngày bán/ngày tạo/returns/conflicts. Không cần Colab/training cho bước local này.
+
+### 04/11/2026 — Chốt v3.1 theo yêu cầu người dùng, chờ nộp/score
+- Người dùng duyệt tênv3.1 và sẽ tự nộp. Đã kiểm1000IDs/order/schema/finite values,205answered/795abstain,1new Public answer; xuất root `submission.jsonl` và snapshot `artifacts/releases/v3.1/submission.jsonl` cùng SHA `8c2c06b47b0033a92376a2c01da04e9a92b1a38decb02a494dd5ae6dcadca7f7`.
+- Rootv3.0 cũ được backup trước publication; snapshotv3.0 giữ nguyên. Receiptv3.1 ở trạng thái `release_finalized_awaiting_user_submission`, uploads_confirmed0,score/submitIDnull. Chưa tự upload hoặc gán điểm0.13400 cho bản mới.
+- Description: “v3.1 — Guarded MTD revenue growth with canonical sales-status handling, preserving existing answers.” Implementation686a132,317tests đã qua; phát hành file không đổi inference source. Chờ kết quả portal gắn với đúngSHA để cập nhật score/delta.
