@@ -1,0 +1,34 @@
+{
+  "scope": "Train24 README/profile evidence only; role mapping unchanged in status experiment.",
+  "findings": [
+    {
+      "businesses": [
+        "biz_105",
+        "biz_117"
+      ],
+      "issue": "Heuristic selects time of order/return; README separately names sale date. Metric grain, returns and negative values remain additional blockers."
+    },
+    {
+      "businesses": [
+        "biz_108",
+        "biz_120",
+        "biz_128"
+      ],
+      "issue": "Heuristic selects creation time; README separately names sale date. Header revenue still requires metric proof."
+    },
+    {
+      "businesses": [
+        "biz_116"
+      ],
+      "issue": "README heading includes file+sheet; current section resolver matches file stem only and misses combined registered table."
+    },
+    {
+      "businesses": [
+        "biz_106",
+        "biz_124"
+      ],
+      "issue": "README lacks full scoped column definitions. A role must not be invented from a guessed name."
+    }
+  ],
+  "next_step": "Separate README role/table provenance design, including conflicting definitions and missing evidence; do not bypass metric/status guards."
+}

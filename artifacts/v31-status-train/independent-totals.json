@@ -1,0 +1,103 @@
+{
+  "scope": "Independent Pandas/Decimal aggregation, raw exact status exclusion, shared loader. Not Public correctness proof.",
+  "checks": [
+    {
+      "id": "q_16f9cc98ab35",
+      "previous_revenue": "60541200.0",
+      "current_revenue": "60118800.0",
+      "answer": -0.7,
+      "agrees_with_sql": true
+    },
+    {
+      "id": "q_2b36065a8adc",
+      "previous_revenue": "139211400.0",
+      "current_revenue": "140490800.0",
+      "answer": 0.92,
+      "agrees_with_sql": true
+    },
+    {
+      "id": "q_3cbc76c5b4a8",
+      "previous_revenue": "108779900.0",
+      "current_revenue": "115412000.0",
+      "answer": 6.1,
+      "agrees_with_sql": true
+    },
+    {
+      "id": "q_4bf0ba4d3872",
+      "previous_revenue": "30393200.0",
+      "current_revenue": "33323700.0",
+      "answer": 9.64,
+      "agrees_with_sql": true
+    },
+    {
+      "id": "q_57cfd4ad4045",
+      "previous_revenue": "139624500.0",
+      "current_revenue": "118547700.0",
+      "answer": -15.1,
+      "agrees_with_sql": true
+    },
+    {
+      "id": "q_864c9d9c036a",
+      "previous_revenue": "55417500.0",
+      "current_revenue": "48734800.0",
+      "answer": -12.06,
+      "agrees_with_sql": true
+    },
+    {
+      "id": "q_b5c5f0a182ba",
+      "previous_revenue": "108486100.0",
+      "current_revenue": "195001100.0",
+      "answer": 79.75,
+      "agrees_with_sql": true
+    },
+    {
+      "id": "q_bf862acc15f6",
+      "previous_revenue": "170676100.0",
+      "current_revenue": "145290500.0",
+      "answer": -14.87,
+      "agrees_with_sql": true
+    },
+    {
+      "id": "q_c6a0bb80b9f9",
+      "previous_revenue": "91227900.0",
+      "current_revenue": "112918100.0",
+      "answer": 23.78,
+      "agrees_with_sql": true
+    },
+    {
+      "id": "q_d9dffcc652db",
+      "previous_revenue": "124729400.0",
+      "current_revenue": "130363300.0",
+      "answer": 4.52,
+      "agrees_with_sql": true
+    },
+    {
+      "id": "q_e730b374d65b",
+      "previous_revenue": "39348800.0",
+      "current_revenue": "39443700.0",
+      "answer": 0.24,
+      "agrees_with_sql": true
+    },
+    {
+      "id": "q_6b4754b099c6",
+      "previous_revenue": "109615000.0",
+      "current_revenue": "122288500.0",
+      "answer": 11.56,
+      "agrees_with_sql": true
+    },
+    {
+      "id": "q_9266ece83b4a",
+      "previous_revenue": "75919000.0",
+      "current_revenue": "87459000.0",
+      "answer": 15.2,
+      "agrees_with_sql": true
+    },
+    {
+      "id": "q_9477fcddf45f",
+      "previous_revenue": "143181000.0",
+      "current_revenue": "148810000.0",
+      "answer": 3.93,
+      "agrees_with_sql": true
+    }
+  ]
+}

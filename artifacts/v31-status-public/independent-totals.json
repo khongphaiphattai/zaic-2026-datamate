@@ -1,0 +1,12 @@
+{
+  "scope": "Independent Pandas/Decimal aggregation, raw exact status exclusion, shared loader. Not Public correctness proof.",
+  "checks": [
+    {
+      "id": "q_e2bfd7f28a9a",
+      "previous_revenue": "132530300.0",
+      "current_revenue": "128200300.0",
+      "answer": -3.27,
+      "agrees_with_sql": true
+    }
+  ]
+}

@@ -174,3 +174,33 @@ def test_generator_exports_same_mtd_factory_route(context,tmp_path,monkeypatch):
     stats=generator.generate_submission(questions_path=source,output_path=output,monthly_growth=True,mtd_growth=True)
     assert json.loads(output.read_text())=={'id':'mtd','type':'percent','answer':50.0}
     assert stats['mtd_growth_path']==1 and stats['monthly_growth_path']==stats['slow_path']==0
+
+
+@pytest.mark.parametrize('completed,shipping,cancelled,returned',[
+    ('xong','đang vận chuyển','huy','tra hang'),
+    ('Hoàn thành','đang giao','cancel','hoan tra'),
+    ('Đã xong','đang gửi','đã hủy đơn','đổi trả'),
+    ('thành công','đang giao hàng','khách hủy','hàng trả về'),
+    ('completed','shipping','cancelled','returned'),
+])
+def test_exact_status_aliases_share_one_inclusion_policy(context,completed,shipping,cancelled,returned):
+    frame=context.tables['ban_hang']
+    frame.loc[:8,'trang_thai']=completed
+    frame.loc[6,'trang_thai']=shipping
+    frame.loc[9,'trang_thai']=cancelled
+    frame.loc[10,'trang_thai']=returned
+    context.duckdb_conn.register('ban_hang',frame)
+    assert monthly_growth.resolve_growth_intent(GrowthIntent('month_to_date',2025,3),context,'2025-03-09')==('percent',50.0,None)
+
+
+@pytest.mark.parametrize('label',['không hủy','chưa hoàn thành','không giao được','ok','cancel requested'])
+def test_ambiguous_or_negated_status_is_not_guessed(context,label):
+    frame=context.tables['ban_hang'];frame.loc[0,'trang_thai']=label
+    context.duckdb_conn.register('ban_hang',frame)
+    assert monthly_growth.resolve_growth_intent(GrowthIntent('month_to_date',2025,3),context,'2025-03-09')[0]=='abstain'
+
+
+def test_returned_multi_line_order_is_entirely_excluded(context):
+    frame=context.tables['ban_hang'];frame.loc[[4,5],'trang_thai']='tra hang'
+    context.duckdb_conn.register('ban_hang',frame)
+    assert monthly_growth.resolve_growth_intent(GrowthIntent('month_to_date',2025,3),context,'2025-03-09')==('percent',0.0,None)

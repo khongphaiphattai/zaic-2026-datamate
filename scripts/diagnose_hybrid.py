@@ -176,6 +176,8 @@ def main():
         sources.append('monthly_growth.py')
     if args.mtd_growth:
         sources.extend(name for name in ('mtd_growth.py','growth_semantics.py','monthly_growth.py') if name not in sources)
+    if args.monthly_growth or args.mtd_growth:
+        sources.append('sales_status.py')
     run_config = {'dataset':args.dataset,'model':args.model,'endpoint':args.base_url,'reuse_run':args.reuse_run,'temperature':0,'seed':42,'max_tokens':1024,
                   'offline_replay':args.offline_replay,'allow_execution_changes':args.allow_execution_changes,
                   'reused_trace_sha256':hashlib.sha256((Path(args.reuse_run)/'trace.jsonl').read_bytes()).hexdigest() if args.reuse_run else None,

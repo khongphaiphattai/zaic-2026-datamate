@@ -433,3 +433,14 @@ Train/Public giữ nguyên. Bằng chứng `artifacts/v31-mtd-train/README.md`.
 Public4MTDattempts bị schema/status chặn; bước tiếp theo là canonical
 status/README role audit từTrain24 và counterexamples, không mở wording hoặc
 model tự do. No Colab/training needed theo bằng chứng hiện tại.
+
+### Exact status contract đã đo (04/11/2026)
+
+Dựa trên rulebook§1/§8 và exact aliasesTrain24, thống nhất whitelist với SQL
+loại cả đơn huỷ/trả, kể cả nhãn không dấu.317tests pass. FullTrain871đúng/6sai,
+PA0.2883333; thêm14đúng (3Train24/11SFT-excluded đã dùng development).
+FullPublic205trả lời/795abstain, **1đáp án mới**, candidate khácv3.0 tại
+`artifacts/v31-status-public/submission.jsonl`. Chưa có score mới/root update.
+Kiểm sums độc lập14Train+1Public, preserve toàn bộ đáp án cũ và frozen sources.
+Xem `artifacts/v31-status-design/README.md`. Role linking mới ở mức audit;
+chưa đoán cột thiếuREADME, cần thiết kế provenance file/sheet riêng.

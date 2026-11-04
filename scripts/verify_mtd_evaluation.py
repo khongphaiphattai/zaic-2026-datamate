@@ -1,11 +1,17 @@
-import json,hashlib,sys
+import argparse,json,hashlib
 from pathlib import Path
 from collections import Counter
 from zaic_2026_datamate.evaluation import evaluate_match,valid_answer
 
-dataset=sys.argv[1]
-run=Path('artifacts/v31-mtd-'+('train' if dataset=='train' else 'public'))
-old=Path('artifacts/v31-growth-'+('train' if dataset=='train' else 'public'))
+parser=argparse.ArgumentParser(description='Independent offline prediction/preservation verification')
+parser.add_argument('dataset',choices=['train','public_test'])
+parser.add_argument('--run-prefix',default='v31-mtd')
+parser.add_argument('--baseline-prefix',default='v31-growth')
+parser.add_argument('--allow-new-monthly',action='store_true')
+parser.add_argument('--allow-refusal-reason-changes',action='store_true')
+args=parser.parse_args();dataset=args.dataset
+run=Path('artifacts')/(args.run_prefix+('-train' if dataset=='train' else '-public'))
+old=Path('artifacts')/(args.baseline_prefix+('-train' if dataset=='train' else '-public'))
 read=lambda p:[json.loads(l) for l in Path(p).read_text().splitlines() if l.strip()]
 sha=lambda p:hashlib.sha256(Path(p).read_bytes()).hexdigest()
 rows=read(run/'trace.jsonl');before=read(old/'trace.jsonl')
@@ -17,7 +23,7 @@ cfg=json.loads((run/'run-config.json').read_text());report=json.loads((run/'repo
 assert cfg['offline_replay'] and cfg['allow_execution_changes'] and cfg['pipeline']['mtd_growth']
 assert all(sha(Path('src/zaic_2026_datamate')/name)==value for name,value in cfg['sources'].items())
 assert report['network_model_calls']==0
-new=[]
+new=[];changed_refusals=0
 for qid,r in current.items():
     b=base[qid]
     assert all(r[k]==b[k] for k in ('question','business_id','as_of_date'))
@@ -25,9 +31,14 @@ for qid,r in current.items():
     if b['type']!='abstain':
         assert all(r.get(k)==b.get(k) for k in ('type','answer','reason','route'))
     elif r['type']!='abstain':
-        assert r['route']=='mtd_growth_path' and r['type']=='percent' and valid_answer(r['type'],r['answer'])
+        allowed_routes={'mtd_growth_path','monthly_growth_path'} if args.allow_new_monthly else {'mtd_growth_path'}
+        assert r['route'] in allowed_routes and r['type']=='percent' and valid_answer(r['type'],r['answer'])
         new.append(r)
-    else:assert r['route']==b['route'] and r['reason']==b['reason']
+    else:
+        assert r['route']==b['route']
+        if r['reason']!=b['reason']:
+            assert args.allow_refusal_reason_changes
+            changed_refusals+=1
     if dataset=='train':
         target=r['target'];assert r['correct']==evaluate_match(r['type'],r.get('answer'),target['type'],target.get('answer'))
     else:assert r['correct'] is None and r['target'] is None
@@ -41,7 +52,8 @@ for prediction in predictions:
 release='288ed868fde9175d36afd8995cdaf0e2c5f978a716be5c2a845f35c5e89afb9f'
 assert sha('submission.jsonl')==sha('artifacts/releases/v3.0/submission.jsonl')==release
 verification={'verified':True,'ids':len(rows),'all_old_non_abstain_predictions_routes_reasons_preserved':True,
-              'remaining_abstain_routes_reasons_preserved':True,'raw_model_calls_prompts_responses_preserved':True,
+              'remaining_abstain_routes_preserved':True,'changed_abstain_reasons':changed_refusals,
+              'raw_model_calls_prompts_responses_preserved':True,
               'new_answers':len(new),'new_correct':sum(r['correct'] is True for r in new) if dataset=='train' else None,
               'new_wrong':sum(r['correct'] is False for r in new) if dataset=='train' else None,
               'partitions':dict(Counter(r['partition'] for r in new)),'businesses':dict(Counter(r['business_id'] for r in new)),
@@ -54,7 +66,7 @@ if dataset=='train':
     assert overall['correct']==correct and overall['wrong']==wrong
     assert overall['pa']==(correct-wrong)/len(rows)
 else:
-    train_cfg=json.loads(Path('artifacts/v31-mtd-train/run-config.json').read_text())
+    train_cfg=json.loads((Path('artifacts')/(args.run_prefix+'-train')/'run-config.json').read_text())
     assert cfg['sources']==train_cfg['sources'] and cfg['pipeline']==train_cfg['pipeline']
     verification['train_public_sources_config_equal']=True
 (run/'verification.json').write_text(json.dumps(verification,ensure_ascii=False,indent=2)+'\n')

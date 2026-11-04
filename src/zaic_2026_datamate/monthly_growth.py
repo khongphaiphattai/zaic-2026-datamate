@@ -11,8 +11,9 @@ from typing import Literal
 import pandas as pd
 
 from zaic_2026_datamate.data_loader import get_base_table_stem, normalize_identifier
-from zaic_2026_datamate.intent_parser import find_primary_sales_table, find_revenue_column, get_valid_sales_status_clause
+from zaic_2026_datamate.intent_parser import find_primary_sales_table, find_revenue_column
 from zaic_2026_datamate.revenue_metric import verify_revenue_metric
+from zaic_2026_datamate.sales_status import STATUS_ALIASES, classify_sales_status, canonical_status_clause
 
 
 def _text(value):
@@ -33,8 +34,7 @@ _PATTERNS = tuple(re.compile(_PREFIX+p+_SUFFIX) for p in [
     rf'{_MONTH} {_METRIC} {_CHANGE} {_COMPARE}',
     rf'{_METRIC} {_MONTH} hon hay kem thang (?:truoc|trc) {_AMOUNT} (?:%|phan tram)',
 ])
-_STATUSES = {'da hoan thanh', 'da huy', 'da hoan hang', 'da tra hang',
-             'dang giao dich', 'dang giao hang'}
+_STATUSES = set(STATUS_ALIASES)
 
 
 @dataclass(frozen=True)
@@ -145,7 +145,7 @@ def resolve_growth_intent(intent: GrowthIntent, context, as_of_date: str, audit=
         statuses = frame[status].astype(str).map(_text)
         if dates.isna().any() or not money.map(lambda v: math.isfinite(v) and v >= 0).all():
             raise ValueError('Invalid date or revenue values')
-        if not set(statuses).issubset(_STATUSES):
+        if frame[status].map(classify_sales_status).isna().any():
             raise ValueError('Unsupported sales status')
         contracts = pd.DataFrame({'order':frame[order], 'day':dates, 'status':statuses})
         if (contracts.groupby('order')[['day', 'status']].nunique() > 1).any().any():
@@ -154,7 +154,7 @@ def resolve_growth_intent(intent: GrowthIntent, context, as_of_date: str, audit=
             reason = ('Data does not cover both complete month boundaries' if intent.period == 'full_month'
                       else 'Data does not cover both MTD window boundaries')
             raise ValueError(reason)
-        status_clause = get_valid_sales_status_clause(qs, order_col=qo, table=qt)
+        status_clause = canonical_status_clause(qs, qo, qt, frame[status].unique())
         totals = []
         for first, last in [(start, windows.previous_end), (boundary, end)]:
             sql = f"SELECT SUM({qr}) FROM {qt} WHERE TRY_CAST({qd} AS DATE) BETWEEN '{first}' AND '{last}' {status_clause}"

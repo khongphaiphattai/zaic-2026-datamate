@@ -1,0 +1,24 @@
+{
+  "verified": true,
+  "ids": 1000,
+  "all_old_non_abstain_predictions_routes_reasons_preserved": true,
+  "remaining_abstain_routes_preserved": true,
+  "changed_abstain_reasons": 0,
+  "raw_model_calls_prompts_responses_preserved": true,
+  "new_answers": 1,
+  "new_correct": null,
+  "new_wrong": null,
+  "partitions": {
+    "public_unlabelled": 1
+  },
+  "businesses": {
+    "dev_001": 1
+  },
+  "source_hashes_match": true,
+  "network_calls": 0,
+  "candidate_sha256": "8c2c06b47b0033a92376a2c01da04e9a92b1a38decb02a494dd5ae6dcadca7f7",
+  "release_sha256": "288ed868fde9175d36afd8995cdaf0e2c5f978a716be5c2a845f35c5e89afb9f",
+  "candidate_matches_release": false,
+  "scope": "Development evaluation, Public correctness unknown. New MTD answers are deterministic.",
+  "train_public_sources_config_equal": true
+}
