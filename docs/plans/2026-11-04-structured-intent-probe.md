@@ -13,3 +13,12 @@ Tập nhỏ có nhãn intent thủ công từ câu Train-24 và counterexamples 
 Một call/case, tuần tự, max_tokens256, temperature0/seed42, kiểm provenance business24 trước gọi. Không retry tự sửa output sai. Ghi raw output, lỗi JSON/schema/date, false accept trên negatives, exact intent match trên positives và latency. Thiếu endpoint thì chuẩn bị local và chờ URL, không train lại. Sai JSON hoặc semantic false accept là bằng chứng cần cải thiện, không nới validator để làm đẹp số.
 
 Nghiệm thu bước này: unit tests reject schema thừa/duplicate keys/boolean year/ngày không hợp lệ/tháng chưa hoàn tất; runner không ghi submission hoặc gọi compiler. Sau kết quả live mới quyết định spec compiler MTD, boundary tests (tháng31/ngày29/nămnhuận) và full Train. Không promote dựa trên vài câu probe đúng.
+
+## Kết quả live và quyết định
+
+Đã hoàn tất trên L4 ngày04/11:6/6 positives đúng nhưng3/8 negatives lọt qua
+validator (ca/kênh/YoY),4 negatives bị chặn vì schema/date và1 abstain đúng.
+Gate fail; không triển khai compiler/pipeline trong bước này. Không có lỗi
+network/OOM;54 local tests pass. Giữ model/prompt/parser đã đo để bảo toàn bằng
+chứng. Phân tích và đề xuất thí nghiệm prompt tiếp theo (14regression rồi tối
+đa24ca mới nếu qua gate) tại `artifacts/structured-intent-live-01/README.md`.

@@ -1,0 +1,10 @@
+{
+  "model": "datamate-business24",
+  "temperature": 0,
+  "seed": 42,
+  "max_tokens": 256,
+  "cases_sha256": "49289c6953246e075658039e6034ef8fbba672d5bd8ba6a680c3ff13d422cc2a",
+  "system_prompt_sha256": "1bbd8ac6a203794451de60233f04fb665d8f81d5916e6ecdcdd97688065e9761",
+  "extractor_sha256": "66785e799b8fe99bc6e832e317074dc3df3d696855c569b82bc8a9ed631f4190",
+  "scope": "Selected development probe. Valid JSON is not proof of semantics; no execution/promotion."
+}

@@ -372,3 +372,9 @@ Public v3.1 local đã hoàn tất: 0 đáp án mới, file trùng v3.0; chưa �
 ### L4 recovery (04/11/2026)
 
 Notebook04 hiện hỗ trợ L4 24GB hoặc A100 cho BF16 inference, có kiểm VRAM và one-token startup smoke. Cold CPU merge vẫn cần >=32GiB RAM hệ thống khả dụng. Model/backup không đổi; phần việc tiếp theo vẫn structured-intent probe14câu, chờ endpoint mới sau smoke trên L4. Chi tiết spec/runbook và giới hạn kiểm chứng ở ROADMAP cuối.
+
+### Kết quả live L4 (04/11/2026)
+
+Đã chạy14case trên L4:6/6 positive đúng,1/8 negative abstain đúng,4 negative bị validator chặn,3 semantic false accepts (ca/kênh/YoY). Không lỗi API/OOM; median client latency1.875s. **Không đạt gate**, chưa mở compiler MTD/pipeline. 54 tests liên quan pass; submission v3.0 không đổi.
+
+Bước tiếp theo là prompt kiểm loại trừ trước, regression14câu và bộ24development mới chốt trước đo; không training hoặc chuyển A100 để sửa lỗi ngữ nghĩa. Kế hoạch chi tiết, điều kiện dừng và bằng chứng tại `artifacts/structured-intent-live-01/README.md`. Các ghi chú chờ URL phía trên là lịch sử; probe đầu đã hoàn tất.

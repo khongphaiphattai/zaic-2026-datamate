@@ -61,3 +61,13 @@ Notebook04 đã cho phép L4 24GB hoặc A100, vẫn dùng BF16 checkpoint busin
 Cell1 kiểm CUDA device0 >=22000MiB total; GPU24GB cần >=20000MiB trống trước load. Cell5 kiểm lại VRAM, BF16, dùng SDPA/low_cpu_mem_usage, batch1 và giới hạn8192 tokens tổng. API chỉ mở sau one-token smoke thành công; output có GPU/VRAM peak. Chưa benchmark Colab L4 nên không đảm bảo tốc độ hoặc context dài. Hardware khác có thể tạo output khác; chạy live probe mới, không giả kết quả bằng bit với A100.
 
 Import lại notebook04 đã cập nhật, chạy cell1→6; cell2 đầy đủ tự tạo venv trước cài pip. ZIP vẫn `business24-adapter-backup.zip`. Gửi URL/v1 mới và output `MODEL LOAD + 1-TOKEN SMOKE OK`. Sau đó agent chạy14 cases structured-intent theo spec04/11, chưa chạy lại toàn bộ Train/Public. Nếu OOM hoặc smoke lỗi, gửi log cell5; không tự đổi precision/cắt prompt.
+
+### Cập nhật sau phép thử L4
+
+14case đã hoàn tất, không lỗi API/OOM; provenance ghi L4/BF16/SDPA,
+startup peak allocated14.2GiB. Chưa kiểm tải dài8192tokens. Kết quả intent
+chưa đạt gate (3false accepts), nên không chạy full Train/Public hoặc compiler
+MTD. Xem `artifacts/structured-intent-live-01/README.md` trước lượt GPU kế tiếp;
+không chạy lại nguyên bộ14với prompt cũ chỉ vì có URL mới. L4 tiếp tục phù hợp
+cho probe ngắn; A100 chưa cần theo bằng chứng hiện tại. Khi hết việc GPU, có
+thể dừng theo cell8 và Disconnect and delete runtime sau khi giữ backup.

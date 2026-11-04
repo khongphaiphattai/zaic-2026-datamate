@@ -1,0 +1,12 @@
+{
+  "total": 14,
+  "positive_total": 6,
+  "positive_exact": 6,
+  "negative_total": 8,
+  "negative_exact": 1,
+  "false_accepts": 3,
+  "errors": 4,
+  "model_calls": 14,
+  "production_promotion": false,
+  "scope": "Selected development probe. Valid JSON is not proof of semantics; no execution/promotion."
+}
