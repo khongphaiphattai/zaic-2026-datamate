@@ -1,5 +1,7 @@
 # 🗺️ NHẬT KÝ TIẾN ĐỘ DỰ ÁN (ROADMAP) — ZAIC 2026 DATAMATE
 
+> **Mốc mới nhất 04/11/2026:** Người dùng báo v3.1 đã nộp, Public **0.13500** (+0.00100). Local release205 trả lời/795abstain; model chưa đóng góp đáp án Public được chấp nhận. Đề xuất tiếp theo: kiểm lại độ đúng baseline và xây hợp đồng dữ liệu nghiệp vụ dùng chung; xem `docs/plans/2026-11-04-post-v31-strategy.md` (chưa duyệt triển khai).
+
 > **Mục tiêu:** Theo dõi chi tiết từng mốc công việc đã hoàn thành và kế hoạch tiếp theo theo từng ngày.  
 > **Nguyên tắc:** Ghi chú ngắn gọn, súc tích, lưu vết kỹ thuật chính xác để Agent và User luôn đồng bộ bối cảnh làm việc.
 
@@ -903,3 +905,9 @@
 - Người dùng duyệt tênv3.1 và sẽ tự nộp. Đã kiểm1000IDs/order/schema/finite values,205answered/795abstain,1new Public answer; xuất root `submission.jsonl` và snapshot `artifacts/releases/v3.1/submission.jsonl` cùng SHA `8c2c06b47b0033a92376a2c01da04e9a92b1a38decb02a494dd5ae6dcadca7f7`.
 - Rootv3.0 cũ được backup trước publication; snapshotv3.0 giữ nguyên. Receiptv3.1 ở trạng thái `release_finalized_awaiting_user_submission`, uploads_confirmed0,score/submitIDnull. Chưa tự upload hoặc gán điểm0.13400 cho bản mới.
 - Description: “v3.1 — Guarded MTD revenue growth with canonical sales-status handling, preserving existing answers.” Implementation686a132,317tests đã qua; phát hành file không đổi inference source. Chờ kết quả portal gắn với đúngSHA để cập nhật score/delta.
+
+### 04/11/2026 — Người dùng báo v3.1 đạt0.13500; rà lại chiến lược
+- Đã cập nhật receipt/README release:1lần nộp do người dùng xác nhận, score0.13500, delta+0.00100. Nguồn là tin nhắn, chưa có screenshot/submitID/thời điểm portal và chưa xác minh bytes đã upload. Root/snapshot local vẫn đúngSHA v3.1.
+- Với giả định portal chấm1000dòng đúng file theo+1/−1/0:205answered và135điểm ròng suy ra170đúng/35sai, precision82.93%. Không xác định được lỗi từng câu từ tổng điểm; cần ngừng mặc định đáp án Fast cũ an toàn100% dựa trênTrain. Train hiện99.32%precision là development evidence.
+- TracePublic:204Fast+1MTD,0Slowaccepted. Cải thiện vừa rồi thuộc compiler/status, không phải lợi ích model đã được chứng minh. Đã đối chiếu nghiên cứu DIN-SQL/CHESS để đề xuất phân rã câu hỏi, chọn schema và kiểm kế hoạch; không suy điểm ZAIC từ benchmark nghiên cứu.
+- Lưu ba hướng và thí nghiệm đề xuất tại `docs/plans/2026-11-04-post-v31-strategy.md`: audit baseline; lớp dữ liệu nghiệp vụ chuẩn theo grain/role/metric và kế hoạch có đủ filters; đổi/train model để sau. Nhóm tỷ trọng128câu trong auditTrain cũ là ứng viên kiểm khả thi, không phải128điểm hứa hẹn. Đề xuất chưa duyệt; chưa sửa production, chưa gọi Colab/train hoặc thay submission.

@@ -1,5 +1,11 @@
 # Kế hoạch Triển khai Chi tiết — Zalo AI Challenge 2026 (Track 2: DataMate)
 
+## Trạng thái mới nhất 04/11/2026 — sau v3.1
+
+- Người dùng báo đã nộp v3.1, Public **0.13500**, tăng0.00100. Root/snapshot205trả lời/795abstain; SHA `8c2c06b47b0033a92376a2c01da04e9a92b1a38decb02a494dd5ae6dcadca7f7`. Chi tiết nguồn xác nhận trong receipt release; chưa có nhãn Public.
+- Không còn đúng khi coi root là baseline v2.8 hoặc file5dòng; các mục01/11 phía dưới là lịch sử. Model chưa có đáp án Public được chấp nhận trong trace v3.1.
+- Đề xuất ưu tiên mới (chưa duyệt triển khai): `docs/plans/2026-11-04-post-v31-strategy.md`. Kiểm độ đúng đáp án hiện có và xây hợp đồng dữ liệu nghiệp vụ dùng chung trước mở rộng kế hoạch truy vấn/model. Chưa training hoặc yêu cầu bật Colab.
+
 ## Cập nhật thực tế ngày 01/11/2026 — đọc trước lịch trình gốc
 
 Phần này cập nhật ưu tiên theo mã nguồn và ROADMAP hiện tại; lịch trình phía dưới được giữ làm lịch sử, không phải báo cáo trạng thái mới nhất. Các nhận định cũ về model “số 1”, SFT chắc chắn vượt zero-shot, KPI điểm số và tốc độ là giả thuyết/mục tiêu, chưa phải kết quả đã kiểm chứng.

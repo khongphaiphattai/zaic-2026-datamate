@@ -1,12 +1,12 @@
 {
   "release": "v3.1",
   "implementation_commit": "686a132",
-  "status": "release_finalized_awaiting_user_submission",
-  "uploads_confirmed": 0,
+  "status": "submitted_scored",
+  "uploads_confirmed": 1,
   "portal_submission_id": null,
   "portal_submitted_at": null,
-  "public_score": null,
-  "score_delta": null,
+  "public_score": 0.135,
+  "score_delta": 0.001,
   "baseline_release": "v3.0",
   "baseline_public_score": 0.134,
   "baseline_sha256": "288ed868fde9175d36afd8995cdaf0e2c5f978a716be5c2a845f35c5e89afb9f",
@@ -28,7 +28,16 @@
   "train_pa": 0.28833333333333333,
   "tests_passed": 317,
   "description": "v3.1 — Guarded MTD revenue growth with canonical sales-status handling, preserving existing answers.",
-  "user_submission_plan": "User will upload manually and return portal score. No portal upload by agent.",
+  "user_submission_plan": "User reports manual submission completed and score returned.",
   "root_previous_backup": "artifacts/releases/v3.1/root-before-publication.jsonl",
-  "limitation": "Public has no labels. New output is not a proven score gain."
+  "limitation": "Uploaded bytes not independently verified; local release SHA verified. Portal submission ID/time unknown. No per-question Public labels.",
+  "public_score_display": "0.13500",
+  "score_source": "User reports v3.1 portal score 0.13500 in conversation on 2026-11-04; no screenshot or authenticated portal access.",
+  "aggregate_inference": {
+    "conditional_on": "Portal scored all 1000 rows of this release using +1/-1/0 without other adjustments.",
+    "correct": 170,
+    "wrong": 35,
+    "answered_precision": 0.8292682926829268,
+    "per_question_labels_available": false
+  }
 }
