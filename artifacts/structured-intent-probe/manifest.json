@@ -1,0 +1,8 @@
+{
+  "cases": 14,
+  "positives": 6,
+  "negatives": 8,
+  "scope": "Selected development probe; Train-24 and synthetic controls only. No Public questions or numeric targets in prompts.",
+  "cases_sha256": "49289c6953246e075658039e6034ef8fbba672d5bd8ba6a680c3ff13d422cc2a",
+  "status": "prepared_not_measured_live"
+}

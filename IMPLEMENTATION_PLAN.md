@@ -364,3 +364,7 @@ Capability mới opt-in `--monthly-growth`: whole-question tháng hoàn tất so
 Các mục còn lại: Public candidate verification, live smoke khi thực sự cần model; điều tra lỗi percent cũ; temporal/status guard cho SQL do model sinh; JOIN chỉ sau chứng minh cardinality; offline container trước freeze. Không training lại để giải quyết coverage do policy.
 
 Public v3.1 local đã hoàn tất: 0 đáp án mới, file trùng v3.0; chưa đủ để phát hành v3.1 hoặc nộp lại. Monthly có1 candidate sau Fast, từ chối do README role chưa được chứng minh. Chốt theo yêu cầu tiết kiệm limit; bước tiếp theo là spec structured intent/period extraction + compiler/guard, đo Train trước khi cần Colab. Chi tiết hiện trạng ở ROADMAP cuối phiên.
+
+## 04/11/2026 — Structured intent shadow probe
+
+Đã chuẩn bị spec, strict JSON parser, runner và14 cases Train-24/synthetic. Mục tiêu phân biệt full_month với MTD same-period trước khi viết compiler mới; chưa tích hợp extractor vào pipeline. Chờ URL Colab business24 mới (URL cũ DNS failure). Xem ROADMAP cuối và `docs/plans/2026-11-04-structured-intent-probe.md`; không training hoặc nộp lại submission hiện tại.
