@@ -1,0 +1,133 @@
+{
+  "total": 281,
+  "stages": {
+    "full_month_computed": 8,
+    "outside_capability": 182,
+    "role_unverified": 52,
+    "metric_unverified": 18,
+    "data_rejected": 3,
+    "mtd_compiler_missing": 18
+  },
+  "stage_businesses": {
+    "full_month_computed": [
+      "biz_102",
+      "biz_104",
+      "biz_130"
+    ],
+    "outside_capability": [
+      "biz_102",
+      "biz_104",
+      "biz_105",
+      "biz_106",
+      "biz_108",
+      "biz_109",
+      "biz_111",
+      "biz_112",
+      "biz_115",
+      "biz_116",
+      "biz_117",
+      "biz_120",
+      "biz_121",
+      "biz_122",
+      "biz_123",
+      "biz_124",
+      "biz_127",
+      "biz_128",
+      "biz_129",
+      "biz_130"
+    ],
+    "role_unverified": [
+      "biz_105",
+      "biz_106",
+      "biz_108",
+      "biz_109",
+      "biz_116",
+      "biz_117",
+      "biz_120",
+      "biz_123",
+      "biz_124",
+      "biz_128"
+    ],
+    "metric_unverified": [
+      "biz_111",
+      "biz_127",
+      "biz_129"
+    ],
+    "data_rejected": [
+      "biz_112"
+    ],
+    "mtd_compiler_missing": [
+      "biz_121",
+      "biz_122",
+      "biz_130"
+    ]
+  },
+  "categories": {
+    "boolean_multimonth": {
+      "total": 14,
+      "businesses": 10,
+      "stages": {
+        "outside_capability": 14
+      }
+    },
+    "filtered": {
+      "total": 13,
+      "businesses": 7,
+      "stages": {
+        "outside_capability": 13
+      }
+    },
+    "filtered_amount": {
+      "total": 1,
+      "businesses": 1,
+      "stages": {
+        "outside_capability": 1
+      }
+    },
+    "full_month": {
+      "total": 60,
+      "businesses": 14,
+      "stages": {
+        "full_month_computed": 8,
+        "role_unverified": 34,
+        "metric_unverified": 18
+      }
+    },
+    "month_to_date": {
+      "total": 39,
+      "businesses": 9,
+      "stages": {
+        "role_unverified": 18,
+        "data_rejected": 3,
+        "mtd_compiler_missing": 18
+      }
+    },
+    "seasonal": {
+      "total": 4,
+      "businesses": 4,
+      "stages": {
+        "outside_capability": 4
+      }
+    },
+    "share": {
+      "total": 128,
+      "businesses": 16,
+      "stages": {
+        "outside_capability": 128
+      }
+    },
+    "year_over_year": {
+      "total": 22,
+      "businesses": 14,
+      "stages": {
+        "outside_capability": 22
+      }
+    }
+  },
+  "computed_correct": 8,
+  "computed_wrong": 0,
+  "network_calls": 0,
+  "production_promotion": false,
+  "scope": "Question-labelled Train-24 development diagnosis, not automatic inference/new submission. MTD is not executed. First blocker counts do not exhaust overlapping blockers.",
+  "coverage": "Partial lexical retrieval, all 281 retrieved questions reviewed. No claim to capture every spelling/intent in remaining Train. No Public questions/targets used."
+}

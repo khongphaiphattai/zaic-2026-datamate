@@ -382,3 +382,14 @@ Bước tiếp theo là prompt kiểm loại trừ trước, regression14câu v�
 ### Điều chỉnh sau review trọng tâm (04/11/2026)
 
 Đề xuất prompt-first phía trên được thay bằng `docs/plans/2026-11-04-capability-first-review.md`: kiểm cơ hội thực thi trên Train-24 → resolver/metric và compiler offline → semantic contract model–compiler → đo lợi ích model → full Train/Public. Audit sáu positive cho thấy1đã trả lời,1có thể thêm khi chuẩn hóa câu,3vướng roles/metric,1MTD chưa kiểm phép tính. Chưa sửa production hoặc gọi GPU. Không dùng pass14+24 làm bằng chứng chất lượng hoặc nới guard để cứu cột chọn sai.
+
+### Hoàn tất bước1: audit local rộng hơn (04/11/2026)
+
+Đã chốt/review281câu Train-24 còn abstain qua truy hồi rộng;99full-month/MTD,
+182ngoài phạm vi. Trong99câu:8full-month tính đúng sau chuẩn hóa thủ công
+(3business),18MTD qua tiền điều kiện nhưng chưa tính (3business),73câu vướng
+roles/metric/data/status.46tests pass;0network,production/submission không đổi.
+Spec `docs/plans/2026-11-04-growth-feasibility-audit.md`, bằng chứng và quyết
+định `artifacts/growth-feasibility/README.md`. Bước2 ưu tiên compiler MTD
+offline giữ contract hiện có, kiểm ngày cùng kỳ/cap tháng ngắn và numeric
+correctness trước sửa semantic extractor hoặc yêu cầu Colab.

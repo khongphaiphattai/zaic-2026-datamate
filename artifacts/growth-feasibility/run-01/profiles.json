@@ -1,0 +1,1071 @@
+{
+  "biz_102": {
+    "table": "don_hang_chi_tiet",
+    "revenue_column": "tong_tien",
+    "roles": {
+      "order": {
+        "selected": "ma_don_hang",
+        "meanings": [
+          "ma don"
+        ],
+        "verified": true,
+        "readme_candidates": [
+          "ma_don_hang"
+        ]
+      },
+      "date": {
+        "selected": "ngay_dat_hang",
+        "meanings": [
+          "ngay ban"
+        ],
+        "verified": true,
+        "readme_candidates": [
+          "ngay_dat_hang"
+        ]
+      },
+      "status": {
+        "selected": "trang_thai_don_hang",
+        "meanings": [
+          "trang thai don"
+        ],
+        "verified": true,
+        "readme_candidates": [
+          "trang_thai_don_hang"
+        ]
+      }
+    },
+    "roles_verified": true,
+    "metric": {
+      "allowed": true,
+      "reason": "Revenue column matches scoped README evidence"
+    },
+    "data": {
+      "valid": true,
+      "issues": {
+        "null_values": 0,
+        "blank_order_ids": 0,
+        "invalid_dates": 0,
+        "negative_or_nonfinite_money": 0,
+        "unsupported_statuses": [],
+        "conflicting_orders": 0
+      },
+      "min_date": "2025-01-01",
+      "max_date": "2026-06-16"
+    },
+    "readme_overview": "# Dữ liệu biz_102\n\nFile Excel xuất từ phần mềm bán hàng, mỗi danh sách một file (danh sách dài tách thành nhiều file, tên thêm đuôi _1, _2… hoặc đuôi năm _2025, _2026…). File đơn hàng mỗi dòng một sản phẩm, thông tin đơn lặp lại ở mọi dòng của đơn; file này không có mã sản phẩm, nối với các danh sách sản phẩm qua tên sản phẩm. Ngày dạng dd/mm/yyyy.\n",
+    "readme_sha256": "6d857ce98b60e60a31147247c7339a5d9ac935987da3042faa14fb4022e04551",
+    "scope": "Selected existing resolver only. Candidates are evidence, not automatic replacements. Data observations on an unverified role are not a semantic readiness claim."
+  },
+  "biz_104": {
+    "table": "don_hang_chi_tiet",
+    "revenue_column": "tong_tien",
+    "roles": {
+      "order": {
+        "selected": "ma_don_hang",
+        "meanings": [
+          "ma don"
+        ],
+        "verified": true,
+        "readme_candidates": [
+          "ma_don_hang"
+        ]
+      },
+      "date": {
+        "selected": "ngay_dat_hang",
+        "meanings": [
+          "ngay ban"
+        ],
+        "verified": true,
+        "readme_candidates": [
+          "ngay_dat_hang"
+        ]
+      },
+      "status": {
+        "selected": "trang_thai_don_hang",
+        "meanings": [
+          "trang thai don"
+        ],
+        "verified": true,
+        "readme_candidates": [
+          "trang_thai_don_hang"
+        ]
+      }
+    },
+    "roles_verified": true,
+    "metric": {
+      "allowed": true,
+      "reason": "Revenue column matches scoped README evidence"
+    },
+    "data": {
+      "valid": true,
+      "issues": {
+        "null_values": 0,
+        "blank_order_ids": 0,
+        "invalid_dates": 0,
+        "negative_or_nonfinite_money": 0,
+        "unsupported_statuses": [],
+        "conflicting_orders": 0
+      },
+      "min_date": "2025-04-01",
+      "max_date": "2026-06-02"
+    },
+    "readme_overview": "# Dữ liệu biz_104\n\nFile Excel xuất từ phần mềm bán hàng, mỗi danh sách một file (danh sách dài tách thành nhiều file, tên thêm đuôi _1, _2… hoặc đuôi năm _2025, _2026…). File đơn hàng mỗi dòng một sản phẩm, thông tin đơn lặp lại ở mọi dòng của đơn; file này không có mã sản phẩm, nối với các danh sách sản phẩm qua tên sản phẩm. Ngày dạng dd/mm/yyyy.\n",
+    "readme_sha256": "70955b88b93c4d4d4b5de1806ed212a9599b9cf9fb959afdc3a042c301af3ab2",
+    "scope": "Selected existing resolver only. Candidates are evidence, not automatic replacements. Data observations on an unverified role are not a semantic readiness claim."
+  },
+  "biz_105": {
+    "table": "so_ban_hang",
+    "revenue_column": "tri_gia",
+    "roles": {
+      "order": {
+        "selected": "ma_hoa_don",
+        "meanings": [
+          "ma don"
+        ],
+        "verified": true,
+        "readme_candidates": [
+          "ma_hoa_don"
+        ]
+      },
+      "date": {
+        "selected": "gio",
+        "meanings": [
+          "gio dat don (dong tra hang: luc tra)"
+        ],
+        "verified": false,
+        "readme_candidates": [
+          "ngay_giao_dich"
+        ]
+      },
+      "status": {
+        "selected": "status",
+        "meanings": [
+          "trang thai don"
+        ],
+        "verified": true,
+        "readme_candidates": [
+          "status"
+        ]
+      }
+    },
+    "roles_verified": false,
+    "metric": {
+      "allowed": false,
+      "reason": "so_ban_hang.tri_gia lacks unambiguous README evidence for merchandise revenue"
+    },
+    "data": {
+      "valid": false,
+      "issues": {
+        "null_values": 23,
+        "blank_order_ids": 0,
+        "invalid_dates": 0,
+        "negative_or_nonfinite_money": 373,
+        "unsupported_statuses": [
+          "da huy don",
+          "da lay",
+          "da xong",
+          "dang giao",
+          "doi tra",
+          "hang tra ve",
+          "hoan tra",
+          "huy",
+          "tra hang"
+        ],
+        "conflicting_orders": 350
+      },
+      "min_date": "2025-02-01",
+      "max_date": "2026-06-24"
+    },
+    "readme_overview": "# Dữ liệu biz_105\n\nSổ bán hàng ghi tay chuyển sang Excel, mỗi tháng một sheet.\n",
+    "readme_sha256": "a73db6b16c8768c2fca49d10e6e8dcb6cc1054881c63c8afcbef487ae025a326",
+    "scope": "Selected existing resolver only. Candidates are evidence, not automatic replacements. Data observations on an unverified role are not a semantic readiness claim."
+  },
+  "biz_106": {
+    "table": "danh_sach_hoa_don",
+    "revenue_column": "tong_tien_hang",
+    "roles": {
+      "order": {
+        "selected": "ma_hoa_don",
+        "meanings": [],
+        "verified": false,
+        "readme_candidates": []
+      },
+      "date": {
+        "selected": "thoi_gian_tao",
+        "meanings": [],
+        "verified": false,
+        "readme_candidates": []
+      },
+      "status": {
+        "selected": "trang_thai",
+        "meanings": [],
+        "verified": false,
+        "readme_candidates": []
+      }
+    },
+    "roles_verified": false,
+    "metric": {
+      "allowed": false,
+      "reason": "danh_sach_hoa_don.tong_tien_hang lacks unambiguous README evidence for merchandise revenue"
+    },
+    "data": {
+      "valid": false,
+      "issues": {
+        "null_values": 0,
+        "blank_order_ids": 0,
+        "invalid_dates": 0,
+        "negative_or_nonfinite_money": 0,
+        "unsupported_statuses": [
+          "hoan thanh",
+          "hoan tra",
+          "huy don",
+          "tra lai",
+          "xong"
+        ],
+        "conflicting_orders": 0
+      },
+      "min_date": "2025-02-01",
+      "max_date": "2026-09-14"
+    },
+    "readme_overview": "# Dữ liệu biz_106\n\nFile máy POS xuất ra.\n",
+    "readme_sha256": "f9a2ed4a39f784cc16180f013a2f56ae44b7aab33e5fbaa4899af8c54bbb3515",
+    "scope": "Selected existing resolver only. Candidates are evidence, not automatic replacements. Data observations on an unverified role are not a semantic readiness claim."
+  },
+  "biz_108": {
+    "table": "danh_sach_hoa_don",
+    "revenue_column": "tong_tien_hang",
+    "roles": {
+      "order": {
+        "selected": "ma_hoa_don",
+        "meanings": [
+          "ma don"
+        ],
+        "verified": true,
+        "readme_candidates": [
+          "ma_hoa_don"
+        ]
+      },
+      "date": {
+        "selected": "thoi_gian_tao",
+        "meanings": [
+          "thoi diem dat don (ngay gio)"
+        ],
+        "verified": false,
+        "readme_candidates": [
+          "thoi_gian"
+        ]
+      },
+      "status": {
+        "selected": "trang_thai",
+        "meanings": [
+          "trang thai don"
+        ],
+        "verified": true,
+        "readme_candidates": [
+          "trang_thai"
+        ]
+      }
+    },
+    "roles_verified": false,
+    "metric": {
+      "allowed": false,
+      "reason": "danh_sach_hoa_don.tong_tien_hang lacks unambiguous README evidence for merchandise revenue"
+    },
+    "data": {
+      "valid": false,
+      "issues": {
+        "null_values": 0,
+        "blank_order_ids": 0,
+        "invalid_dates": 0,
+        "negative_or_nonfinite_money": 0,
+        "unsupported_statuses": [
+          "hoan thanh"
+        ],
+        "conflicting_orders": 0
+      },
+      "min_date": "2025-01-01",
+      "max_date": "2026-05-29"
+    },
+    "readme_overview": "# Dữ liệu biz_108\n\nFile Excel xuất từ phần mềm bán hàng, mỗi danh sách một file (danh sách dài tách thành nhiều file, tên thêm đuôi _1, _2… hoặc đuôi năm _2025, _2026…), nối với nhau qua mã. Ngày dạng dd/mm/yyyy.\n",
+    "readme_sha256": "47a853ffb79a0449190a5e331b209977a3a4b323943521c0d28037d01397e9c9",
+    "scope": "Selected existing resolver only. Candidates are evidence, not automatic replacements. Data observations on an unverified role are not a semantic readiness claim."
+  },
+  "biz_109": {
+    "table": "danh_sach_hoa_don_chi_tiet",
+    "revenue_column": "thanh_tien",
+    "roles": {
+      "order": {
+        "selected": "ma_hoa_don",
+        "meanings": [],
+        "verified": false,
+        "readme_candidates": []
+      },
+      "date": {
+        "selected": null,
+        "meanings": [],
+        "verified": false,
+        "readme_candidates": []
+      },
+      "status": {
+        "selected": null,
+        "meanings": [],
+        "verified": false,
+        "readme_candidates": []
+      }
+    },
+    "roles_verified": false,
+    "metric": {
+      "allowed": false,
+      "reason": "danh_sach_hoa_don_chi_tiet.thanh_tien lacks unambiguous README evidence for merchandise revenue"
+    },
+    "data": {
+      "valid": false,
+      "reason": "Empty data or missing columns",
+      "min_date": null,
+      "max_date": null
+    },
+    "readme_overview": "# Dữ liệu biz_109\n\nFile máy POS xuất ra.\n",
+    "readme_sha256": "77fad305fc6460c804107b5d928570d1c3abf4d1cd3c0e5a27a3053fb5f3c0d3",
+    "scope": "Selected existing resolver only. Candidates are evidence, not automatic replacements. Data observations on an unverified role are not a semantic readiness claim."
+  },
+  "biz_111": {
+    "table": "don_hang",
+    "revenue_column": null,
+    "roles": {
+      "order": {
+        "selected": "ma_chung_tu",
+        "meanings": [
+          "ma don"
+        ],
+        "verified": true,
+        "readme_candidates": [
+          "ma_chung_tu"
+        ]
+      },
+      "date": {
+        "selected": "ngay_ban",
+        "meanings": [
+          "ngay ban"
+        ],
+        "verified": true,
+        "readme_candidates": [
+          "ngay_ban"
+        ]
+      },
+      "status": {
+        "selected": "xu_ly",
+        "meanings": [
+          "trang thai don"
+        ],
+        "verified": true,
+        "readme_candidates": [
+          "xu_ly"
+        ]
+      }
+    },
+    "roles_verified": true,
+    "metric": {
+      "allowed": false,
+      "reason": "Missing table/revenue column"
+    },
+    "data": {
+      "valid": false,
+      "reason": "Empty data or missing columns",
+      "min_date": null,
+      "max_date": null
+    },
+    "readme_overview": "# Dữ liệu biz_111\n\nDữ liệu bán hàng của tiệm, gồm vài file nối với nhau qua mã.\n",
+    "readme_sha256": "f8915c1d420a59ecad992ce62a0afe4ba1d017baf9ccf336d554ea5e9ce101a8",
+    "scope": "Selected existing resolver only. Candidates are evidence, not automatic replacements. Data observations on an unverified role are not a semantic readiness claim."
+  },
+  "biz_112": {
+    "table": "so_chi_tiet_ban_hang",
+    "revenue_column": "thanh_tien",
+    "roles": {
+      "order": {
+        "selected": "ma_don_hang",
+        "meanings": [
+          "ma don"
+        ],
+        "verified": true,
+        "readme_candidates": [
+          "ma_don_hang"
+        ]
+      },
+      "date": {
+        "selected": "ngay",
+        "meanings": [
+          "ngay ban"
+        ],
+        "verified": true,
+        "readme_candidates": [
+          "ngay"
+        ]
+      },
+      "status": {
+        "selected": "trang_thai",
+        "meanings": [
+          "trang thai don"
+        ],
+        "verified": true,
+        "readme_candidates": [
+          "trang_thai"
+        ]
+      }
+    },
+    "roles_verified": true,
+    "metric": {
+      "allowed": true,
+      "reason": "Revenue column matches scoped README evidence"
+    },
+    "data": {
+      "valid": false,
+      "issues": {
+        "null_values": 0,
+        "blank_order_ids": 0,
+        "invalid_dates": 0,
+        "negative_or_nonfinite_money": 0,
+        "unsupported_statuses": [
+          "cancel",
+          "da huy don",
+          "dang van chuyen",
+          "hoan tra",
+          "tra hang",
+          "xong"
+        ],
+        "conflicting_orders": 0
+      },
+      "min_date": "2025-04-01",
+      "max_date": "2026-07-31"
+    },
+    "readme_overview": "# Dữ liệu biz_112\n\nFile Excel xuất từ phần mềm bán hàng. Sổ chi tiết bán hàng: mỗi dòng một dòng hàng, thông tin đơn lặp lại ở mọi dòng.\n",
+    "readme_sha256": "358a56a6030c5ec3ae1507c1f771d66d61c08c3521fcbbe32df58f343d9d5878",
+    "scope": "Selected existing resolver only. Candidates are evidence, not automatic replacements. Data observations on an unverified role are not a semantic readiness claim."
+  },
+  "biz_116": {
+    "table": "bao_cao_ban_hang_so_chi_tiet_ban_hang",
+    "revenue_column": "thanh_tien",
+    "roles": {
+      "order": {
+        "selected": "ma_don_hang",
+        "meanings": [],
+        "verified": false,
+        "readme_candidates": []
+      },
+      "date": {
+        "selected": "ngay",
+        "meanings": [],
+        "verified": false,
+        "readme_candidates": []
+      },
+      "status": {
+        "selected": "trang_thai",
+        "meanings": [],
+        "verified": false,
+        "readme_candidates": []
+      }
+    },
+    "roles_verified": false,
+    "metric": {
+      "allowed": false,
+      "reason": "bao_cao_ban_hang_so_chi_tiet_ban_hang.thanh_tien lacks unambiguous README evidence for merchandise revenue"
+    },
+    "data": {
+      "valid": false,
+      "issues": {
+        "null_values": 0,
+        "blank_order_ids": 0,
+        "invalid_dates": 0,
+        "negative_or_nonfinite_money": 0,
+        "unsupported_statuses": [
+          "dang van chuyen",
+          "khach huy",
+          "khong giao duoc",
+          "ok",
+          "thanh cong",
+          "tra hang"
+        ],
+        "conflicting_orders": 0
+      },
+      "min_date": "2025-05-01",
+      "max_date": "2026-09-03"
+    },
+    "readme_overview": "# Dữ liệu biz_116\n\nFile Excel xuất từ phần mềm bán hàng, mỗi báo cáo, danh sách một file hoặc một sheet. Sổ chi tiết bán hàng: mỗi dòng một dòng hàng, thông tin đơn lặp lại ở mọi dòng của đơn; sổ không có mã hàng, nối với danh sách hàng hóa qua tên hàng hóa. Ngày dạng dd/mm/yyyy.\n",
+    "readme_sha256": "e0faa6edace43bad6e8db0a90dfe716eb09cdd38abb89ecdce3a926850cc3f1c",
+    "scope": "Selected existing resolver only. Candidates are evidence, not automatic replacements. Data observations on an unverified role are not a semantic readiness claim."
+  },
+  "biz_117": {
+    "table": "so_ban_hang",
+    "revenue_column": "tien",
+    "roles": {
+      "order": {
+        "selected": "ma_phieu",
+        "meanings": [
+          "ma don"
+        ],
+        "verified": true,
+        "readme_candidates": [
+          "ma_phieu"
+        ]
+      },
+      "date": {
+        "selected": "gio",
+        "meanings": [
+          "gio dat don (dong tra hang: luc tra)"
+        ],
+        "verified": false,
+        "readme_candidates": [
+          "ngay_lap"
+        ]
+      },
+      "status": {
+        "selected": "ghi_chu_tt",
+        "meanings": [
+          "trang thai don"
+        ],
+        "verified": true,
+        "readme_candidates": [
+          "ghi_chu_tt"
+        ]
+      }
+    },
+    "roles_verified": false,
+    "metric": {
+      "allowed": false,
+      "reason": "so_ban_hang.tien lacks unambiguous README evidence for merchandise revenue"
+    },
+    "data": {
+      "valid": false,
+      "issues": {
+        "null_values": 17,
+        "blank_order_ids": 0,
+        "invalid_dates": 0,
+        "negative_or_nonfinite_money": 131,
+        "unsupported_statuses": [
+          "da lay",
+          "dang giao",
+          "dang gui",
+          "huy",
+          "thanh cong",
+          "tra lai"
+        ],
+        "conflicting_orders": 114
+      },
+      "min_date": "2025-01-01",
+      "max_date": "2026-05-20"
+    },
+    "readme_overview": "# Dữ liệu biz_117\n\nSổ bán hàng ghi tay chuyển sang Excel, mỗi tháng một sheet.\n",
+    "readme_sha256": "0e237a73fe29dcd5a8e4aab110e8d9b6abf2fd5be9555e1f25a2a242ee463e26",
+    "scope": "Selected existing resolver only. Candidates are evidence, not automatic replacements. Data observations on an unverified role are not a semantic readiness claim."
+  },
+  "biz_120": {
+    "table": "danh_sach_hoa_don",
+    "revenue_column": "tong_tien_hang",
+    "roles": {
+      "order": {
+        "selected": "ma_hoa_don",
+        "meanings": [
+          "ma don"
+        ],
+        "verified": true,
+        "readme_candidates": [
+          "ma_hoa_don"
+        ]
+      },
+      "date": {
+        "selected": "thoi_gian_tao",
+        "meanings": [
+          "thoi diem dat don (ngay gio)"
+        ],
+        "verified": false,
+        "readme_candidates": [
+          "thoi_gian"
+        ]
+      },
+      "status": {
+        "selected": "trang_thai",
+        "meanings": [
+          "trang thai don"
+        ],
+        "verified": true,
+        "readme_candidates": [
+          "trang_thai"
+        ]
+      }
+    },
+    "roles_verified": false,
+    "metric": {
+      "allowed": false,
+      "reason": "danh_sach_hoa_don.tong_tien_hang lacks unambiguous README evidence for merchandise revenue"
+    },
+    "data": {
+      "valid": false,
+      "issues": {
+        "null_values": 0,
+        "blank_order_ids": 0,
+        "invalid_dates": 0,
+        "negative_or_nonfinite_money": 0,
+        "unsupported_statuses": [
+          "dang xu ly",
+          "huy don",
+          "ok",
+          "thanh cong",
+          "tra hang"
+        ],
+        "conflicting_orders": 0
+      },
+      "min_date": "2025-01-01",
+      "max_date": "2026-06-12"
+    },
+    "readme_overview": "# Dữ liệu biz_120\n\nFile Excel xuất từ phần mềm bán hàng, mỗi danh sách một file (danh sách dài tách thành nhiều file, tên thêm đuôi _1, _2… hoặc đuôi năm _2025, _2026…), nối với nhau qua mã. Ngày dạng dd/mm/yyyy.\n",
+    "readme_sha256": "4e6629c7ebc7470383ffeccdbffb5454ff5e14759cdb887c98d5e9fa64bd6cab",
+    "scope": "Selected existing resolver only. Candidates are evidence, not automatic replacements. Data observations on an unverified role are not a semantic readiness claim."
+  },
+  "biz_121": {
+    "table": "don_hang_chi_tiet",
+    "revenue_column": "tong_tien",
+    "roles": {
+      "order": {
+        "selected": "ma_don_hang",
+        "meanings": [
+          "ma don"
+        ],
+        "verified": true,
+        "readme_candidates": [
+          "ma_don_hang"
+        ]
+      },
+      "date": {
+        "selected": "ngay_dat_hang",
+        "meanings": [
+          "ngay ban"
+        ],
+        "verified": true,
+        "readme_candidates": [
+          "ngay_dat_hang"
+        ]
+      },
+      "status": {
+        "selected": "trang_thai_don_hang",
+        "meanings": [
+          "trang thai don"
+        ],
+        "verified": true,
+        "readme_candidates": [
+          "trang_thai_don_hang"
+        ]
+      }
+    },
+    "roles_verified": true,
+    "metric": {
+      "allowed": true,
+      "reason": "Revenue column matches scoped README evidence"
+    },
+    "data": {
+      "valid": true,
+      "issues": {
+        "null_values": 0,
+        "blank_order_ids": 0,
+        "invalid_dates": 0,
+        "negative_or_nonfinite_money": 0,
+        "unsupported_statuses": [],
+        "conflicting_orders": 0
+      },
+      "min_date": "2025-03-01",
+      "max_date": "2026-09-20"
+    },
+    "readme_overview": "# Dữ liệu biz_121\n\nFile Excel xuất từ phần mềm bán hàng. File đơn hàng mỗi dòng một sản phẩm.\n",
+    "readme_sha256": "f1f925a1e0ae764824cab5aa55e1a4c91cafb65814af8e92ae7742974bf670d3",
+    "scope": "Selected existing resolver only. Candidates are evidence, not automatic replacements. Data observations on an unverified role are not a semantic readiness claim."
+  },
+  "biz_122": {
+    "table": "don_hang_chi_tiet",
+    "revenue_column": "tong_tien",
+    "roles": {
+      "order": {
+        "selected": "ma_don_hang",
+        "meanings": [
+          "ma don"
+        ],
+        "verified": true,
+        "readme_candidates": [
+          "ma_don_hang"
+        ]
+      },
+      "date": {
+        "selected": "ngay_dat_hang",
+        "meanings": [
+          "ngay ban"
+        ],
+        "verified": true,
+        "readme_candidates": [
+          "ngay_dat_hang"
+        ]
+      },
+      "status": {
+        "selected": "trang_thai_don_hang",
+        "meanings": [
+          "trang thai don"
+        ],
+        "verified": true,
+        "readme_candidates": [
+          "trang_thai_don_hang"
+        ]
+      }
+    },
+    "roles_verified": true,
+    "metric": {
+      "allowed": true,
+      "reason": "Revenue column matches scoped README evidence"
+    },
+    "data": {
+      "valid": true,
+      "issues": {
+        "null_values": 0,
+        "blank_order_ids": 0,
+        "invalid_dates": 0,
+        "negative_or_nonfinite_money": 0,
+        "unsupported_statuses": [],
+        "conflicting_orders": 0
+      },
+      "min_date": "2025-01-01",
+      "max_date": "2026-07-17"
+    },
+    "readme_overview": "# Dữ liệu biz_122\n\nFile Excel xuất từ phần mềm bán hàng. File đơn hàng mỗi dòng một sản phẩm.\n",
+    "readme_sha256": "2ea579b13f08f31fcf21f6dca27ca35c4671bab764f4e435c593b3375e2abe51",
+    "scope": "Selected existing resolver only. Candidates are evidence, not automatic replacements. Data observations on an unverified role are not a semantic readiness claim."
+  },
+  "biz_123": {
+    "table": "don_hang",
+    "revenue_column": "tong_tien_hang",
+    "roles": {
+      "order": {
+        "selected": "ma_hoa_don",
+        "meanings": [],
+        "verified": false,
+        "readme_candidates": []
+      },
+      "date": {
+        "selected": "ngay_lap",
+        "meanings": [],
+        "verified": false,
+        "readme_candidates": []
+      },
+      "status": {
+        "selected": "tinh_trang",
+        "meanings": [],
+        "verified": false,
+        "readme_candidates": []
+      }
+    },
+    "roles_verified": false,
+    "metric": {
+      "allowed": false,
+      "reason": "don_hang.tong_tien_hang lacks unambiguous README evidence for merchandise revenue"
+    },
+    "data": {
+      "valid": false,
+      "issues": {
+        "null_values": 0,
+        "blank_order_ids": 0,
+        "invalid_dates": 0,
+        "negative_or_nonfinite_money": 0,
+        "unsupported_statuses": [
+          "cancelled",
+          "completed",
+          "returned",
+          "shipping"
+        ],
+        "conflicting_orders": 0
+      },
+      "min_date": "2025-01-01",
+      "max_date": "2026-06-28"
+    },
+    "readme_overview": "# Dữ liệu biz_123\n\nFile máy POS xuất ra.\n",
+    "readme_sha256": "75ca6deca11dcb39d204080a4b262cbdbfd0e229415dd1cccab9110160231240",
+    "scope": "Selected existing resolver only. Candidates are evidence, not automatic replacements. Data observations on an unverified role are not a semantic readiness claim."
+  },
+  "biz_124": {
+    "table": "ban_hang_hoa_don",
+    "revenue_column": "tien_hang_truoc_giam",
+    "roles": {
+      "order": {
+        "selected": "order_id",
+        "meanings": [],
+        "verified": false,
+        "readme_candidates": []
+      },
+      "date": {
+        "selected": "ngay_ban",
+        "meanings": [],
+        "verified": false,
+        "readme_candidates": []
+      },
+      "status": {
+        "selected": "trang_thai",
+        "meanings": [],
+        "verified": false,
+        "readme_candidates": []
+      }
+    },
+    "roles_verified": false,
+    "metric": {
+      "allowed": false,
+      "reason": "ban_hang_hoa_don.tien_hang_truoc_giam lacks unambiguous README evidence for merchandise revenue"
+    },
+    "data": {
+      "valid": false,
+      "issues": {
+        "null_values": 0,
+        "blank_order_ids": 0,
+        "invalid_dates": 0,
+        "negative_or_nonfinite_money": 0,
+        "unsupported_statuses": [
+          "da giao",
+          "dang van chuyen",
+          "doi tra",
+          "khong giao duoc"
+        ],
+        "conflicting_orders": 0
+      },
+      "min_date": "2025-01-01",
+      "max_date": "2026-05-25"
+    },
+    "readme_overview": "# Dữ liệu biz_124\n\nChủ tiệm gửi dữ liệu từ ba nguồn: file Excel xuất từ phần mềm bán hàng (tên file bắt đầu BanHang_, mỗi danh sách một file, danh sách dài tách thành nhiều file đánh số _1, _2…), sổ chủ tiệm tự ghi trên Excel (SoTay_), và file tồn kho CSV. Các file nối với nhau qua mã hoá đơn, mã hàng; sổ tay không có mã hàng, nối qua tên hàng. Tên cột mỗi file đặt theo cách của tiệm.\n",
+    "readme_sha256": "a84ebff9b52edcc0c5e68793e8e15cdf8852d63d6b116617b082febc4846aa54",
+    "scope": "Selected existing resolver only. Candidates are evidence, not automatic replacements. Data observations on an unverified role are not a semantic readiness claim."
+  },
+  "biz_127": {
+    "table": "don_hang",
+    "revenue_column": "tong_don",
+    "roles": {
+      "order": {
+        "selected": "ma_chung_tu",
+        "meanings": [
+          "ma don"
+        ],
+        "verified": true,
+        "readme_candidates": [
+          "ma_chung_tu"
+        ]
+      },
+      "date": {
+        "selected": "ngay",
+        "meanings": [
+          "ngay ban"
+        ],
+        "verified": true,
+        "readme_candidates": [
+          "ngay"
+        ]
+      },
+      "status": {
+        "selected": "tinh_trang",
+        "meanings": [
+          "trang thai don"
+        ],
+        "verified": true,
+        "readme_candidates": [
+          "tinh_trang"
+        ]
+      }
+    },
+    "roles_verified": true,
+    "metric": {
+      "allowed": false,
+      "reason": "don_hang.tong_don lacks unambiguous README evidence for merchandise revenue"
+    },
+    "data": {
+      "valid": false,
+      "issues": {
+        "null_values": 0,
+        "blank_order_ids": 0,
+        "invalid_dates": 0,
+        "negative_or_nonfinite_money": 0,
+        "unsupported_statuses": [
+          "cancelled",
+          "completed",
+          "returned",
+          "shipping"
+        ],
+        "conflicting_orders": 0
+      },
+      "min_date": "2025-03-01",
+      "max_date": "2026-07-28"
+    },
+    "readme_overview": "# Dữ liệu biz_127\n\nDữ liệu bán hàng của tiệm, gồm vài file nối với nhau qua mã.\n",
+    "readme_sha256": "5870360d102d5a33b113a6a42432aad9ceac93d0c46834e380065bf4c091246b",
+    "scope": "Selected existing resolver only. Candidates are evidence, not automatic replacements. Data observations on an unverified role are not a semantic readiness claim."
+  },
+  "biz_128": {
+    "table": "danh_sach_hoa_don",
+    "revenue_column": "tong_tien_hang",
+    "roles": {
+      "order": {
+        "selected": "ma_hoa_don",
+        "meanings": [
+          "ma don"
+        ],
+        "verified": true,
+        "readme_candidates": [
+          "ma_hoa_don"
+        ]
+      },
+      "date": {
+        "selected": "thoi_gian_tao",
+        "meanings": [
+          "thoi diem dat don (ngay gio)"
+        ],
+        "verified": false,
+        "readme_candidates": [
+          "thoi_gian"
+        ]
+      },
+      "status": {
+        "selected": "trang_thai",
+        "meanings": [
+          "trang thai don"
+        ],
+        "verified": true,
+        "readme_candidates": [
+          "trang_thai"
+        ]
+      }
+    },
+    "roles_verified": false,
+    "metric": {
+      "allowed": false,
+      "reason": "danh_sach_hoa_don.tong_tien_hang lacks unambiguous README evidence for merchandise revenue"
+    },
+    "data": {
+      "valid": false,
+      "issues": {
+        "null_values": 0,
+        "blank_order_ids": 0,
+        "invalid_dates": 0,
+        "negative_or_nonfinite_money": 0,
+        "unsupported_statuses": [
+          "doi tra",
+          "hang tra ve",
+          "huy",
+          "huy don",
+          "thanh cong",
+          "xong"
+        ],
+        "conflicting_orders": 0
+      },
+      "min_date": "2025-04-01",
+      "max_date": "2026-09-07"
+    },
+    "readme_overview": "# Dữ liệu biz_128\n\nFile Excel xuất từ phần mềm bán hàng, mỗi danh sách một file (danh sách dài tách thành nhiều file, tên thêm đuôi _1, _2… hoặc đuôi năm _2025, _2026…), nối với nhau qua mã. Ngày dạng dd/mm/yyyy.\n",
+    "readme_sha256": "4a3bf5e4ad896fda5a8a3949c0ffb0cdc77c235579beb41dc4475a3372c97066",
+    "scope": "Selected existing resolver only. Candidates are evidence, not automatic replacements. Data observations on an unverified role are not a semantic readiness claim."
+  },
+  "biz_129": {
+    "table": "don_hang",
+    "revenue_column": null,
+    "roles": {
+      "order": {
+        "selected": "so_phieu",
+        "meanings": [
+          "ma don"
+        ],
+        "verified": true,
+        "readme_candidates": [
+          "so_phieu"
+        ]
+      },
+      "date": {
+        "selected": "ngay_ban",
+        "meanings": [
+          "ngay ban"
+        ],
+        "verified": true,
+        "readme_candidates": [
+          "ngay_ban"
+        ]
+      },
+      "status": {
+        "selected": "tinh_trang_don",
+        "meanings": [
+          "trang thai don"
+        ],
+        "verified": true,
+        "readme_candidates": [
+          "tinh_trang_don"
+        ]
+      }
+    },
+    "roles_verified": true,
+    "metric": {
+      "allowed": false,
+      "reason": "Missing table/revenue column"
+    },
+    "data": {
+      "valid": false,
+      "reason": "Empty data or missing columns",
+      "min_date": null,
+      "max_date": null
+    },
+    "readme_overview": "# Dữ liệu biz_129\n\nDữ liệu bán hàng của tiệm, gồm vài file nối với nhau qua mã.\n",
+    "readme_sha256": "7fcf56e75836f707a6041995158a4c309caa828f704cbc46c23685e873b7a348",
+    "scope": "Selected existing resolver only. Candidates are evidence, not automatic replacements. Data observations on an unverified role are not a semantic readiness claim."
+  },
+  "biz_130": {
+    "table": "so_chi_tiet_ban_hang",
+    "revenue_column": "thanh_tien",
+    "roles": {
+      "order": {
+        "selected": "ma_don_hang",
+        "meanings": [
+          "ma don"
+        ],
+        "verified": true,
+        "readme_candidates": [
+          "ma_don_hang"
+        ]
+      },
+      "date": {
+        "selected": "ngay",
+        "meanings": [
+          "ngay ban"
+        ],
+        "verified": true,
+        "readme_candidates": [
+          "ngay"
+        ]
+      },
+      "status": {
+        "selected": "trang_thai",
+        "meanings": [
+          "trang thai don"
+        ],
+        "verified": true,
+        "readme_candidates": [
+          "trang_thai"
+        ]
+      }
+    },
+    "roles_verified": true,
+    "metric": {
+      "allowed": true,
+      "reason": "Revenue column matches scoped README evidence"
+    },
+    "data": {
+      "valid": true,
+      "issues": {
+        "null_values": 0,
+        "blank_order_ids": 0,
+        "invalid_dates": 0,
+        "negative_or_nonfinite_money": 0,
+        "unsupported_statuses": [],
+        "conflicting_orders": 0
+      },
+      "min_date": "2025-02-01",
+      "max_date": "2026-08-29"
+    },
+    "readme_overview": "# Dữ liệu biz_130\n\nFile Excel xuất từ phần mềm bán hàng. Sổ chi tiết bán hàng: mỗi dòng một dòng hàng, thông tin đơn lặp lại ở mọi dòng.\n",
+    "readme_sha256": "0793980b1f0ed2d6b7810ed340071d0b511b65c63610f23d7f8c3b1d0cb7cb42",
+    "scope": "Selected existing resolver only. Candidates are evidence, not automatic replacements. Data observations on an unverified role are not a semantic readiness claim."
+  }
+}

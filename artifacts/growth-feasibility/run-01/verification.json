@@ -1,0 +1,32 @@
+{
+  "verified": true,
+  "question_count": 281,
+  "selection_and_result_ids_order_match": true,
+  "frozen_sources_match": true,
+  "stage_counts_recomputed": true,
+  "computed_full_month_correct": 8,
+  "computed_full_month_wrong": 0,
+  "computed_businesses": [
+    "biz_102",
+    "biz_104",
+    "biz_130"
+  ],
+  "mtd_ready_not_computed": 18,
+  "mtd_businesses": [
+    "biz_121",
+    "biz_122",
+    "biz_130"
+  ],
+  "input_file_count": 120,
+  "input_files_sha256": "a92a705ff2bc9789551bf3f9f2edf6fa2c99c975612729f2ce2ae6cdfa0625e2",
+  "submission_sha256": "288ed868fde9175d36afd8995cdaf0e2c5f978a716be5c2a845f35c5e89afb9f",
+  "tests": {
+    "passed": 46,
+    "seconds": 0.91,
+    "command": ".venv/bin/python -m pytest tests/test_growth_feasibility.py tests/test_monthly_growth.py tests/test_intent_probe.py -q",
+    "warnings": "One pandas date-inference warning from deliberate invalid-date fixture; no failing tests."
+  },
+  "network_calls": 0,
+  "production_source_changed": false,
+  "scope": "Diagnostic answers use question-only annotations; not new automatic answers or Public improvement. MTD values/correctness remain null."
+}

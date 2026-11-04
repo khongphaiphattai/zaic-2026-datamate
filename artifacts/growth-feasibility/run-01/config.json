@@ -1,0 +1,33 @@
+{
+  "sources": {
+    "/home/pt/AI Challenge/scripts/audit_growth_feasibility.py": "d73e2bbd5fc18d5a26989aa96d68c8712b50f68dfc3238ca0b5e4835645fba2a",
+    "artifacts/selective-evaluation/split.json": "ba0a70ea94ecf36c6d74b308ba7bcf29358f1ec693fc6cf73167c0e59b6c4ffa",
+    "artifacts/growth-feasibility/cases.json": "7e62077f90c2c5c4da21d3e47bcbfbce2140f4b3b77918866ca5f3a0c75b9ee7",
+    "artifacts/growth-feasibility/manifest.json": "67966f2e3988fbfca8187d0e7bb5c1a1008174b5bc99c9521806365d7628f950",
+    "artifacts/v31-growth-train/trace.jsonl": "a87a673e728bdd5fc8f54dbbf0bd6f0c57aba12b0fe8c861999c70e3b1af2b29",
+    "src/zaic_2026_datamate/monthly_growth.py": "0fe37f77beb08c470c91127aa7b79910d7526c1e4517fb44177a6d99c0d26890",
+    "src/zaic_2026_datamate/intent_parser.py": "5168704acf46a4a3309488a8ad7e33fe42185e928bce23957db001ba3f690a68",
+    "src/zaic_2026_datamate/intent_probe.py": "66785e799b8fe99bc6e832e317074dc3df3d696855c569b82bc8a9ed631f4190",
+    "src/zaic_2026_datamate/revenue_metric.py": "b65da3cf88ee0390ebc5428fba10b2c3455d9ef43d920fe0af65ff00949105c0",
+    "src/zaic_2026_datamate/data_loader.py": "4e157d81bfe5a9af894ceb3c1649d909d0c48db73d7b80091df602d9999fe256",
+    "src/zaic_2026_datamate/evaluation.py": "eac5e645ede273c3c6effe7f12ccdd80302ceabca402b92e8df74986fdc4170a"
+  },
+  "manifest": {
+    "baseline_trace": "artifacts/v31-growth-train/trace.jsonl",
+    "baseline_trace_sha256": "a87a673e728bdd5fc8f54dbbf0bd6f0c57aba12b0fe8c861999c70e3b1af2b29",
+    "cases_sha256": "7e62077f90c2c5c4da21d3e47bcbfbce2140f4b3b77918866ca5f3a0c75b9ee7",
+    "selection": "SFT-seen-24 + abstain; accent-normalized question matches (doanh thu|dthu) AND (tang|giam|thay doi|hon hay kem|chenh|%|phan tr).",
+    "coverage": "Partial lexical retrieval, all 281 retrieved questions reviewed. No claim to capture every spelling/intent in remaining Train. No Public questions/targets used.",
+    "labels": "Question/as_of only; generated provisional groups then reviewed every retrieved question and corrected share/filtered/boolean categories before execution. No numeric target in cases.",
+    "counts": {
+      "full_month": 60,
+      "year_over_year": 22,
+      "filtered": 13,
+      "month_to_date": 39,
+      "boolean_multimonth": 14,
+      "seasonal": 4,
+      "share": 128,
+      "filtered_amount": 1
+    }
+  }
+}
