@@ -1,0 +1,12 @@
+{
+  "sha256": {
+    "submission.jsonl": "8c2c06b47b0033a92376a2c01da04e9a92b1a38decb02a494dd5ae6dcadca7f7",
+    "artifacts/v31-status-public/trace.jsonl": "4975925f71951f1a47886f3335d14a317295331347dd4c8037eba13a1a3fde06",
+    "src/zaic_2026_datamate/data_loader.py": "4e157d81bfe5a9af894ceb3c1649d909d0c48db73d7b80091df602d9999fe256",
+    "src/zaic_2026_datamate/intent_parser.py": "5168704acf46a4a3309488a8ad7e33fe42185e928bce23957db001ba3f690a68",
+    "data/train/train/rulebook.md": "740267bccba29df70f745bc39968bbec5b3e62dada2c858c45314f3ec723d113",
+    "data/train/train/data/biz_105/README.md": "a73db6b16c8768c2fca49d10e6e8dcb6cc1054881c63c8afcbef487ae025a326",
+    "data/train/train/data/biz_117/README.md": "0e237a73fe29dcd5a8e4aab110e8d9b6abf2fd5be9555e1f25a2a242ee463e26"
+  },
+  "coverage": "partial: trace/SQL reproducibility and Train date-only negative control, not complete semantic audit"
+}

@@ -1,0 +1,2118 @@
+{
+  "dev_001": {
+    "readme": "# Dữ liệu dev_001\n\nFile Excel xuất từ phần mềm bán hàng. Sổ chi tiết bán hàng: mỗi dòng một dòng hàng, thông tin đơn lặp lại ở mọi dòng.\n\n## File\n- `So_chi_tiet_ban_hang.xlsx` (xlsx)\n- `Danh sách hàng hóa.xlsx` (xlsx)\n\n## Cột trong `So_chi_tiet_ban_hang.xlsx`\n- **Ngày**: ngày bán\n- **Mã đơn hàng**: mã đơn\n- **Tên hàng hóa**: tên hàng\n- **Đơn vị tính**: đơn vị tính\n- **Số lượng**: số lượng\n- **Đơn giá**: đơn giá\n- **Thành tiền**: thành tiền sau giảm\n- **Trạng thái**: trạng thái đơn\n- **Số lượng quy đổi**: số lượng đã đổi ra đơn vị cơ bản\n- **Khách hàng**: tên khách (Khách lẻ nếu không lưu)\n\n## Cột trong `Danh sách hàng hóa.xlsx`\n- **Mã hàng hóa**: mã hàng\n- **Tên hàng hóa**: tên\n- **Nhóm hàng hóa**: nhóm hàng\n- **Đơn vị tính**: đơn vị cơ bản\n- **Giá bán**: giá bán hiện tại\n- **Giá vốn**: giá vốn\n\n## Quy ước\n- Dữ liệu có đến hết 08/07/2026.\n- **Quy đổi đơn vị**: số lượng ghi theo đơn vị của dòng:\n  - Coca Cola 330ml: 1 lốc = 6 lon\n  - Coca Cola 330ml: 1 thùng = 24 lon\n  - Pepsi 330ml: 1 lốc = 6 lon\n  - Pepsi 330ml: 1 thùng = 24 lon\n  - Sting dâu 330ml: 1 lốc = 6 chai\n  - Sting dâu 330ml: 1 thùng = 24 chai\n  - Red Bull 250ml: 1 lốc = 6 lon\n  - Red Bull 250ml: 1 thùng = 24 lon\n  - Trà xanh 0 độ 455ml: 1 lốc = 6 chai\n  - Trà xanh 0 độ 455ml: 1 thùng = 24 chai\n  - Nước suối Aquafina 500ml: 1 lốc = 6 chai\n  - Nước suối Aquafina 500ml: 1 thùng = 24 chai\n  - Nước suối Lavie 1.5L: 1 lốc = 6 chai\n  - Nước suối Lavie 1.5L: 1 thùng = 12 chai\n  - Bia Tiger 330ml: 1 lốc = 6 lon\n  - Bia Tiger 330ml: 1 thùng = 24 lon\n  - Bia Sài Gòn Special 330ml: 1 lốc = 6 lon\n  - Bia Sài Gòn Special 330ml: 1 thùng = 24 lon\n  - Bia Heineken 330ml: 1 lốc = 6 lon\n  - Bia Heineken 330ml: 1 thùng = 24 lon\n  - Sữa tươi Vinamilk 180ml: 1 lốc = 4 hộp\n  - Sữa tươi Vinamilk 180ml: 1 thùng = 48 hộp\n  - Sữa TH true MILK 180ml: 1 lốc = 4 hộp\n  - Sữa TH true MILK 180ml: 1 thùng = 48 hộp\n  - Sữa đặc Ông Thọ 380g: 1 thùng = 48 hộp\n  - Sữa chua Vinamilk có đường: 1 lốc = 4 hộp\n  - Sữa chua Vinamilk có đường: 1 thùng = 48 hộp\n  - Yakult 65ml: 1 lốc = 5 chai\n  - Yakult 65ml: 1 thùng = 50 chai\n  - Mì Hảo Hảo tôm chua cay: 1 thùng = 30 gói\n  - Mì Omachi sườn hầm: 1 thùng = 30 gói\n  - Mì 3 Miền tôm hùm: 1 thùng = 30 gói\n  - Phở Vifon bò: 1 thùng = 30 gói\n  - Gạo ST25: 1 bao = 5 kg\n  - Gạo ST25: 1 bao 25kg = 25 kg\n  - Gạo thơm Jasmine: 1 bao = 5 kg\n  - Gạo thơm Jasmine: 1 bao 25kg = 25 kg\n  - Đường Biên Hòa 1kg: 1 thùng = 12 gói\n  - Muối I-ốt 500g: 1 thùng = 20 gói\n  - Bột ngọt Ajinomoto 400g: 1 thùng = 20 gói\n  - Hạt nêm Knorr 400g: 1 thùng = 20 gói\n  - Nước mắm Nam Ngư 750ml: 1 thùng = 12 chai\n  - Nước tương Maggi 700ml: 1 thùng = 12 chai\n  - Dầu ăn Tường An 1L: 1 thùng = 12 chai\n  - Dầu ăn Simply 2L: 1 thùng = 6 chai\n  - Tương ớt Chinsu 250g: 1 thùng = 24 chai\n  - Trứng gà so: 1 vỉ = 10 quả\n  - Trứng gà so: 1 hộp 30 = 30 quả\n  - Xúc xích Vissan 5 cây: 1 thùng = 20 gói\n  - Cá hộp 3 Cô Gái 155g: 1 lốc = 10 hộp\n  - Đậu phộng rang muối 200g: 1 thùng = 20 gói\n  - Snack Oishi tôm cay 40g: 1 thùng = 50 gói\n  - Snack Lay's vị tự nhiên 56g: 1 thùng = 32 gói\n  - Bánh Oreo 133g: 1 lốc = 12 gói\n  - Bánh Chocopie 12 cái: 1 thùng = 8 hộp\n  - Bánh quy Cosy 200g: 1 thùng = 20 gói\n  - Kẹo Alpenliebe 100g: 1 thùng = 40 gói\n  - Kẹo cao su Doublemint: 1 lốc = 20 vỉ\n  - Hạt hướng dương 200g: 1 thùng = 20 gói\n  - Bột giặt OMO 3kg: 1 thùng = 4 gói\n  - Nước giặt Ariel 3.2L: 1 thùng = 4 chai\n  - Nước rửa chén Sunlight 750g: 1 thùng = 12 chai\n  - Nước lau sàn Sunlight 1L: 1 thùng = 12 chai\n  - Kem đánh răng P/S 180g: 1 thùng = 36 hộp\n  - Bàn chải Colgate: 1 lốc = 12 cái\n  - Dầu gội Clear 630g: 1 thùng = 6 chai\n  - Sữa tắm Lifebuoy 850g: 1 thùng = 6 chai\n  - Xà bông Lifebuoy 90g: 1 lốc = 6 cục\n  - Xà bông Lifebuoy 90g: 1 thùng = 72 cục\n  - Giấy vệ sinh Pulppy 10 cuộn: 1 thùng = 6 lốc\n  - Khăn giấy Tempo 10 gói: 1 thùng = 12 lốc\n  - Băng vệ sinh Diana 8 miếng: 1 thùng = 48 gói\n  - Tã Bobby M 32 miếng: 1 thùng = 4 gói\n  - Thuốc lá Vinataba: 1 cây = 10 gói\n  - Thuốc lá Jet: 1 cây = 10 gói\n  - Pin Panasonic AA: 1 hộp = 12 vỉ\n  - Nhang Quảng Trí bó: 1 thùng = 20 bó\n",
+    "tables": {
+      "danh_s_ich_h_ang_h_a": {
+        "rows": 60,
+        "columns": [
+          "vi_tri",
+          "ma_hang_hoa",
+          "dinh_muc_ton_toi_da",
+          "duoc_ban_truc_tiep",
+          "ghi_chu",
+          "thuoc_tinh",
+          "ten_hang_hoa",
+          "ma_barcode",
+          "mo_ta_san_pham",
+          "ma_hh_lien_quan",
+          "bao_hanh",
+          "nhom_hang_hoa",
+          "don_vi_tinh",
+          "trong_luong",
+          "dinh_muc_ton_toi_thieu",
+          "mau_ghi_chu",
+          "gia_ban",
+          "hinh_anh",
+          "gia_von"
+        ]
+      },
+      "danh_s_ich_h_ang_h_a_sheet1": {
+        "rows": 60,
+        "columns": [
+          "vi_tri",
+          "ma_hang_hoa",
+          "dinh_muc_ton_toi_da",
+          "duoc_ban_truc_tiep",
+          "ghi_chu",
+          "thuoc_tinh",
+          "ten_hang_hoa",
+          "ma_barcode",
+          "mo_ta_san_pham",
+          "ma_hh_lien_quan",
+          "bao_hanh",
+          "nhom_hang_hoa",
+          "don_vi_tinh",
+          "trong_luong",
+          "dinh_muc_ton_toi_thieu",
+          "mau_ghi_chu",
+          "gia_ban",
+          "hinh_anh",
+          "gia_von"
+        ]
+      },
+      "so_chi_tiet_ban_hang": {
+        "rows": 90297,
+        "columns": [
+          "ngay",
+          "ma_don_hang",
+          "ten_hang_hoa",
+          "don_vi_tinh",
+          "so_luong",
+          "don_gia",
+          "thanh_tien",
+          "trang_thai",
+          "so_luong_quy_doi",
+          "khach_hang"
+        ]
+      },
+      "so_chi_tiet_ban_hang_sheet1": {
+        "rows": 90297,
+        "columns": [
+          "ngay",
+          "ma_don_hang",
+          "ten_hang_hoa",
+          "don_vi_tinh",
+          "so_luong",
+          "don_gia",
+          "thanh_tien",
+          "trang_thai",
+          "so_luong_quy_doi",
+          "khach_hang"
+        ]
+      }
+    }
+  },
+  "dev_002": {
+    "readme": "# Dữ liệu dev_002\n\nFile Excel xuất từ phần mềm bán hàng. File đơn hàng mỗi dòng một sản phẩm, thông tin đơn lặp lại ở mọi dòng của đơn; file này không có mã sản phẩm, nối với các danh sách sản phẩm qua tên sản phẩm. Ngày dạng dd/mm/yyyy.\n\nDữ liệu bán hàng xuất theo tháng, mỗi tháng một file (tách theo tháng, không theo năm): từ `BanHang_T1_2025.xlsx` đến `BanHang_T5_2026.xlsx` (17 file), các tháng cùng cột; mỗi file có sheet `DonHang_ChiTiet`.\n\n## File\n- `BanHang_T<tháng>_<năm>.xlsx` (xlsx)\n- `DanhSachQuyDoi.xlsx` (xlsx)\n\n## Cột trong `BanHang_T<tháng>_<năm>.xlsx`, sheet `DonHang_ChiTiet`\n- **Mã đơn hàng**: mã đơn\n- **Ngày đặt hàng**: ngày bán\n- **Trạng thái đơn hàng**: trạng thái đơn\n- **Tên khách hàng**: tên khách (Khách lẻ nếu không lưu)\n- **Tên sản phẩm**: tên hàng\n- **Số lượng sản phẩm**: số lượng\n- **Giá sản phẩm**: đơn giá\n- **Tổng tiền**: thành tiền sau giảm\n- **Đơn vị tính**: đơn vị tính\n\n## Cột trong `DanhSachQuyDoi.xlsx`\n- **Tên sản phẩm**: tên hàng (file chỉ có mặt hàng có đơn vị lớn)\n- **Đơn vị quy đổi**: đơn vị lớn (thùng, hộp, tấn...)\n- **Tỉ lệ quy đổi**: hệ số: số đơn vị cơ bản trong 1 đơn vị lớn\n- **Đơn vị cơ bản**: đơn vị cơ bản\n\n## Quy ước\n- Dữ liệu có đến hết 24/05/2026.\n- **Topping**: topping có thể ghi chung ô với món ở cột **Tên sản phẩm**, nối bằng \" + \", tên topping không kèm chữ \"Topping\"; số đứng trước tên topping là số phần (không ghi số là 1 phần), tiền topping ghi trong ngoặc và đã cộng vào **Tổng tiền** của dòng đó. Số lượng, giá và đơn vị của dòng là của món.\n- **Quy đổi đơn vị**: số lượng ghi theo đơn vị của dòng, hệ số quy đổi ở `DanhSachQuyDoi.xlsx`.\n",
+    "tables": {
+      "ban_hang": {
+        "rows": 84146,
+        "columns": [
+          "ma_don_hang",
+          "ngay_dat_hang",
+          "trang_thai_don_hang",
+          "ten_khach_hang",
+          "ten_san_pham",
+          "so_luong_san_pham",
+          "gia_san_pham",
+          "tong_tien",
+          "don_vi_tinh"
+        ]
+      },
+      "ban_hang_don_hang_chi_tiet": {
+        "rows": 84146,
+        "columns": [
+          "ma_don_hang",
+          "ngay_dat_hang",
+          "trang_thai_don_hang",
+          "ten_khach_hang",
+          "ten_san_pham",
+          "so_luong_san_pham",
+          "gia_san_pham",
+          "tong_tien",
+          "don_vi_tinh"
+        ]
+      },
+      "danh_sach_quy_doi": {
+        "rows": 2,
+        "columns": [
+          "ten_san_pham",
+          "don_vi_quy_doi",
+          "ti_le_quy_doi",
+          "don_vi_co_ban"
+        ]
+      },
+      "danh_sach_quy_doi_sheet1": {
+        "rows": 2,
+        "columns": [
+          "ten_san_pham",
+          "don_vi_quy_doi",
+          "ti_le_quy_doi",
+          "don_vi_co_ban"
+        ]
+      },
+      "ban_hang_t10_2025": {
+        "rows": 5248,
+        "columns": [
+          "ma_don_hang",
+          "ngay_dat_hang",
+          "trang_thai_don_hang",
+          "ten_khach_hang",
+          "ten_san_pham",
+          "so_luong_san_pham",
+          "gia_san_pham",
+          "tong_tien",
+          "don_vi_tinh"
+        ]
+      },
+      "ban_hang_t11_2025": {
+        "rows": 4982,
+        "columns": [
+          "ma_don_hang",
+          "ngay_dat_hang",
+          "trang_thai_don_hang",
+          "ten_khach_hang",
+          "ten_san_pham",
+          "so_luong_san_pham",
+          "gia_san_pham",
+          "tong_tien",
+          "don_vi_tinh"
+        ]
+      },
+      "ban_hang_t12_2025": {
+        "rows": 5123,
+        "columns": [
+          "ma_don_hang",
+          "ngay_dat_hang",
+          "trang_thai_don_hang",
+          "ten_khach_hang",
+          "ten_san_pham",
+          "so_luong_san_pham",
+          "gia_san_pham",
+          "tong_tien",
+          "don_vi_tinh"
+        ]
+      },
+      "ban_hang_t1_2025": {
+        "rows": 4867,
+        "columns": [
+          "ma_don_hang",
+          "ngay_dat_hang",
+          "trang_thai_don_hang",
+          "ten_khach_hang",
+          "ten_san_pham",
+          "so_luong_san_pham",
+          "gia_san_pham",
+          "tong_tien",
+          "don_vi_tinh"
+        ]
+      },
+      "ban_hang_t1_2026": {
+        "rows": 5029,
+        "columns": [
+          "ma_don_hang",
+          "ngay_dat_hang",
+          "trang_thai_don_hang",
+          "ten_khach_hang",
+          "ten_san_pham",
+          "so_luong_san_pham",
+          "gia_san_pham",
+          "tong_tien",
+          "don_vi_tinh"
+        ]
+      },
+      "ban_hang_t2_2025": {
+        "rows": 4538,
+        "columns": [
+          "ma_don_hang",
+          "ngay_dat_hang",
+          "trang_thai_don_hang",
+          "ten_khach_hang",
+          "ten_san_pham",
+          "so_luong_san_pham",
+          "gia_san_pham",
+          "tong_tien",
+          "don_vi_tinh"
+        ]
+      },
+      "ban_hang_t2_2026": {
+        "rows": 3599,
+        "columns": [
+          "ma_don_hang",
+          "ngay_dat_hang",
+          "trang_thai_don_hang",
+          "ten_khach_hang",
+          "ten_san_pham",
+          "so_luong_san_pham",
+          "gia_san_pham",
+          "tong_tien",
+          "don_vi_tinh"
+        ]
+      },
+      "ban_hang_t3_2025": {
+        "rows": 5588,
+        "columns": [
+          "ma_don_hang",
+          "ngay_dat_hang",
+          "trang_thai_don_hang",
+          "ten_khach_hang",
+          "ten_san_pham",
+          "so_luong_san_pham",
+          "gia_san_pham",
+          "tong_tien",
+          "don_vi_tinh"
+        ]
+      },
+      "ban_hang_t3_2026": {
+        "rows": 4949,
+        "columns": [
+          "ma_don_hang",
+          "ngay_dat_hang",
+          "trang_thai_don_hang",
+          "ten_khach_hang",
+          "ten_san_pham",
+          "so_luong_san_pham",
+          "gia_san_pham",
+          "tong_tien",
+          "don_vi_tinh"
+        ]
+      },
+      "ban_hang_t4_2025": {
+        "rows": 5309,
+        "columns": [
+          "ma_don_hang",
+          "ngay_dat_hang",
+          "trang_thai_don_hang",
+          "ten_khach_hang",
+          "ten_san_pham",
+          "so_luong_san_pham",
+          "gia_san_pham",
+          "tong_tien",
+          "don_vi_tinh"
+        ]
+      },
+      "ban_hang_t4_2026": {
+        "rows": 4744,
+        "columns": [
+          "ma_don_hang",
+          "ngay_dat_hang",
+          "trang_thai_don_hang",
+          "ten_khach_hang",
+          "ten_san_pham",
+          "so_luong_san_pham",
+          "gia_san_pham",
+          "tong_tien",
+          "don_vi_tinh"
+        ]
+      },
+      "ban_hang_t5_2025": {
+        "rows": 5568,
+        "columns": [
+          "ma_don_hang",
+          "ngay_dat_hang",
+          "trang_thai_don_hang",
+          "ten_khach_hang",
+          "ten_san_pham",
+          "so_luong_san_pham",
+          "gia_san_pham",
+          "tong_tien",
+          "don_vi_tinh"
+        ]
+      },
+      "ban_hang_t5_2026": {
+        "rows": 3839,
+        "columns": [
+          "ma_don_hang",
+          "ngay_dat_hang",
+          "trang_thai_don_hang",
+          "ten_khach_hang",
+          "ten_san_pham",
+          "so_luong_san_pham",
+          "gia_san_pham",
+          "tong_tien",
+          "don_vi_tinh"
+        ]
+      },
+      "ban_hang_t6_2025": {
+        "rows": 5143,
+        "columns": [
+          "ma_don_hang",
+          "ngay_dat_hang",
+          "trang_thai_don_hang",
+          "ten_khach_hang",
+          "ten_san_pham",
+          "so_luong_san_pham",
+          "gia_san_pham",
+          "tong_tien",
+          "don_vi_tinh"
+        ]
+      },
+      "ban_hang_t7_2025": {
+        "rows": 5251,
+        "columns": [
+          "ma_don_hang",
+          "ngay_dat_hang",
+          "trang_thai_don_hang",
+          "ten_khach_hang",
+          "ten_san_pham",
+          "so_luong_san_pham",
+          "gia_san_pham",
+          "tong_tien",
+          "don_vi_tinh"
+        ]
+      },
+      "ban_hang_t8_2025": {
+        "rows": 5377,
+        "columns": [
+          "ma_don_hang",
+          "ngay_dat_hang",
+          "trang_thai_don_hang",
+          "ten_khach_hang",
+          "ten_san_pham",
+          "so_luong_san_pham",
+          "gia_san_pham",
+          "tong_tien",
+          "don_vi_tinh"
+        ]
+      },
+      "ban_hang_t9_2025": {
+        "rows": 4992,
+        "columns": [
+          "ma_don_hang",
+          "ngay_dat_hang",
+          "trang_thai_don_hang",
+          "ten_khach_hang",
+          "ten_san_pham",
+          "so_luong_san_pham",
+          "gia_san_pham",
+          "tong_tien",
+          "don_vi_tinh"
+        ]
+      }
+    }
+  },
+  "dev_003": {
+    "readme": "# Dữ liệu dev_003\n\nChủ tiệm gửi dữ liệu từ bốn nguồn: file Excel xuất từ phần mềm bán hàng (tên file bắt đầu BanHang_), sổ chủ tiệm tự ghi trên Excel (SoTay_), file tồn kho CSV, và báo cáo tiền mặt theo ca. Các file nối với nhau qua mã hoá đơn, mã hàng; sổ tay không có mã hàng, nối qua tên hàng. Tên cột mỗi file đặt theo cách của tiệm.\n\nHóa đơn và chi tiết hóa đơn gộp chung sheet `BanHang`: mỗi dòng là một dòng hàng, thông tin hóa đơn lặp lại trên mọi dòng của cùng hóa đơn. Cột **SĐT** lấy theo danh sách khách hàng. Sheet bán hàng dài quá một file nên tách theo năm, mỗi năm một file. File và sheet: `BanHang_TongHop_2025.xlsx`: sheet `BanHang`, `BanHang_HangHoa`, `BanHang_KhachHang`, `BanHang_DonViQuyDoi`, `BanHang_LichSuGia`; `BanHang_TongHop_2026.xlsx`: sheet `BanHang`. Danh sách không có trong các file này nằm ở file riêng: `BanHang_PhieuThu.xlsx`, `SoTay_NhapHang.xlsx`, `SoTay_ChiPhi.xlsx`, `ton_kho.csv`.\n\n## File\n- `BanHang_TongHop_2025.xlsx` (xlsx)\n- `BanHang_TongHop_2026.xlsx` (xlsx)\n- `BanHang_PhieuThu.xlsx` (xlsx)\n- `SoTay_NhapHang.xlsx` (xlsx)\n- `SoTay_ChiPhi.xlsx` (xlsx)\n- `ton_kho.csv` (csv)\n- `BaoCaoCa.xlsx` (xlsx): báo cáo tiền mặt thu trong từng ca, mỗi ca một dòng: ngày, ca, mã nhân viên đứng ca, tiền mặt khách trả trong ca (gồm tiền trả nợ), tiền mặt trả lại khách trả hàng, tiền mặt ròng của ca (tiền mặt thu trừ tiền mặt hoàn khách; không gồm các khoản chi của cửa hàng).\n\n## Quy ước\n- Dữ liệu có đến hết 21/08/2026.\n- **Công nợ**: mỗi lần khách trả tiền cho một đơn là một dòng, **Tiền thu** là số tiền trả lần đó; **Tổng thanh toán** là số khách phải trả cho cả đơn; **Công nợ** là số tiền của đơn chưa thu, tính đến hết ngày cuối dữ liệu.\n- **Giá vốn**: **Giá vốn lúc bán** là giá vốn một đơn vị bán.\n- **Sổ chi phí**: các khoản chi vận hành theo tháng (tiền **Tiền chi**).\n- **Tồn kho**: **Ton kho** là tồn cuối ngày cuối có dữ liệu, theo đơn vị cơ bản.\n- **Nhập hàng**: **Giá nhập** là giá nhập một đơn vị, theo đơn vị nhập của dòng; **Thành tiền** là tiền nhập của cả dòng.\n- **Giá bán**: **Giá mới** (theo đơn vị cơ bản) áp dụng từ **Ngày áp dụng** đến trước lần đổi giá sau của cùng mặt hàng; dòng đầu mỗi mặt hàng là giá lúc bắt đầu dữ liệu (**Giá cũ** trống).\n- **Quy đổi đơn vị**: số lượng ghi theo đơn vị của dòng, hệ số quy đổi ở `BanHang_TongHop_2025.xlsx`.\n",
+    "tables": {
+      "ton_kho": {
+        "rows": 50,
+        "columns": [
+          "ton_kho",
+          "ma_sp",
+          "ten_hang",
+          "dvt"
+        ]
+      },
+      "ban_hang_phieu_thu": {
+        "rows": 62580,
+        "columns": [
+          "pttt",
+          "ma_thanh_toan",
+          "ngay_tt",
+          "ma_don",
+          "tien_thu"
+        ]
+      },
+      "ban_hang_phieu_thu_sheet1": {
+        "rows": 62580,
+        "columns": [
+          "pttt",
+          "ma_thanh_toan",
+          "ngay_tt",
+          "ma_don",
+          "tien_thu"
+        ]
+      },
+      "ban_hang_tong_hop_ban_hang": {
+        "rows": 100210,
+        "columns": [
+          "don_so",
+          "phi_ship",
+          "cong_no",
+          "tien_hang_truoc_giam",
+          "nguon",
+          "tien_giam",
+          "tong_thanh_toan",
+          "ma_nv_ban",
+          "da_tra",
+          "ngay_hd",
+          "trang_thai_giao",
+          "gio_tao_don",
+          "khach_hang_ten",
+          "ma_khach",
+          "hinh_thuc_thanh_toan",
+          "sdt",
+          "dong",
+          "dv",
+          "hang_hoa",
+          "giam_d",
+          "thanh_tien_d",
+          "gia_1_dv",
+          "barcode",
+          "sl_dv_co_ban",
+          "gia_von_luc_ban",
+          "s"
+        ]
+      },
+      "ban_hang_tong_hop": {
+        "rows": 100210,
+        "columns": [
+          "don_so",
+          "phi_ship",
+          "cong_no",
+          "tien_hang_truoc_giam",
+          "nguon",
+          "tien_giam",
+          "tong_thanh_toan",
+          "ma_nv_ban",
+          "da_tra",
+          "ngay_hd",
+          "trang_thai_giao",
+          "gio_tao_don",
+          "khach_hang_ten",
+          "ma_khach",
+          "hinh_thuc_thanh_toan",
+          "sdt",
+          "dong",
+          "dv",
+          "hang_hoa",
+          "giam_d",
+          "thanh_tien_d",
+          "gia_1_dv",
+          "barcode",
+          "sl_dv_co_ban",
+          "gia_von_luc_ban",
+          "s"
+        ]
+      },
+      "ban_hang_tong_hop_ban_hang_hang_hoa": {
+        "rows": 50,
+        "columns": [
+          "thuoc_tinh",
+          "trong_luong",
+          "nhom_hang",
+          "gia_le",
+          "ma_h",
+          "duoc_ban_truc_tiep",
+          "gia_von_hien_tai",
+          "hinh_anh_url1_url2",
+          "dvt",
+          "bao_hanh",
+          "mo_ta_san_pham",
+          "loai_hang_hoa",
+          "ton_lon_nhat",
+          "dinh_muc_ton_toi_thieu",
+          "vi_tri_ke",
+          "ma_barcode",
+          "mau_ghi_chu",
+          "ten_hang_hoa"
+        ]
+      },
+      "ban_hang_tong_hop_ban_hang_khach_hang": {
+        "rows": 220,
+        "columns": [
+          "nguoi_tao",
+          "email",
+          "sdt",
+          "dia_chi",
+          "khach_hang_mua",
+          "doi_tuong_kh",
+          "ghi_chu",
+          "ma_kh_mua",
+          "mst",
+          "kieu_khach",
+          "tong_diem",
+          "cccd",
+          "diem_hien_tai",
+          "sinh_nhat",
+          "trang_thai",
+          "cong_ty",
+          "tra_cuu_thong_tin_bo_sung"
+        ]
+      },
+      "ban_hang_tong_hop_ban_hang_don_vi_quy_doi": {
+        "rows": 2,
+        "columns": [
+          "gia_ban_theo_don_vi_quy_doi",
+          "ma_vach",
+          "bang",
+          "quy_cach"
+        ]
+      },
+      "ban_hang_tong_hop_ban_hang_lich_su_gia": {
+        "rows": 79,
+        "columns": [
+          "gia_cu",
+          "item",
+          "ma_h",
+          "ngay_ap_dung",
+          "gia_moi"
+        ]
+      },
+      "bao_cao_ca": {
+        "rows": 1078,
+        "columns": [
+          "ngay",
+          "ca",
+          "ma_nv",
+          "tien_mat_thu",
+          "tien_mat_hoan_khach",
+          "tien_mat_rong_cua_ca"
+        ]
+      },
+      "bao_cao_ca_sheet1": {
+        "rows": 1078,
+        "columns": [
+          "ngay",
+          "ca",
+          "ma_nv",
+          "tien_mat_thu",
+          "tien_mat_hoan_khach",
+          "tien_mat_rong_cua_ca"
+        ]
+      },
+      "so_tay_chi_phi": {
+        "rows": 77,
+        "columns": [
+          "ngay_mua",
+          "luu_y",
+          "tien_chi",
+          "nhom"
+        ]
+      },
+      "so_tay_chi_phi_sheet1": {
+        "rows": 77,
+        "columns": [
+          "ngay_mua",
+          "luu_y",
+          "tien_chi",
+          "nhom"
+        ]
+      },
+      "so_tay_nhap_hang": {
+        "rows": 1484,
+        "columns": [
+          "so_phieu",
+          "product",
+          "nha_cung_cap",
+          "thanh_tien",
+          "luu_y",
+          "gia_nhap",
+          "sl_nhap",
+          "dvt_nhap",
+          "ngay_nhap"
+        ]
+      },
+      "so_tay_nhap_hang_sheet1": {
+        "rows": 1484,
+        "columns": [
+          "so_phieu",
+          "product",
+          "nha_cung_cap",
+          "thanh_tien",
+          "luu_y",
+          "gia_nhap",
+          "sl_nhap",
+          "dvt_nhap",
+          "ngay_nhap"
+        ]
+      },
+      "ban_hang_tong_hop_2026": {
+        "rows": 45226,
+        "columns": [
+          "don_so",
+          "phi_ship",
+          "cong_no",
+          "tien_hang_truoc_giam",
+          "nguon",
+          "tien_giam",
+          "tong_thanh_toan",
+          "ma_nv_ban",
+          "da_tra",
+          "ngay_hd",
+          "trang_thai_giao",
+          "gio_tao_don",
+          "khach_hang_ten",
+          "ma_khach",
+          "hinh_thuc_thanh_toan",
+          "sdt",
+          "dong",
+          "dv",
+          "hang_hoa",
+          "giam_d",
+          "thanh_tien_d",
+          "gia_1_dv",
+          "barcode",
+          "sl_dv_co_ban",
+          "gia_von_luc_ban",
+          "s"
+        ]
+      }
+    }
+  },
+  "dev_004": {
+    "readme": "# Dữ liệu dev_004\n\nSổ bán hàng ghi tay chuyển sang Excel, mỗi tháng một sheet.\n\n## File\n- `SoBanHang.xlsx` (xlsx)\n- `DanhMuc.xlsx` (xlsx)\n- `TonKho.xlsx` (xlsx)\n- `SoGiaoHang.xlsx` (xlsx)\n- `SoHanNo.xlsx` (xlsx)\n- `SoNhapHang.xlsx` (xlsx)\n- `BangGia.xlsx` (xlsx)\n\n## Cột trong `SoBanHang.xlsx`\n- **Khách hàng (tên)**: tên khách (Khách lẻ nếu không lưu)\n- **Giờ**: giờ đặt đơn (dòng trả hàng: lúc trả)\n- **Thời gian**: ngày bán\n- **Ma don**: mã đơn\n- **SL bán**: số lượng\n- **dvt**: đơn vị tính\n- **Hàng bán**: tên hàng\n- **Trạng thái xử lý**: trạng thái đơn\n- **Giá 1 đv**: đơn giá\n- **Amount**: thành tiền sau giảm\n- **Tổng phiếu**: tổng tiền của cả phiếu\n\n## Cột trong `DanhMuc.xlsx`\n- **Hàng**: tên hàng (file chỉ có mặt hàng có đơn vị lớn)\n- **Hệ số**: hệ số: số đơn vị cơ bản trong 1 đơn vị lớn\n- **ĐV gốc**: đơn vị cơ bản\n- **Loại ĐV**: đơn vị lớn (thùng, hộp, tấn...)\n\n## Cột trong `TonKho.xlsx`\n- **Tồn cuối**: tồn kho (đơn vị cơ bản)\n- **ĐV gốc**: đơn vị cơ bản\n- **Tên sản phẩm**: tên hàng\n\n## Cột trong `SoGiaoHang.xlsx`\n- **Số lượng giao**: số lượng đã đổi ra đơn vị cơ bản\n- **Biển số xe**: biển số xe\n- **Lượt giao**: đợt giao (1, 2, 3)\n- **Số đơn**: mã đơn\n- **Thời gian giao**: ngày giao\n- **Hàng hóa**: tên hàng\n- **Lái xe**: tài xế\n- **ĐV gốc**: đơn vị cơ bản\n\n## Cột trong `SoHanNo.xlsx`\n- **Mã đơn hàng**: mã đơn\n- **Kỳ hạn**: số ngày được nợ\n- **Ngày phải trả**: hạn thanh toán\n\n## Cột trong `SoNhapHang.xlsx`\n- **Product**: tên hàng\n- **ĐVT**: đơn vị nhập\n- **Số phiếu**: mã phiếu nhập\n- **Ghi chú**: ghi chú\n- **Nhà cung cấp**: nhà cung cấp\n- **Thành tiền**: tiền nhập của cả dòng\n- **Giá nhập**: giá nhập một đơn vị (theo đơn vị nhập của dòng)\n- **Ngày nhập**: ngày nhập\n- **SL nhập**: số lượng nhập\n\n## Cột trong `BangGia.xlsx`\n- **Giá cũ**: giá trước lần đổi (trống ở dòng đầu mỗi mặt hàng)\n- **Ngày áp dụng**: ngày bắt đầu áp dụng giá\n- **Giá mới**: giá bán áp dụng từ ngày đó (đơn vị cơ bản)\n- **Diễn giải**: tên hàng\n\n## Quy ước\n- Dữ liệu có đến hết 10/06/2026.\n- **Trả hàng**: hàng trả ghi số lượng âm, cùng mã đơn với đơn đã bán: đơn có dòng số lượng âm là đơn có trả hàng.\n- **Tồn kho**: **Tồn cuối** là tồn cuối ngày cuối có dữ liệu, theo đơn vị cơ bản.\n- **Hạn thanh toán**: chỉ đơn bán nợ có hạn. **Ngày phải trả** là ngày khách phải trả hết đơn; **Kỳ hạn** là số ngày được nợ, tính từ ngày đặt.\n- **Giao hàng**: đơn không huỷ có ít nhất một mặt hàng nhóm cát đá, gạch, sắt thép, xi măng thì được giao tận nơi mọi mặt hàng của đơn, 1–3 đợt (**Lượt giao**); đơn khác khách tự chở, không có trong sổ giao; đơn đặt mấy ngày cuối dữ liệu có thể chưa giao. **Số lượng giao** tính theo đơn vị cơ bản.\n- **Nhập hàng**: **Giá nhập** là giá nhập một đơn vị, theo đơn vị nhập của dòng; **Thành tiền** là tiền nhập của cả dòng.\n- **Giá bán**: **Giá mới** (theo đơn vị cơ bản) áp dụng từ **Ngày áp dụng** đến trước lần đổi giá sau của cùng mặt hàng; dòng đầu mỗi mặt hàng là giá lúc bắt đầu dữ liệu (**Giá cũ** trống).\n- **Quy đổi đơn vị**: số lượng ghi theo đơn vị của dòng, hệ số quy đổi ở `DanhMuc.xlsx`.\n- **Hàng theo bó**: Ống PVC Bình Minh D32 cây 4m, Ống PVC Bình Minh D50 cây 4m, Ống PVC Bình Minh D90 cây 4m bán theo bó, 1 bó = 10 cây; khách lấy nguyên bó thì sổ ghi số bó.\n",
+    "tables": {
+      "bang_gia": {
+        "rows": 99,
+        "columns": [
+          "gia_cu",
+          "ngay_ap_dung",
+          "gia_moi",
+          "dien_giai"
+        ]
+      },
+      "bang_gia_sheet1": {
+        "rows": 99,
+        "columns": [
+          "gia_cu",
+          "ngay_ap_dung",
+          "gia_moi",
+          "dien_giai"
+        ]
+      },
+      "danh_muc": {
+        "rows": 14,
+        "columns": [
+          "hang",
+          "he_so",
+          "dv_goc",
+          "loai_dv"
+        ]
+      },
+      "danh_muc_sheet1": {
+        "rows": 14,
+        "columns": [
+          "hang",
+          "he_so",
+          "dv_goc",
+          "loai_dv"
+        ]
+      },
+      "so_ban_hang": {
+        "rows": 32896,
+        "columns": [
+          "khach_hang_ten",
+          "gio",
+          "thoi_gian",
+          "ma_don",
+          "sl_ban",
+          "dvt",
+          "hang_ban",
+          "trang_thai_xu_ly",
+          "gia_1_dv",
+          "amount",
+          "tong_phieu",
+          "sheet_name"
+        ]
+      },
+      "so_giao_hang": {
+        "rows": 28398,
+        "columns": [
+          "so_luong_giao",
+          "bien_so_xe",
+          "luot_giao",
+          "so_don",
+          "thoi_gian_giao",
+          "hang_hoa",
+          "lai_xe",
+          "dv_goc"
+        ]
+      },
+      "so_giao_hang_sheet1": {
+        "rows": 28398,
+        "columns": [
+          "so_luong_giao",
+          "bien_so_xe",
+          "luot_giao",
+          "so_don",
+          "thoi_gian_giao",
+          "hang_hoa",
+          "lai_xe",
+          "dv_goc"
+        ]
+      },
+      "so_han_no": {
+        "rows": 2568,
+        "columns": [
+          "ma_don_hang",
+          "ky_han",
+          "ngay_phai_tra"
+        ]
+      },
+      "so_han_no_sheet1": {
+        "rows": 2568,
+        "columns": [
+          "ma_don_hang",
+          "ky_han",
+          "ngay_phai_tra"
+        ]
+      },
+      "so_nhap_hang": {
+        "rows": 1070,
+        "columns": [
+          "product",
+          "dvt",
+          "so_phieu",
+          "ghi_chu",
+          "nha_cung_cap",
+          "thanh_tien",
+          "gia_nhap",
+          "ngay_nhap",
+          "sl_nhap"
+        ]
+      },
+      "so_nhap_hang_sheet1": {
+        "rows": 1070,
+        "columns": [
+          "product",
+          "dvt",
+          "so_phieu",
+          "ghi_chu",
+          "nha_cung_cap",
+          "thanh_tien",
+          "gia_nhap",
+          "ngay_nhap",
+          "sl_nhap"
+        ]
+      },
+      "ton_kho": {
+        "rows": 60,
+        "columns": [
+          "ton_cuoi",
+          "dv_goc",
+          "ten_san_pham"
+        ]
+      },
+      "ton_kho_sheet1": {
+        "rows": 60,
+        "columns": [
+          "ton_cuoi",
+          "dv_goc",
+          "ten_san_pham"
+        ]
+      }
+    }
+  },
+  "dev_005": {
+    "readme": "# Dữ liệu dev_005\n\nFile Excel xuất từ phần mềm bán hàng. File đơn hàng mỗi dòng một sản phẩm.\n\nDữ liệu bán hàng xuất theo tháng, mỗi tháng một file (tách theo tháng, không theo năm): từ `BanHang_Thang01_2025.xlsx` đến `BanHang_Thang05_2026.xlsx` (17 file), các tháng cùng cột; mỗi file có sheet `DonHang_ChiTiet`.\n\n## File\n- `BanHang_Thang<tháng>_<năm>.xlsx` (xlsx)\n- `DanhSachQuyDoi.xlsx` (xlsx)\n- `DanhSachSanPham.xlsx` (xlsx)\n- `DonNhapHang.xlsx` (xlsx)\n- `DonNhapHang_ChiTiet.xlsx` (xlsx)\n- `DonHang_Lo.xlsx` (xlsx)\n- `DanhSachThuoc.xlsx` (xlsx)\n\n## Cột trong `BanHang_Thang<tháng>_<năm>.xlsx`, sheet `DonHang_ChiTiet`\n- **Mã đơn hàng**: mã đơn\n- **Ngày đặt hàng**: ngày bán\n- **Trạng thái đơn hàng**: trạng thái đơn\n- **Tên khách hàng**: tên khách (Khách lẻ nếu không lưu)\n- **Tên sản phẩm**: tên hàng\n- **Số lượng sản phẩm**: số lượng\n- **Giá sản phẩm**: đơn giá\n- **Tổng tiền**: thành tiền sau giảm\n- **Đơn vị tính**: đơn vị tính\n\n## Cột trong `DanhSachQuyDoi.xlsx`\n- **Tên sản phẩm**: tên hàng (file chỉ có mặt hàng có đơn vị lớn)\n- **Đơn vị quy đổi**: đơn vị lớn (thùng, hộp, tấn...)\n- **Tỉ lệ quy đổi**: hệ số: 1 đơn vị lớn bằng bấy nhiêu đơn vị ngay dưới nó; số kèm tên đơn vị là tính theo đơn vị đó, chỉ có số là tính theo đơn vị cơ bản\n- **Đơn vị cơ bản**: đơn vị cơ bản\n\n## Cột trong `DanhSachSanPham.xlsx`\n- **Mã SKU**: mã hàng\n- **Tên sản phẩm**: tên\n- **Đơn vị**: đơn vị cơ bản\n- **Loại sản phẩm**: nhóm hàng\n\n## Cột trong `DonNhapHang.xlsx`\n- **Mã đơn nhập**: mã phiếu nhập\n- **Ngày nhập**: ngày nhập\n- **Mã nhà cung cấp**: mã nhà cung cấp\n\n## Cột trong `DonNhapHang_ChiTiet.xlsx`\n- **Mã đơn nhập**: mã phiếu nhập\n- **Mã SKU**: mã hàng\n- **Mã lô**: số lô\n- **Hạn sử dụng**: hạn sử dụng\n- **Số lượng nhập**: số lượng nhập (đơn vị cơ bản)\n\n## Cột trong `DonHang_Lo.xlsx`\n- **Mã đơn hàng**: mã đơn\n- **Mã lô**: số lô\n- **Số lượng**: số lượng bán lấy từ lô (đơn vị cơ bản)\n- **Số lượng trả**: số lượng khách trả lại (đơn vị cơ bản); lớn hơn 0: đơn đó có trả hàng\n\n## Cột trong `DanhSachThuoc.xlsx`\n- **Mã SKU**: mã hàng\n- **Hoạt chất**: hoạt chất (trống với thực phẩm chức năng, vật tư)\n- **Thuốc kê đơn**: thuốc kê đơn\n\n## Quy ước\n- Dữ liệu có đến hết 10/05/2026.\n- **Lô, hạn dùng**: mỗi dòng nhập là một lô, số lô không trùng. Một dòng bán có thể lấy từ nhiều lô. Hàng khách trả về lại lô đã bán.\n- **Thuốc**: **Thuốc kê đơn** đúng (TRUE/1) là thuốc kê đơn. Hoạt chất ghi không kèm hàm lượng (hàm lượng ở tên hàng); nhiều chất nối bằng \" + \".\n- **Quy đổi đơn vị**: số lượng ghi theo đơn vị của dòng, hệ số quy đổi ở `DanhSachQuyDoi.xlsx`; sản phẩm có nhiều đơn vị lớn thì hệ số ghi theo đơn vị ngay dưới.\n",
+    "tables": {
+      "ban_hang": {
+        "rows": 75970,
+        "columns": [
+          "ma_don_hang",
+          "ngay_dat_hang",
+          "trang_thai_don_hang",
+          "ten_khach_hang",
+          "ten_san_pham",
+          "so_luong_san_pham",
+          "gia_san_pham",
+          "tong_tien",
+          "don_vi_tinh"
+        ]
+      },
+      "ban_hang_don_hang_chi_tiet": {
+        "rows": 75970,
+        "columns": [
+          "ma_don_hang",
+          "ngay_dat_hang",
+          "trang_thai_don_hang",
+          "ten_khach_hang",
+          "ten_san_pham",
+          "so_luong_san_pham",
+          "gia_san_pham",
+          "tong_tien",
+          "don_vi_tinh"
+        ]
+      },
+      "danh_sach_quy_doi": {
+        "rows": 83,
+        "columns": [
+          "ten_san_pham",
+          "don_vi_quy_doi",
+          "ti_le_quy_doi",
+          "don_vi_co_ban"
+        ]
+      },
+      "danh_sach_quy_doi_sheet1": {
+        "rows": 83,
+        "columns": [
+          "ten_san_pham",
+          "don_vi_quy_doi",
+          "ti_le_quy_doi",
+          "don_vi_co_ban"
+        ]
+      },
+      "danh_sach_san_pham": {
+        "rows": 80,
+        "columns": [
+          "dinh_muc_ton_toi_thieu",
+          "ma_sku",
+          "duoc_ban_truc_tiep",
+          "ghi_chu",
+          "mau_ghi_chu",
+          "bao_hanh",
+          "ten_san_pham",
+          "ma_hh_lien_quan",
+          "mo_ta_chi_tiet",
+          "thuong_hieu",
+          "ton_lon_nhat",
+          "don_vi",
+          "thuoc_tinh",
+          "ma_vach_ean",
+          "loai_san_pham",
+          "trong_luong",
+          "vi_tri",
+          "loai_hang_hoa"
+        ]
+      },
+      "danh_sach_san_pham_sheet1": {
+        "rows": 80,
+        "columns": [
+          "dinh_muc_ton_toi_thieu",
+          "ma_sku",
+          "duoc_ban_truc_tiep",
+          "ghi_chu",
+          "mau_ghi_chu",
+          "bao_hanh",
+          "ten_san_pham",
+          "ma_hh_lien_quan",
+          "mo_ta_chi_tiet",
+          "thuong_hieu",
+          "ton_lon_nhat",
+          "don_vi",
+          "thuoc_tinh",
+          "ma_vach_ean",
+          "loai_san_pham",
+          "trong_luong",
+          "vi_tri",
+          "loai_hang_hoa"
+        ]
+      },
+      "danh_sach_thuoc": {
+        "rows": 80,
+        "columns": [
+          "ma_sku",
+          "hoat_chat",
+          "thuoc_ke_don"
+        ]
+      },
+      "danh_sach_thuoc_sheet1": {
+        "rows": 80,
+        "columns": [
+          "ma_sku",
+          "hoat_chat",
+          "thuoc_ke_don"
+        ]
+      },
+      "don_hang_lo": {
+        "rows": 77653,
+        "columns": [
+          "ma_don_hang",
+          "ma_lo",
+          "so_luong",
+          "so_luong_tra"
+        ]
+      },
+      "don_hang_lo_sheet1": {
+        "rows": 77653,
+        "columns": [
+          "ma_don_hang",
+          "ma_lo",
+          "so_luong",
+          "so_luong_tra"
+        ]
+      },
+      "don_nhap_hang": {
+        "rows": 492,
+        "columns": [
+          "ma_don_nhap",
+          "ngay_nhap",
+          "ma_nha_cung_cap"
+        ]
+      },
+      "don_nhap_hang_sheet1": {
+        "rows": 492,
+        "columns": [
+          "ma_don_nhap",
+          "ngay_nhap",
+          "ma_nha_cung_cap"
+        ]
+      },
+      "don_nhap_hang_chi_tiet": {
+        "rows": 3312,
+        "columns": [
+          "ma_don_nhap",
+          "ma_sku",
+          "ma_lo",
+          "han_su_dung",
+          "so_luong_nhap"
+        ]
+      },
+      "don_nhap_hang_chi_tiet_sheet1": {
+        "rows": 3312,
+        "columns": [
+          "ma_don_nhap",
+          "ma_sku",
+          "ma_lo",
+          "han_su_dung",
+          "so_luong_nhap"
+        ]
+      },
+      "ban_hang_thang01_2025": {
+        "rows": 4955,
+        "columns": [
+          "ma_don_hang",
+          "ngay_dat_hang",
+          "trang_thai_don_hang",
+          "ten_khach_hang",
+          "ten_san_pham",
+          "so_luong_san_pham",
+          "gia_san_pham",
+          "tong_tien",
+          "don_vi_tinh"
+        ]
+      },
+      "ban_hang_thang01_2026": {
+        "rows": 4990,
+        "columns": [
+          "ma_don_hang",
+          "ngay_dat_hang",
+          "trang_thai_don_hang",
+          "ten_khach_hang",
+          "ten_san_pham",
+          "so_luong_san_pham",
+          "gia_san_pham",
+          "tong_tien",
+          "don_vi_tinh"
+        ]
+      },
+      "ban_hang_thang02_2025": {
+        "rows": 4310,
+        "columns": [
+          "ma_don_hang",
+          "ngay_dat_hang",
+          "trang_thai_don_hang",
+          "ten_khach_hang",
+          "ten_san_pham",
+          "so_luong_san_pham",
+          "gia_san_pham",
+          "tong_tien",
+          "don_vi_tinh"
+        ]
+      },
+      "ban_hang_thang02_2026": {
+        "rows": 4339,
+        "columns": [
+          "ma_don_hang",
+          "ngay_dat_hang",
+          "trang_thai_don_hang",
+          "ten_khach_hang",
+          "ten_san_pham",
+          "so_luong_san_pham",
+          "gia_san_pham",
+          "tong_tien",
+          "don_vi_tinh"
+        ]
+      },
+      "ban_hang_thang03_2025": {
+        "rows": 4544,
+        "columns": [
+          "ma_don_hang",
+          "ngay_dat_hang",
+          "trang_thai_don_hang",
+          "ten_khach_hang",
+          "ten_san_pham",
+          "so_luong_san_pham",
+          "gia_san_pham",
+          "tong_tien",
+          "don_vi_tinh"
+        ]
+      },
+      "ban_hang_thang03_2026": {
+        "rows": 4740,
+        "columns": [
+          "ma_don_hang",
+          "ngay_dat_hang",
+          "trang_thai_don_hang",
+          "ten_khach_hang",
+          "ten_san_pham",
+          "so_luong_san_pham",
+          "gia_san_pham",
+          "tong_tien",
+          "don_vi_tinh"
+        ]
+      },
+      "ban_hang_thang04_2025": {
+        "rows": 4443,
+        "columns": [
+          "ma_don_hang",
+          "ngay_dat_hang",
+          "trang_thai_don_hang",
+          "ten_khach_hang",
+          "ten_san_pham",
+          "so_luong_san_pham",
+          "gia_san_pham",
+          "tong_tien",
+          "don_vi_tinh"
+        ]
+      },
+      "ban_hang_thang04_2026": {
+        "rows": 4664,
+        "columns": [
+          "ma_don_hang",
+          "ngay_dat_hang",
+          "trang_thai_don_hang",
+          "ten_khach_hang",
+          "ten_san_pham",
+          "so_luong_san_pham",
+          "gia_san_pham",
+          "tong_tien",
+          "don_vi_tinh"
+        ]
+      },
+      "ban_hang_thang05_2025": {
+        "rows": 4841,
+        "columns": [
+          "ma_don_hang",
+          "ngay_dat_hang",
+          "trang_thai_don_hang",
+          "ten_khach_hang",
+          "ten_san_pham",
+          "so_luong_san_pham",
+          "gia_san_pham",
+          "tong_tien",
+          "don_vi_tinh"
+        ]
+      },
+      "ban_hang_thang05_2026": {
+        "rows": 1673,
+        "columns": [
+          "ma_don_hang",
+          "ngay_dat_hang",
+          "trang_thai_don_hang",
+          "ten_khach_hang",
+          "ten_san_pham",
+          "so_luong_san_pham",
+          "gia_san_pham",
+          "tong_tien",
+          "don_vi_tinh"
+        ]
+      },
+      "ban_hang_thang06_2025": {
+        "rows": 4550,
+        "columns": [
+          "ma_don_hang",
+          "ngay_dat_hang",
+          "trang_thai_don_hang",
+          "ten_khach_hang",
+          "ten_san_pham",
+          "so_luong_san_pham",
+          "gia_san_pham",
+          "tong_tien",
+          "don_vi_tinh"
+        ]
+      },
+      "ban_hang_thang07_2025": {
+        "rows": 4846,
+        "columns": [
+          "ma_don_hang",
+          "ngay_dat_hang",
+          "trang_thai_don_hang",
+          "ten_khach_hang",
+          "ten_san_pham",
+          "so_luong_san_pham",
+          "gia_san_pham",
+          "tong_tien",
+          "don_vi_tinh"
+        ]
+      },
+      "ban_hang_thang08_2025": {
+        "rows": 4599,
+        "columns": [
+          "ma_don_hang",
+          "ngay_dat_hang",
+          "trang_thai_don_hang",
+          "ten_khach_hang",
+          "ten_san_pham",
+          "so_luong_san_pham",
+          "gia_san_pham",
+          "tong_tien",
+          "don_vi_tinh"
+        ]
+      },
+      "ban_hang_thang09_2025": {
+        "rows": 4453,
+        "columns": [
+          "ma_don_hang",
+          "ngay_dat_hang",
+          "trang_thai_don_hang",
+          "ten_khach_hang",
+          "ten_san_pham",
+          "so_luong_san_pham",
+          "gia_san_pham",
+          "tong_tien",
+          "don_vi_tinh"
+        ]
+      },
+      "ban_hang_thang10_2025": {
+        "rows": 4693,
+        "columns": [
+          "ma_don_hang",
+          "ngay_dat_hang",
+          "trang_thai_don_hang",
+          "ten_khach_hang",
+          "ten_san_pham",
+          "so_luong_san_pham",
+          "gia_san_pham",
+          "tong_tien",
+          "don_vi_tinh"
+        ]
+      },
+      "ban_hang_thang11_2025": {
+        "rows": 4548,
+        "columns": [
+          "ma_don_hang",
+          "ngay_dat_hang",
+          "trang_thai_don_hang",
+          "ten_khach_hang",
+          "ten_san_pham",
+          "so_luong_san_pham",
+          "gia_san_pham",
+          "tong_tien",
+          "don_vi_tinh"
+        ]
+      },
+      "ban_hang_thang12_2025": {
+        "rows": 4782,
+        "columns": [
+          "ma_don_hang",
+          "ngay_dat_hang",
+          "trang_thai_don_hang",
+          "ten_khach_hang",
+          "ten_san_pham",
+          "so_luong_san_pham",
+          "gia_san_pham",
+          "tong_tien",
+          "don_vi_tinh"
+        ]
+      }
+    }
+  },
+  "dev_006": {
+    "readme": "# Dữ liệu dev_006\n\nFile máy POS xuất ra.\n\n## File\n- `pos.sqlite` (sqlite)\n\n## Bảng\n`chi_nhanh`, `nhan_vien`, `khach_hang`, `nha_cung_cap`, `san_pham`, `don_vi_sp`, `phieu_nhap`, `chi_tiet_nhap`, `don_hang`, `chi_tiet_don`, `thanh_toan`, `tra_hang`, `the_kho`, `lich_su_gia`, `lo_hang`, `chi_tiet_don_lo`, `thong_tin_thuoc`\n\nMã đơn nối `don_hang` với `chi_tiet_don`. Ngày giờ dạng text.\n\n## Quy ước\n- Dữ liệu có đến hết 08/08/2026.\n- **Dòng hàng**: `chi_tiet_don.TriGia` là thành tiền của dòng (đã trừ giảm giá dòng); `chi_tiet_don.SLQuyDoi` là số lượng đã đổi ra đơn vị cơ bản.\n- **Mã tham chiếu**: `don_hang.MaCaLam` là mã ca bán hàng; `don_hang.MaKhuyenMai` là mã khuyến mãi áp cho đơn (trống: không áp); `the_kho.KieuChungTu`, `the_kho.MaChungTu` là loại và số của chứng từ gốc của dòng thẻ kho (đơn bán, phiếu nhập hoặc phiếu khách trả).\n- **Công nợ**: mỗi lần khách trả tiền cho một đơn là một dòng, `thanh_toan.SoTienThu` là số tiền trả lần đó; `don_hang.TongThanhToan` là số khách phải trả cho cả đơn.\n- **Giá vốn**: `chi_tiet_don.GiaVonLucBan` là giá vốn một đơn vị bán.\n- **Tồn kho**: mỗi dòng `the_kho.TonCuoi` là tồn sau lần nhập/bán/trả đó, theo đơn vị cơ bản; tồn tại một thời điểm là tồn ở dòng cuối của sản phẩm tính đến thời điểm đó.\n- **Lô, hạn dùng**: mỗi dòng nhập là một lô, số lô không trùng. Một dòng bán có thể lấy từ nhiều lô. Hàng khách trả về lại lô đã bán.\n- **Nhập hàng**: `chi_tiet_nhap.DonGiaNhap` là giá nhập một đơn vị, theo đơn vị nhập của dòng; `phieu_nhap.TongGiaTriNhap` là tổng tiền của cả phiếu nhập.\n- **Giá bán**: `lich_su_gia.GiaBanLe` (theo đơn vị cơ bản) áp dụng từ `lich_su_gia.NgayApDung` đến trước lần đổi giá sau của cùng mặt hàng; dòng đầu mỗi mặt hàng là giá lúc bắt đầu dữ liệu.\n- **Thuốc**: `thong_tin_thuoc.BanTheoDon` đúng (TRUE/1) là thuốc kê đơn. Hoạt chất ghi không kèm hàm lượng (hàm lượng ở tên hàng); nhiều chất nối bằng \" + \".\n- **Quy đổi đơn vị**: số lượng ghi theo đơn vị của dòng, hệ số quy đổi ở bảng `don_vi_sp`.\n",
+    "tables": {
+      "chi_nhanh": {
+        "rows": 1,
+        "columns": [
+          "id_cua_hang",
+          "ma_chi_nhanh",
+          "ten_goi",
+          "dia_chi_lien_he",
+          "ngay_khai_truong"
+        ]
+      },
+      "nhan_vien": {
+        "rows": 3,
+        "columns": [
+          "id_cua_hang",
+          "ma_nhan_vien",
+          "ten_goi",
+          "ma_chi_nhanh",
+          "chuc_vu",
+          "ngay_nhan_viec",
+          "ngay_thoi_viec"
+        ]
+      },
+      "khach_hang": {
+        "rows": 320,
+        "columns": [
+          "id_cua_hang",
+          "ma_khach_hang",
+          "ten_goi",
+          "trang_thai_kh",
+          "tong_diem",
+          "diem_hien_tai",
+          "loai_hinh_kh",
+          "cccd",
+          "so_dien_thoai",
+          "email",
+          "ghi_chu_kh",
+          "nam_nu",
+          "loai_khach_hang",
+          "cong_ty",
+          "tao_luc",
+          "ma_so_thue",
+          "dia_chi_lien_he",
+          "nguoi_tao"
+        ]
+      },
+      "nha_cung_cap": {
+        "rows": 5,
+        "columns": [
+          "email",
+          "id_cua_hang",
+          "nhom_ncc",
+          "ma_nha_cung_cap",
+          "ma_so_thue",
+          "nguoi_tao",
+          "trang_thai_ncc",
+          "ten_goi",
+          "so_dien_thoai",
+          "dia_chi_lien_he"
+        ]
+      },
+      "san_pham": {
+        "rows": 80,
+        "columns": [
+          "mo_ta",
+          "ghi_chu_hh",
+          "id_cua_hang",
+          "ma_hang_hoa",
+          "ma_hh_lien_quan",
+          "thuoc_tinh",
+          "ban_truc_tiep",
+          "mau_ghi_chu",
+          "vi_tri",
+          "trong_luong",
+          "ton_nho_nhat",
+          "ten_goi",
+          "ma_vach_ean",
+          "danh_muc",
+          "don_vi_co_so",
+          "gia_ban_le",
+          "hinh_anh",
+          "gia_von_hang",
+          "ton_lon_nhat",
+          "ty_le_thue",
+          "bao_hanh",
+          "thuong_hieu",
+          "loai_hang_hoa",
+          "con_kinh_doanh",
+          "tao_luc"
+        ]
+      },
+      "don_vi_sp": {
+        "rows": 83,
+        "columns": [
+          "id_cua_hang",
+          "ma_hang_hoa",
+          "don_vi_tinh",
+          "he_so_quy_doi",
+          "gia_don_vi"
+        ]
+      },
+      "phieu_nhap": {
+        "rows": 494,
+        "columns": [
+          "id_cua_hang",
+          "ma_phieu_nhap",
+          "ma_nha_cung_cap",
+          "ma_chi_nhanh",
+          "ngay_nhap_kho",
+          "tinh_trang",
+          "tong_gia_tri_nhap",
+          "dien_giai"
+        ]
+      },
+      "chi_tiet_nhap": {
+        "rows": 3234,
+        "columns": [
+          "id_cua_hang",
+          "ma_phieu_nhap",
+          "so_thu_tu",
+          "ma_hang_hoa",
+          "don_vi_tinh",
+          "sl",
+          "don_gia_nhap",
+          "ma_lo",
+          "han_su_dung"
+        ]
+      },
+      "don_hang": {
+        "rows": 37833,
+        "columns": [
+          "id_cua_hang",
+          "ma_hoa_don",
+          "ma_chi_nhanh",
+          "ma_khach_hang",
+          "ma_nhan_vien",
+          "ma_ca_lam",
+          "kenh_ban_hang",
+          "thoi_gian_lap",
+          "ngay_lap",
+          "tinh_trang",
+          "tong_tien_hang",
+          "chiet_khau",
+          "phi_van_chuyen",
+          "thue_gtgt",
+          "tong_thanh_toan",
+          "khach_da_tra",
+          "con_phai_thu",
+          "phuong_thuc_tt",
+          "so_hoa_don_dien_tu",
+          "tinh_trang_hddt",
+          "ma_khuyen_mai",
+          "dien_giai"
+        ]
+      },
+      "chi_tiet_don": {
+        "rows": 71061,
+        "columns": [
+          "id_cua_hang",
+          "ma_hoa_don",
+          "so_thu_tu",
+          "ma_hang_hoa",
+          "don_vi_tinh",
+          "sl",
+          "sl_quy_doi",
+          "gia_don_vi",
+          "chiet_khau",
+          "tri_gia",
+          "gia_von_luc_ban"
+        ]
+      },
+      "thanh_toan": {
+        "rows": 37939,
+        "columns": [
+          "id_cua_hang",
+          "ma_phieu_thu",
+          "ma_hoa_don",
+          "ngay_gio_thu",
+          "so_tien_thu",
+          "phuong_thuc",
+          "dien_giai"
+        ]
+      },
+      "tra_hang": {
+        "rows": 352,
+        "columns": [
+          "id_cua_hang",
+          "ma_phieu_tra",
+          "ma_hoa_don",
+          "ngay_gio_tra",
+          "nguyen_nhan",
+          "tien_hoan_tra",
+          "cach_hoan_tien"
+        ]
+      },
+      "the_kho": {
+        "rows": 73901,
+        "columns": [
+          "id_cua_hang",
+          "ma_giao_dich_kho",
+          "ma_hang_hoa",
+          "ma_chi_nhanh",
+          "ngay_gio_phat_sinh",
+          "loai_giao_dich",
+          "sl_quy_doi",
+          "kieu_chung_tu",
+          "ma_chung_tu",
+          "ton_cuoi"
+        ]
+      },
+      "lich_su_gia": {
+        "rows": 120,
+        "columns": [
+          "id_cua_hang",
+          "ma_hang_hoa",
+          "ngay_ap_dung",
+          "gia_ban_le"
+        ]
+      },
+      "lo_hang": {
+        "rows": 3234,
+        "columns": [
+          "id_cua_hang",
+          "ma_hang_hoa",
+          "ma_lo",
+          "ma_phieu_nhap",
+          "han_su_dung",
+          "sl_nhap_quy_doi",
+          "don_gia_nhap"
+        ]
+      },
+      "chi_tiet_don_lo": {
+        "rows": 72710,
+        "columns": [
+          "id_cua_hang",
+          "ma_hoa_don",
+          "so_thu_tu",
+          "ma_lo",
+          "sl_quy_doi",
+          "sl_tra_quy_doi"
+        ]
+      },
+      "thong_tin_thuoc": {
+        "rows": 80,
+        "columns": [
+          "id_cua_hang",
+          "ma_hang_hoa",
+          "thanh_phan_chinh",
+          "ban_theo_don"
+        ]
+      }
+    }
+  },
+  "dev_007": {
+    "readme": "# Dữ liệu dev_007\n\nFile xuất từ phần mềm bán hàng, 3 danh sách: chi tiết hoá đơn (mỗi dòng một mặt hàng trong đơn; thông tin đơn, khách lặp lại ở mọi dòng của đơn), danh mục hàng kèm tồn kho, chi tiết nhập hàng (thông tin phiếu nhập lặp lại ở mọi dòng của phiếu). Các file nối với nhau qua mã hàng.\n\n## File\n- `chi_tiet_hoa_don.csv` (csv)\n- `danh_muc_hang.csv` (csv)\n- `chi_tiet_nhap_hang.csv` (csv)\n\n## Cột trong `chi_tiet_hoa_don.csv`\n- **Bàn**: bàn\n- **Thành tiền**: thành tiền sau giảm\n- **Nhóm khách hàng**: nhóm khách\n- **Mặt hàng**: tên hàng\n- **Khu vực**: khu vực của bàn\n- **Nguồn**: kênh bán\n- **Nội dung**: cột trống, không có dữ liệu\n- **Giờ bán**: thời điểm đặt đơn (ngày giờ)\n- **Giới tính**: cột trống, không có dữ liệu\n- **No.**: số thứ tự dòng trong đơn\n- **Ngày giao dịch**: ngày bán\n- **Tiến độ**: trạng thái đơn\n- **Trạng thái HĐĐT**: cột trống, không có dữ liệu\n- **Mã vạch**: mã hàng\n- **Khách trả**: khách đã trả cho cả đơn (lặp lại ở mọi dòng của đơn); tiền của đơn có phí giao gồm cả phí giao (file này không có cột phí giao riêng)\n- **Họ tên khách**: tên khách (Khách lẻ nếu không lưu)\n- **Mã khách mua**: mã khách (trống nếu khách lẻ)\n- **Còn nợ**: khách còn nợ của cả đơn (lặp lại ở mọi dòng của đơn)\n- **Tiền giảm**: tiền giảm của cả dòng\n- **Mã bill**: mã đơn\n- **Số khách**: số khách của đơn\n- **Sluong**: số lượng\n- **Nhân viên bán**: mã nhân viên bán\n- **Phone**: số điện thoại\n- **Tổng tiền hàng**: tổng tiền hàng của cả đơn, trước giảm giá của đơn (lặp lại ở mọi dòng của đơn)\n- **Giảm giá HĐ**: giảm giá của cả đơn (lặp lại ở mọi dòng của đơn)\n- **Addr**: địa chỉ\n- **Phân loại**: nhóm hàng\n- **Số lượng lẻ**: số lượng đã đổi ra đơn vị cơ bản\n- **Đơn giá (đ)**: đơn giá\n\n## Cột trong `danh_muc_hang.csv`\n- **Đang kinh doanh**: còn kinh doanh (True/False)\n- **ĐVT**: đơn vị cơ bản\n- **Giá vốn**: giá vốn\n- **Hàng bán**: tên hàng\n- **Nhóm**: nhóm hàng\n- **Giá**: giá bán hiện tại\n- **Tồn cuối**: tồn kho (đơn vị cơ bản)\n- **Mã SKU**: mã hàng\n\n## Cột trong `chi_tiet_nhap_hang.csv`\n- **Mã NCC**: mã nhà cung cấp\n- **Tổng tiền phiếu**: tổng tiền phiếu nhập\n- **SL nhập**: số lượng nhập\n- **Hàng hóa**: tên hàng\n- **STT**: số thứ tự dòng trong phiếu nhập\n- **ĐVT nhập**: đơn vị nhập\n- **Mã hàng bán**: mã hàng\n- **Giá nhập**: giá nhập một đơn vị (theo đơn vị nhập của dòng)\n- **Note**: ghi chú\n- **Ngày nhập**: ngày nhập\n- **Thành tiền**: tiền nhập của cả dòng\n- **Mã phiếu nhập**: mã phiếu nhập\n- **Trạng thái phiếu**: trạng thái phiếu nhập\n\n## Quy ước\n- Dữ liệu có đến hết 19/09/2026.\n- **Còn nợ**: **Còn nợ** là số khách còn nợ của đơn, tính đến hết ngày cuối dữ liệu.\n- **Tồn kho**: **Tồn cuối** là tồn cuối ngày cuối có dữ liệu, theo đơn vị cơ bản.\n- **Bàn**: đơn ăn tại quán có đúng một bàn (**Bàn**), kể cả đơn huỷ; đơn giao đi không có bàn. **Số khách** là số khách của đơn; một bàn có nhiều đơn trong ngày.\n- **Phí phục vụ**: đơn ngồi phòng lạnh (không huỷ, không ghi nợ) có thêm dòng hàng \"Phí phục vụ\": phí phục vụ phòng lạnh của đơn, tính theo tiền món, đã ghi sẵn thành tiền.\n- **Nhập hàng**: **Giá nhập** là giá nhập một đơn vị, theo đơn vị nhập của dòng; **Thành tiền** là tiền nhập của cả dòng; **Tổng tiền phiếu** là tổng tiền của cả phiếu nhập.\n- **Quy đổi đơn vị**: số lượng ghi theo đơn vị của dòng:\n  - Bia Tiger lon: 1 thùng = 24 lon\n  - Bia Sài Gòn Special lon: 1 thùng = 24 lon\n  - Coca-Cola lon: 1 thùng = 24 lon\n  - Bia Tiger Bạc lon: 1 thùng = 24 lon\n  - Nước suối: 1 thùng = 24 chai\n  - Bia Heineken lon: 1 thùng = 24 lon\n  - Bia Sài Gòn Lager chai: 1 két = 20 chai\n  - 7Up lon: 1 thùng = 24 lon\n",
+    "tables": {
+      "chi_tiet_hoa_don": {
+        "rows": 119070,
+        "columns": [
+          "ban",
+          "thanh_tien",
+          "nhom_khach_hang",
+          "mat_hang",
+          "khu_vuc",
+          "nguon",
+          "noi_dung",
+          "gio_ban",
+          "gioi_tinh",
+          "no",
+          "ngay_giao_dich",
+          "tien_do",
+          "trang_thai_hddt",
+          "ma_vach",
+          "khach_tra",
+          "ho_ten_khach",
+          "ma_khach_mua",
+          "con_no",
+          "tien_giam",
+          "ma_bill",
+          "so_khach",
+          "sluong",
+          "nhan_vien_ban",
+          "phone",
+          "tong_tien_hang",
+          "giam_gia_hd",
+          "addr",
+          "phan_loai",
+          "so_luong_le",
+          "don_gia_d"
+        ]
+      },
+      "danh_muc_hang": {
+        "rows": 61,
+        "columns": [
+          "tra_cuu_thong_tin_bo_sung",
+          "dang_kinh_doanh",
+          "dvt",
+          "gia_von",
+          "hang_ban",
+          "nhom",
+          "gia",
+          "ton_cuoi",
+          "ma_sku"
+        ]
+      },
+      "chi_tiet_nhap_hang": {
+        "rows": 1731,
+        "columns": [
+          "ma_ncc",
+          "tong_tien_phieu",
+          "sl_nhap",
+          "hang_hoa",
+          "stt",
+          "dvt_nhap",
+          "ma_hang_ban",
+          "gia_nhap",
+          "note",
+          "ngay_nhap",
+          "thanh_tien",
+          "ma_phieu_nhap",
+          "trang_thai_phieu"
+        ]
+      }
+    }
+  },
+  "dev_008": {
+    "readme": "# Dữ liệu dev_008\n\nFile xuất từ phần mềm bán hàng, 3 danh sách: chi tiết hoá đơn (mỗi dòng một mặt hàng trong đơn; thông tin đơn, khách lặp lại ở mọi dòng của đơn), danh mục hàng kèm tồn kho, chi tiết nhập hàng (thông tin phiếu nhập lặp lại ở mọi dòng của phiếu). Các file nối với nhau qua mã hàng.\n\n## File\n- `ChiTietHoaDon_1.xlsx` (xlsx)\n- `ChiTietHoaDon_2.xlsx` (xlsx)\n- `DanhMucHang.xlsx` (xlsx)\n- `ChiTietNhapHang.xlsx` (xlsx)\n\n## Cột trong `ChiTietHoaDon_1.xlsx`\n- **Bill**: mã đơn\n- **Trạng thái HĐĐT**: cột trống, không có dữ liệu\n- **Mã người mua**: mã khách (trống nếu khách lẻ)\n- **Bàn**: bàn\n- **Đơn vị (tính)**: đơn vị tính\n- **Phi ship**: phí giao hàng của cả đơn (lặp lại ở mọi dòng của đơn)\n- **Thành tiền**: thành tiền sau giảm\n- **Giảm (đ)**: tiền giảm của cả dòng\n- **Giờ bán**: thời điểm đặt đơn (ngày giờ)\n- **Tổng tiền hàng**: tổng tiền hàng của cả đơn, trước giảm giá của đơn (lặp lại ở mọi dòng của đơn)\n- **Addr**: địa chỉ\n- **Giới tính**: cột trống, không có dữ liệu\n- **Giảm giá HĐ**: giảm giá của cả đơn (lặp lại ở mọi dòng của đơn)\n- **Nhóm hàng**: nhóm hàng\n- **Khách**: tên khách (Khách lẻ nếu không lưu)\n- **Số dòng**: số thứ tự dòng trong đơn\n- **Tên hàng**: tên hàng\n- **Nhóm khách hàng**: nhóm khách\n- **Số ĐT**: số điện thoại\n- **SL lẻ**: số lượng đã đổi ra đơn vị cơ bản\n- **TT đơn**: trạng thái đơn\n- **SLg**: số lượng\n- **Note**: ghi chú của đơn (lặp lại ở mọi dòng của đơn): đơn ghi nợ thì ghi khách đã đưa / còn thiếu bao nhiêu\n- **Ngày xuất**: ngày bán\n- **Nhân viên bán**: mã nhân viên bán\n- **Tong tien**: khách cần trả cho cả đơn (lặp lại ở mọi dòng của đơn)\n- **Kênh bán**: kênh bán\n- **Đơn giá (đ)**: đơn giá\n- **Ma hang**: mã hàng\n- **Thanh toán bằng**: hình thức thanh toán của đơn: cash tiền mặt, transfer chuyển khoản, ewallet ví điện tử, cod giao hàng thu tiền, debt ghi nợ\n- **Số khách**: số khách của đơn\n- **Khu vực**: khu vực của bàn\n\n## Cột trong `ChiTietHoaDon_2.xlsx`\n- **Bill**: mã đơn\n- **Trạng thái HĐĐT**: cột trống, không có dữ liệu\n- **Mã người mua**: mã khách (trống nếu khách lẻ)\n- **Bàn**: bàn\n- **Đơn vị (tính)**: đơn vị tính\n- **Phi ship**: phí giao hàng của cả đơn (lặp lại ở mọi dòng của đơn)\n- **Thành tiền**: thành tiền sau giảm\n- **Giảm (đ)**: tiền giảm của cả dòng\n- **Giờ bán**: thời điểm đặt đơn (ngày giờ)\n- **Tổng tiền hàng**: tổng tiền hàng của cả đơn, trước giảm giá của đơn (lặp lại ở mọi dòng của đơn)\n- **Addr**: địa chỉ\n- **Giới tính**: cột trống, không có dữ liệu\n- **Giảm giá HĐ**: giảm giá của cả đơn (lặp lại ở mọi dòng của đơn)\n- **Nhóm hàng**: nhóm hàng\n- **Khách**: tên khách (Khách lẻ nếu không lưu)\n- **Số dòng**: số thứ tự dòng trong đơn\n- **Tên hàng**: tên hàng\n- **Nhóm khách hàng**: nhóm khách\n- **Số ĐT**: số điện thoại\n- **SL lẻ**: số lượng đã đổi ra đơn vị cơ bản\n- **TT đơn**: trạng thái đơn\n- **SLg**: số lượng\n- **Note**: ghi chú của đơn (lặp lại ở mọi dòng của đơn): đơn ghi nợ thì ghi khách đã đưa / còn thiếu bao nhiêu\n- **Ngày xuất**: ngày bán\n- **Nhân viên bán**: mã nhân viên bán\n- **Tong tien**: khách cần trả cho cả đơn (lặp lại ở mọi dòng của đơn)\n- **Kênh bán**: kênh bán\n- **Đơn giá (đ)**: đơn giá\n- **Ma hang**: mã hàng\n- **Thanh toán bằng**: hình thức thanh toán của đơn: cash tiền mặt, transfer chuyển khoản, ewallet ví điện tử, cod giao hàng thu tiền, debt ghi nợ\n- **Số khách**: số khách của đơn\n- **Khu vực**: khu vực của bàn\n\n## Cột trong `DanhMucHang.xlsx`\n- **Hàng**: tên hàng\n- **Đang kinh doanh**: còn kinh doanh (True/False)\n- **Mã sản phẩm bán**: mã hàng\n- **DVT**: đơn vị cơ bản\n- **Tồn thực**: tồn kho (đơn vị cơ bản)\n- **Loại hàng**: nhóm hàng\n- **Giá vốn**: giá vốn\n- **Giá hiện tại**: giá bán hiện tại\n\n## Cột trong `ChiTietNhapHang.xlsx`\n- **Giá nhập**: giá nhập một đơn vị (theo đơn vị nhập của dòng)\n- **Mã NCC**: mã nhà cung cấp\n- **Trạng thái phiếu**: trạng thái phiếu nhập\n- **Ngày nhập**: ngày nhập\n- **STT**: số thứ tự dòng trong phiếu nhập\n- **Mã phiếu nhập**: mã phiếu nhập\n- **Tổng tiền phiếu**: tổng tiền phiếu nhập\n- **Lưu ý**: ghi chú\n- **Tên mặt hàng**: tên hàng\n- **Mã vạch**: mã hàng\n- **Thành tiền**: tiền nhập của cả dòng\n- **SL nhập**: số lượng nhập\n- **ĐVT nhập**: đơn vị nhập\n\n## Quy ước\n- Dữ liệu có đến hết 22/07/2026.\n- **Còn nợ**: ghi chú nợ ở **Note** là tình trạng của đơn tính đến hết ngày cuối dữ liệu.\n- **Tồn kho**: **Tồn thực** là tồn cuối ngày cuối có dữ liệu, theo đơn vị cơ bản.\n- **Bàn**: đơn ăn tại quán có đúng một bàn (**Bàn**), kể cả đơn huỷ; đơn giao đi không có bàn. **Số khách** là số khách của đơn; một bàn có nhiều đơn trong ngày.\n- **Phí phục vụ**: đơn ngồi phòng lạnh (không huỷ, không ghi nợ) có thêm dòng hàng \"Phí phục vụ\": phí phục vụ phòng lạnh của đơn, tính theo tiền món, đã ghi sẵn thành tiền.\n- **Nhập hàng**: **Giá nhập** là giá nhập một đơn vị, theo đơn vị nhập của dòng; **Thành tiền** là tiền nhập của cả dòng; **Tổng tiền phiếu** là tổng tiền của cả phiếu nhập.\n- **Quy đổi đơn vị**: số lượng ghi theo đơn vị của dòng:\n  - Bia Tiger lon: 1 thùng = 24 lon\n  - Bia Sài Gòn Special lon: 1 thùng = 24 lon\n  - Coca-Cola lon: 1 thùng = 24 lon\n  - Bia Tiger Bạc lon: 1 thùng = 24 lon\n  - Nước suối: 1 thùng = 24 chai\n  - Bia Heineken lon: 1 thùng = 24 lon\n  - Bia Sài Gòn Lager chai: 1 két = 20 chai\n  - 7Up lon: 1 thùng = 24 lon\n",
+    "tables": {
+      "chi_tiet_hoa_don": {
+        "rows": 151328,
+        "columns": [
+          "bill",
+          "trang_thai_hddt",
+          "ma_nguoi_mua",
+          "ban",
+          "don_vi_tinh",
+          "phi_ship",
+          "thanh_tien",
+          "giam_d",
+          "gio_ban",
+          "tong_tien_hang",
+          "addr",
+          "gioi_tinh",
+          "giam_gia_hd",
+          "nhom_hang",
+          "khach",
+          "so_dong",
+          "ten_hang",
+          "nhom_khach_hang",
+          "so_dt",
+          "sl_le",
+          "tt_don",
+          "s_lg",
+          "note",
+          "ngay_xuat",
+          "nhan_vien_ban",
+          "tong_tien",
+          "kenh_ban",
+          "don_gia_d",
+          "ma_hang",
+          "thanh_toan_bang",
+          "so_khach",
+          "khu_vuc"
+        ]
+      },
+      "chi_tiet_hoa_don_sheet1": {
+        "rows": 151328,
+        "columns": [
+          "bill",
+          "trang_thai_hddt",
+          "ma_nguoi_mua",
+          "ban",
+          "don_vi_tinh",
+          "phi_ship",
+          "thanh_tien",
+          "giam_d",
+          "gio_ban",
+          "tong_tien_hang",
+          "addr",
+          "gioi_tinh",
+          "giam_gia_hd",
+          "nhom_hang",
+          "khach",
+          "so_dong",
+          "ten_hang",
+          "nhom_khach_hang",
+          "so_dt",
+          "sl_le",
+          "tt_don",
+          "s_lg",
+          "note",
+          "ngay_xuat",
+          "nhan_vien_ban",
+          "tong_tien",
+          "kenh_ban",
+          "don_gia_d",
+          "ma_hang",
+          "thanh_toan_bang",
+          "so_khach",
+          "khu_vuc"
+        ]
+      },
+      "chi_tiet_nhap_hang": {
+        "rows": 1836,
+        "columns": [
+          "gia_nhap",
+          "ma_ncc",
+          "trang_thai_phieu",
+          "ngay_nhap",
+          "stt",
+          "ma_phieu_nhap",
+          "tong_tien_phieu",
+          "luu_y",
+          "ten_mat_hang",
+          "ma_vach",
+          "thanh_tien",
+          "sl_nhap",
+          "dvt_nhap"
+        ]
+      },
+      "chi_tiet_nhap_hang_sheet1": {
+        "rows": 1836,
+        "columns": [
+          "gia_nhap",
+          "ma_ncc",
+          "trang_thai_phieu",
+          "ngay_nhap",
+          "stt",
+          "ma_phieu_nhap",
+          "tong_tien_phieu",
+          "luu_y",
+          "ten_mat_hang",
+          "ma_vach",
+          "thanh_tien",
+          "sl_nhap",
+          "dvt_nhap"
+        ]
+      },
+      "danh_muc_hang": {
+        "rows": 61,
+        "columns": [
+          "hang",
+          "dang_kinh_doanh",
+          "ma_san_pham_ban",
+          "dvt",
+          "ton_thuc",
+          "loai_hang",
+          "gia_von",
+          "gia_hien_tai"
+        ]
+      },
+      "danh_muc_hang_sheet1": {
+        "rows": 61,
+        "columns": [
+          "hang",
+          "dang_kinh_doanh",
+          "ma_san_pham_ban",
+          "dvt",
+          "ton_thuc",
+          "loai_hang",
+          "gia_von",
+          "gia_hien_tai"
+        ]
+      },
+      "chi_tiet_hoa_don_1": {
+        "rows": 98694,
+        "columns": [
+          "bill",
+          "trang_thai_hddt",
+          "ma_nguoi_mua",
+          "ban",
+          "don_vi_tinh",
+          "phi_ship",
+          "thanh_tien",
+          "giam_d",
+          "gio_ban",
+          "tong_tien_hang",
+          "addr",
+          "gioi_tinh",
+          "giam_gia_hd",
+          "nhom_hang",
+          "khach",
+          "so_dong",
+          "ten_hang",
+          "nhom_khach_hang",
+          "so_dt",
+          "sl_le",
+          "tt_don",
+          "s_lg",
+          "note",
+          "ngay_xuat",
+          "nhan_vien_ban",
+          "tong_tien",
+          "kenh_ban",
+          "don_gia_d",
+          "ma_hang",
+          "thanh_toan_bang",
+          "so_khach",
+          "khu_vuc"
+        ]
+      },
+      "chi_tiet_hoa_don_2": {
+        "rows": 52634,
+        "columns": [
+          "bill",
+          "trang_thai_hddt",
+          "ma_nguoi_mua",
+          "ban",
+          "don_vi_tinh",
+          "phi_ship",
+          "thanh_tien",
+          "giam_d",
+          "gio_ban",
+          "tong_tien_hang",
+          "addr",
+          "gioi_tinh",
+          "giam_gia_hd",
+          "nhom_hang",
+          "khach",
+          "so_dong",
+          "ten_hang",
+          "nhom_khach_hang",
+          "so_dt",
+          "sl_le",
+          "tt_don",
+          "s_lg",
+          "note",
+          "ngay_xuat",
+          "nhan_vien_ban",
+          "tong_tien",
+          "kenh_ban",
+          "don_gia_d",
+          "ma_hang",
+          "thanh_toan_bang",
+          "so_khach",
+          "khu_vuc"
+        ]
+      }
+    }
+  },
+  "dev_009": {
+    "readme": "# Dữ liệu dev_009\n\nDanh sách hoá đơn, một file CSV: mỗi dòng một đơn hàng (hoá đơn), không có chi tiết mặt hàng trong đơn.\n\n## File\n- `danh_sach_hoa_don.csv` (csv)\n\n## Cột trong `danh_sach_hoa_don.csv`\n- **Ngày tháng**: ngày bán\n- **Trạng thái đơn**: trạng thái đơn\n- **TongTien**: số khách phải trả cho cả đơn (đã tính giảm giá của đơn và phí giao)\n- **Mã hóa đơn**: mã đơn\n- **Nợ**: số khách còn nợ của đơn (đơn huỷ: 0)\n- **Đã thu**: đã thanh toán\n- **Đối tác**: tên khách (Khách lẻ nếu không lưu)\n- **Giá trị hàng**: tiền hàng của đơn: cộng thành tiền các mặt hàng, trước giảm giá của đơn, chưa gồm phí giao\n\n## Quy ước\n- Dữ liệu có đến hết 24/06/2026.\n- **Còn nợ**: **Nợ** là số khách còn nợ của đơn, tính đến hết ngày cuối dữ liệu.\n",
+    "tables": {
+      "danh_sach_hoa_don": {
+        "rows": 22490,
+        "columns": [
+          "ngay_thang",
+          "trang_thai_don",
+          "tong_tien",
+          "ma_hoa_don",
+          "no",
+          "da_thu",
+          "doi_tac",
+          "gia_tri_hang"
+        ]
+      }
+    }
+  },
+  "dev_010": {
+    "readme": "# Dữ liệu dev_010\n\nDữ liệu bán hàng của tiệm, gồm vài file nối với nhau qua mã.\n\n## File\n- `don_hang.csv` (csv)\n- `chi_tiet_don.csv` (csv)\n- `san_pham.csv` (csv)\n- `khach_hang.csv` (csv)\n- `thanh_toan.csv` (csv)\n\n## Cột trong `don_hang.csv`\n- **Kênh đặt**: kênh bán\n- **Thành tiền**: tổng tiền đơn\n- **Số CT**: mã đơn\n- **Con no**: còn nợ\n- **Date**: ngày bán\n- **Phương thức TT**: hình thức thanh toán của đơn: cash tiền mặt, transfer chuyển khoản, ewallet ví điện tử, cod giao hàng thu tiền, debt ghi nợ\n- **Tiền giảm**: giảm giá\n- **Phí vận chuyển**: phí giao hàng\n- **Khách trả**: đã thanh toán\n- **Mã thẻ**: mã khách (trống nếu khách lẻ)\n- **Xử lý**: trạng thái đơn\n\n## Cột trong `chi_tiet_don.csv`\n- **Mã bill**: mã đơn\n- **Cộng**: thành tiền sau giảm\n- **CK**: giảm giá\n- **SoLuong**: số lượng\n- **Mã H.hóa**: mã hàng\n- **SL quy đổi**: số lượng đã đổi ra đơn vị cơ bản\n- **No.**: số thứ tự dòng trong đơn\n- **Đơn giá (đ)**: đơn giá\n- **dvt**: đơn vị tính\n\n## Cột trong `san_pham.csv`\n- **Đơn vị tính**: đơn vị cơ bản\n- **Nhóm hàng**: nhóm hàng\n- **ten_hang**: tên\n- **Giá bán**: giá bán hiện tại\n- **Mã vạch**: mã hàng\n\n## Cột trong `khach_hang.csv`\n- **Khách lẻ/sỉ**: tên\n- **Loại khách**: nhóm khách\n- **Mã khách**: mã khách\n- **Phone**: số điện thoại\n\n## Cột trong `thanh_toan.csv`\n- **Loại TT**: hình thức thanh toán\n- **Ngay thu**: thời điểm thu\n- **So tien**: số tiền\n- **Mã đơn**: mã đơn\n- **Mã TT**: mã phiếu thu\n\n## Quy ước\n- Dữ liệu có đến hết 06/09/2026.\n- **Công nợ**: mỗi lần khách trả tiền cho một đơn là một dòng, **So tien** là số tiền trả lần đó; **Thành tiền** là số khách phải trả cho cả đơn.\n- **Quy đổi đơn vị**: số lượng ghi theo đơn vị của dòng:\n  - Tã dán Bobby size M 76 miếng: 1 thùng = 4 gói\n  - Tã quần Huggies Dry size L 68 miếng: 1 thùng = 4 gói\n  - Tã dán Merries size M 64 miếng: 1 thùng = 4 gói\n  - Miếng lót sơ sinh Bobby Newborn 1 108 miếng: 1 thùng = 6 gói\n  - Bột ăn dặm Ridielac Gold gạo sữa 200g: 1 thùng = 12 hộp\n  - Khăn ướt Bobby không mùi 100 tờ: 1 lốc = 4 gói\n  - Khăn ướt Bobby không mùi 100 tờ: 1 thùng = 24 gói\n  - Sữa tắm gội Johnson's Baby 500ml: 1 thùng = 12 chai\n  - Sữa tắm Lactacyd BB 250ml: 1 thùng = 12 chai\n  - Nước giặt xả D-nee 3000ml: 1 thùng = 4 can\n  - Váng sữa Monte vani vỉ 4 hộp 55g: 1 thùng = 6 vỉ\n  - Phấn rôm Johnson's Baby 200g: 1 thùng = 24 chai\n  - Tắm gội toàn thân D-nee Pure 380ml: 1 thùng = 12 chai\n  - Nước rửa bình sữa D-nee 620ml: 1 thùng = 12 chai\n  - Tã quần Moony size L 44 miếng: 1 thùng = 4 gói\n  - Tã dán Huggies Dry Newborn 60 miếng: 1 thùng = 6 gói\n  - Tã quần Bobby size XL 62 miếng: 1 thùng = 4 gói\n  - Cháo tươi SG Food Baby gà cà rốt 240g: 1 thùng = 30 gói\n  - Tăm bông trẻ em Sakura hộp 180 que: 1 lốc = 12 hộp\n  - Phô mai Con Bò Cười hộp 8 miếng: 1 thùng = 24 hộp\n  - Sữa pha sẵn GrowPLUS+ đỏ 110ml lốc 4: 1 thùng = 12 lốc\n",
+    "tables": {
+      "don_hang": {
+        "rows": 25191,
+        "columns": [
+          "kenh_dat",
+          "thanh_tien",
+          "so_ct",
+          "con_no",
+          "date",
+          "phuong_thuc_tt",
+          "tien_giam",
+          "phi_van_chuyen",
+          "khach_tra",
+          "ma_the",
+          "xu_ly"
+        ]
+      },
+      "khach_hang": {
+        "rows": 260,
+        "columns": [
+          "nguoi_tao",
+          "ghi_chu_kh",
+          "khach_le_si",
+          "loai_khach",
+          "ma_so_thue",
+          "loai_hinh_khach",
+          "ma_khach",
+          "email",
+          "tong_diem",
+          "trang_thai",
+          "so_cmnd_cccd",
+          "phone",
+          "cong_ty"
+        ]
+      },
+      "thanh_toan": {
+        "rows": 26246,
+        "columns": [
+          "loai_tt",
+          "ngay_thu",
+          "so_tien",
+          "ma_don",
+          "ma_tt"
+        ]
+      },
+      "chi_tiet_don": {
+        "rows": 43935,
+        "columns": [
+          "ma_bill",
+          "cong",
+          "ck",
+          "so_luong",
+          "ma_h",
+          "sl_quy_doi",
+          "no",
+          "don_gia_d",
+          "dvt"
+        ]
+      },
+      "san_pham": {
+        "rows": 60,
+        "columns": [
+          "mo_ta_chi_tiet",
+          "mau_ghi_chu",
+          "loai_hang_hoa",
+          "thuong_hieu",
+          "don_vi_tinh",
+          "ghi_chu",
+          "bao_hanh",
+          "nhom_hang",
+          "ma_vach_ean",
+          "hinh_anh_url1_url2",
+          "ten_hang",
+          "thuoc_tinh",
+          "trong_luong",
+          "gia_ban",
+          "ma_vach",
+          "duoc_ban_truc_tiep",
+          "ma_hh_lien_quan"
+        ]
+      }
+    }
+  },
+  "dev_011": {
+    "readme": "# Dữ liệu dev_011\n\nSổ bán hàng của cửa hàng điện thoại, chủ tiệm tự ghi trên Excel: sheet `Ghi tắt` (cách ghi tắt tên hàng và loại hàng) và sheet `Sổ bán hàng` cả kỳ, mỗi dòng một mặt hàng của một đơn.\n\n## File\n- `SoBanHang.xlsx` (xlsx)\n\n## Cột trong `SoBanHang.xlsx`\n- **Ngày**: ngày bán\n- **STT**: số thứ tự đơn (hoá đơn) trong sổ\n- **Khách**: tên khách (khách không lưu: khách lẻ)\n- **Hàng**: hàng bán, có thể ghi tắt (tra ở sheet Ghi tắt)\n- **IMEI**: IMEI của máy bán (máy mới, máy cũ), dòng 2 máy ghi 2 số cách nhau \" / \"; phụ kiện để trống\n- **SL**: số lượng\n- **Giá**: đơn giá một máy / một cái\n- **Thành tiền**: thành tiền của dòng\n- **Bớt**: tiền bớt cho cả đơn (trống: không bớt)\n- **Thu máy cũ**: tiền thu máy cũ của khách, trừ vào tiền đơn (trống: không thu máy)\n- **Khách trả**: số tiền khách trả cho cả đơn, đã trừ bớt và thu máy cũ\n- **Ghi chú**: ghi chú của đơn; đơn khách trả lại hàng ghi ở đây\n\n## Quy ước\n- Dữ liệu có đến hết 31/07/2026.\n- **Đơn khách trả lại**: **Ghi chú** của đơn ghi khách trả lại.\n- **Tiền khách trả**: **Khách trả** là số tiền khách trả cho cả đơn (không phải của dòng), đã bớt và đã trừ tiền thu máy cũ; ô bớt, thu máy cũ để trống là không có khoản đó.\n- **Ghi tắt, loại hàng**: sheet `Ghi tắt` cho tên đầy đủ và loại hàng (máy mới, máy cũ, phụ kiện) của từng cách ghi tắt. Máy có IMEI (**IMEI**), phụ kiện không.\n",
+    "tables": {
+      "so_ban_hang_ghi_tat": {
+        "rows": 59,
+        "columns": [
+          "ghi_tat",
+          "ten_hang",
+          "loai"
+        ]
+      },
+      "so_ban_hang": {
+        "rows": 59,
+        "columns": [
+          "ghi_tat",
+          "ten_hang",
+          "loai"
+        ]
+      },
+      "so_ban_hang_so_ban_hang": {
+        "rows": 6043,
+        "columns": [
+          "ngay",
+          "stt",
+          "khach",
+          "hang",
+          "imei",
+          "sl",
+          "gia",
+          "thanh_tien",
+          "bot",
+          "thu_may_cu",
+          "khach_tra",
+          "ghi_chu"
+        ]
+      }
+    }
+  },
+  "dev_012": {
+    "readme": "# Dữ liệu dev_012\n\nSổ sửa xe chủ tiệm tự ghi trên Excel, mỗi tháng một sheet: mỗi dòng một lượt xe vào sửa (một phiếu), không ghi mã phiếu, không ghi tên khách. Ô Làm gì ghi mọi việc của phiếu. Tiền là tổng cả phiếu, không ghi tiền từng việc. File DanhSachTho.xlsx ghi họ tên, phần trăm hoa hồng các thợ; sổ ghi thợ theo tên gọi. Phiếu ghi chú bảo hành, Tiền 0: xe quay lại bảo hành việc của một phiếu trước, tiệm không thu tiền.\n\n## File\n- `SoSuaXe.xlsx` (xlsx)\n- `DanhSachTho.xlsx` (xlsx)\n\n## Cột trong `SoSuaXe.xlsx`\n- **Ngày**: ngày sửa\n- **Xe**: dòng xe và biển số ghi chung một ô\n- **Làm gì**: các việc đã làm cho xe, nhiều việc ghi chung một ô\n- **Thợ**: thợ làm phiếu, ghi tên gọi\n- **Tiền**: tổng tiền cả phiếu\n- **Ghi chú**: ghi chú\n\n## Cột trong `DanhSachTho.xlsx`\n- **Họ tên**: họ tên thợ\n- **Ngày vào làm**: ngày vào làm\n- **Hoa hồng (%)**: phần trăm hoa hồng của thợ, tính trên tổng Tiền các phiếu thợ làm trong tháng\n\n## Quy ước\n- Dữ liệu có đến hết 31/08/2026.\n",
+    "tables": {
+      "danh_sach_tho": {
+        "rows": 4,
+        "columns": [
+          "ho_ten",
+          "ngay_vao_lam",
+          "hoa_hong"
+        ]
+      },
+      "danh_sach_tho_sheet1": {
+        "rows": 4,
+        "columns": [
+          "ho_ten",
+          "ngay_vao_lam",
+          "hoa_hong"
+        ]
+      },
+      "so_sua_xe": {
+        "rows": 6078,
+        "columns": [
+          "ngay",
+          "xe",
+          "lam_gi",
+          "tho",
+          "tien",
+          "ghi_chu",
+          "sheet_name"
+        ]
+      }
+    }
+  },
+  "dev_013": {
+    "readme": "# Dữ liệu dev_013\n\nSổ sách Excel của tiệm mẹ và bé. `BanHang_<năm>.xlsx`: sổ bán hàng, mỗi tháng một sheet, header gộp 2 dòng (nhóm Hàng hoá, Tiền ở dòng trên). Mỗi dòng một mặt hàng khách mua; một hoá đơn nhiều dòng cùng số HĐ. Ngay sau các dòng hàng của một hoá đơn có thể có dòng không phải hàng, chỉ ghi HĐ, tên và TT: \"Voucher\" (tiền giảm của hoá đơn từ các chương trình ở sheet KhuyenMai, TT ghi số âm), \"Dùng <n> điểm\" (khách dùng n điểm thành viên, mỗi điểm trừ 100đ, TT ghi số âm), \"Phí ship\" (phí giao hàng khách trả thêm). `QuanLy.xlsx`: danh mục hàng (DanhMuc), khách thành viên (KhachHang), sổ nhập hàng (NhapHang), chương trình khuyến mãi (KhuyenMai), mỗi danh sách một sheet. Sổ không có mã hàng, mã khách: nối qua tên hàng, tên khách.\n\n## File\n- `BanHang_2025.xlsx` (xlsx)\n- `BanHang_2026.xlsx` (xlsx)\n- `QuanLy.xlsx` (xlsx)\n\n## Cột trong `BanHang_2025.xlsx`\n- **ĐG**: đơn giá\n- **TT**: thành tiền của dòng; Voucher, Dùng điểm ghi số âm (trừ vào hoá đơn), Phí ship ghi phí giao\n- **SL**: số lượng (trống ở dòng không phải hàng)\n- **ĐVT**: đơn vị tính\n- **Tên hàng**: tên hàng; dòng không phải hàng ghi Voucher, Dùng <n> điểm hoặc Phí ship\n- **HĐ**: số hoá đơn, ghi ở mọi dòng của hoá đơn kể cả dòng Voucher / Dùng điểm / Phí ship\n- **Ngày**: ngày bán (dòng Voucher / Dùng điểm / Phí ship để trống)\n- **Khách**: tên khách thành viên (Khách lẻ nếu không lưu); dòng không phải hàng để trống\n- **Kênh**: kênh bán: Tại tiệm, Zalo (khách nhắn đặt, tiệm giao), Sàn TMĐT (bán trên sàn thương mại điện tử); dòng không phải hàng để trống\n- **Ghi chú**: ghi chú của đơn; đơn huỷ hoặc đang giao được ghi ở đây, không có cột trạng thái riêng\n\n## Cột trong `BanHang_2026.xlsx`\n- **ĐG**: đơn giá\n- **TT**: thành tiền của dòng; Voucher, Dùng điểm ghi số âm (trừ vào hoá đơn), Phí ship ghi phí giao\n- **SL**: số lượng (trống ở dòng không phải hàng)\n- **ĐVT**: đơn vị tính\n- **Tên hàng**: tên hàng; dòng không phải hàng ghi Voucher, Dùng <n> điểm hoặc Phí ship\n- **HĐ**: số hoá đơn, ghi ở mọi dòng của hoá đơn kể cả dòng Voucher / Dùng điểm / Phí ship\n- **Ngày**: ngày bán (dòng Voucher / Dùng điểm / Phí ship để trống)\n- **Khách**: tên khách thành viên (Khách lẻ nếu không lưu); dòng không phải hàng để trống\n- **Kênh**: kênh bán: Tại tiệm, Zalo (khách nhắn đặt, tiệm giao), Sàn TMĐT (bán trên sàn thương mại điện tử); dòng không phải hàng để trống\n- **Ghi chú**: ghi chú của đơn; đơn huỷ hoặc đang giao được ghi ở đây, không có cột trạng thái riêng\n\n## Cột trong `QuanLy.xlsx`, sheet `DanhMuc`\n- **Tên hàng**: tên hàng\n- **Tên gọi khác**: tên gọi khác hay dùng (sữa, bỉm), nhiều cách cách nhau dấu phẩy\n- **Nhóm**: nhóm hàng\n- **Hãng**: hãng\n- **Số / Size**: số của sữa (theo tuổi) hoặc size (bỉm, núm ti); trống nếu không có\n- **ĐVT**: đơn vị cơ bản\n- **Quy đổi**: quy đổi đơn vị lớn ra ĐVT, vd \"1 thùng = 4 bịch\"; trống nếu chỉ bán theo ĐVT\n\n## Cột trong `QuanLy.xlsx`, sheet `KhachHang`\n- **Tên KH**: tên khách\n- **SĐT**: số điện thoại\n- **Tên bé**: tên ở nhà của bé\n- **Ngày đăng ký**: ngày đăng ký thành viên; chỉ hoá đơn từ ngày này mới tích, dùng điểm\n- **Điểm hiện có**: điểm còn đến hết ngày cuối dữ liệu\n\n## Cột trong `QuanLy.xlsx`, sheet `NhapHang`\n- **Ngày**: ngày nhập\n- **Số phiếu**: mã phiếu nhập\n- **Nhà cung cấp**: nhà cung cấp\n- **Hàng**: tên hàng\n- **SL**: số lượng nhập\n- **ĐVT**: đơn vị nhập\n- **Đơn giá**: giá nhập một đơn vị (theo đơn vị nhập của dòng)\n- **Thành tiền**: tiền nhập của cả dòng\n- **Ghi chú**: ghi chú\n\n## Cột trong `QuanLy.xlsx`, sheet `KhuyenMai`\n- **Chương trình**: tên chương trình\n- **Hàng áp dụng**: hàng áp dụng (Tất cả: mọi hoá đơn đủ điều kiện ghi ở tên)\n- **Từ ngày**: từ ngày\n- **Đến ngày**: đến ngày (tính cả ngày này)\n\n## Quy ước\n- Dữ liệu có đến hết 30/06/2026.\n- **Nhập hàng**: **Đơn giá** là giá nhập một đơn vị, theo đơn vị nhập của dòng; **Thành tiền** là tiền nhập của cả dòng.\n- **Quy đổi đơn vị**: số lượng ghi theo đơn vị của dòng, hệ số quy đổi ở `QuanLy.xlsx`.\n",
+    "tables": {
+      "ban_hang": {
+        "rows": 32008,
+        "columns": [
+          "dg",
+          "tt",
+          "sl",
+          "dvt",
+          "ten_hang",
+          "hd",
+          "ngay",
+          "khach",
+          "kenh",
+          "ghi_chu",
+          "sheet_name"
+        ]
+      },
+      "quan_ly_danh_muc": {
+        "rows": 77,
+        "columns": [
+          "ten_hang",
+          "ten_goi_khac",
+          "nhom",
+          "hang",
+          "so_size",
+          "dvt",
+          "quy_doi"
+        ]
+      },
+      "quan_ly": {
+        "rows": 77,
+        "columns": [
+          "ten_hang",
+          "ten_goi_khac",
+          "nhom",
+          "hang",
+          "so_size",
+          "dvt",
+          "quy_doi"
+        ]
+      },
+      "quan_ly_khach_hang": {
+        "rows": 420,
+        "columns": [
+          "ten_kh",
+          "sdt",
+          "ten_be",
+          "ngay_dang_ky",
+          "diem_hien_co"
+        ]
+      },
+      "quan_ly_nhap_hang": {
+        "rows": 1503,
+        "columns": [
+          "ngay",
+          "so_phieu",
+          "nha_cung_cap",
+          "hang",
+          "sl",
+          "dvt",
+          "don_gia",
+          "thanh_tien",
+          "ghi_chu"
+        ]
+      },
+      "quan_ly_khuyen_mai": {
+        "rows": 10,
+        "columns": [
+          "chuong_trinh",
+          "hang_ap_dung",
+          "tu_ngay",
+          "den_ngay"
+        ]
+      },
+      "ban_hang_2025": {
+        "rows": 17961,
+        "columns": [
+          "dg",
+          "tt",
+          "sl",
+          "dvt",
+          "ten_hang",
+          "hd",
+          "ngay",
+          "khach",
+          "kenh",
+          "ghi_chu",
+          "sheet_name"
+        ]
+      },
+      "ban_hang_2026": {
+        "rows": 14047,
+        "columns": [
+          "dg",
+          "tt",
+          "sl",
+          "dvt",
+          "ten_hang",
+          "hd",
+          "ngay",
+          "khach",
+          "kenh",
+          "ghi_chu",
+          "sheet_name"
+        ]
+      }
+    }
+  },
+  "dev_014": {
+    "readme": "# Dữ liệu dev_014\n\nCửa hàng điện thoại gửi các sổ tự ghi trên Excel (mục File): sổ bán hàng (sheet `Ghi tắt` và mỗi tháng một sheet) và các sổ phụ: sổ thu máy cũ một file; sổ nợ, sổ góp, sổ bảo hành chung một file, mỗi sổ một sheet. Các sổ nối với nhau qua số thứ tự đơn trong sổ bán, IMEI và tên, số điện thoại của khách.\n\n## File\n- `SoBanHang.xlsx` (xlsx)\n- `ThuMayCu.xlsx` (xlsx)\n- `SoNo.xlsx` (xlsx)\n\n## Quy ước\n- Dữ liệu có đến hết 30/09/2026.\n- **Đơn**: các dòng cùng **STT** là một đơn; khách, bớt, khách trả, ghi chú của đơn lặp lại ở mọi dòng của đơn.\n- **Đơn khách trả lại**: **Ghi chú** của đơn ghi khách trả lại.\n- **Tiền khách trả**: **Khách trả** là số tiền khách trả cho cả đơn (không phải của dòng), đã bớt và đã trừ tiền thu máy cũ; ô bớt, thu máy cũ để trống là không có khoản đó.\n- **Ghi tắt, loại hàng**: sheet `Ghi tắt` cho tên đầy đủ và loại hàng (máy mới, máy cũ, phụ kiện) của từng cách ghi tắt. Máy có IMEI (**IMEI**), phụ kiện không.\n- **Thu máy cũ**: sổ thu máy cũ ghi máy khách đưa, giá thu (**Giá thu**) trừ vào tiền đơn có số thứ tự **Trừ vào (STT sổ bán)** ở sổ bán; **Khách trả** ở sổ bán đã trừ khoản này.\n- **Sổ nợ**: chỉ đơn khách còn nợ sau lúc mua, trừ đơn trả góp (ở sổ góp). Dòng đầu mỗi đơn ghi ngày mua, khách, **Nợ** là số còn nợ sau khi trả lúc mua. Các lần khách trả sau đó ghi ở **Đã trả**, **Ngày trả**: lần đầu ngay ở dòng đầu đơn, mỗi lần sau một dòng riêng. **Ghi chú** ghi số thứ tự đơn ở sổ bán. Đơn ghi nợ vẫn ghi đủ ở sổ bán, **Khách trả** là tiền cả đơn.\n- **Sổ góp**: mỗi đơn trả góp có dòng đầu ghi ngày mua, số thứ tự đơn ở sổ bán, khách, máy, **Giá** là tiền cả đơn, **Trả trước** là tiền trả lúc mua, còn lại chia đều **Số kỳ** kỳ, mỗi kỳ **Góp/tháng**. Kỳ thứ nhất có hạn vào ngày **Hạn góp (ngày)** của tháng ngay sau tháng mua, hạn kỳ sau là cùng ngày tháng kế tiếp. Mỗi lần khách góp ghi **Ngày góp**, **Đã góp**: lần đầu ở dòng đầu đơn, mỗi lần sau một dòng có **STT**. Đơn trả góp vẫn ghi đủ giá ở sổ bán.\n- **Sổ bảo hành**: mỗi lần khách mang máy tới bảo hành một dòng (**Ngày nhận**), máy nhận theo **IMEI**; một máy có thể tới nhiều lần. **Máy** ghi dòng máy (không ghi dung lượng, màu; máy mới và máy cũ cùng dòng ghi như nhau). Bảo hành không thu tiền, không phải đơn bán.\n",
+    "tables": {
+      "so_ban_hang": {
+        "rows": 10306,
+        "columns": [
+          "ngay",
+          "stt",
+          "khach",
+          "hang",
+          "imei",
+          "sl",
+          "gia",
+          "thanh_tien",
+          "bot",
+          "khach_tra",
+          "ghi_chu",
+          "sheet_name"
+        ]
+      },
+      "so_ban_hang_ghi_tat": {
+        "rows": 59,
+        "columns": [
+          "ghi_tat",
+          "ten_hang",
+          "loai"
+        ]
+      },
+      "so_no_so_no": {
+        "rows": 337,
+        "columns": [
+          "ngay",
+          "khach",
+          "sdt",
+          "no",
+          "da_tra",
+          "ngay_tra",
+          "ghi_chu"
+        ]
+      },
+      "so_no": {
+        "rows": 337,
+        "columns": [
+          "ngay",
+          "khach",
+          "sdt",
+          "no",
+          "da_tra",
+          "ngay_tra",
+          "ghi_chu"
+        ]
+      },
+      "so_no_tra_gop": {
+        "rows": 1155,
+        "columns": [
+          "ngay",
+          "stt",
+          "khach",
+          "sdt",
+          "may",
+          "gia",
+          "tra_truoc",
+          "so_ky",
+          "gop_thang",
+          "han_gop_ngay",
+          "ngay_gop",
+          "da_gop"
+        ]
+      },
+      "so_no_bao_hanh": {
+        "rows": 192,
+        "columns": [
+          "ngay_nhan",
+          "khach",
+          "sdt",
+          "may",
+          "imei",
+          "ngay_mua",
+          "loi",
+          "xu_ly"
+        ]
+      },
+      "thu_may_cu": {
+        "rows": 300,
+        "columns": [
+          "ngay",
+          "khach",
+          "sdt",
+          "may_thu",
+          "tinh_trang",
+          "imei",
+          "gia_thu",
+          "tru_vao_stt_so_ban"
+        ]
+      },
+      "thu_may_cu_sheet1": {
+        "rows": 300,
+        "columns": [
+          "ngay",
+          "khach",
+          "sdt",
+          "may_thu",
+          "tinh_trang",
+          "imei",
+          "gia_thu",
+          "tru_vao_stt_so_ban"
+        ]
+      }
+    }
+  }
+}

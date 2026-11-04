@@ -1,0 +1,92 @@
+[
+  {
+    "id": "q_f4966c224caa",
+    "business_id": "biz_105",
+    "question": "Cho hỏi tháng 3/2026 cửa hàng có bao nhiêu % đơn bị huỷ?",
+    "original": 2.19,
+    "date_only_result": 2.19,
+    "target": {
+      "id": "q_f4966c224caa",
+      "type": "percent",
+      "answer": 2.2,
+      "alias": []
+    },
+    "changed": false,
+    "new_matches_target": false,
+    "original_sql": "SELECT ROUND(\n                COUNT(DISTINCT CASE WHEN (TRY_CAST(status AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(status AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(status AS VARCHAR) ILIKE '%cancel%') THEN ma_hoa_don END) * 100.0 /\n                NULLIF(COUNT(DISTINCT ma_hoa_don), 0), 2\n            )\n            FROM so_ban_hang\n            WHERE strftime(TRY_CAST(gio AS DATE), '%Y-%m') = '2026-03'",
+    "probe_sql": "SELECT ROUND(\n                COUNT(DISTINCT CASE WHEN (TRY_CAST(status AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(status AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(status AS VARCHAR) ILIKE '%cancel%') THEN ma_hoa_don END) * 100.0 /\n                NULLIF(COUNT(DISTINCT ma_hoa_don), 0), 2\n            )\n            FROM so_ban_hang\n            WHERE strftime(TRY_CAST(ngay_giao_dich AS DATE), '%Y-%m') = '2026-03'",
+    "scope": "Date-column-only counterfactual; not production correction or complete semantic validation."
+  },
+  {
+    "id": "q_f72b8741ddf4",
+    "business_id": "biz_105",
+    "question": "tỉ lệ huỷ đơn tháng này là bao nhiu %",
+    "original": 1.87,
+    "date_only_result": 1.87,
+    "target": {
+      "id": "q_f72b8741ddf4",
+      "type": "percent",
+      "answer": 1.88,
+      "alias": []
+    },
+    "changed": false,
+    "new_matches_target": false,
+    "original_sql": "SELECT ROUND(\n                COUNT(DISTINCT CASE WHEN (TRY_CAST(status AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(status AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(status AS VARCHAR) ILIKE '%cancel%') THEN ma_hoa_don END) * 100.0 /\n                NULLIF(COUNT(DISTINCT ma_hoa_don), 0), 2\n            )\n            FROM so_ban_hang\n            WHERE strftime(TRY_CAST(gio AS DATE), '%Y-%m') = '2026-06' AND TRY_CAST(gio AS DATE) <= DATE '2026-06-24'",
+    "probe_sql": "SELECT ROUND(\n                COUNT(DISTINCT CASE WHEN (TRY_CAST(status AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(status AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(status AS VARCHAR) ILIKE '%cancel%') THEN ma_hoa_don END) * 100.0 /\n                NULLIF(COUNT(DISTINCT ma_hoa_don), 0), 2\n            )\n            FROM so_ban_hang\n            WHERE strftime(TRY_CAST(ngay_giao_dich AS DATE), '%Y-%m') = '2026-06' AND TRY_CAST(ngay_giao_dich AS DATE) <= DATE '2026-06-24'",
+    "scope": "Date-column-only counterfactual; not production correction or complete semantic validation."
+  },
+  {
+    "id": "q_008f69128180",
+    "business_id": "biz_117",
+    "question": "trong thang 10/2025, ti le don huy la bnhiu %",
+    "original": 1.2,
+    "date_only_result": 1.2,
+    "target": {
+      "id": "q_008f69128180",
+      "type": "percent",
+      "answer": 1.21,
+      "alias": []
+    },
+    "changed": false,
+    "new_matches_target": false,
+    "original_sql": "SELECT ROUND(\n                COUNT(DISTINCT CASE WHEN (TRY_CAST(ghi_chu_tt AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(ghi_chu_tt AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(ghi_chu_tt AS VARCHAR) ILIKE '%cancel%') THEN ma_phieu END) * 100.0 /\n                NULLIF(COUNT(DISTINCT ma_phieu), 0), 2\n            )\n            FROM so_ban_hang\n            WHERE strftime(TRY_CAST(gio AS DATE), '%Y-%m') = '2025-10'",
+    "probe_sql": "SELECT ROUND(\n                COUNT(DISTINCT CASE WHEN (TRY_CAST(ghi_chu_tt AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(ghi_chu_tt AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(ghi_chu_tt AS VARCHAR) ILIKE '%cancel%') THEN ma_phieu END) * 100.0 /\n                NULLIF(COUNT(DISTINCT ma_phieu), 0), 2\n            )\n            FROM so_ban_hang\n            WHERE strftime(TRY_CAST(ngay_lap AS DATE), '%Y-%m') = '2025-10'",
+    "scope": "Date-column-only counterfactual; not production correction or complete semantic validation."
+  },
+  {
+    "id": "q_a05aeaae5493",
+    "business_id": "biz_117",
+    "question": "Tháng 2/2026 cửa hàng có bao nhiêu % đơn bị huỷ ạ?",
+    "original": 2.7,
+    "date_only_result": 2.7,
+    "target": {
+      "id": "q_a05aeaae5493",
+      "type": "percent",
+      "answer": 2.71,
+      "alias": []
+    },
+    "changed": false,
+    "new_matches_target": false,
+    "original_sql": "SELECT ROUND(\n                COUNT(DISTINCT CASE WHEN (TRY_CAST(ghi_chu_tt AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(ghi_chu_tt AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(ghi_chu_tt AS VARCHAR) ILIKE '%cancel%') THEN ma_phieu END) * 100.0 /\n                NULLIF(COUNT(DISTINCT ma_phieu), 0), 2\n            )\n            FROM so_ban_hang\n            WHERE strftime(TRY_CAST(gio AS DATE), '%Y-%m') = '2026-02'",
+    "probe_sql": "SELECT ROUND(\n                COUNT(DISTINCT CASE WHEN (TRY_CAST(ghi_chu_tt AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(ghi_chu_tt AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(ghi_chu_tt AS VARCHAR) ILIKE '%cancel%') THEN ma_phieu END) * 100.0 /\n                NULLIF(COUNT(DISTINCT ma_phieu), 0), 2\n            )\n            FROM so_ban_hang\n            WHERE strftime(TRY_CAST(ngay_lap AS DATE), '%Y-%m') = '2026-02'",
+    "scope": "Date-column-only counterfactual; not production correction or complete semantic validation."
+  },
+  {
+    "id": "q_a954a482d4bf",
+    "business_id": "biz_117",
+    "question": "Tháng 4/2026 cửa hàng có bao nhiêu % đơn bị huỷ vậy?",
+    "original": 1.95,
+    "date_only_result": 1.95,
+    "target": {
+      "id": "q_a954a482d4bf",
+      "type": "percent",
+      "answer": 1.96,
+      "alias": []
+    },
+    "changed": false,
+    "new_matches_target": false,
+    "original_sql": "SELECT ROUND(\n                COUNT(DISTINCT CASE WHEN (TRY_CAST(ghi_chu_tt AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(ghi_chu_tt AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(ghi_chu_tt AS VARCHAR) ILIKE '%cancel%') THEN ma_phieu END) * 100.0 /\n                NULLIF(COUNT(DISTINCT ma_phieu), 0), 2\n            )\n            FROM so_ban_hang\n            WHERE strftime(TRY_CAST(gio AS DATE), '%Y-%m') = '2026-04'",
+    "probe_sql": "SELECT ROUND(\n                COUNT(DISTINCT CASE WHEN (TRY_CAST(ghi_chu_tt AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST(ghi_chu_tt AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST(ghi_chu_tt AS VARCHAR) ILIKE '%cancel%') THEN ma_phieu END) * 100.0 /\n                NULLIF(COUNT(DISTINCT ma_phieu), 0), 2\n            )\n            FROM so_ban_hang\n            WHERE strftime(TRY_CAST(ngay_lap AS DATE), '%Y-%m') = '2026-04'",
+    "scope": "Date-column-only counterfactual; not production correction or complete semantic validation."
+  }
+]
