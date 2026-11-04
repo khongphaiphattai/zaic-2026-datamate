@@ -16,6 +16,19 @@ SPLIT_SHA = 'ba0a70ea94ecf36c6d74b308ba7bcf29358f1ec693fc6cf73167c0e59b6c4ffa'
 BACKUP_SHA = '65914f4369f8409854b75c220ef3999077d4f73b2761c4c48dc71dbde7604965'
 
 
+def check_inference_gpu(csv, *, managed_api_running=False):
+    """Validate CUDA device0, matching the API's explicit device_map={'':0}."""
+    if not csv.strip():
+        raise ValueError('Chưa có GPU. Chọn L4 24GB hoặc A100 / High RAM.')
+    name, total, free = (part.strip() for part in csv.strip().splitlines()[0].rsplit(',', 2))
+    total, free = float(total), float(free)
+    if total < 22000:
+        raise ValueError('Cần GPU tối thiểu L4 24GB; GPU device0 hiện không đủ VRAM cho BF16.')
+    if total < 35000 and free < 20000 and not managed_api_running:
+        raise ValueError('GPU 24GB cần ít nhất 20000 MiB VRAM trống trước nạp model; dừng process GPU khác.')
+    return {'name':name, 'total_mib':total, 'free_mib':free, 'device':0}
+
+
 def ensure_pip(python, bootstrap_python, run_logged):
     """A Python executable may exist in a venv whose pip seed failed."""
     command = [str(python), '-m', 'pip', '--version']

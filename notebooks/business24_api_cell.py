@@ -119,11 +119,17 @@ def start_business24_api():
         import torch
         from transformers import AutoModelForCausalLM, AutoTokenizer
         if not torch.cuda.is_available():
-            raise RuntimeError('Chọn runtime A100 GPU trước khi chạy cell này')
+            raise RuntimeError('Chọn runtime L4 24GB hoặc A100 GPU trước khi chạy cell này')
+        if not torch.cuda.is_bf16_supported():
+            raise RuntimeError('GPU không hỗ trợ BF16; dừng trước khi nạp model')
+        free_bytes, total_bytes = torch.cuda.mem_get_info(0)
+        if total_bytes < 22000 * 1024**2 or (total_bytes < 35000 * 1024**2 and free_bytes < 20000 * 1024**2):
+            raise RuntimeError('VRAM device0 không đủ cho BF16; cần GPU 24GB còn trống trước nạp model')
         print('Đang nạp MODEL BUSINESS24 MỚI vào GPU...',flush=True)
         tokenizer = AutoTokenizer.from_pretrained(str(MODEL_DIR),trust_remote_code=False)
         model = AutoModelForCausalLM.from_pretrained(str(MODEL_DIR),torch_dtype=torch.bfloat16,
-                                                    device_map={'':0},trust_remote_code=False)
+                                                    device_map={'':0},trust_remote_code=False,
+                                                    low_cpu_mem_usage=True,attn_implementation='sdpa')
         model.eval()
         model.config.use_cache = True
         torch.manual_seed(42)
@@ -142,8 +148,16 @@ def start_business24_api():
                     'prompt_tokens':prompt_tokens,'completion_tokens':len(new_tokens),
                     'finish_reason':'length' if len(new_tokens)>=max_tokens else 'stop'}
 
+        torch.cuda.reset_peak_memory_stats(0)
+        generate([{'role':'user','content':'Trả lời OK.'}],1)
+        torch.cuda.synchronize(0)
+        runtime = {'gpu':torch.cuda.get_device_name(0),'dtype':'bfloat16',
+                   'attention':'sdpa','batch_size':1,'max_context_tokens':8192,
+                   'total_vram_gib':round(total_bytes/1024**3,2),
+                   'startup_peak_allocated_gib':round(torch.cuda.max_memory_allocated(0)/1024**3,2)}
+        print('MODEL LOAD + 1-TOKEN SMOKE OK:',json.dumps(runtime),flush=True)
         _business24_server = make_server(generate,{'model':MODEL_ID,'model_dir':str(MODEL_DIR),
-                                                 **manifest,'merge_complete':True})
+                                                 **manifest,'merge_complete':True,'runtime':runtime})
         threading.Thread(target=_business24_server.serve_forever,daemon=True).start()
     with urllib.request.urlopen('http://127.0.0.1:8000/v1/models',timeout=5) as response:
         assert json.load(response)['data'][0]['id']==MODEL_ID

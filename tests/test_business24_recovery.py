@@ -135,3 +135,24 @@ def test_managed_api_reuses_process_and_stops_only_its_group(tmp_path):
         recovery.stop_api(work)
     assert recovery.managed_process(work) is None
     assert recovery.process_identity(pid) is None
+
+@pytest.mark.parametrize('csv,name',[
+    ('NVIDIA L4, 23034, 22500','NVIDIA L4'),
+    ('NVIDIA A100-SXM4-40GB, 40960, 40500','NVIDIA A100-SXM4-40GB'),
+])
+def test_recovery_gpu_supports_l4_and_a100(csv,name):
+    assert load_recovery().check_inference_gpu(csv)['name']==name
+
+@pytest.mark.parametrize('csv',[
+    '', 'Tesla T4, 15360, 15000', 'NVIDIA L4, 23034, 18000',
+    'Tesla T4, 15360, 15000\nNVIDIA A100, 40960, 40000',
+])
+def test_recovery_gpu_rejects_insufficient_device_zero(csv):
+    with pytest.raises(ValueError):load_recovery().check_inference_gpu(csv)
+
+
+def test_preflight_allows_reusing_managed_model_on_l4():
+    recovery=load_recovery()
+    assert recovery.check_inference_gpu('NVIDIA L4, 23034, 7000',managed_api_running=True)['device']==0
+    with pytest.raises(ValueError):
+        recovery.check_inference_gpu('Tesla T4, 15360, 7000',managed_api_running=True)

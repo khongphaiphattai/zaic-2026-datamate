@@ -4,7 +4,7 @@ Chốt phiên 02/11/2026: tạm dừng phần cần GPU theo yêu cầu người
 
 ## File dùng cho phiên sau
 
-- Import [04_business24_restore_and_serve.ipynb](../../notebooks/04_business24_restore_and_serve.ipynb) lên Colab; chọn A100 40 GB / High RAM. Notebook tự chứa toàn bộ helper, không cần upload các file Python hay training bundle.
+- Import [04_business24_restore_and_serve.ipynb](../../notebooks/04_business24_restore_and_serve.ipynb) lên Colab; chọn L4 24 GB hoặc A100 40 GB / High RAM. Notebook tự chứa toàn bộ helper, không cần upload các file Python hay training bundle.
 - Khi cell 3 yêu cầu, chọn `/home/pt/AI Challenge/business24-adapter-backup.zip` (~154 MB). ZIP không được lưu trong Git vì `.gitignore`; giữ bản này trên máy hoặc Drive.
 - SHA256 backup: `65914f4369f8409854b75c220ef3999077d4f73b2761c4c48dc71dbde7604965`. Kiểm lại SHA256/CRC/manifest/data/split thành công. Adapter train xong 633 mẫu từ 24 business; base Qwen revision `c03e6d358207e414f1eca0bb1891e29f1db0e242`.
 
@@ -27,14 +27,17 @@ Không sang cell 3. Venv có Python chưa đảm bảo đã có pip. Bản noteb
 
 ```python
 import sys, subprocess
+from pathlib import Path
 venv_python = '/content/business24-venv/bin/python'
+if not Path(venv_python).exists():
+    subprocess.run([sys.executable, '-m', 'venv', '--without-pip', '/content/business24-venv'], check=True)
 subprocess.run([sys.executable, '-m', 'pip', '--python', venv_python, 'install', 'pip'], check=True)
 subprocess.run([venv_python, '-m', 'pip', '--version'], check=True)
 ```
 
 Cách quản lý venv thiếu pip có trong [tài liệu pip](https://pip.pypa.io/en/stable/topics/python-option/). Không restart runtime, không xóa backup/model, không training lại. Nếu cell sửa cũng lỗi, dừng và gửi output đầy đủ; chưa có xác nhận import/CUDA trên runtime thật thì chưa coi cell 2 hoàn tất.
 
-## Trạng thái agent cần tiếp tục
+## Lịch sử đánh giá grammar (đã hoàn tất trước 04/11; không cần chạy lại)
 
 Grammar đã chốt từ Train-24 ở commit `68b6cac`: thêm 19 Slow candidates trên Train (17 Train-24, 2 SFT-excluded) và 1 Public theo audit offline. Chưa có chất lượng live cho grammar mới. Endpoint cũ NXDOMAIN; không tái dùng URL đó.
 
@@ -49,4 +52,12 @@ Sau khi nhận URL mới, xác minh model `datamate-business24` và data/split/b
 
 Kiểm đủ 3.000 Train/1.000 Public IDs, score từng nhóm 24/6, Public không có nhãn, Fast giữ baseline, calls cache/network tách riêng. Không tune grammar từ Public/nhóm 6 hoặc gọi development evidence là untouched validation. Cập nhật ROADMAP sau từng việc.
 
-Snapshot v2.8 đủ 1.000 dòng ở `artifacts/baseline-v2.8/submission.jsonl`, score Public người dùng báo 0.13400, SHA256 `288ed868fde9175d36afd8995cdaf0e2c5f978a716be5c2a845f35c5e89afb9f`. Root `submission.jsonl` là bản 5 dòng có sẵn, được giữ nguyên; không nộp nhầm bản này. Chưa upload portal; Slow Path vẫn mặc định tắt.
+Snapshot v2.8 đủ 1.000 dòng ở `artifacts/baseline-v2.8/submission.jsonl`, score Public người dùng báo 0.13400, SHA256 `288ed868fde9175d36afd8995cdaf0e2c5f978a716be5c2a845f35c5e89afb9f`. Root `submission.jsonl` hiện đủ 1.000 dòng và đã nộp v3.0 đạt 0.13400 (ảnh người dùng xác nhận). Các ghi chú endpoint/grammar chờ đo ở trên là lịch sử, xem cập nhật 04/11 bên dưới.
+
+## 04/11/2026 — L4 và bước tiếp tục hiện tại
+
+Notebook04 đã cho phép L4 24GB hoặc A100, vẫn dùng BF16 checkpoint business24, không quantize/training. Chọn High RAM: cold merge trên CPU cần >=32GiB RAM khả dụng và >=60GiB disk. Nếu L4 chỉ được cấp khoảng12GiB RAM hệ thống thì chưa đủ cho merge theo phương án này, dù VRAM24GB đủ triển vọng cho inference.
+
+Cell1 kiểm CUDA device0 >=22000MiB total; GPU24GB cần >=20000MiB trống trước load. Cell5 kiểm lại VRAM, BF16, dùng SDPA/low_cpu_mem_usage, batch1 và giới hạn8192 tokens tổng. API chỉ mở sau one-token smoke thành công; output có GPU/VRAM peak. Chưa benchmark Colab L4 nên không đảm bảo tốc độ hoặc context dài. Hardware khác có thể tạo output khác; chạy live probe mới, không giả kết quả bằng bit với A100.
+
+Import lại notebook04 đã cập nhật, chạy cell1→6; cell2 đầy đủ tự tạo venv trước cài pip. ZIP vẫn `business24-adapter-backup.zip`. Gửi URL/v1 mới và output `MODEL LOAD + 1-TOKEN SMOKE OK`. Sau đó agent chạy14 cases structured-intent theo spec04/11, chưa chạy lại toàn bộ Train/Public. Nếu OOM hoặc smoke lỗi, gửi log cell5; không tự đổi precision/cắt prompt.

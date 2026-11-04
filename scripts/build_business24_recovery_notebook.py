@@ -18,7 +18,9 @@ def code(text):
 
 markdown('''
     # Business24 — Khôi phục backup và mở API
-    **Không training.** Chạy lần lượt cell 1 → 7 trong runtime A100 40 GB / High RAM.
+    **Không training.** Chạy lần lượt cell 1 → 7 trong runtime **L4 24 GB hoặc A100 40 GB / High RAM**.
+    L4 dùng nguyên BF16, batch 1, không quantize; tốc độ/chi phí hoàn thành cần đo thực tế.
+    Merge trên CPU vẫn cần ít nhất 32 GiB RAM hệ thống khả dụng và 60 GiB ổ trống.
     Khi có Base URL, gửi agent để đo Train/Public; giữ runtime hoạt động trong lượt đo.
     120 units là ngân sách người dùng báo; notebook không ước lượng số giờ hoặc tự train.
 
@@ -48,15 +50,13 @@ code('#@title 1. Kiểm tra GPU/RAM và chuẩn bị công cụ (mở code nếu
     if sys.version_info < (3, 11) or sys.version_info >= (3, 15):
         raise RuntimeError('Notebook cần Python 3.11–3.14. Gửi phiên bản runtime cho agent.')
     if not shutil.which('nvidia-smi'):
-        raise RuntimeError('Chưa có GPU. Chọn Runtime → Change runtime type → A100 GPU / High RAM.')
-    gpu = subprocess.check_output(['nvidia-smi', '--query-gpu=name,memory.total', '--format=csv,noheader,nounits'], text=True)
+        raise RuntimeError('Chưa có GPU. Chọn Runtime → Change runtime type → L4 hoặc A100 GPU / High RAM.')
+    gpu = subprocess.check_output(['nvidia-smi', '--query-gpu=name,memory.total,memory.free', '--format=csv,noheader,nounits'], text=True)
     print('GPU:', gpu.strip())
-    if max(float(line.rsplit(',', 1)[1]) for line in gpu.strip().splitlines()) < 35000:
-        raise RuntimeError('Chọn A100 40 GB như phiên trước; dừng trước khi tải model.')
     ram_kib = {line.split(':')[0]: int(line.split()[1]) for line in Path('/proc/meminfo').read_text().splitlines() if line.startswith(('MemTotal:', 'MemAvailable:'))}
     print('RAM tổng / khả dụng (GiB):', round(ram_kib['MemTotal']/1024**2, 1), '/', round(ram_kib['MemAvailable']/1024**2, 1))
     if not MERGED.exists() and ram_kib['MemAvailable'] < 32 * 1024**2:
-        raise RuntimeError('RAM khả dụng dưới 32 GiB. Chọn High RAM; cấu hình đã chạy thành công trước đó khoảng 80 GB.')
+        raise RuntimeError('RAM hệ thống khả dụng dưới 32 GiB. Chọn High RAM kể cả khi GPU là L4; chưa tải/merge model.')
     free_gib = shutil.disk_usage('/content').free / 1024**3
     print('Ổ đĩa trống (GiB):', round(free_gib, 1))
     if not MERGED.exists() and free_gib < 60:
@@ -67,6 +67,8 @@ code('#@title 1. Kiểm tra GPU/RAM và chuẩn bị công cụ (mở code nếu
     spec = importlib.util.spec_from_file_location('business24_recovery', WORK / 'business24_recovery.py')
     recovery = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(recovery)
+    GPU_PROFILE = recovery.check_inference_gpu(gpu, managed_api_running=recovery.managed_process(WORK) is not None)
+    print('BF16 inference profile:', GPU_PROFILE)
     print('Sẵn sàng. Adapter còn:', ADAPTER.exists(), '| Merged còn:', MERGED.exists())
 '''))
 
@@ -214,7 +216,8 @@ code('''
 ''')
 
 markdown('''
-    ## Cell 6 — Kiểm API/provenance (không sinh token)
+    ## Cell 6 — Kiểm API/provenance
+    Cell 5 đã sinh thử 1 token trước mở API; đây chưa phải phép đo context dài hoặc chất lượng model.
     Kiểm localhost trước, rồi đường dẫn công khai. Tunnel mới có thể cần ít giây để sẵn sàng.
     Lỗi public sau khi local OK có thể do tunnel/network; chưa có nghĩa weights hỏng.
 ''')

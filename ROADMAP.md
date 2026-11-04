@@ -792,3 +792,20 @@
 - Runner `scripts/probe_structured_intent.py`: provenance business24, tuần tự một call/case, max_tokens256, temperature0/seed42, không retry, output raw/error/exact intent/false accept. Chỉ shadow report, không xuất submission hoặc promote.
 - **37 tests pass** cho parser + monthly hiện có; thêm integration test runner phân biệt semantic false accept với invalid JSON. Endpoint cũ trả DNS error; đã hỏi URL mới từ notebook04. Chưa có inference live hoặc kết quả probe, chưa train thêm; v3.0/submission/score0.13400 giữ nguyên.
 - Khi có URL: `.venv/bin/python scripts/probe_structured_intent.py --base-url URL --output-dir artifacts/structured-intent-live-01`. Sau report mới quyết định compiler MTD và thí nghiệm tiếp theo; không tuyên bố generalization từ bộ probe tuyển chọn này.
+
+### 04/11/2026 — Colab bị chặn ở bootstrap pip
+- Người dùng báo `python -m pip --python /content/business24-venv/bin/python install pip` exit1. Traceback chưa có stdout/stderr của pip nên chưa xác định root cause; chưa sửa version hoặc cài lại cả môi trường.
+- Đối chiếu notebook04 local: cell2 hiện tạo venv khi thiếu rồi gọi `recovery.ensure_pip` qua `run_logged`. Đoạn user chạy là cell `subprocess.run` riêng, khác cell2 local hiện tại; có thể là cell sửa tạm cũ, chưa khẳng định bản notebook remote.
+- Cần kiểm Python venv có tồn tại/chạy được và lấy output pip đầy đủ bằng cell chẩn đoán. Tạm chưa chạy cell3–6 hoặc structured intent probe cho đến khi môi trường qua bước cài/import/CUDA. Bộ14 cases và runner vẫn sẵn sàng, chưa có kết quả live.
+
+### 04/11/2026 — Xác định nguyên nhân lỗi bootstrap Colab
+- Output người dùng xác nhận Python venv không tồn tại, kernel pip26.2.2/Python3.13 chạy được. Lỗi là bootstrap pip vào đường dẫn chưa được tạo; chưa có bằng chứng dependency conflict hoặc pip kernel hỏng.
+- Đã kiểm notebook04 trong repo: cell2 đầy đủ tạo venv với `--without-pip` trước `recovery.ensure_pip`. Hướng khôi phục: dùng notebook04 hiện tại, chạy cell1 rồi cell2 đầy đủ; bỏ cell bootstrap pip riêng cũ. Không cần đổi Torch/training hoặc xóa backup. Chờ bước cài/import/CUDA thành công trước probe14 câu.
+
+### 04/11/2026 — Notebook04 hỗ trợ L4 24GB inference
+- Người dùng đề xuất/ủy quyền đổi sang L4 do A100 khó cấp. Đã đối chiếu NVIDIA L4 (24GB/BF16) và Qwen/Transformers docs. Trọng số BF16 7B khoảng14–15GiB là ước tính, chưa benchmark VRAM/latency L4 thực tế; chi phí hoàn thành không suy từ giá thuê thấp hơn.
+- Notebook04 chấp nhận CUDA device0 >=22000MiB total, GPU24GB cần >=20000MiB trống trước load; bỏ điều kiện A100-only. RAM CPU merge vẫn >=32GiB khả dụng/disk>=60GiB; L4 cấu hình RAM thấp chưa đủ để cold merge. Checkpoint/ZIP/revision vẫn như cũ, không training/quantize.
+- API dùng BF16/SDPA/low_cpu_mem_usage, batch1/request lock, giữ giới hạn8192 tổng tokens. Trước mở API/tunnel, sinh thử1token và log GPU/peak memory; provenance có runtime metadata. Giữ nguyên dtype không đảm bảo outputs bitwise giống A100, cần live probe14câu dưới hardware mới.
+- Preflight nhận biết managed API đang chạy để cho phép re-run cell1 khi model chiếm VRAM; API fresh-load vẫn kiểm VRAM nghiêm ngặt. Đã sửa đoạn pip thủ công trong runbook để tạo venv nếu chưa tồn tại.
+- Spec `docs/plans/2026-11-04-l4-recovery.md`, runbook `docs/runbooks/business24-resume.md`, notebook đã rebuild/compile/kiểm embedded sources. Chờ người dùng chạy L4 tới cell6 và gửi URL + output smoke; chưa xác nhận merge/inference L4 thực tế, chưa đổi submission hoặc score.
+- Verification cuối: **16 recovery/API tests pass (0,67 giây)**, gồm L4/A100, VRAM thấp/T4/device0, re-use managed API, notebook standalone/embedded sources và HTTP contract. Notebook giữ8codecells; root v3.0 SHA không đổi. Đây là kiểm local, không thay cho GPU smoke trên Colab.

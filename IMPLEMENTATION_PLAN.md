@@ -368,3 +368,7 @@ Public v3.1 local đã hoàn tất: 0 đáp án mới, file trùng v3.0; chưa �
 ## 04/11/2026 — Structured intent shadow probe
 
 Đã chuẩn bị spec, strict JSON parser, runner và14 cases Train-24/synthetic. Mục tiêu phân biệt full_month với MTD same-period trước khi viết compiler mới; chưa tích hợp extractor vào pipeline. Chờ URL Colab business24 mới (URL cũ DNS failure). Xem ROADMAP cuối và `docs/plans/2026-11-04-structured-intent-probe.md`; không training hoặc nộp lại submission hiện tại.
+
+### L4 recovery (04/11/2026)
+
+Notebook04 hiện hỗ trợ L4 24GB hoặc A100 cho BF16 inference, có kiểm VRAM và one-token startup smoke. Cold CPU merge vẫn cần >=32GiB RAM hệ thống khả dụng. Model/backup không đổi; phần việc tiếp theo vẫn structured-intent probe14câu, chờ endpoint mới sau smoke trên L4. Chi tiết spec/runbook và giới hạn kiểm chứng ở ROADMAP cuối.
