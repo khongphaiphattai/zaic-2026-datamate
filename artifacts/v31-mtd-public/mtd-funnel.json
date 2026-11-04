@@ -1,0 +1,11 @@
+{
+  "attempted_mtd": 4,
+  "answered_mtd": 0,
+  "rejections": {
+    "Unsupported sales status": 1,
+    "Unverified README role: don_so": 1,
+    "Unverified README role: hd": 1,
+    "Unverified README role: stt": 1
+  },
+  "businesses": 4
+}

@@ -135,3 +135,42 @@ def test_mtd_is_not_automatically_enabled_in_existing_wrapper(context):
     agent=monthly_growth.MonthlyGrowthAgent(Base())
     assert agent.answer_query('Từ đầu tháng này đến hôm nay doanh thu thay đổi bao nhiêu % so với cùng kỳ tháng trước?',
                               context,'2025-03-09')==('abstain',None,'base refusal','abstain')
+
+
+MTD_QUESTION='Từ đầu tháng này đến hết hôm nay, doanh thu thay đổi bao nhiêu % so với cùng kỳ tháng trước?'
+
+
+def test_shared_factory_mtd_opt_in(context):
+    from zaic_2026_datamate.pipeline import PipelineConfig,build_agent
+    assert build_agent(PipelineConfig()).answer_query(MTD_QUESTION,context,'2025-03-09')[0]=='abstain'
+    agent=build_agent(PipelineConfig(monthly_growth=True,mtd_growth=True))
+    assert agent.answer_query(MTD_QUESTION,context,'2025-03-09')==('percent',50.0,None,'mtd_growth_path')
+    assert agent.last_mtd_growth['previous_revenue']==200
+    assert agent.last_monthly_growth=={}
+
+
+@pytest.mark.parametrize('original',[
+    ('number',7,None,'fast_path'),('percent',9,None,'slow_path'),
+    ('unanswerable',None,'missing','fast_path'),('abstain',None,'base','abstain')])
+def test_mtd_wrapper_preserves_existing_answer_and_refusal(context,original):
+    from zaic_2026_datamate.mtd_growth import MTDGrowthAgent
+    class Base:
+        def answer_query(self,*args):return original
+    agent=MTDGrowthAgent(Base())
+    if original[0]=='abstain':context.readme='No verified metric'
+    assert agent.answer_query(MTD_QUESTION,context,'2025-03-09')==original
+
+
+def test_generator_exports_same_mtd_factory_route(context,tmp_path,monkeypatch):
+    import json
+    from scripts import generate_public_submission as generator
+    class Loader:
+        def __init__(self,*args):pass
+        def load_business(self,bid):return context
+    monkeypatch.setattr(generator,'DataLoader',Loader)
+    source=tmp_path/'questions.jsonl'
+    source.write_text(json.dumps({'id':'mtd','business_id':'fixture','question':MTD_QUESTION,'as_of_date':'2025-03-09'})+'\n')
+    output=tmp_path/'submission.jsonl'
+    stats=generator.generate_submission(questions_path=source,output_path=output,monthly_growth=True,mtd_growth=True)
+    assert json.loads(output.read_text())=={'id':'mtd','type':'percent','answer':50.0}
+    assert stats['mtd_growth_path']==1 and stats['monthly_growth_path']==stats['slow_path']==0

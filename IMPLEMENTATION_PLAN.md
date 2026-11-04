@@ -420,3 +420,16 @@ baseline answers và đo full Train/Public offline trước xét release. Model
 chỉ đồng ý với certifier không thêm coverage nên chưa cần GPU cho nhánh này;
 bất kỳ mở rộng model ngoài grammar cần thí nghiệm/kiểm chứng riêng. Chưa có
 integration/candidate/score mới tại mốc này.
+
+### Hoàn tất MTD integration và full replay (04/11/2026)
+
+Shared factory/generator/diagnostics có `--mtd-growth`, mặc địnhfalse, giữ
+mọi đáp án cũ và route/audit riêng.306tests pass. FullTrain857đúng/6sai,
+PA0.2836667; thêm17đúngTrain24, nhóm6không tăng. FullPublic vẫn204/796,
+0new, candidate cùngSHA v3.0; không release/resubmit hoặc gán score mới.
+0network,34Train/1Publiccached calls, SQL thực thi lại, source/config
+Train/Public giữ nguyên. Bằng chứng `artifacts/v31-mtd-train/README.md`.
+
+Public4MTDattempts bị schema/status chặn; bước tiếp theo là canonical
+status/README role audit từTrain24 và counterexamples, không mở wording hoặc
+model tự do. No Colab/training needed theo bằng chứng hiện tại.

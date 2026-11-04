@@ -864,3 +864,20 @@
 - **300tests pass (25.85s)**; đã đối chiếu77plans với nhãn chỉ để chấm,17numeric outputs khớp kiểm độc lập lượt trước, đủIDs/counts và source hashes. Artifacts `artifacts/growth-semantic-gate/`; review/giới hạn và bước tiếp theo trong README. Root v3.0SHA không đổi,0model/network calls,không training.
 - Cổng chỉ nhận câu đã được deterministic certifier hiểu, nên gọi model tại nhánh này không có demonstrated incremental coverage. Không gán17đúng cho AI hoặc tuyên bố universal safety. Chưa tích hợp factory/pipeline, chưa full Train/Public hoặc candidate mới.
 - Bước tiếp theo: tích hợp MTD opt-in với route riêng/bảo toàn đáp án cũ, full Train/Public bằng offline replay, source freeze trước Public. Không cần Colab để thêm model call dư thừa; chỉ cân nhắc thí nghiệm model mới khi có cơ hội coverage ngoài certifier và bộ kiểm chứng riêng. Không tune wording từ Public hay nộp file trùng.
+
+### 04/11/2026 — Tích hợp MTD opt-in vào shared pipeline
+- `PipelineConfig.mtd_growth=False` mặc định, cùng cờ `--mtd-growth` ở generator/diagnostics. Wrapper MTD đặt sau các nhánh cũ, chỉ nhận certified MTD và chỉ thay abstain khi compiler trả percent; giữ original prediction/route/reason khi dữ liệu bị từ chối. Route `mtd_growth_path`, counter/audit và source hashes riêng.
+- Spec `docs/plans/2026-11-04-mtd-integration.md`. TDD6ca integration fail trước implementation; sau đó48tests MTD/config pass (0.92s), gồm factory mặc định/bật cờ, preservation number/percent/unanswerable/refusal và generator thật với DuckDB.
+- Đang full local suite và full Train replay tại `artifacts/v31-mtd-train/`, dùng cache raw responses/provenance từ monthly baseline; SQL thực thi lại và missing cache phải dừng. Chưa có kết quả full hoặc candidate Public tại mốc này; root v3.0 giữ nguyên, không Colab.
+
+### 04/11/2026 — Full Train MTD hoàn tất và xác minh bảo toàn baseline
+- Full Train **857đúng/6sai/2.137abstain**, PA **0.2836667** so monthly baseline0.27800. MTD thêm17đúng/0sai, đềuTrain24:biz121(4),biz122(9),biz130(4). Nhóm6không thêm đáp án; đây là development evidence, không phải unseen hoặc tăngPublic.
+- Kiểm độc lập3.000IDs/correctness, mọi old non-abstain prediction/route/reason và các abstain còn lại giữ nguyên; raw prompt/responses/call counts không đổi.34cached model calls/0network, SQL thực thi lại. Verification `artifacts/v31-mtd-train/verification.json`, công cụ `scripts/verify_mtd_evaluation.py`.
+- **306tests pass (24.08s)** toàn suite,1pandas warning đã biết. Đã review wrapper/factory/generator/diagnostics: MTD chỉ sau abstain, giữ guards và original refusal; chưa sửa grammar từ kết quả đo. Root/release v3.0SHA không đổi.
+- Đang Public với source/config giữ nguyên tại `artifacts/v31-mtd-public/`; chưa có kết quả hoặc release mới tại mốc này. Không mở Colab/training, không suy Public score từTrain.
+
+### 04/11/2026 — MTD full Public:0đáp án mới, xác định blockers schema/status
+- Public đủ1.000IDs/đúng thứ tự, **204trả lời/796abstain/0đáp án mới**. Candidate byte-identical v3.0, SHA `288ed868fde9175d36afd8995cdaf0e2c5f978a716be5c2a845f35c5e89afb9f`. Public correctness/targets đềunull, root/release giữ nguyên; không nộp lại hoặc gọi đây là tăng điểm.
+- Kiểm mọi old prediction/route/reason và raw calls/prompts/responses giữ nguyên; Train/Public sources/config bằng nhau,1cached raw call/0network choPublic. Verification ở `artifacts/v31-mtd-public/verification.json`.306tests pass; không Colab/training, chưa có release/score mới.
+- Funnel MTD:Train55attempts/11business (17accepted,20unsupported-status,18roles/columns); Public4attempts/4business đều bị chặn (1unsupported-status,3unverified order-role). Language gate đã nhận được4câu, nên ưu tiên kế tiếp là contract schema/status, không chỉ thêm regex hoặc sửa prompt. Chi tiết `mtd-funnel.json` từng run và `artifacts/v31-mtd-train/README.md`.
+- Đã hoàn tất integration+full evaluation. Bước local tiếp theo: audit status canonicalization và README-scoped role linking từTrain24, test nhầm bảng/sheet/ngày bán/ngày tạo/returns/grain. Không hardcode3tên cộtPublic hoặc nới guard chỉ vì4ca bị chặn. Chỉ đoPublic lại sau contract/source được chứng minh và freeze.

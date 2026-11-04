@@ -1,0 +1,13 @@
+{
+  "attempted_mtd": 55,
+  "answered_mtd": 17,
+  "rejections": {
+    "Unsupported sales status": 20,
+    "Unverified README role: gio": 12,
+    "Unverified README role: ma_hoa_don": 3,
+    "Missing sales columns": 1,
+    "accepted": 17,
+    "Unverified README role: order_id": 2
+  },
+  "businesses": 11
+}
