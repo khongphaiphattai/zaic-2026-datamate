@@ -1,4 +1,5 @@
 """Read-only frozen answer audit; run from repo root with .venv/bin/python."""
+import argparse
 import collections
 import hashlib
 import json
@@ -6,7 +7,10 @@ import re
 from pathlib import Path
 from zaic_2026_datamate.data_loader import DataLoader
 
-OUT = Path(__file__).parent
+parser = argparse.ArgumentParser()
+parser.add_argument('--output-dir', type=Path, default=Path(__file__).parent)
+OUT = parser.parse_args().output_dir
+OUT.mkdir(parents=True, exist_ok=True)
 TRACE = Path('artifacts/v31-status-public/trace.jsonl')
 rows = [json.loads(s) for s in TRACE.read_text().splitlines()]
 answers = [r for r in rows if r['type'] != 'abstain']

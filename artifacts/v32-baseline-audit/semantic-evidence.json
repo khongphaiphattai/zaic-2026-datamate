@@ -1,0 +1,838 @@
+[
+  {
+    "business": "dev_001",
+    "statuses": [
+      {
+        "table": "so_chi_tiet_ban_hang",
+        "column": "trang_thai",
+        "raw": "Hoàn thành",
+        "rows": 50135,
+        "canonical": "completed",
+        "legacy_excluded": false,
+        "known_disagreement": false
+      },
+      {
+        "table": "so_chi_tiet_ban_hang",
+        "column": "trang_thai",
+        "raw": "đã xong",
+        "rows": 36173,
+        "canonical": "completed",
+        "legacy_excluded": false,
+        "known_disagreement": false
+      },
+      {
+        "table": "so_chi_tiet_ban_hang",
+        "column": "trang_thai",
+        "raw": "Đã hủy đơn",
+        "rows": 1442,
+        "canonical": "cancelled",
+        "legacy_excluded": true,
+        "known_disagreement": false
+      },
+      {
+        "table": "so_chi_tiet_ban_hang",
+        "column": "trang_thai",
+        "raw": "khách hủy",
+        "rows": 1080,
+        "canonical": "cancelled",
+        "legacy_excluded": true,
+        "known_disagreement": false
+      },
+      {
+        "table": "so_chi_tiet_ban_hang",
+        "column": "trang_thai",
+        "raw": "Đã hoàn hàng",
+        "rows": 843,
+        "canonical": "returned",
+        "legacy_excluded": true,
+        "known_disagreement": false
+      },
+      {
+        "table": "so_chi_tiet_ban_hang",
+        "column": "trang_thai",
+        "raw": "hàng trả về",
+        "rows": 577,
+        "canonical": "returned",
+        "legacy_excluded": true,
+        "known_disagreement": false
+      },
+      {
+        "table": "so_chi_tiet_ban_hang",
+        "column": "trang_thai",
+        "raw": "Đang giao hàng",
+        "rows": 47,
+        "canonical": "shipping",
+        "legacy_excluded": false,
+        "known_disagreement": false
+      }
+    ],
+    "address_evidence": {
+      "address_named_columns": [],
+      "street_name_hits_any_text": [],
+      "files": [
+        {
+          "name": "Danh s├ích h├áng h├│a.xlsx",
+          "sha256": "92ef8720f07501ae4a71b843169d75ffaf2af2a0ed465c64d11df77b50a6f6a5"
+        },
+        {
+          "name": "README.md",
+          "sha256": "8e197003cef404f44a549d6840c4b136adaee1aaa0860156773ef6670df9c6db"
+        },
+        {
+          "name": "So_chi_tiet_ban_hang.xlsx",
+          "sha256": "a26e9ff3da30989c60eb67be95aa059676f8118678349b9340d2083f0ae53cbc"
+        }
+      ],
+      "interpretation": "No address column and no queried street mentions supports missing-data refusal, but schema/content scan is not universal semantic proof."
+    }
+  },
+  {
+    "business": "dev_002",
+    "statuses": [
+      {
+        "table": "ban_hang",
+        "column": "trang_thai_don_hang",
+        "raw": "Đã hoàn thành",
+        "rows": 82072,
+        "canonical": "completed",
+        "legacy_excluded": false,
+        "known_disagreement": false
+      },
+      {
+        "table": "ban_hang",
+        "column": "trang_thai_don_hang",
+        "raw": "Đã hủy",
+        "rows": 1683,
+        "canonical": "cancelled",
+        "legacy_excluded": true,
+        "known_disagreement": false
+      },
+      {
+        "table": "ban_hang",
+        "column": "trang_thai_don_hang",
+        "raw": "Đã hoàn hàng",
+        "rows": 333,
+        "canonical": "returned",
+        "legacy_excluded": true,
+        "known_disagreement": false
+      },
+      {
+        "table": "ban_hang",
+        "column": "trang_thai_don_hang",
+        "raw": "Đang giao dịch",
+        "rows": 58,
+        "canonical": "shipping",
+        "legacy_excluded": false,
+        "known_disagreement": false
+      }
+    ],
+    "address_evidence": null
+  },
+  {
+    "business": "dev_003",
+    "statuses": [
+      {
+        "table": "ban_hang_tong_hop",
+        "column": "trang_thai_giao",
+        "raw": "Xong",
+        "rows": 97634,
+        "canonical": "completed",
+        "legacy_excluded": false,
+        "known_disagreement": false
+      },
+      {
+        "table": "ban_hang_tong_hop",
+        "column": "trang_thai_giao",
+        "raw": "Đã hủy đơn",
+        "rows": 2110,
+        "canonical": "cancelled",
+        "legacy_excluded": true,
+        "known_disagreement": false
+      },
+      {
+        "table": "ban_hang_tong_hop",
+        "column": "trang_thai_giao",
+        "raw": "Khách trả",
+        "rows": 422,
+        "canonical": null,
+        "legacy_excluded": true,
+        "known_disagreement": false
+      },
+      {
+        "table": "ban_hang_tong_hop",
+        "column": "trang_thai_giao",
+        "raw": "Đang vận chuyển",
+        "rows": 44,
+        "canonical": "shipping",
+        "legacy_excluded": false,
+        "known_disagreement": false
+      }
+    ],
+    "address_evidence": null
+  },
+  {
+    "business": "dev_004",
+    "statuses": [
+      {
+        "table": "so_ban_hang",
+        "column": "trang_thai_xu_ly",
+        "raw": "Hoàn thành",
+        "rows": 10811,
+        "canonical": "completed",
+        "legacy_excluded": false,
+        "known_disagreement": false
+      },
+      {
+        "table": "so_ban_hang",
+        "column": "trang_thai_xu_ly",
+        "raw": "Đã hoàn thành",
+        "rows": 10658,
+        "canonical": "completed",
+        "legacy_excluded": false,
+        "known_disagreement": false
+      },
+      {
+        "table": "so_ban_hang",
+        "column": "trang_thai_xu_ly",
+        "raw": "đã xong",
+        "rows": 10455,
+        "canonical": "completed",
+        "legacy_excluded": false,
+        "known_disagreement": false
+      },
+      {
+        "table": "so_ban_hang",
+        "column": "trang_thai_xu_ly",
+        "raw": "Huỷ đơn",
+        "rows": 342,
+        "canonical": "cancelled",
+        "legacy_excluded": true,
+        "known_disagreement": false
+      },
+      {
+        "table": "so_ban_hang",
+        "column": "trang_thai_xu_ly",
+        "raw": "Không giao được",
+        "rows": 327,
+        "canonical": null,
+        "legacy_excluded": true,
+        "known_disagreement": false
+      },
+      {
+        "table": "so_ban_hang",
+        "column": "trang_thai_xu_ly",
+        "raw": "hàng trả về",
+        "rows": 82,
+        "canonical": "returned",
+        "legacy_excluded": true,
+        "known_disagreement": false
+      },
+      {
+        "table": "so_ban_hang",
+        "column": "trang_thai_xu_ly",
+        "raw": "Đổi trả",
+        "rows": 78,
+        "canonical": "returned",
+        "legacy_excluded": true,
+        "known_disagreement": false
+      },
+      {
+        "table": "so_ban_hang",
+        "column": "trang_thai_xu_ly",
+        "raw": "trả lại",
+        "rows": 71,
+        "canonical": "returned",
+        "legacy_excluded": true,
+        "known_disagreement": false
+      },
+      {
+        "table": "so_ban_hang",
+        "column": "trang_thai_xu_ly",
+        "raw": "Đã trả hàng",
+        "rows": 60,
+        "canonical": "returned",
+        "legacy_excluded": true,
+        "known_disagreement": false
+      },
+      {
+        "table": "so_ban_hang",
+        "column": "trang_thai_xu_ly",
+        "raw": "Đang giao hàng",
+        "rows": 5,
+        "canonical": "shipping",
+        "legacy_excluded": false,
+        "known_disagreement": false
+      },
+      {
+        "table": "so_ban_hang",
+        "column": "trang_thai_xu_ly",
+        "raw": "đang ship",
+        "rows": 4,
+        "canonical": null,
+        "legacy_excluded": false,
+        "known_disagreement": false
+      },
+      {
+        "table": "so_ban_hang",
+        "column": "trang_thai_xu_ly",
+        "raw": "Đang vận chuyển",
+        "rows": 3,
+        "canonical": "shipping",
+        "legacy_excluded": false,
+        "known_disagreement": false
+      }
+    ],
+    "address_evidence": {
+      "address_named_columns": [],
+      "street_name_hits_any_text": [],
+      "files": [
+        {
+          "name": "SoNhapHang.xlsx",
+          "sha256": "3419e009511ad3df834a0e173f5dee1e68afeda926b49cced23f165c416f8896"
+        },
+        {
+          "name": "TonKho.xlsx",
+          "sha256": "f6357604d8518c6361b65860a3e9de1e7052b65ef29e6592eaef18f6bda63e84"
+        },
+        {
+          "name": "SoHanNo.xlsx",
+          "sha256": "262edca40adb36eaada9b0a45ddf6771bc8893164884f5edd7015aaca6506814"
+        },
+        {
+          "name": "DanhMuc.xlsx",
+          "sha256": "2712fffe00ae7dc25fc5e75a92e9c714144fe86979820fc3f13582f412fa22b5"
+        },
+        {
+          "name": "SoGiaoHang.xlsx",
+          "sha256": "9ee5af7f761e5b4ee90f15a6f27c671b2d229edf2ac647636ce9b4f1dc54eb43"
+        },
+        {
+          "name": "README.md",
+          "sha256": "bf4beeba546322af4f82f1be89de60ae5d0da540091f436eef51fdbad1301881"
+        },
+        {
+          "name": "BangGia.xlsx",
+          "sha256": "15a42e1a9d7202ac5b9441a6bf30687c348b7bf9592167875e8fad44e9ce9bd4"
+        },
+        {
+          "name": "SoBanHang.xlsx",
+          "sha256": "bfeb3c26e4b205bf849d82c54b2634a8e9acf03a567fb650a03cff44079df5ee"
+        }
+      ],
+      "interpretation": "No address column and no queried street mentions supports missing-data refusal, but schema/content scan is not universal semantic proof."
+    }
+  },
+  {
+    "business": "dev_005",
+    "statuses": [
+      {
+        "table": "ban_hang",
+        "column": "trang_thai_don_hang",
+        "raw": "ok",
+        "rows": 42350,
+        "canonical": null,
+        "legacy_excluded": false,
+        "known_disagreement": false
+      },
+      {
+        "table": "ban_hang",
+        "column": "trang_thai_don_hang",
+        "raw": "Đã giao",
+        "rows": 32156,
+        "canonical": null,
+        "legacy_excluded": false,
+        "known_disagreement": false
+      },
+      {
+        "table": "ban_hang",
+        "column": "trang_thai_don_hang",
+        "raw": "hủy",
+        "rows": 436,
+        "canonical": "cancelled",
+        "legacy_excluded": true,
+        "known_disagreement": false
+      },
+      {
+        "table": "ban_hang",
+        "column": "trang_thai_don_hang",
+        "raw": "trả lại",
+        "rows": 395,
+        "canonical": "returned",
+        "legacy_excluded": true,
+        "known_disagreement": false
+      },
+      {
+        "table": "ban_hang",
+        "column": "trang_thai_don_hang",
+        "raw": "Đã huỷ",
+        "rows": 332,
+        "canonical": "cancelled",
+        "legacy_excluded": true,
+        "known_disagreement": false
+      },
+      {
+        "table": "ban_hang",
+        "column": "trang_thai_don_hang",
+        "raw": "Trả hàng",
+        "rows": 270,
+        "canonical": "returned",
+        "legacy_excluded": true,
+        "known_disagreement": false
+      },
+      {
+        "table": "ban_hang",
+        "column": "trang_thai_don_hang",
+        "raw": "Đang xử lý",
+        "rows": 31,
+        "canonical": null,
+        "legacy_excluded": false,
+        "known_disagreement": false
+      }
+    ],
+    "address_evidence": null
+  },
+  {
+    "business": "dev_006",
+    "statuses": [
+      {
+        "table": "don_hang",
+        "column": "tinh_trang",
+        "raw": "completed",
+        "rows": 37070,
+        "canonical": "completed",
+        "legacy_excluded": false,
+        "known_disagreement": false
+      },
+      {
+        "table": "don_hang",
+        "column": "tinh_trang",
+        "raw": "cancelled",
+        "rows": 395,
+        "canonical": "cancelled",
+        "legacy_excluded": true,
+        "known_disagreement": false
+      },
+      {
+        "table": "don_hang",
+        "column": "tinh_trang",
+        "raw": "returned",
+        "rows": 352,
+        "canonical": "returned",
+        "legacy_excluded": true,
+        "known_disagreement": false
+      },
+      {
+        "table": "don_hang",
+        "column": "tinh_trang",
+        "raw": "shipping",
+        "rows": 16,
+        "canonical": "shipping",
+        "legacy_excluded": false,
+        "known_disagreement": false
+      },
+      {
+        "table": "phieu_nhap",
+        "column": "tinh_trang",
+        "raw": "received",
+        "rows": 494,
+        "canonical": null,
+        "legacy_excluded": false,
+        "known_disagreement": false
+      }
+    ],
+    "address_evidence": null
+  },
+  {
+    "business": "dev_007",
+    "statuses": [
+      {
+        "table": "chi_tiet_hoa_don",
+        "column": "tien_do",
+        "raw": "Xong",
+        "rows": 116442,
+        "canonical": "completed",
+        "legacy_excluded": false,
+        "known_disagreement": false
+      },
+      {
+        "table": "chi_tiet_hoa_don",
+        "column": "tien_do",
+        "raw": "Đã hủy đơn",
+        "rows": 2329,
+        "canonical": "cancelled",
+        "legacy_excluded": true,
+        "known_disagreement": false
+      },
+      {
+        "table": "chi_tiet_hoa_don",
+        "column": "tien_do",
+        "raw": "Đã trả hàng",
+        "rows": 244,
+        "canonical": "returned",
+        "legacy_excluded": true,
+        "known_disagreement": false
+      },
+      {
+        "table": "chi_tiet_hoa_don",
+        "column": "tien_do",
+        "raw": "Đang xử lý",
+        "rows": 55,
+        "canonical": null,
+        "legacy_excluded": false,
+        "known_disagreement": false
+      }
+    ],
+    "address_evidence": null
+  },
+  {
+    "business": "dev_008",
+    "statuses": [
+      {
+        "table": "chi_tiet_hoa_don",
+        "column": "tt_don",
+        "raw": "đã lấy",
+        "rows": 49938,
+        "canonical": "completed",
+        "legacy_excluded": false,
+        "known_disagreement": false
+      },
+      {
+        "table": "chi_tiet_hoa_don",
+        "column": "tt_don",
+        "raw": "Thành công",
+        "rows": 49059,
+        "canonical": "completed",
+        "legacy_excluded": false,
+        "known_disagreement": false
+      },
+      {
+        "table": "chi_tiet_hoa_don",
+        "column": "tt_don",
+        "raw": "đã xong",
+        "rows": 48910,
+        "canonical": "completed",
+        "legacy_excluded": false,
+        "known_disagreement": false
+      },
+      {
+        "table": "chi_tiet_hoa_don",
+        "column": "tt_don",
+        "raw": "hủy đơn",
+        "rows": 1623,
+        "canonical": "cancelled",
+        "legacy_excluded": true,
+        "known_disagreement": false
+      },
+      {
+        "table": "chi_tiet_hoa_don",
+        "column": "tt_don",
+        "raw": "khách hủy",
+        "rows": 1412,
+        "canonical": "cancelled",
+        "legacy_excluded": true,
+        "known_disagreement": false
+      },
+      {
+        "table": "chi_tiet_hoa_don",
+        "column": "tt_don",
+        "raw": "Hoàn trả",
+        "rows": 131,
+        "canonical": "returned",
+        "legacy_excluded": true,
+        "known_disagreement": false
+      },
+      {
+        "table": "chi_tiet_hoa_don",
+        "column": "tt_don",
+        "raw": "trả hàng",
+        "rows": 114,
+        "canonical": "returned",
+        "legacy_excluded": true,
+        "known_disagreement": false
+      },
+      {
+        "table": "chi_tiet_hoa_don",
+        "column": "tt_don",
+        "raw": "Đã hoàn hàng",
+        "rows": 80,
+        "canonical": "returned",
+        "legacy_excluded": true,
+        "known_disagreement": false
+      },
+      {
+        "table": "chi_tiet_hoa_don",
+        "column": "tt_don",
+        "raw": "Đang giao",
+        "rows": 33,
+        "canonical": "shipping",
+        "legacy_excluded": false,
+        "known_disagreement": false
+      },
+      {
+        "table": "chi_tiet_hoa_don",
+        "column": "tt_don",
+        "raw": "Đang giao dịch",
+        "rows": 28,
+        "canonical": "shipping",
+        "legacy_excluded": false,
+        "known_disagreement": false
+      },
+      {
+        "table": "chi_tiet_nhap_hang",
+        "column": "trang_thai_phieu",
+        "raw": "Đã nhập hàng",
+        "rows": 1836,
+        "canonical": null,
+        "legacy_excluded": false,
+        "known_disagreement": false
+      }
+    ],
+    "address_evidence": null
+  },
+  {
+    "business": "dev_009",
+    "statuses": [
+      {
+        "table": "danh_sach_hoa_don",
+        "column": "trang_thai_don",
+        "raw": "Xong",
+        "rows": 21424,
+        "canonical": "completed",
+        "legacy_excluded": false,
+        "known_disagreement": false
+      },
+      {
+        "table": "danh_sach_hoa_don",
+        "column": "trang_thai_don",
+        "raw": "hủy đơn",
+        "rows": 675,
+        "canonical": "cancelled",
+        "legacy_excluded": true,
+        "known_disagreement": false
+      },
+      {
+        "table": "danh_sach_hoa_don",
+        "column": "trang_thai_don",
+        "raw": "trả hàng",
+        "rows": 384,
+        "canonical": "returned",
+        "legacy_excluded": true,
+        "known_disagreement": false
+      },
+      {
+        "table": "danh_sach_hoa_don",
+        "column": "trang_thai_don",
+        "raw": "Đang giao dịch",
+        "rows": 7,
+        "canonical": "shipping",
+        "legacy_excluded": false,
+        "known_disagreement": false
+      }
+    ],
+    "address_evidence": null
+  },
+  {
+    "business": "dev_010",
+    "statuses": [
+      {
+        "table": "don_hang",
+        "column": "xu_ly",
+        "raw": "completed",
+        "rows": 24008,
+        "canonical": "completed",
+        "legacy_excluded": false,
+        "known_disagreement": false
+      },
+      {
+        "table": "don_hang",
+        "column": "xu_ly",
+        "raw": "cancelled",
+        "rows": 775,
+        "canonical": "cancelled",
+        "legacy_excluded": true,
+        "known_disagreement": false
+      },
+      {
+        "table": "don_hang",
+        "column": "xu_ly",
+        "raw": "returned",
+        "rows": 400,
+        "canonical": "returned",
+        "legacy_excluded": true,
+        "known_disagreement": false
+      },
+      {
+        "table": "don_hang",
+        "column": "xu_ly",
+        "raw": "shipping",
+        "rows": 8,
+        "canonical": "shipping",
+        "legacy_excluded": false,
+        "known_disagreement": false
+      }
+    ],
+    "address_evidence": null
+  },
+  {
+    "business": "dev_011",
+    "statuses": [
+      {
+        "table": "so_ban_hang_so_ban_hang",
+        "column": "ghi_chu",
+        "raw": "<NULL>",
+        "rows": 6014,
+        "canonical": null,
+        "legacy_excluded": false,
+        "known_disagreement": false
+      },
+      {
+        "table": "so_ban_hang_so_ban_hang",
+        "column": "ghi_chu",
+        "raw": "trả lại hàng",
+        "rows": 12,
+        "canonical": null,
+        "legacy_excluded": true,
+        "known_disagreement": false
+      },
+      {
+        "table": "so_ban_hang_so_ban_hang",
+        "column": "ghi_chu",
+        "raw": "khách mang trả",
+        "rows": 11,
+        "canonical": null,
+        "legacy_excluded": true,
+        "known_disagreement": false
+      },
+      {
+        "table": "so_ban_hang_so_ban_hang",
+        "column": "ghi_chu",
+        "raw": "khách trả lại",
+        "rows": 6,
+        "canonical": null,
+        "legacy_excluded": true,
+        "known_disagreement": false
+      }
+    ],
+    "address_evidence": null
+  },
+  {
+    "business": "dev_012",
+    "statuses": [],
+    "address_evidence": null
+  },
+  {
+    "business": "dev_013",
+    "statuses": [
+      {
+        "table": "ban_hang",
+        "column": "ghi_chu",
+        "raw": "<NULL>",
+        "rows": 31362,
+        "canonical": null,
+        "legacy_excluded": false,
+        "known_disagreement": false
+      },
+      {
+        "table": "ban_hang",
+        "column": "ghi_chu",
+        "raw": "cancel",
+        "rows": 316,
+        "canonical": "cancelled",
+        "legacy_excluded": true,
+        "known_disagreement": false
+      },
+      {
+        "table": "ban_hang",
+        "column": "ghi_chu",
+        "raw": "Huỷ",
+        "rows": 295,
+        "canonical": "cancelled",
+        "legacy_excluded": true,
+        "known_disagreement": false
+      },
+      {
+        "table": "ban_hang",
+        "column": "ghi_chu",
+        "raw": "đang giao",
+        "rows": 22,
+        "canonical": "shipping",
+        "legacy_excluded": false,
+        "known_disagreement": false
+      },
+      {
+        "table": "ban_hang",
+        "column": "ghi_chu",
+        "raw": "chưa giao",
+        "rows": 13,
+        "canonical": null,
+        "legacy_excluded": false,
+        "known_disagreement": false
+      }
+    ],
+    "address_evidence": null
+  },
+  {
+    "business": "dev_014",
+    "statuses": [
+      {
+        "table": "so_ban_hang",
+        "column": "ghi_chu",
+        "raw": "<NULL>",
+        "rows": 10202,
+        "canonical": null,
+        "legacy_excluded": false,
+        "known_disagreement": false
+      },
+      {
+        "table": "so_ban_hang",
+        "column": "ghi_chu",
+        "raw": "trả lại hàng",
+        "rows": 46,
+        "canonical": null,
+        "legacy_excluded": true,
+        "known_disagreement": false
+      },
+      {
+        "table": "so_ban_hang",
+        "column": "ghi_chu",
+        "raw": "khách mang trả",
+        "rows": 32,
+        "canonical": null,
+        "legacy_excluded": true,
+        "known_disagreement": false
+      },
+      {
+        "table": "so_ban_hang",
+        "column": "ghi_chu",
+        "raw": "khách trả lại",
+        "rows": 26,
+        "canonical": null,
+        "legacy_excluded": true,
+        "known_disagreement": false
+      }
+    ],
+    "address_evidence": {
+      "address_named_columns": [],
+      "street_name_hits_any_text": [],
+      "files": [
+        {
+          "name": "SoNo.xlsx",
+          "sha256": "c2cb04fbf8aaea7f7345943cf0bb09dcaf10b47c73b78efd6ac58f958c416627"
+        },
+        {
+          "name": "README.md",
+          "sha256": "5953f87fc360fec7d5363e7b75cebb482ace9a2a7072754308ad89edebb4555b"
+        },
+        {
+          "name": "SoBanHang.xlsx",
+          "sha256": "186c8e971ec3ea1140b6b907c3196f8728e331f3f28da6a73eb2698b43515b6b"
+        },
+        {
+          "name": "ThuMayCu.xlsx",
+          "sha256": "8c595175baf345cd1fd07417e1e7ea4449362466173797514c2d7ae48f6c1e99"
+        }
+      ],
+      "interpretation": "No address column and no queried street mentions supports missing-data refusal, but schema/content scan is not universal semantic proof."
+    }
+  }
+]

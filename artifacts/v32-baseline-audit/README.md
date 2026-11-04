@@ -46,3 +46,29 @@ nhân35lỗi từ portal.
 answers.json là205record kiểm kê; profiles.json chứaREADME vàschema;
 summary.json ghi hash artifact/counts/coverage. Các risk flags chỉ là truy hồi
 hữu hạn theoSQL, không phải bộ chứng minh đầy đủ. Dùng snapshot v3.1 để so sánh.
+
+## Lượt semantic và sửa loader tiếp theo
+- Scan3business có câu địa chỉ: không có cột địa chỉ được nhận diện và không
+  có tên đường được hỏi trong các cột text đã nạp. Ủng hộ3refusals theo§7;
+  không phải nhãnPublic hoặc bằng chứng parser không bỏ sót thông tin nguồn.
+-75rawstatus/table/column entries đã quan sát:0bất đồng giữa nhãn canonical
+  đã biết và chính sách substring cũ. Không có cơ sở đổi status để tăng điểm
+  trong lát cắt này; nhãn canonical chưa biết vẫn là unresolved.
+-dev010:25.191headerrows/25.191uniqueorders đều nối được tổng chi tiết;
+ 0mismatch giữa SUM(cong) và thanh_tien+tien_giam−phi_van_chuyen. Công thức
+ đang dùng có bằng chứng số liệu; chưa cần thay bằngJOINproduction.
+-Defect được tái hiện trên fixture: ffill header toàn bảng chuyển khách/trạng
+ thái từ đơnA sang đơnB. Đã sửa sang ffill trong mã đơn, giữIDfillnhưcũ,
+ giữ trường riêng của dòng chưa cóID.3regressiontests;2testsfailedtrướcsửa,
+ testorphanfailedtrướcbổsungguard. Không gán ảnh hưởngPublic từfixture.
+-Đang đánh giá replay sau sửa, output riêng để bảo toàn audit trước sửa.
+  Các bước này chưa xác định được35lỗiPublic hoặc rootcause6lỗiTrain.
+
+### Quyết định sau replay đối chứng
+Bản thử áp grouping cho cả ngày làm đổi9outputdev013; không promote bản đó.
+Contract cuối chỉ scope trường khách/trạng thái; giữ fillngày hiện có do
+ngày có thể dùng chung cho nhiều hóa đơn. Các thư mục order-fill-public-replay
+và order-fill-final-replay là thí nghiệm bị loại, không candidate release.
+Bản cuối tạiorder-scoped-header-replay, hashsource ghi trongmanifest.
+Fullsuite **321passed/1knownwarning**, thêm4regressiontests so baseline317.
+Chưa fullpipelineTrain/Public, chưa đo PA mới hoặc thay submission.

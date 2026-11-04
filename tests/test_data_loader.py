@@ -102,3 +102,53 @@ def test_load_business_biz_123_sqlite():
     assert "khach_hang" in ctx.tables
     assert "don_hang" in ctx.tables
     assert len(ctx.tables["khach_hang"]) == 300
+
+
+def test_header_fill_stays_within_order():
+    raw = pd.DataFrame({
+        'Mã đơn hàng': ['A', None, 'B', None, 'A'],
+        'Khách hàng': ['Lan', None, None, None, None],
+        'Trạng thái': ['Đã hủy', None, 'Hoàn thành', None, None],
+        'Thành tiền': [10, 20, 30, 40, 50],
+    })
+    cleaned, _ = clean_dataframe(raw)
+    assert cleaned['ma_don_hang'].tolist() == ['A', 'A', 'B', 'B', 'A']
+    assert cleaned.loc[1, 'khach_hang'] == 'Lan'
+    assert pd.isna(cleaned.loc[2, 'khach_hang'])
+    assert pd.isna(cleaned.loc[3, 'khach_hang'])
+    assert cleaned.loc[4, 'khach_hang'] == 'Lan'
+    assert cleaned.loc[4, 'trang_thai'] == 'Đã hủy'
+
+
+def test_missing_status_on_new_order_does_not_inherit_previous_order():
+    raw = pd.DataFrame({
+        'Mã đơn hàng': ['A', 'B', None],
+        'Trạng thái': ['Đã hủy', None, None],
+        'Thành tiền': [10, 20, 30],
+    })
+    cleaned, _ = clean_dataframe(raw)
+    assert cleaned.loc[0, 'trang_thai'] == 'Đã hủy'
+    assert cleaned.loc[1:, 'trang_thai'].isna().all()
+
+
+def test_header_without_order_id_keeps_its_own_value():
+    raw = pd.DataFrame({
+        'Mã đơn hàng': [None, 'A'],
+        'Khách hàng': ['Unknown order customer', None],
+        'Thành tiền': [10, 20],
+    })
+    cleaned, _ = clean_dataframe(raw)
+    assert cleaned.loc[0, 'khach_hang'] == 'Unknown order customer'
+    assert pd.isna(cleaned.loc[1, 'khach_hang'])
+
+
+def test_shared_day_across_orders_keeps_date_but_not_customer():
+    raw = pd.DataFrame({
+        'Mã đơn hàng': ['A', 'B'],
+        'Ngày': ['2026-01-02', None],
+        'Khách hàng': ['Lan', None],
+        'Thành tiền': [10, 20],
+    })
+    cleaned, _ = clean_dataframe(raw)
+    assert cleaned.loc[1, 'ngay'] == cleaned.loc[0, 'ngay']
+    assert pd.isna(cleaned.loc[1, 'khach_hang'])

@@ -1,0 +1,8 @@
+{
+  "sha256": {
+    "src/zaic_2026_datamate/data_loader.py": "5f1d1e10aa912f033be9bfae51214e4a7f39b165ded8be115db57458831138fa",
+    "tests/test_data_loader.py": "e153de0d22289723f160ba8b59051959bad5b3bb2a25f46bfc5d13bead120aa4",
+    "submission.jsonl": "8c2c06b47b0033a92376a2c01da04e9a92b1a38decb02a494dd5ae6dcadca7f7"
+  },
+  "scope": "Frozen SQL replay only, not full pipeline or Public correctness."
+}

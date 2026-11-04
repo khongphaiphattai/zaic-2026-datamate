@@ -1,0 +1,32 @@
+{
+  "scope": "Reproducibility and risk inventory only; Public has no labels. Risk signals are not confirmed wrong answers.",
+  "trace_sha256": "4975925f71951f1a47886f3335d14a317295331347dd4c8037eba13a1a3fde06",
+  "submission_sha256": "8c2c06b47b0033a92376a2c01da04e9a92b1a38decb02a494dd5ae6dcadca7f7",
+  "answers": 205,
+  "by_business": {
+    "dev_001": 21,
+    "dev_002": 20,
+    "dev_003": 14,
+    "dev_004": 21,
+    "dev_005": 18,
+    "dev_006": 12,
+    "dev_007": 20,
+    "dev_008": 14,
+    "dev_009": 16,
+    "dev_010": 18,
+    "dev_011": 13,
+    "dev_012": 5,
+    "dev_013": 9,
+    "dev_014": 4
+  },
+  "replay": {
+    "matches": 202,
+    "not_available": 3
+  },
+  "risk_signals": {
+    "substring_status_policy_requires_review": 195,
+    "revenue_grain_discount_requires_review": 121,
+    "missing_data_claim_requires_review": 3,
+    "time_role_requires_readme_review": 19
+  }
+}

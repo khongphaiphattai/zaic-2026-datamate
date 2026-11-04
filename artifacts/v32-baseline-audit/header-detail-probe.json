@@ -1,0 +1,12 @@
+{
+  "business": "dev_010",
+  "scope": "Independent Pandas aggregation with shared loader. Header/detail README semantics, no Public targets. No production join.",
+  "header_rows": 25191,
+  "header_unique_orders": 25191,
+  "detail_orders": 25191,
+  "matched_header_rows": 25191,
+  "mismatching_header_rows": 0,
+  "header_total_matched": 11815514000.0,
+  "detail_total_matched": 11815514000.0,
+  "mismatch_examples": []
+}

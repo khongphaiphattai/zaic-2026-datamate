@@ -920,3 +920,11 @@
 - Bằng chứng/runner tại `artifacts/v32-baseline-audit/`. Ưu tiên1 mới hoàn tất lượt inventory/replay/negativecontrol, chưa hoàn tất kiểm semantic205câu. Kếtiếp kiểm3unanswerable vàmetric/status trên các dạngbảng, viếtregression khi có lỗi đãchứngminh. Production/submissionv3.1giữnguyên; chưatrain/Colab.
 
 - Hoàn tấtreplaycuối: **202/202numeric/percentoutputs khớp**, gồmMTD tính lại haikỳ/côngthức;3unanswerablechưa xácminh. Runner/đối chứngcompilepass, `git diff --check` sạch. Đây chưa phải kiểmđúngsemantic; không gán nhãnPublic.
+
+### 04/11/2026 — Audit semantic ưu tiên1 và sửa header fill xuyên đơn
+- Kiểm3unanswerableđịachỉ:3business không cócộtđịachỉ nhận diện hoặc tênđườngđượchỏi trongtextđãnạp, ủng hộrefusals§7; vẫn không có nhãnPublic, sharedloader có thểbỏsótnguồn.
+-75rawstatusentries trong14business:0bấtđồng trênnhãncanonicalđãbiết vớiSQLcũ. dev010:25.191đơnheaderuniquematchđủdetail,0mismatch giữaSUM(cong) vàcôngthứcheadercũ. Không đổi metric/status chỉđểcố tăngđiểm. Bằngchứng `semantic-evidence.json`/`header-detail-probe.json` trongbaselineaudit.
+- Xác nhậnbugloader trênfixture:ffillkhách/trạngthái xuyênmãđơn. Spec `docs/specs/2026-11-04-order-header-fill.md`; sửaheaderfilltheomãđơn,giữdòngthiếuIDvàkhôngbackfilltươnglai.3regressiontests,đãthấyREDtrướctừngsửa; đangsuite/replayfinal. Sourceproductioncóthayđổi; root/snapshotv3.1chưathay,khôngtrain/Colab.
+- Review/replay phát hiện ngày có nhóm dùng chung qua nhiều hóa đơn: bản thử scope mọiheader làm đổi9outputdev013, đã loại. Contract cuối chỉ chặn khách/trạng thái xuyênmãđơn, giữcáchfillngàycũ; test giữ ngày chung và bảo toàn dòng thiếuID.
+- **321 tests passed (25,16s)**,1warningpandasđãbiết. Chưa fullpipelineTrain/Public hoặc scoregain. ReplaySQLbảncuối lưu riêng `artifacts/v32-order-scoped-header-replay/`; cácrunorder-fill trước làthửnghiệmbịloại. Submissionv3.1vẫnSHAcũ.
+- Replay bảncuối hoàn tất: **202/202numeric/percentoutputs giữgiátrị v3.1**,3unanswerable khôngSQL. Đã kiểmhashsource/submission,reviewdiffvớispec và `git diff --check`. Lỗiheaderfill được sửa nhưng không thêm đáp án/điểm trong tậpoutput đãreplay; chưa đánhgiáfullpipeline nên khôngpháthànhv3.2. Ưu tiên1 còn kiểmđộc lập cácmetric/grain khác và6lỗiTrain; không tuyênbố tìmđược35lỗiPublic.

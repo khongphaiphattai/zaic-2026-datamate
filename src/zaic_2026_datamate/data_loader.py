@@ -287,17 +287,31 @@ def clean_dataframe(df: pd.DataFrame) -> Tuple[pd.DataFrame, Dict[str, str]]:
         "tien_do", "xu_ly",
         "ten_khach_hang", "khach_hang", "khach", "tenkh", "ma_kh", "ma_khach_hang"
     ]
+    order_id_cols = [
+        "ma_don_hang", "ma_hoa_don", "ma_phieu", "ma_bill", "bill", "so_phieu", "ma_gd", "so_hd", "ma_dh", "so_ct", "hd", "don_so", "ma_don"
+    ]
+    present_order_cols = [c for c in order_id_cols if c in cleaned_df.columns]
+    for c in present_order_cols:
+        cleaned_df[c] = cleaned_df[c].ffill()
+    order_key = present_order_cols[0] if present_order_cols else None
+    order_scoped_headers = {
+        "trang_thai_don_hang", "trang_thai", "status", "ghi_chu_tt", "trang_thai_xu_ly",
+        "tien_do", "xu_ly", "ten_khach_hang", "khach_hang", "khach", "tenkh",
+        "ma_kh", "ma_khach_hang",
+    }
     for c in order_header_cols:
-        if c in cleaned_df.columns:
-            cleaned_df[c] = cleaned_df[c].ffill()
+        if c in cleaned_df.columns and c not in present_order_cols:
+            if order_key is None or c not in order_scoped_headers:
+                cleaned_df[c] = cleaned_df[c].ffill()
+            else:
+                # Rulebook §8: blank headers inherit only within the same order.
+                filled = cleaned_df.groupby(order_key, sort=False)[c].ffill()
+                cleaned_df[c] = filled.where(cleaned_df[order_key].notna(), cleaned_df[c])
 
     # Rulebook Section 8:
     # "Hai dòng của cùng một đơn giống nhau ở mọi ô: lỗi xuất file, tính một lần.
     #  Hai dòng giống nhau của hai đơn khác nhau là hai lần bán, tính cả hai."
     # "Bảng không ghi theo đơn: mỗi dòng là một lần ghi; hai dòng giống nhau trong cùng file vẫn tính cả hai."
-    order_id_cols = [
-        "ma_don_hang", "ma_hoa_don", "ma_phieu", "ma_bill", "bill", "so_phieu", "ma_gd", "so_hd", "ma_dh", "so_ct", "hd", "don_so", "ma_don"
-    ]
     has_order_col = any(c in cleaned_df.columns for c in order_id_cols)
     if has_order_col:
         cleaned_df = cleaned_df.drop_duplicates().reset_index(drop=True)
