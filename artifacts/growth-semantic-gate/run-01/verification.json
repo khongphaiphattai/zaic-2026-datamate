@@ -1,0 +1,32 @@
+{
+  "verified": true,
+  "ids_complete_unique": 281,
+  "certified_plans_match_annotations": 77,
+  "outside_capability_false_accepts": 0,
+  "numeric_correct": 17,
+  "numeric_wrong": 0,
+  "abstain": 264,
+  "numeric_matches_prior_independent_decimal_checks": 17,
+  "lost_from_18_known_intent_answers": [
+    {
+      "id": "q_110238617caa",
+      "question": "từ đầu tháng này đến hết bữa nay, dthu hown hay kém cungf kỳ th trước mấy %",
+      "business_id": "biz_130"
+    }
+  ],
+  "controls_exact": 24,
+  "controls_negatives": 16,
+  "old_probe_positive_exact": 4,
+  "old_probe_positive_total": 6,
+  "old_probe_negative_exact": 8,
+  "old_probe_negative_total": 8,
+  "sources_match": true,
+  "submission_sha256": "288ed868fde9175d36afd8995cdaf0e2c5f978a716be5c2a845f35c5e89afb9f",
+  "tests": {
+    "passed": 300,
+    "seconds": 25.85,
+    "command": ".venv/bin/python -m pytest -q",
+    "warning": "Known invalid-date fixture pandas inference warning."
+  },
+  "scope": "Deterministic raw-question shadow on development samples. No model call, production integration or Public measurement. Cases were reviewed during design; zero observed errors does not prove universal safety."
+}

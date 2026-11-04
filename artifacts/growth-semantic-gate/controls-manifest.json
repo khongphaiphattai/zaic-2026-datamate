@@ -1,0 +1,6 @@
+{
+  "sha256": "2c1f79d15e008b8c8b7811f99e3b32c5f8f071d8365a604d811e6c2e26f99fbf",
+  "positive": 8,
+  "negative": 16,
+  "scope": "Synthetic development minimal pairs frozen before implementation; not independent held-out data; no Public input."
+}

@@ -1,0 +1,282 @@
+[
+  {
+    "id": "positive_1",
+    "actual": {
+      "intent": "revenue_growth",
+      "period": "full_month",
+      "year": 2025,
+      "month": 3,
+      "comparison": "previous_full_month",
+      "filters": []
+    },
+    "expected": {
+      "intent": "revenue_growth",
+      "period": "full_month",
+      "year": 2025,
+      "month": 3,
+      "comparison": "previous_full_month",
+      "filters": []
+    },
+    "exact": true,
+    "proposal_admitted": true
+  },
+  {
+    "id": "positive_2",
+    "actual": {
+      "intent": "revenue_growth",
+      "period": "full_month",
+      "year": 2026,
+      "month": 1,
+      "comparison": "previous_full_month",
+      "filters": []
+    },
+    "expected": {
+      "intent": "revenue_growth",
+      "period": "full_month",
+      "year": 2026,
+      "month": 1,
+      "comparison": "previous_full_month",
+      "filters": []
+    },
+    "exact": true,
+    "proposal_admitted": true
+  },
+  {
+    "id": "positive_3",
+    "actual": {
+      "intent": "revenue_growth",
+      "period": "full_month",
+      "year": 2024,
+      "month": 2,
+      "comparison": "previous_full_month",
+      "filters": []
+    },
+    "expected": {
+      "intent": "revenue_growth",
+      "period": "full_month",
+      "year": 2024,
+      "month": 2,
+      "comparison": "previous_full_month",
+      "filters": []
+    },
+    "exact": true,
+    "proposal_admitted": true
+  },
+  {
+    "id": "positive_4",
+    "actual": {
+      "intent": "revenue_growth",
+      "period": "full_month",
+      "year": 2025,
+      "month": 11,
+      "comparison": "previous_full_month",
+      "filters": []
+    },
+    "expected": {
+      "intent": "revenue_growth",
+      "period": "full_month",
+      "year": 2025,
+      "month": 11,
+      "comparison": "previous_full_month",
+      "filters": []
+    },
+    "exact": true,
+    "proposal_admitted": true
+  },
+  {
+    "id": "positive_5",
+    "actual": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2025,
+      "month": 3,
+      "comparison": "previous_month_same_days",
+      "filters": []
+    },
+    "expected": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2025,
+      "month": 3,
+      "comparison": "previous_month_same_days",
+      "filters": []
+    },
+    "exact": true,
+    "proposal_admitted": true
+  },
+  {
+    "id": "positive_6",
+    "actual": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2024,
+      "month": 3,
+      "comparison": "previous_month_same_days",
+      "filters": []
+    },
+    "expected": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2024,
+      "month": 3,
+      "comparison": "previous_month_same_days",
+      "filters": []
+    },
+    "exact": true,
+    "proposal_admitted": true
+  },
+  {
+    "id": "positive_7",
+    "actual": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2026,
+      "month": 1,
+      "comparison": "previous_month_same_days",
+      "filters": []
+    },
+    "expected": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2026,
+      "month": 1,
+      "comparison": "previous_month_same_days",
+      "filters": []
+    },
+    "exact": true,
+    "proposal_admitted": true
+  },
+  {
+    "id": "positive_8",
+    "actual": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2025,
+      "month": 5,
+      "comparison": "previous_month_same_days",
+      "filters": []
+    },
+    "expected": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2025,
+      "month": 5,
+      "comparison": "previous_month_same_days",
+      "filters": []
+    },
+    "exact": true,
+    "proposal_admitted": true
+  },
+  {
+    "id": "negative_1",
+    "actual": null,
+    "expected": null,
+    "exact": true,
+    "proposal_admitted": false
+  },
+  {
+    "id": "negative_2",
+    "actual": null,
+    "expected": null,
+    "exact": true,
+    "proposal_admitted": false
+  },
+  {
+    "id": "negative_3",
+    "actual": null,
+    "expected": null,
+    "exact": true,
+    "proposal_admitted": false
+  },
+  {
+    "id": "negative_4",
+    "actual": null,
+    "expected": null,
+    "exact": true,
+    "proposal_admitted": false
+  },
+  {
+    "id": "negative_5",
+    "actual": null,
+    "expected": null,
+    "exact": true,
+    "proposal_admitted": false
+  },
+  {
+    "id": "negative_6",
+    "actual": null,
+    "expected": null,
+    "exact": true,
+    "proposal_admitted": false
+  },
+  {
+    "id": "negative_7",
+    "actual": null,
+    "expected": null,
+    "exact": true,
+    "proposal_admitted": false
+  },
+  {
+    "id": "negative_8",
+    "actual": null,
+    "expected": null,
+    "exact": true,
+    "proposal_admitted": false
+  },
+  {
+    "id": "negative_9",
+    "actual": null,
+    "expected": null,
+    "exact": true,
+    "proposal_admitted": false
+  },
+  {
+    "id": "negative_10",
+    "actual": null,
+    "expected": null,
+    "exact": true,
+    "proposal_admitted": false
+  },
+  {
+    "id": "negative_11",
+    "actual": null,
+    "expected": null,
+    "exact": true,
+    "proposal_admitted": false
+  },
+  {
+    "id": "negative_12",
+    "actual": null,
+    "expected": null,
+    "exact": true,
+    "proposal_admitted": false
+  },
+  {
+    "id": "negative_13",
+    "actual": null,
+    "expected": null,
+    "exact": true,
+    "proposal_admitted": false
+  },
+  {
+    "id": "negative_14",
+    "actual": null,
+    "expected": null,
+    "exact": true,
+    "proposal_admitted": false
+  },
+  {
+    "id": "negative_15",
+    "actual": null,
+    "expected": null,
+    "exact": true,
+    "proposal_admitted": false
+  },
+  {
+    "id": "negative_16",
+    "actual": null,
+    "expected": null,
+    "exact": true,
+    "proposal_admitted": false
+  }
+]

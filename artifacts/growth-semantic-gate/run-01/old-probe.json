@@ -1,0 +1,186 @@
+[
+  {
+    "id": "q_112c84a433a5",
+    "actual": {
+      "intent": "revenue_growth",
+      "period": "full_month",
+      "year": 2026,
+      "month": 5
+    },
+    "expected": {
+      "intent": "revenue_growth",
+      "period": "full_month",
+      "year": 2026,
+      "month": 5
+    },
+    "exact": true,
+    "false_accept": false
+  },
+  {
+    "id": "q_de3c8bc640c2",
+    "actual": {
+      "intent": "abstain"
+    },
+    "expected": {
+      "intent": "revenue_growth",
+      "period": "full_month",
+      "year": 2025,
+      "month": 11
+    },
+    "exact": false,
+    "false_accept": false
+  },
+  {
+    "id": "q_9bf4d9e880d9",
+    "actual": {
+      "intent": "abstain"
+    },
+    "expected": {
+      "intent": "revenue_growth",
+      "period": "full_month",
+      "year": 2026,
+      "month": 1
+    },
+    "exact": false,
+    "false_accept": false
+  },
+  {
+    "id": "q_48d55e816a7d",
+    "actual": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2025,
+      "month": 11
+    },
+    "expected": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2025,
+      "month": 11
+    },
+    "exact": true,
+    "false_accept": false
+  },
+  {
+    "id": "q_f4c328691e9b",
+    "actual": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2025,
+      "month": 7
+    },
+    "expected": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2025,
+      "month": 7
+    },
+    "exact": true,
+    "false_accept": false
+  },
+  {
+    "id": "q_7ebd4d633970",
+    "actual": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2026,
+      "month": 3
+    },
+    "expected": {
+      "intent": "revenue_growth",
+      "period": "month_to_date",
+      "year": 2026,
+      "month": 3
+    },
+    "exact": true,
+    "false_accept": false
+  },
+  {
+    "id": "q_81cd061af3ae",
+    "actual": {
+      "intent": "abstain"
+    },
+    "expected": {
+      "intent": "abstain"
+    },
+    "exact": true,
+    "false_accept": false
+  },
+  {
+    "id": "synthetic_negative_1",
+    "actual": {
+      "intent": "abstain"
+    },
+    "expected": {
+      "intent": "abstain"
+    },
+    "exact": true,
+    "false_accept": false
+  },
+  {
+    "id": "synthetic_negative_2",
+    "actual": {
+      "intent": "abstain"
+    },
+    "expected": {
+      "intent": "abstain"
+    },
+    "exact": true,
+    "false_accept": false
+  },
+  {
+    "id": "synthetic_negative_3",
+    "actual": {
+      "intent": "abstain"
+    },
+    "expected": {
+      "intent": "abstain"
+    },
+    "exact": true,
+    "false_accept": false
+  },
+  {
+    "id": "synthetic_negative_4",
+    "actual": {
+      "intent": "abstain"
+    },
+    "expected": {
+      "intent": "abstain"
+    },
+    "exact": true,
+    "false_accept": false
+  },
+  {
+    "id": "synthetic_negative_5",
+    "actual": {
+      "intent": "abstain"
+    },
+    "expected": {
+      "intent": "abstain"
+    },
+    "exact": true,
+    "false_accept": false
+  },
+  {
+    "id": "synthetic_negative_6",
+    "actual": {
+      "intent": "abstain"
+    },
+    "expected": {
+      "intent": "abstain"
+    },
+    "exact": true,
+    "false_accept": false
+  },
+  {
+    "id": "synthetic_negative_7",
+    "actual": {
+      "intent": "abstain"
+    },
+    "expected": {
+      "intent": "abstain"
+    },
+    "exact": true,
+    "false_accept": false
+  }
+]

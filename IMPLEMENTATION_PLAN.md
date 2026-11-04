@@ -406,3 +406,17 @@ metric policy. Chi tiết `artifacts/mtd-compiler/README.md`.
 Bước tiếp theo là semantic contract giữ đủ điều kiện/kỳ so sánh và negative
 controls trước nối model; compiler đúng với intent đã biết không chứng minh
 extractor an toàn. Chưa cần Colab/training hoặc submit; v3.0 giữ nguyên.
+
+### Semantic boundary và raw-question shadow (04/11/2026)
+
+Đã triển khai cổng whole-question hữu hạn với explicit comparison/windows
+và strict proposal agreement; không gọi model/pipeline tự động. Trên281câu
+Train-24:77certified,17đúng/0sai/264abstain; mất1/18cơ hội MTD do wording.
+24controls đạt,14probe cũ nhận4/6positive và chặn8/8negative; không gọi đây
+là cải thiện model.300tests pass. Xem `artifacts/growth-semantic-gate/README.md`.
+
+Bước tiếp theo ưu tiên MTD deterministic opt-in trong shared factory, giữ
+baseline answers và đo full Train/Public offline trước xét release. Model
+chỉ đồng ý với certifier không thêm coverage nên chưa cần GPU cho nhánh này;
+bất kỳ mở rộng model ngoài grammar cần thí nghiệm/kiểm chứng riêng. Chưa có
+integration/candidate/score mới tại mốc này.

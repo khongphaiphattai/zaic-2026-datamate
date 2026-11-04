@@ -1,0 +1,70 @@
+{
+  "total": 281,
+  "certified": 77,
+  "semantic_false_accepts": 0,
+  "correct": 17,
+  "wrong": 0,
+  "abstain": 264,
+  "categories": {
+    "boolean_multimonth": {
+      "total": 14,
+      "certified": 0,
+      "answered": 0
+    },
+    "filtered": {
+      "total": 13,
+      "certified": 0,
+      "answered": 0
+    },
+    "filtered_amount": {
+      "total": 1,
+      "certified": 0,
+      "answered": 0
+    },
+    "full_month": {
+      "total": 60,
+      "certified": 39,
+      "answered": 0
+    },
+    "month_to_date": {
+      "total": 39,
+      "certified": 38,
+      "answered": 17
+    },
+    "seasonal": {
+      "total": 4,
+      "certified": 0,
+      "answered": 0
+    },
+    "share": {
+      "total": 128,
+      "certified": 0,
+      "answered": 0
+    },
+    "year_over_year": {
+      "total": 22,
+      "certified": 0,
+      "answered": 0
+    }
+  },
+  "answered_businesses": {
+    "biz_121": 4,
+    "biz_122": 9,
+    "biz_130": 4
+  },
+  "synthetic_controls": {
+    "total": 24,
+    "exact": 24,
+    "negative_false_accepts": 0
+  },
+  "old_probe": {
+    "positive_exact": 4,
+    "positive_total": 6,
+    "negative_exact": 8,
+    "negative_total": 8,
+    "false_accepts": 0
+  },
+  "model_calls": 0,
+  "production_promotion": false,
+  "scope": "Selected/tuned Train-24 development shadow. Deterministic only; not model benefit or Public score."
+}

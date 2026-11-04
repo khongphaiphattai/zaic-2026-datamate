@@ -1,0 +1,20 @@
+{
+  "sources": {
+    "/home/pt/AI Challenge/scripts/evaluate_growth_semantics.py": "38bfbdb430a7f3f19d2bf7859229153af7871ec8177850767babebf2796e65b9",
+    "scripts/audit_growth_feasibility.py": "d73e2bbd5fc18d5a26989aa96d68c8712b50f68dfc3238ca0b5e4835645fba2a",
+    "artifacts/growth-feasibility/cases.json": "7e62077f90c2c5c4da21d3e47bcbfbce2140f4b3b77918866ca5f3a0c75b9ee7",
+    "artifacts/growth-feasibility/manifest.json": "67966f2e3988fbfca8187d0e7bb5c1a1008174b5bc99c9521806365d7628f950",
+    "artifacts/v31-growth-train/trace.jsonl": "a87a673e728bdd5fc8f54dbbf0bd6f0c57aba12b0fe8c861999c70e3b1af2b29",
+    "artifacts/growth-semantic-gate/controls.json": "2c1f79d15e008b8c8b7811f99e3b32c5f8f071d8365a604d811e6c2e26f99fbf",
+    "artifacts/growth-semantic-gate/controls-manifest.json": "fda8aa80a737f6121618751c0f4f054448f6d4f6a4fbdf1e9a116420073fb62e",
+    "artifacts/structured-intent-probe/cases.json": "49289c6953246e075658039e6034ef8fbba672d5bd8ba6a680c3ff13d422cc2a",
+    "artifacts/selective-evaluation/split.json": "ba0a70ea94ecf36c6d74b308ba7bcf29358f1ec693fc6cf73167c0e59b6c4ffa",
+    "src/zaic_2026_datamate/growth_semantics.py": "496d120b61f0e39e931442847299283a6c06cf5e500374ecb8ac5df90c07046b",
+    "src/zaic_2026_datamate/monthly_growth.py": "19cbff6804691d2c6b885cc274b6ade658ecadb1ee897c2d9f2ecfc72955540f",
+    "src/zaic_2026_datamate/intent_parser.py": "5168704acf46a4a3309488a8ad7e33fe42185e928bce23957db001ba3f690a68",
+    "src/zaic_2026_datamate/revenue_metric.py": "e7e36095654ee9b17b8a502bd54cbf660767dc7e481b575b2c81e0e91c073a0b",
+    "src/zaic_2026_datamate/data_loader.py": "4e157d81bfe5a9af894ceb3c1649d909d0c48db73d7b80091df602d9999fe256",
+    "src/zaic_2026_datamate/evaluation.py": "eac5e645ede273c3c6effe7f12ccdd80302ceabca402b92e8df74986fdc4170a"
+  },
+  "scope": "Raw question deterministic shadow; no model, no production integration."
+}
