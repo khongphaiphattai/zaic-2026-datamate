@@ -1,0 +1,1988 @@
+[
+  {
+    "id": "q_01d1099489a0",
+    "business_id": "dev_005",
+    "question": "Từ đầu tháng này tới hết hnay, dthu cao hay thấp hơn cùng kỳ tháng trước mấy %?",
+    "as_of_date": "2025-03-18",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_01d1099489a0",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_01d1099489a0",
+      "type": "percent",
+      "answer": -2.94
+    }
+  },
+  {
+    "id": "q_03622bae312b",
+    "business_id": "dev_004",
+    "question": "Th6/2025 khách có từ 4 đơn trở lên chiếm mấy % tổng số khách mua?",
+    "as_of_date": "2026-06-10",
+    "change_type": "value_changed",
+    "v32": {
+      "id": "q_03622bae312b",
+      "type": "percent",
+      "answer": 25.57
+    },
+    "v33": {
+      "id": "q_03622bae312b",
+      "type": "percent",
+      "answer": 25.71
+    }
+  },
+  {
+    "id": "q_0537f6e4f5ab",
+    "business_id": "dev_001",
+    "question": "So sánh 3/25, 4/25 và 5/25 xem tháng nào cửa hàng bán đc nhiều tiền nhất",
+    "as_of_date": "2026-07-08",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_0537f6e4f5ab",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_0537f6e4f5ab",
+      "type": "date",
+      "answer": "2025-03"
+    }
+  },
+  {
+    "id": "q_07b7be37628b",
+    "business_id": "dev_013",
+    "question": "Tháng này tới hôm nay, doanh thu so với cùng kỳ tháng trước thay đổi bao nhiêu phần trăm?",
+    "as_of_date": "2026-06-30",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_07b7be37628b",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_07b7be37628b",
+      "type": "percent",
+      "answer": -8.16
+    }
+  },
+  {
+    "id": "q_0acdf488056e",
+    "business_id": "dev_007",
+    "question": "Thang 4 nam 2026 so thang truoc tien ban len hay xuong bao nhieu % z?",
+    "as_of_date": "2026-09-19",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_0acdf488056e",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_0acdf488056e",
+      "type": "percent",
+      "answer": -6.28
+    }
+  },
+  {
+    "id": "q_0d23cc65cc7a",
+    "business_id": "dev_014",
+    "question": "So với cùng kỳ tháng trước, doanh thu từ đầu tháng này đến hết hôm nay tăng hay giảm bao nhiêu %?",
+    "as_of_date": "2025-11-08",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_0d23cc65cc7a",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_0d23cc65cc7a",
+      "type": "percent",
+      "answer": -12.82
+    }
+  },
+  {
+    "id": "q_102720daf6a9",
+    "business_id": "dev_013",
+    "question": "Năm nay, tính từ đầu năm đến hết hôm nay, doanh thu của cửa hàng là bao nhiêu?",
+    "as_of_date": "2026-02-15",
+    "change_type": "value_changed",
+    "v32": {
+      "id": "q_102720daf6a9",
+      "type": "number",
+      "answer": 685461500
+    },
+    "v33": {
+      "id": "q_102720daf6a9",
+      "type": "number",
+      "answer": 685034500
+    }
+  },
+  {
+    "id": "q_113d86c3eb6a",
+    "business_id": "dev_006",
+    "question": "Dthu th8/2025 hơn hay kém tháng trước mấy %?",
+    "as_of_date": "2026-08-08",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_113d86c3eb6a",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_113d86c3eb6a",
+      "type": "percent",
+      "answer": -2.27
+    }
+  },
+  {
+    "id": "q_1205eaa6091a",
+    "business_id": "dev_012",
+    "question": "Doanh thu T8/2025 so thang lien truoc, cao hay thap hon bao nhieu % nhi?",
+    "as_of_date": "2026-08-31",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_1205eaa6091a",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_1205eaa6091a",
+      "type": "percent",
+      "answer": 16.03
+    }
+  },
+  {
+    "id": "q_1473ee8c46fd",
+    "business_id": "dev_005",
+    "question": "So với cùng số ngày đầu tháng trước, dthu tháng này hơn hay kém bao nhiêu phần trăm ha?",
+    "as_of_date": "2025-04-17",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_1473ee8c46fd",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_1473ee8c46fd",
+      "type": "percent",
+      "answer": -14.34
+    }
+  },
+  {
+    "id": "q_15711c61bb0d",
+    "business_id": "dev_008",
+    "question": "Quán mình bạn nhân viên nào phục vụ khách thân thiện nhất nhỉ?",
+    "as_of_date": "2026-07-22",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_15711c61bb0d",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_15711c61bb0d",
+      "type": "unanswerable",
+      "reason": "Doanh nghiệp không có dữ liệu đánh giá cảm tính theo Rulebook Mục 7"
+    }
+  },
+  {
+    "id": "q_1602cfcc7d42",
+    "business_id": "dev_003",
+    "question": "3/2026 quán bán được mấy ly size M nè?",
+    "as_of_date": "2026-08-21",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_1602cfcc7d42",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_1602cfcc7d42",
+      "type": "number",
+      "answer": 4233
+    }
+  },
+  {
+    "id": "q_169a123623e6",
+    "business_id": "dev_004",
+    "question": "Trong so khach mua th6/2025, may % co tu 3 don tro len?",
+    "as_of_date": "2026-06-10",
+    "change_type": "value_changed",
+    "v32": {
+      "id": "q_169a123623e6",
+      "type": "percent",
+      "answer": 49.43
+    },
+    "v33": {
+      "id": "q_169a123623e6",
+      "type": "percent",
+      "answer": 49.71
+    }
+  },
+  {
+    "id": "q_21c1f1a2bf98",
+    "business_id": "dev_005",
+    "question": "Dthu thang 2 nam 2026 so cung ky nam ngoai tang hay giam bnhiu %?",
+    "as_of_date": "2026-05-10",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_21c1f1a2bf98",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_21c1f1a2bf98",
+      "type": "percent",
+      "answer": -7.53
+    }
+  },
+  {
+    "id": "q_220b5f8bc174",
+    "business_id": "dev_014",
+    "question": "ad oi th3/2026 tien ban shop mik cao hay thap hon thang trc do bnhiu %",
+    "as_of_date": "2026-09-30",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_220b5f8bc174",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_220b5f8bc174",
+      "type": "percent",
+      "answer": -3.37
+    }
+  },
+  {
+    "id": "q_22a7258b62bf",
+    "business_id": "dev_004",
+    "question": "Dthu thang nay tinh toi hom nay so cung ky thang truoc hon kem may % z?",
+    "as_of_date": "2025-10-29",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_22a7258b62bf",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_22a7258b62bf",
+      "type": "percent",
+      "answer": -5.38
+    }
+  },
+  {
+    "id": "q_2362d5a2c101",
+    "business_id": "dev_005",
+    "question": "So cùng kỳ năm trước, doanh thu tháng 4/2026 tăng/giảm mấy phần trăm?",
+    "as_of_date": "2026-05-10",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_2362d5a2c101",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_2362d5a2c101",
+      "type": "percent",
+      "answer": 10.71
+    }
+  },
+  {
+    "id": "q_2767f0fad8f7",
+    "business_id": "dev_013",
+    "question": "Tháng 6/2026 cửa hàng bán được tổng cộng bao nhiêu tiền?",
+    "as_of_date": "2026-06-30",
+    "change_type": "value_changed",
+    "v32": {
+      "id": "q_2767f0fad8f7",
+      "type": "number",
+      "answer": 431334000
+    },
+    "v33": {
+      "id": "q_2767f0fad8f7",
+      "type": "number",
+      "answer": 432382000
+    }
+  },
+  {
+    "id": "q_29e1057e3fbd",
+    "business_id": "dev_001",
+    "question": "Doanh thu thang nay tang hay giam may % so voi cung so ngay thang truoc?",
+    "as_of_date": "2026-03-11",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_29e1057e3fbd",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_29e1057e3fbd",
+      "type": "percent",
+      "answer": -24.18
+    }
+  },
+  {
+    "id": "q_2ac539902fe6",
+    "business_id": "dev_002",
+    "question": "Thang 2/26 so voi cung thang nam truoc, doanh thu thay doi bao nhieu %?",
+    "as_of_date": "2026-05-24",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_2ac539902fe6",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_2ac539902fe6",
+      "type": "percent",
+      "answer": -19.98
+    }
+  },
+  {
+    "id": "q_2ed4740ec705",
+    "business_id": "dev_002",
+    "question": "Dthu th 3/26 tang truong bnhiu % so th 3/25?",
+    "as_of_date": "2026-05-24",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_2ed4740ec705",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_2ed4740ec705",
+      "type": "percent",
+      "answer": -8.88
+    }
+  },
+  {
+    "id": "q_2f8852d2a6bc",
+    "business_id": "dev_014",
+    "question": "Từ 1/1 đến hết hnay dthu năm nay đc bnhiu?",
+    "as_of_date": "2026-03-23",
+    "change_type": "value_changed",
+    "v32": {
+      "id": "q_2f8852d2a6bc",
+      "type": "number",
+      "answer": 5006009000
+    },
+    "v33": {
+      "id": "q_2f8852d2a6bc",
+      "type": "number",
+      "answer": 4959714000
+    }
+  },
+  {
+    "id": "q_2fba3cf485d7",
+    "business_id": "dev_003",
+    "question": "So với cùng tháng năm rồi, doanh thu tháng 5/2026 của quán thay đổi mấy %?",
+    "as_of_date": "2026-08-21",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_2fba3cf485d7",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_2fba3cf485d7",
+      "type": "percent",
+      "answer": 20.38
+    }
+  },
+  {
+    "id": "q_3176702f9d3e",
+    "business_id": "dev_011",
+    "question": "Tháng 1/26 sp nào bán chạy nhất?",
+    "as_of_date": "2026-07-31",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_3176702f9d3e",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_3176702f9d3e",
+      "type": "string",
+      "answer": "Ốp silicon IP"
+    }
+  },
+  {
+    "id": "q_31dad3219917",
+    "business_id": "dev_014",
+    "question": "Năm nay tính tới hôm nay bán được tổng cộng bao nhiêu tiền?",
+    "as_of_date": "2026-02-20",
+    "change_type": "value_changed",
+    "v32": {
+      "id": "q_31dad3219917",
+      "type": "number",
+      "answer": 3129974500
+    },
+    "v33": {
+      "id": "q_31dad3219917",
+      "type": "number",
+      "answer": 3116557000
+    }
+  },
+  {
+    "id": "q_344459d9755f",
+    "business_id": "dev_013",
+    "question": "Doanh thu từ đầu tháng này đến hết hôm nay hơn hay kém cùng kỳ tháng trước bao nhiêu phần trăm?",
+    "as_of_date": "2025-11-23",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_344459d9755f",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_344459d9755f",
+      "type": "percent",
+      "answer": -0.32
+    }
+  },
+  {
+    "id": "q_35b891c4eebe",
+    "business_id": "dev_012",
+    "question": "Trong tháng 3/2026, ai là thợ nhiệt tình nhất?",
+    "as_of_date": "2026-08-31",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_35b891c4eebe",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_35b891c4eebe",
+      "type": "unanswerable",
+      "reason": "Doanh nghiệp không có dữ liệu đánh giá cảm tính theo Rulebook Mục 7"
+    }
+  },
+  {
+    "id": "q_373a4857ee55",
+    "business_id": "dev_003",
+    "question": "Thang 3 nam 2025 co may ngay quan ban duoc tu 7.600.000 dong tro len?",
+    "as_of_date": "2026-08-21",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_373a4857ee55",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_373a4857ee55",
+      "type": "number",
+      "answer": 15
+    }
+  },
+  {
+    "id": "q_3751b6361499",
+    "business_id": "dev_014",
+    "question": "Trong tháng 5/2026, bao nhiêu đơn có tiền hàng đạt 340.000 đồng trở lên?",
+    "as_of_date": "2026-09-30",
+    "change_type": "value_changed",
+    "v32": {
+      "id": "q_3751b6361499",
+      "type": "number",
+      "answer": 226
+    },
+    "v33": {
+      "id": "q_3751b6361499",
+      "type": "number",
+      "answer": 224
+    }
+  },
+  {
+    "id": "q_37d9de7f49d9",
+    "business_id": "dev_001",
+    "question": "Dthu T4/2026 thay đổi mấy % so với tháng liền trước z?",
+    "as_of_date": "2026-07-08",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_37d9de7f49d9",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_37d9de7f49d9",
+      "type": "percent",
+      "answer": -4.14
+    }
+  },
+  {
+    "id": "q_39b7dafd15a3",
+    "business_id": "dev_003",
+    "question": "5-2025 quan ban ra bao nhieu ly size L, cong het cac mon?",
+    "as_of_date": "2026-08-21",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_39b7dafd15a3",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_39b7dafd15a3",
+      "type": "number",
+      "answer": 1801
+    }
+  },
+  {
+    "id": "q_3dd4582ecb10",
+    "business_id": "dev_004",
+    "question": "Doanh thu th 2/26 so tháng trước lên hay xuống bao nhiêu % z?",
+    "as_of_date": "2026-06-10",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_3dd4582ecb10",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_3dd4582ecb10",
+      "type": "percent",
+      "answer": -36.85
+    }
+  },
+  {
+    "id": "q_3e36677e62a9",
+    "business_id": "dev_013",
+    "question": "Tháng 6/2026 nhóm sữa bột chiếm bao nhiêu % doanh thu?",
+    "as_of_date": "2026-06-30",
+    "change_type": "value_changed",
+    "v32": {
+      "id": "q_3e36677e62a9",
+      "type": "percent",
+      "answer": 43.93
+    },
+    "v33": {
+      "id": "q_3e36677e62a9",
+      "type": "percent",
+      "answer": 44.07
+    }
+  },
+  {
+    "id": "q_4217e6c4305e",
+    "business_id": "dev_003",
+    "question": "Th11/2025 Bánh tiramisu bán đc mấy cái?",
+    "as_of_date": "2026-08-21",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_4217e6c4305e",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_4217e6c4305e",
+      "type": "number",
+      "answer": 84
+    }
+  },
+  {
+    "id": "q_4263ec258265",
+    "business_id": "dev_013",
+    "question": "Giá trị trung bình một đơn tháng 6/2026 là bao nhiêu?",
+    "as_of_date": "2026-06-30",
+    "change_type": "value_changed",
+    "v32": {
+      "id": "q_4263ec258265",
+      "type": "number",
+      "answer": 552284
+    },
+    "v33": {
+      "id": "q_4263ec258265",
+      "type": "number",
+      "answer": 553626
+    }
+  },
+  {
+    "id": "q_459109bda652",
+    "business_id": "dev_002",
+    "question": "Tháng 10/2025 nhóm cà phê chiếm bao nhiêu % doanh thu?",
+    "as_of_date": "2026-05-24",
+    "change_type": "value_changed",
+    "v32": {
+      "id": "q_459109bda652",
+      "type": "percent",
+      "answer": 34.55
+    },
+    "v33": {
+      "id": "q_459109bda652",
+      "type": "percent",
+      "answer": 35.1
+    }
+  },
+  {
+    "id": "q_45cb42f4dc7b",
+    "business_id": "dev_002",
+    "question": "Doanh thu th8/2025 so voi thang lien truoc thay doi may %?",
+    "as_of_date": "2026-05-24",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_45cb42f4dc7b",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_45cb42f4dc7b",
+      "type": "percent",
+      "answer": 4.48
+    }
+  },
+  {
+    "id": "q_4633acb03075",
+    "business_id": "dev_005",
+    "question": "Tháng này tới giờ dthu so với tháng trước tăng hay giảm mấy % z?",
+    "as_of_date": "2025-05-13",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_4633acb03075",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_4633acb03075",
+      "type": "percent",
+      "answer": 15.6
+    }
+  },
+  {
+    "id": "q_48958d7402b0",
+    "business_id": "dev_013",
+    "question": "So với tháng trước đó, doanh thu tháng 6/2026 tăng hay giảm mấy phần trăm?",
+    "as_of_date": "2026-06-30",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_48958d7402b0",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_48958d7402b0",
+      "type": "percent",
+      "answer": -11.54
+    }
+  },
+  {
+    "id": "q_48cbee311a9e",
+    "business_id": "dev_008",
+    "question": "Cho em hỏi doanh thu từ mùng 1 tháng này đến hết hôm nay so với cùng kỳ tháng trước tăng hay giảm bao nhiêu phần trăm ạ?",
+    "as_of_date": "2026-02-25",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_48cbee311a9e",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_48cbee311a9e",
+      "type": "percent",
+      "answer": -33.15
+    }
+  },
+  {
+    "id": "q_4d15340145ad",
+    "business_id": "dev_012",
+    "question": "T8/2026 ngay nao ban duoc nhieu tien nhat?",
+    "as_of_date": "2026-08-31",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_4d15340145ad",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_4d15340145ad",
+      "type": "date",
+      "answer": "2026-08-30"
+    }
+  },
+  {
+    "id": "q_4d7022ecbc52",
+    "business_id": "dev_010",
+    "question": "Dthu thang 5/26 so voi thang 5/25 tang truong bnhiu %?",
+    "as_of_date": "2026-09-06",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_4d7022ecbc52",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_4d7022ecbc52",
+      "type": "percent",
+      "answer": 7.82
+    }
+  },
+  {
+    "id": "q_4e7e3bde5a15",
+    "business_id": "dev_011",
+    "question": "Cho em xin tỗng doanh thu quý 3/2025 cũa cửa hàng ạ.",
+    "as_of_date": "2026-07-31",
+    "change_type": "value_changed",
+    "v32": {
+      "id": "q_4e7e3bde5a15",
+      "type": "number",
+      "answer": 3195592500
+    },
+    "v33": {
+      "id": "q_4e7e3bde5a15",
+      "type": "number",
+      "answer": 3195242500
+    }
+  },
+  {
+    "id": "q_4ef479fd4803",
+    "business_id": "dev_002",
+    "question": "So voi thang lien truoc, th10/2025 doanh thu len xuong bao nhieu %?",
+    "as_of_date": "2026-05-24",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_4ef479fd4803",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_4ef479fd4803",
+      "type": "percent",
+      "answer": 4.67
+    }
+  },
+  {
+    "id": "q_51621c1657c5",
+    "business_id": "dev_011",
+    "question": "3-2026 nhom may moi ban duoc bnhiu tien the?",
+    "as_of_date": "2026-07-31",
+    "change_type": "value_changed",
+    "v32": {
+      "id": "q_51621c1657c5",
+      "type": "number",
+      "answer": 737145000
+    },
+    "v33": {
+      "id": "q_51621c1657c5",
+      "type": "number",
+      "answer": 1074473000
+    }
+  },
+  {
+    "id": "q_53b6abf6f47b",
+    "business_id": "dev_013",
+    "question": "Cho tôi hỏi doanh thu trung bình mỗi đơn của tuần trước là bao nhiêu?",
+    "as_of_date": "2026-03-31",
+    "change_type": "value_changed",
+    "v32": {
+      "id": "q_53b6abf6f47b",
+      "type": "number",
+      "answer": 529183
+    },
+    "v33": {
+      "id": "q_53b6abf6f47b",
+      "type": "number",
+      "answer": 534377
+    }
+  },
+  {
+    "id": "q_547fb41358ed",
+    "business_id": "dev_010",
+    "question": "Th 6/26 dthu so với th 6/25 tăng hay giảm mấy %?",
+    "as_of_date": "2026-09-06",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_547fb41358ed",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_547fb41358ed",
+      "type": "percent",
+      "answer": 15.9
+    }
+  },
+  {
+    "id": "q_54e2a0754e8b",
+    "business_id": "dev_003",
+    "question": "Tháng 1/2026 nhóm cà phê bán được bao nhiêu ly?",
+    "as_of_date": "2026-08-21",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_54e2a0754e8b",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_54e2a0754e8b",
+      "type": "number",
+      "answer": 2507
+    }
+  },
+  {
+    "id": "q_5599ff7c9e28",
+    "business_id": "dev_013",
+    "question": "Từ đầu năm nay đến hôm nay, tổng doanh thu cửa hàng là bao nhiêu?",
+    "as_of_date": "2026-06-30",
+    "change_type": "value_changed",
+    "v32": {
+      "id": "q_5599ff7c9e28",
+      "type": "number",
+      "answer": 2740074000
+    },
+    "v33": {
+      "id": "q_5599ff7c9e28",
+      "type": "number",
+      "answer": 2740224000
+    }
+  },
+  {
+    "id": "q_5816b4178500",
+    "business_id": "dev_008",
+    "question": "Th1/2026 dthu so với th1/2025 lên hay xuống bao nhiêu % thế?",
+    "as_of_date": "2026-07-22",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_5816b4178500",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_5816b4178500",
+      "type": "percent",
+      "answer": 38.52
+    }
+  },
+  {
+    "id": "q_58215441e762",
+    "business_id": "dev_008",
+    "question": "Doanh thu thang 5/2026 dem so voi thang 5 nam ngoai thi thay doi bao nhieu phan tram?",
+    "as_of_date": "2026-07-22",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_58215441e762",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_58215441e762",
+      "type": "percent",
+      "answer": 19.1
+    }
+  },
+  {
+    "id": "q_588a7c489b8e",
+    "business_id": "dev_007",
+    "question": "Tien ban th8/2026 so th8/2025, cao hay thap hon bnhiu %?",
+    "as_of_date": "2026-09-19",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_588a7c489b8e",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_588a7c489b8e",
+      "type": "percent",
+      "answer": -6.26
+    }
+  },
+  {
+    "id": "q_5dce492e5f1a",
+    "business_id": "dev_001",
+    "question": "Dthu T3/2026 tăng hay giảm mấy % so cùng kỳ năm trước?",
+    "as_of_date": "2026-07-08",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_5dce492e5f1a",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_5dce492e5f1a",
+      "type": "percent",
+      "answer": 19.19
+    }
+  },
+  {
+    "id": "q_5e570feb5c4c",
+    "business_id": "dev_005",
+    "question": "So với cùng tháng năm trước, doanh thu tháng 3 năm 2026 thay đổi mấy phần trăm?",
+    "as_of_date": "2026-05-10",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_5e570feb5c4c",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_5e570feb5c4c",
+      "type": "percent",
+      "answer": 6.51
+    }
+  },
+  {
+    "id": "q_5f2d481dc5d4",
+    "business_id": "dev_003",
+    "question": "Từ đầu tháng này đến hết hôm nay, doanh thu thay đổi bao nhiêu % so với cùng kỳ tháng trước?",
+    "as_of_date": "2025-12-09",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_5f2d481dc5d4",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_5f2d481dc5d4",
+      "type": "percent",
+      "answer": -7.46
+    }
+  },
+  {
+    "id": "q_690a98214478",
+    "business_id": "dev_006",
+    "question": "Doanh thu thang nay so voi cung so ngay cua thang truoc tang hay giam may %?",
+    "as_of_date": "2025-11-24",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_690a98214478",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_690a98214478",
+      "type": "percent",
+      "answer": 7.29
+    }
+  },
+  {
+    "id": "q_6a138cfe1257",
+    "business_id": "dev_014",
+    "question": "Th8/2025 dthu tăng hay giãm mấy % so với tháng trước đó?",
+    "as_of_date": "2026-09-30",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_6a138cfe1257",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_6a138cfe1257",
+      "type": "percent",
+      "answer": 36.18
+    }
+  },
+  {
+    "id": "q_6bd9c92d0d7e",
+    "business_id": "dev_004",
+    "question": "Doanh thu tháng 2/2026 lên hay xuống mấy % so với cùng kỳ năm rồi?",
+    "as_of_date": "2026-06-10",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_6bd9c92d0d7e",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_6bd9c92d0d7e",
+      "type": "percent",
+      "answer": -31.89
+    }
+  },
+  {
+    "id": "q_6d9ad1c46242",
+    "business_id": "dev_013",
+    "question": "Tuần trước tổng doanh thu được bao nhiêu nhỉ?",
+    "as_of_date": "2026-06-04",
+    "change_type": "value_changed",
+    "v32": {
+      "id": "q_6d9ad1c46242",
+      "type": "number",
+      "answer": 123225500
+    },
+    "v33": {
+      "id": "q_6d9ad1c46242",
+      "type": "number",
+      "answer": 122462500
+    }
+  },
+  {
+    "id": "q_76bdadbeb802",
+    "business_id": "dev_010",
+    "question": "Khách thân thiện nhất tháng 12/2025 là ai?",
+    "as_of_date": "2026-09-06",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_76bdadbeb802",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_76bdadbeb802",
+      "type": "unanswerable",
+      "reason": "Doanh nghiệp không có dữ liệu đánh giá cảm tính theo Rulebook Mục 7"
+    }
+  },
+  {
+    "id": "q_76edb5c73d98",
+    "business_id": "dev_004",
+    "question": "Các đơn đặt tháng 3/2026, tới hôm nay đã chở đi bao nhiêu thùng Sơn Dulux Weathershield Powerflexx 5L?",
+    "as_of_date": "2026-04-01",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_76edb5c73d98",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_76edb5c73d98",
+      "type": "number",
+      "answer": 1
+    }
+  },
+  {
+    "id": "q_78a7454fde5d",
+    "business_id": "dev_003",
+    "question": "Từ đầu tháng này tới hết hôm nay, tiền bán so cùng kỳ tháng trước lên hay xuống mấy % z?",
+    "as_of_date": "2025-12-19",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_78a7454fde5d",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_78a7454fde5d",
+      "type": "percent",
+      "answer": -0.9
+    }
+  },
+  {
+    "id": "q_7bc2b2afb992",
+    "business_id": "dev_006",
+    "question": "So voi thang truoc, doanh thu th5/2026 tang hay giam bao nhieu %?",
+    "as_of_date": "2026-08-08",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_7bc2b2afb992",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_7bc2b2afb992",
+      "type": "percent",
+      "answer": 5.46
+    }
+  },
+  {
+    "id": "q_807c3cdae34f",
+    "business_id": "dev_010",
+    "question": "Doanh thu thang 12 nam 2025 so thang lien truoc len hay xuong may %?",
+    "as_of_date": "2026-09-06",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_807c3cdae34f",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_807c3cdae34f",
+      "type": "percent",
+      "answer": 8.04
+    }
+  },
+  {
+    "id": "q_837cd5892764",
+    "business_id": "dev_004",
+    "question": "Doanh thu tháng này so với cùng số ngày đầu tháng rồi tăng hay giảm mấy %?",
+    "as_of_date": "2025-10-22",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_837cd5892764",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_837cd5892764",
+      "type": "percent",
+      "answer": 0.49
+    }
+  },
+  {
+    "id": "q_8728cb609428",
+    "business_id": "dev_001",
+    "question": "2/26 so với cùng kỳ năm trước, doanh thu lên hay xuống bao nhiêu % vậy?",
+    "as_of_date": "2026-07-08",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_8728cb609428",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_8728cb609428",
+      "type": "percent",
+      "answer": 45.88
+    }
+  },
+  {
+    "id": "q_8df7e247960b",
+    "business_id": "dev_003",
+    "question": "Doanh thu tháng 4/2026 so với cùng kỳ năm ngoái thay đổi bao nhiêu phần trăm?",
+    "as_of_date": "2026-08-21",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_8df7e247960b",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_8df7e247960b",
+      "type": "percent",
+      "answer": 20.46
+    }
+  },
+  {
+    "id": "q_928423a8bbc6",
+    "business_id": "dev_006",
+    "question": "Dthu tháng 7/26 so với tháng 7/25 tăng hay giảm bnhiu %?",
+    "as_of_date": "2026-08-08",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_928423a8bbc6",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_928423a8bbc6",
+      "type": "percent",
+      "answer": 8.54
+    }
+  },
+  {
+    "id": "q_929a9dcb0a38",
+    "business_id": "dev_003",
+    "question": "Trong tháng 9 năm 2025, các mặt hàng nhóm trà sữa bán ra tổng cộng bao nhiêu ly?",
+    "as_of_date": "2026-08-21",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_929a9dcb0a38",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_929a9dcb0a38",
+      "type": "number",
+      "answer": 1101
+    }
+  },
+  {
+    "id": "q_980cef2c769c",
+    "business_id": "dev_007",
+    "question": "Dthu th 6/26 tăng trưởng bnhiu % so th 6/25?",
+    "as_of_date": "2026-09-19",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_980cef2c769c",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_980cef2c769c",
+      "type": "percent",
+      "answer": -12.16
+    }
+  },
+  {
+    "id": "q_9956cc60cbb1",
+    "business_id": "dev_003",
+    "question": "Th 11/25 doanh thu tang hay giam bao nhieu % so voi thang truoc?",
+    "as_of_date": "2026-08-21",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_9956cc60cbb1",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_9956cc60cbb1",
+      "type": "percent",
+      "answer": -3.67
+    }
+  },
+  {
+    "id": "q_99f979b5d0b4",
+    "business_id": "dev_012",
+    "question": "So với tháng trước đó, 7/2026 dthu lên hay xuống mấy %?",
+    "as_of_date": "2026-08-31",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_99f979b5d0b4",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_99f979b5d0b4",
+      "type": "percent",
+      "answer": 3.07
+    }
+  },
+  {
+    "id": "q_9f4af1e4fecd",
+    "business_id": "dev_011",
+    "question": "06/2025 nhóm máy cũ bán được bnhiu tiền?",
+    "as_of_date": "2026-07-31",
+    "change_type": "value_changed",
+    "v32": {
+      "id": "q_9f4af1e4fecd",
+      "type": "number",
+      "answer": 1345065000
+    },
+    "v33": {
+      "id": "q_9f4af1e4fecd",
+      "type": "number",
+      "answer": 168700000
+    }
+  },
+  {
+    "id": "q_a79c3c340077",
+    "business_id": "dev_002",
+    "question": "So voi T4/2025 thi T4/2026 doanh thu tang truong bao nhieu %?",
+    "as_of_date": "2026-05-24",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_a79c3c340077",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_a79c3c340077",
+      "type": "percent",
+      "answer": 10.7
+    }
+  },
+  {
+    "id": "q_a85371a13fe2",
+    "business_id": "dev_011",
+    "question": "Th7/2026 mat hang nao ban chay nhat the?",
+    "as_of_date": "2026-07-31",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_a85371a13fe2",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_a85371a13fe2",
+      "type": "string",
+      "answer": "Cáp C"
+    }
+  },
+  {
+    "id": "q_aa7c51569962",
+    "business_id": "dev_001",
+    "question": "Dthu th2/2025 so tháng liền trước lên hay xuống bnhiu %?",
+    "as_of_date": "2026-07-08",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_aa7c51569962",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_aa7c51569962",
+      "type": "percent",
+      "answer": -9.01
+    }
+  },
+  {
+    "id": "q_ad782d8acb44",
+    "business_id": "dev_004",
+    "question": "Doanh thu tu dau thang den het hom nay so voi cung ky thang truoc chenh bao nhieu phan tram, tang hay giam?",
+    "as_of_date": "2025-08-14",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_ad782d8acb44",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_ad782d8acb44",
+      "type": "percent",
+      "answer": -8.31
+    }
+  },
+  {
+    "id": "q_ae10c252dc7a",
+    "business_id": "dev_002",
+    "question": "Tháng 9/2025 nhóm trà sữa bán được bao nhiêu ly?",
+    "as_of_date": "2026-05-24",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_ae10c252dc7a",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_ae10c252dc7a",
+      "type": "number",
+      "answer": 975
+    }
+  },
+  {
+    "id": "q_aea7033d3c8c",
+    "business_id": "dev_013",
+    "question": "alo, th5/2026 đơn bán trên sàn thương mại điện tử với đơn bán wa Zalo OA, tung ben dthu bnhiu",
+    "as_of_date": "2026-06-30",
+    "change_type": "value_changed",
+    "v32": {
+      "id": "q_aea7033d3c8c",
+      "type": "list",
+      "answer": [
+        82653000,
+        106387000
+      ]
+    },
+    "v33": {
+      "id": "q_aea7033d3c8c",
+      "type": "list",
+      "answer": [
+        82653000,
+        105299000
+      ]
+    }
+  },
+  {
+    "id": "q_b290d99f9130",
+    "business_id": "dev_004",
+    "question": "alo, dthu shop mik th4/2026 tăng hay giảm bnhiu % so vs th4/2025 zạ",
+    "as_of_date": "2026-06-10",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_b290d99f9130",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_b290d99f9130",
+      "type": "percent",
+      "answer": -6.15
+    }
+  },
+  {
+    "id": "q_b2bbe9c1e9fc",
+    "business_id": "dev_002",
+    "question": "Tháng 2/2025 bán ra bao nhiêu ly Cà phê sữa (M)?",
+    "as_of_date": "2026-05-24",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_b2bbe9c1e9fc",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_b2bbe9c1e9fc",
+      "type": "number",
+      "answer": 272
+    }
+  },
+  {
+    "id": "q_b5034a203b3b",
+    "business_id": "dev_013",
+    "question": "Tu dau thang nay toi het hom nay doanh thu tang hay giam bao nhieu % so voi cung ky thang truoc?",
+    "as_of_date": "2026-05-23",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_b5034a203b3b",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_b5034a203b3b",
+      "type": "percent",
+      "answer": 4.39
+    }
+  },
+  {
+    "id": "q_b6abccb6b3cb",
+    "business_id": "dev_014",
+    "question": "Th1/2026 Ốp lưng silicon iPhone bán roa tổng cộng bnhiu cái?",
+    "as_of_date": "2026-09-30",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_b6abccb6b3cb",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_b6abccb6b3cb",
+      "type": "number",
+      "answer": 86
+    }
+  },
+  {
+    "id": "q_ba1f08439ec8",
+    "business_id": "dev_004",
+    "question": "Giua th1/2026, th2/2026 va th3/2026 thi thang nao doanh thu cao nhat z?",
+    "as_of_date": "2026-06-10",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_ba1f08439ec8",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_ba1f08439ec8",
+      "type": "date",
+      "answer": "2026-01"
+    }
+  },
+  {
+    "id": "q_ba477e8e6161",
+    "business_id": "dev_004",
+    "question": "04/2025 dthu so voi thang truoc tang hay giam may %?",
+    "as_of_date": "2026-06-10",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_ba477e8e6161",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_ba477e8e6161",
+      "type": "percent",
+      "answer": -4.27
+    }
+  },
+  {
+    "id": "q_bae86e8e80f2",
+    "business_id": "dev_011",
+    "question": "Tiền bán 06/2026, nhiêu z?",
+    "as_of_date": "2026-07-31",
+    "change_type": "value_changed",
+    "v32": {
+      "id": "q_bae86e8e80f2",
+      "type": "number",
+      "answer": 1062156000
+    },
+    "v33": {
+      "id": "q_bae86e8e80f2",
+      "type": "number",
+      "answer": 1061632500
+    }
+  },
+  {
+    "id": "q_c28a03d7a959",
+    "business_id": "dev_003",
+    "question": "Tính luôn hôm nay thì 7 ngày gần nhất quán bán ra được bao nhiêu ly z?",
+    "as_of_date": "2025-06-23",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_c28a03d7a959",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_c28a03d7a959",
+      "type": "number",
+      "answer": 145
+    }
+  },
+  {
+    "id": "q_c2eaa7985cf2",
+    "business_id": "dev_001",
+    "question": "T5/2026 doanh thu so voi T5/2025 len hay xuong bao nhieu % z?",
+    "as_of_date": "2026-07-08",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_c2eaa7985cf2",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_c2eaa7985cf2",
+      "type": "percent",
+      "answer": 6.91
+    }
+  },
+  {
+    "id": "q_c64c6d29f583",
+    "business_id": "dev_002",
+    "question": "Tháng này quán bán ra tổng cộng mấy ly size M, cộng tất cả các món?",
+    "as_of_date": "2026-05-24",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_c64c6d29f583",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_c64c6d29f583",
+      "type": "number",
+      "answer": 2583
+    }
+  },
+  {
+    "id": "q_c65b4afeafd1",
+    "business_id": "dev_005",
+    "question": "e ơi dthu shop mik th5/2025 so vs thang lien trc do tang hay giam mí % z nghen",
+    "as_of_date": "2026-05-10",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_c65b4afeafd1",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_c65b4afeafd1",
+      "type": "percent",
+      "answer": 16.18
+    }
+  },
+  {
+    "id": "q_c9afaa1f4f9e",
+    "business_id": "dev_011",
+    "question": "Tháng 10 năm 2025 Thẻ nhớ microSD 64GB bán ra mấy cái?",
+    "as_of_date": "2026-07-31",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_c9afaa1f4f9e",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_c9afaa1f4f9e",
+      "type": "number",
+      "answer": 11
+    }
+  },
+  {
+    "id": "q_c9c0246005b6",
+    "business_id": "dev_013",
+    "question": "Có mấy ngày trong tháng 9/2025 cửa hàng bán được từ 15.000.000 đồng trở lên?",
+    "as_of_date": "2026-06-30",
+    "change_type": "value_changed",
+    "v32": {
+      "id": "q_c9c0246005b6",
+      "type": "number",
+      "answer": 14
+    },
+    "v33": {
+      "id": "q_c9c0246005b6",
+      "type": "number",
+      "answer": 13
+    }
+  },
+  {
+    "id": "q_cb0b3be99b62",
+    "business_id": "dev_010",
+    "question": "Doanh thu tháng 7/2026 so với tháng 7 năm rồi tăng hay giảm mấy %?",
+    "as_of_date": "2026-09-06",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_cb0b3be99b62",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_cb0b3be99b62",
+      "type": "percent",
+      "answer": 9.1
+    }
+  },
+  {
+    "id": "q_cd3203f2d813",
+    "business_id": "dev_005",
+    "question": "Tháng 9 năm 2025 Nurofen for Children hỗn dịch chai 60ml bán được mấy chai vậy?",
+    "as_of_date": "2026-05-10",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_cd3203f2d813",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_cd3203f2d813",
+      "type": "number",
+      "answer": 90
+    }
+  },
+  {
+    "id": "q_ce8675d1ef06",
+    "business_id": "dev_003",
+    "question": "Chênh lệch nhập trừ bán Bánh tiramisu T10/2025 là bao nhiêu cái?",
+    "as_of_date": "2026-08-21",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_ce8675d1ef06",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_ce8675d1ef06",
+      "type": "number",
+      "answer": 88
+    }
+  },
+  {
+    "id": "q_cf2c969d8471",
+    "business_id": "dev_004",
+    "question": "Các đơn đặt tháng 5/2025, tới hôm nay đã chở đi bao nhiêu thùng Gạch ốp tường Viglacera 30x60 thùng 8 viên?",
+    "as_of_date": "2025-06-01",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_cf2c969d8471",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_cf2c969d8471",
+      "type": "number",
+      "answer": 1
+    }
+  },
+  {
+    "id": "q_cfcb5f8a241f",
+    "business_id": "dev_002",
+    "question": "Thang ni quan ban duoc may ly size L, tinh tat ca do uong?",
+    "as_of_date": "2026-05-24",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_cfcb5f8a241f",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_cfcb5f8a241f",
+      "type": "number",
+      "answer": 1350
+    }
+  },
+  {
+    "id": "q_d0c41c37777e",
+    "business_id": "dev_007",
+    "question": "Tổng số đĩa nhóm chiên xào bán được trong tháng 1/2026 là bao nhiêu?",
+    "as_of_date": "2026-09-19",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_d0c41c37777e",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_d0c41c37777e",
+      "type": "number",
+      "answer": 1849
+    }
+  },
+  {
+    "id": "q_d3b768308def",
+    "business_id": "dev_012",
+    "question": "Doanh thu tháng 4/2026 tăng dảm bao nhiêu % xo với tháng liền trước?",
+    "as_of_date": "2026-08-31",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_d3b768308def",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_d3b768308def",
+      "type": "percent",
+      "answer": -6.69
+    }
+  },
+  {
+    "id": "q_d3ef941d6105",
+    "business_id": "dev_008",
+    "question": "So voi thang truoc, th2/2025 doanh thu hon hay kem bao nhieu %?",
+    "as_of_date": "2026-07-22",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_d3ef941d6105",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_d3ef941d6105",
+      "type": "percent",
+      "answer": -1.28
+    }
+  },
+  {
+    "id": "q_d4d9ce010db3",
+    "business_id": "dev_013",
+    "question": "Tháng 6/2026 có mấy đơn có tiền hàng từ 450.000 đồng trở lên?",
+    "as_of_date": "2026-06-30",
+    "change_type": "value_changed",
+    "v32": {
+      "id": "q_d4d9ce010db3",
+      "type": "number",
+      "answer": 389
+    },
+    "v33": {
+      "id": "q_d4d9ce010db3",
+      "type": "number",
+      "answer": 390
+    }
+  },
+  {
+    "id": "q_d62edb3b5bc6",
+    "business_id": "dev_004",
+    "question": "Mình đang xem lại mùa hè, giựa tháng 6/2025, 7/2025 và 8/2025 thì tháng nào doanh thu cao nhất?",
+    "as_of_date": "2026-06-10",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_d62edb3b5bc6",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_d62edb3b5bc6",
+      "type": "date",
+      "answer": "2025-06"
+    }
+  },
+  {
+    "id": "q_d778fbbd804e",
+    "business_id": "dev_010",
+    "question": "ua, dthu wan mik th7/2025 so vs thang trc do tang hay giam bn % the nhi",
+    "as_of_date": "2026-09-06",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_d778fbbd804e",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_d778fbbd804e",
+      "type": "percent",
+      "answer": 6.39
+    }
+  },
+  {
+    "id": "q_d857fdab9c0a",
+    "business_id": "dev_002",
+    "question": "ủa th4/2026 dthu shop mik tăng hay giảm mí % so vs thang trc zị hen 😅",
+    "as_of_date": "2026-05-24",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_d857fdab9c0a",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_d857fdab9c0a",
+      "type": "percent",
+      "answer": -5.94
+    }
+  },
+  {
+    "id": "q_d965d0bc2205",
+    "business_id": "dev_004",
+    "question": "03/2025 doanh thu tang hay giam may % so voi thang lien truoc?",
+    "as_of_date": "2026-06-10",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_d965d0bc2205",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_d965d0bc2205",
+      "type": "percent",
+      "answer": 24.59
+    }
+  },
+  {
+    "id": "q_dec759a2f085",
+    "business_id": "dev_002",
+    "question": "Tháng 4/2026 bán ra bao nhiêu ly Latte (M)?",
+    "as_of_date": "2026-05-24",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_dec759a2f085",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_dec759a2f085",
+      "type": "number",
+      "answer": 121
+    }
+  },
+  {
+    "id": "q_e096ce51b13d",
+    "business_id": "dev_008",
+    "question": "Từ đầu tháng này tới hết hôm nay, doanh thu của quán hơn hay kém cùng kỳ tháng rồi mấy phần trăm?",
+    "as_of_date": "2025-04-16",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_e096ce51b13d",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_e096ce51b13d",
+      "type": "percent",
+      "answer": -4.99
+    }
+  },
+  {
+    "id": "q_e0e7974d6923",
+    "business_id": "dev_003",
+    "question": "Th4/2025 dthu hơn hay kém tháng trước mấy %?",
+    "as_of_date": "2026-08-21",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_e0e7974d6923",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_e0e7974d6923",
+      "type": "percent",
+      "answer": -9.54
+    }
+  },
+  {
+    "id": "q_e322d691b4be",
+    "business_id": "dev_007",
+    "question": "So voi th2/2025, doanh thu th2/2026 tang truong may %?",
+    "as_of_date": "2026-09-19",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_e322d691b4be",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_e322d691b4be",
+      "type": "percent",
+      "answer": 29.16
+    }
+  },
+  {
+    "id": "q_e9bb51886662",
+    "business_id": "dev_011",
+    "question": "Th11/2025 tổng cộng bán đc bnhiu tiền?",
+    "as_of_date": "2026-07-31",
+    "change_type": "value_changed",
+    "v32": {
+      "id": "q_e9bb51886662",
+      "type": "number",
+      "answer": 1025340500
+    },
+    "v33": {
+      "id": "q_e9bb51886662",
+      "type": "number",
+      "answer": 1024950500
+    }
+  },
+  {
+    "id": "q_ec9ca5f0dec1",
+    "business_id": "dev_013",
+    "question": "Cho tôi biết doanh thu tháng 12/2025.",
+    "as_of_date": "2026-06-30",
+    "change_type": "value_changed",
+    "v32": {
+      "id": "q_ec9ca5f0dec1",
+      "type": "number",
+      "answer": 448709000
+    },
+    "v33": {
+      "id": "q_ec9ca5f0dec1",
+      "type": "number",
+      "answer": 448559000
+    }
+  },
+  {
+    "id": "q_ee58dba4a73e",
+    "business_id": "dev_013",
+    "question": "Tuần trước mỗi đơn bình quân được bao nhiêu doanh thu nhỉ?",
+    "as_of_date": "2026-05-26",
+    "change_type": "value_changed",
+    "v32": {
+      "id": "q_ee58dba4a73e",
+      "type": "number",
+      "answer": 555828
+    },
+    "v33": {
+      "id": "q_ee58dba4a73e",
+      "type": "number",
+      "answer": 557246
+    }
+  },
+  {
+    "id": "q_f1772e835811",
+    "business_id": "dev_011",
+    "question": "Nhóm phụ kiện 9/2025 bán được nhiêu tiền rứa?",
+    "as_of_date": "2026-07-31",
+    "change_type": "value_changed",
+    "v32": {
+      "id": "q_f1772e835811",
+      "type": "number",
+      "answer": 42223500
+    },
+    "v33": {
+      "id": "q_f1772e835811",
+      "type": "number",
+      "answer": 65110500
+    }
+  },
+  {
+    "id": "q_f264ab49a2c8",
+    "business_id": "dev_006",
+    "question": "Nature's Bounty Vitamin E 400 IU chai 30 viên T5/2026 bán được mấy chai?",
+    "as_of_date": "2026-08-08",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_f264ab49a2c8",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_f264ab49a2c8",
+      "type": "number",
+      "answer": 64
+    }
+  },
+  {
+    "id": "q_f56deeb4120b",
+    "business_id": "dev_004",
+    "question": "Tính 3 tháng 12/2025, 1/2026, 2/2026, tháng nào doanh thu cao nhất vậy?",
+    "as_of_date": "2026-06-10",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_f56deeb4120b",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_f56deeb4120b",
+      "type": "date",
+      "answer": "2025-12"
+    }
+  },
+  {
+    "id": "q_f83c96ab5362",
+    "business_id": "dev_013",
+    "question": "Thang nay don ban tren san thuong mai dien tu dong gop may phan tram tong doanh thu?",
+    "as_of_date": "2026-06-30",
+    "change_type": "value_changed",
+    "v32": {
+      "id": "q_f83c96ab5362",
+      "type": "percent",
+      "answer": 17.71
+    },
+    "v33": {
+      "id": "q_f83c96ab5362",
+      "type": "percent",
+      "answer": 17.67
+    }
+  },
+  {
+    "id": "q_fbc812dde384",
+    "business_id": "dev_010",
+    "question": "Mặt hàng bán chạy nhất tháng 11 năm 2025 là gì thế?",
+    "as_of_date": "2026-09-06",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_fbc812dde384",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_fbc812dde384",
+      "type": "string",
+      "answer": "Sữa pha sẵn GrowPLUS+ đỏ 110ml lốc 4"
+    }
+  },
+  {
+    "id": "q_fc4f06f3006b",
+    "business_id": "dev_005",
+    "question": "Dthu T6/2025 so tháng liền trước tăng hay giảm mấy %?",
+    "as_of_date": "2026-05-10",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_fc4f06f3006b",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_fc4f06f3006b",
+      "type": "percent",
+      "answer": -6.43
+    }
+  },
+  {
+    "id": "q_fd38dda74f47",
+    "business_id": "dev_014",
+    "question": "Tổng dthu T1/2026 đc bnhiu?",
+    "as_of_date": "2026-09-30",
+    "change_type": "value_changed",
+    "v32": {
+      "id": "q_fd38dda74f47",
+      "type": "number",
+      "answer": 1834016000
+    },
+    "v33": {
+      "id": "q_fd38dda74f47",
+      "type": "number",
+      "answer": 1823098500
+    }
+  },
+  {
+    "id": "q_fe2a9de157ee",
+    "business_id": "dev_013",
+    "question": "Tháng 12/2025 có bao nhiêu ngày đạt doanh thu từ 18.000.000 đồng trở lên?",
+    "as_of_date": "2026-06-30",
+    "change_type": "value_changed",
+    "v32": {
+      "id": "q_fe2a9de157ee",
+      "type": "number",
+      "answer": 6
+    },
+    "v33": {
+      "id": "q_fe2a9de157ee",
+      "type": "number",
+      "answer": 7
+    }
+  },
+  {
+    "id": "q_ffaf8aecc5ea",
+    "business_id": "dev_013",
+    "question": "Gia tri binh quan 1 don tuan truoc duoc bao nhieu the?",
+    "as_of_date": "2026-04-28",
+    "change_type": "value_changed",
+    "v32": {
+      "id": "q_ffaf8aecc5ea",
+      "type": "number",
+      "answer": 545589
+    },
+    "v33": {
+      "id": "q_ffaf8aecc5ea",
+      "type": "number",
+      "answer": 544455
+    }
+  },
+  {
+    "id": "q_ffd749264313",
+    "business_id": "dev_006",
+    "question": "Doanh thu tháng 9/2025 so dới tháng trước lên hay xuống bao nhiêu % dậy?",
+    "as_of_date": "2026-08-08",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_ffd749264313",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_ffd749264313",
+      "type": "percent",
+      "answer": 1.25
+    }
+  }
+]

@@ -84,6 +84,7 @@ def generate_submission(
         "number": 0,
         "percent": 0,
         "string": 0,
+        "date": 0,
         "list": 0,
     }
 
@@ -171,6 +172,7 @@ def generate_submission(
     print(f"   - number:        {stats['number']}")
     print(f"   - percent:       {stats['percent']}")
     print(f"   - string:        {stats['string']}")
+    print(f"   - date:          {stats['date']}")
     print(f"   - list:          {stats['list']}")
     print(f"   - unanswerable:  {stats['unanswerable']}")
     print(f"⚪ Số câu từ chối:  {stats['abstain']} ({stats['abstain'] / stats['total'] * 100:.1f}%) [0 điểm - không phạt]")

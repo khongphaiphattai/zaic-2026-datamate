@@ -151,7 +151,7 @@ def parse_mixed_excel_dates(s: pd.Series, sheet_year: Optional[int] = None) -> p
 
 
 SUBTOTAL_ROW_PATTERN = re.compile(
-    r"^(?:cộng|cong|tổng|tong)\s*(?:ngày|ngay|tháng|thang|quý|quy|năm|nam|\d{1,2}[/-]\d{1,2}|cộng|cong|$|\s*:)",
+    r"^(?:(?:cộng|cong|tổng|tong)\s*(?:ngày|ngay|tháng|thang|quý|quy|năm|nam|\d{1,2}[/-]\d{1,2}|cộng|cong|$|\s*:)|(?:ghi\s*ch[uú]|note|ch[uú]\s*th[ií]ch)\s*:)",
     re.IGNORECASE,
 )
 
@@ -214,10 +214,11 @@ def clean_dataframe(df: pd.DataFrame) -> Tuple[pd.DataFrame, Dict[str, str]]:
     # Drop accounting/POS subtotal rows before data type normalization and ffill
     cleaned_df = drop_subtotal_rows(cleaned_df)
 
-    # Identify sheet year if available from _sheet_name or table name
+    # Identify sheet year if available from sheet_name or _sheet_name
+    sheet_col = "sheet_name" if "sheet_name" in cleaned_df.columns else ("_sheet_name" if "_sheet_name" in cleaned_df.columns else None)
     sheet_year = None
-    if "_sheet_name" in cleaned_df.columns:
-        first_sheet = str(cleaned_df["_sheet_name"].dropna().iloc[0]) if cleaned_df["_sheet_name"].notna().any() else ""
+    if sheet_col and cleaned_df[sheet_col].notna().any():
+        first_sheet = str(cleaned_df[sheet_col].dropna().iloc[0])
         m_yr = re.search(r"202[4-9]", first_sheet)
         if m_yr:
             sheet_year = int(m_yr.group(0))
@@ -236,27 +237,42 @@ def clean_dataframe(df: pd.DataFrame) -> Tuple[pd.DataFrame, Dict[str, str]]:
 
         if is_date_col:
             if not pd.api.types.is_datetime64_any_dtype(s):
-                cleaned_df[clean_col] = parse_mixed_excel_dates(s, sheet_year=sheet_year)
+                if sheet_col and cleaned_df[sheet_col].notna().any():
+                    # Parse dates per sheet group to preserve individual sheet years (e.g. 2025 vs 2026)
+                    parsed_series = pd.Series(pd.NaT, index=s.index, dtype="datetime64[us]")
+                    for sname, grp in cleaned_df.groupby(sheet_col, sort=False):
+                        m_s_yr = re.search(r"202[4-9]", str(sname))
+                        syear = int(m_s_yr.group(0)) if m_s_yr else sheet_year
+                        parsed_grp = parse_mixed_excel_dates(grp[clean_col], sheet_year=syear)
+                        parsed_series.loc[grp.index] = parsed_grp
+                    cleaned_df[clean_col] = parsed_series
+                else:
+                    cleaned_df[clean_col] = parse_mixed_excel_dates(s, sheet_year=sheet_year)
             continue
 
         # 2. Text exclusion: if column name suggests name/text/ID, never force convert to numeric
         is_text_name_col = any(k in clean_col for k in [
             "ten", "mon", "mo_ta", "ma", "ghi_chu", "loai", "kenh",
             "trang_thai", "khach", "nhan_vien", "don_vi", "dvt",
-            "hoat_chat", "thuong_hieu"
+            "hoat_chat", "thuong_hieu", "noi_dung", "note",
+            "phieu", "so_ct", "chung_tu", "bill", "don_so",
+            "sdt", "dien_thoai", "phone", "di_dong", "imei",
+            "cccd", "mst", "barcode", "vach", "sheet_name"
         ])
         if is_text_name_col:
             continue
 
         # 3. Numeric Detection
-        is_num_col = any(k in clean_col for k in [
-            "tien", "gia", "don_gia", "luong", "no",
+        has_debt_token = bool(re.search(r"(?:^|_)(?:no|cong_no|du_no|con_no)(?:_|$)", clean_col))
+        has_fee_token = bool(re.search(r"(?:^|_)(?:phi|chi_phi|le_phi)(?:_|$)", clean_col))
+        is_num_col = has_debt_token or has_fee_token or any(k in clean_col for k in [
+            "tien", "gia", "don_gia", "luong",
             "tong", "thue", "giam", "stt", "ton",
             "amount", "sl", "qty", "so_luong", "tt", "dg"
         ])
         if not pd.api.types.is_numeric_dtype(s):
-            is_money_col = any(k in clean_col for k in [
-                "tien", "gia", "amount", "no", "tong", "thue", "giam", "phi", "tt", "dg"
+            is_money_col = has_debt_token or has_fee_token or any(k in clean_col for k in [
+                "tien", "gia", "amount", "tong", "thue", "giam", "tt", "dg"
             ])
             if is_money_col:
                 from zaic_2026_datamate.cleaner import clean_vietnamese_currency
@@ -274,21 +290,23 @@ def clean_dataframe(df: pd.DataFrame) -> Tuple[pd.DataFrame, Dict[str, str]]:
                 cleaned_df[clean_col] = converted
 
     # Filter out repeated header rows (e.g. where ma_don_hang == 'Mã đơn hàng' or trang_thai == 'Trạng thái đơn hàng')
-    for c in ["ma_don_hang", "ma_hoa_don", "so_ct", "trang_thai_don_hang", "trang_thai"]:
+    for c in ["ma_don_hang", "ma_hoa_don", "ma_giao_dich", "so_ct", "trang_thai_don_hang", "trang_thai"]:
         if c in cleaned_df.columns:
-            cleaned_df = cleaned_df[~cleaned_df[c].astype(str).str.lower().str.contains(r"^mã\s+đơn|^trạng\s+thái", regex=True, na=False)]
+            cleaned_df = cleaned_df[~cleaned_df[c].astype(str).str.lower().str.contains(r"^mã\s+đơn|^mã\s+giao|^trạng\s+thái", regex=True, na=False)]
 
     # Rulebook Section 8: Forward fill header fields for multi-item order groups FIRST
     # ("Ô để trống ở các dòng sau của cùng một nhóm dòng: giống ô đó ở dòng đầu nhóm: khách, ghi chú, trạng thái của đơn áp cho mọi dòng của đơn.")
     order_header_cols = [
-        "ma_don_hang", "ma_hoa_don", "ma_phieu", "ma_bill", "bill", "so_phieu", "ma_gd", "so_hd", "ma_dh", "so_ct", "hd", "don_so", "ma_don",
+        "ma_don_hang", "ma_hoa_don", "ma_giao_dich", "ma_chung_tu", "order_id",
+        "ma_phieu", "ma_bill", "bill", "so_phieu", "ma_gd", "so_hd", "ma_dh", "so_ct", "hd", "don_so", "ma_don", "stt",
         "ngay_dat_hang", "thoi_gian", "ngay", "ngay_ban", "ngay_lap", "gio", "thoi_gian_tao",
         "trang_thai_don_hang", "trang_thai", "status", "ghi_chu_tt", "trang_thai_xu_ly",
-        "tien_do", "xu_ly",
+        "tien_do", "xu_ly", "ghi_chu", "kenh", "kenh_ban",
         "ten_khach_hang", "khach_hang", "khach", "tenkh", "ma_kh", "ma_khach_hang"
     ]
     order_id_cols = [
-        "ma_don_hang", "ma_hoa_don", "ma_phieu", "ma_bill", "bill", "so_phieu", "ma_gd", "so_hd", "ma_dh", "so_ct", "hd", "don_so", "ma_don"
+        "ma_don_hang", "ma_hoa_don", "ma_giao_dich", "ma_chung_tu", "order_id",
+        "ma_phieu", "ma_bill", "bill", "so_phieu", "ma_gd", "so_hd", "ma_dh", "so_ct", "hd", "don_so", "ma_don", "stt"
     ]
     present_order_cols = [c for c in order_id_cols if c in cleaned_df.columns]
     for c in present_order_cols:
@@ -297,7 +315,7 @@ def clean_dataframe(df: pd.DataFrame) -> Tuple[pd.DataFrame, Dict[str, str]]:
     order_scoped_headers = {
         "trang_thai_don_hang", "trang_thai", "status", "ghi_chu_tt", "trang_thai_xu_ly",
         "tien_do", "xu_ly", "ten_khach_hang", "khach_hang", "khach", "tenkh",
-        "ma_kh", "ma_khach_hang",
+        "ma_kh", "ma_khach_hang", "ghi_chu", "kenh", "kenh_ban",
     }
     for c in order_header_cols:
         if c in cleaned_df.columns and c not in present_order_cols:
@@ -339,8 +357,8 @@ class BusinessContext:
     def scalar(self, sql: str) -> Any:
         """Execute SQL query and return a single scalar value."""
         self.last_sql = sql.strip()
-        res = self.duckdb_conn.execute(sql).fetchone()
-        return res[0] if res is not None else None
+        rows = self.duckdb_conn.execute(sql).fetchall()
+        return rows[0][0] if rows else None
 
 
 class DataLoader:
@@ -516,18 +534,29 @@ class DataLoader:
                     raw_tables.setdefault(table_name, []).append(sdf)
                 split_tables[stem] = sdf
             else:
+                loaded_sheets = {}
+                primary_sheet = None
                 for s in sheet_names:
                     sdf = self._read_sheet_with_sniff(xls, s)
+                    loaded_sheets[s] = sdf
                     table_name = f"{base_stem}_{s}"
                     raw_tables.setdefault(table_name, []).append(sdf)
-                    # If this is the primary sales/invoice sheet, also register under base_stem
-                    is_primary = (
-                        s.lower() in ["banhang", "ban_hang", "sobanhang", "so_ban_hang", "hoadon", "hoa_don"]
-                        or s == sheet_names[0]
-                    )
-                    if is_primary:
-                        raw_tables.setdefault(base_stem, []).append(sdf)
                     split_tables[table_name] = sdf
+                    norm_s = normalize_identifier(s)
+                    if norm_s in ["ban_hang", "so_ban_hang", "hoa_don", "don_hang", "chi_tiet_don", "danh_sach_don_hang"]:
+                        primary_sheet = s
+
+                if not primary_sheet:
+                    candidate_sheets = [
+                        s for s in sheet_names
+                        if not any(k in normalize_identifier(s) for k in ["ghi_tat", "lookup", "tra_cuu", "danh_muc", "huong_dan"])
+                    ]
+                    if candidate_sheets:
+                        primary_sheet = max(candidate_sheets, key=lambda s: len(loaded_sheets[s]))
+                    else:
+                        primary_sheet = max(sheet_names, key=lambda s: len(loaded_sheets[s]))
+
+                raw_tables.setdefault(base_stem, []).append(loaded_sheets[primary_sheet])
         except Exception:
             xls = pd.ExcelFile(xlsx_path, engine="openpyxl")
             for s in xls.sheet_names:

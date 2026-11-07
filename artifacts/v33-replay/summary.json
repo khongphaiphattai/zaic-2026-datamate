@@ -1,0 +1,57 @@
+{
+  "train_benchmark": {
+    "total_questions": 3000,
+    "v32_baseline": {
+      "answered": 1268,
+      "correct": 1268,
+      "wrong": 0,
+      "abstain": 1732,
+      "precision": 1.0,
+      "pa": 0.4226666666666667
+    },
+    "v33_candidate": {
+      "answered": 1391,
+      "correct": 1391,
+      "wrong": 0,
+      "abstain": 1609,
+      "precision": 1.0,
+      "pa": 0.46366666666666667,
+      "net_points_gained_vs_v32": 123
+    }
+  },
+  "public_test_comparison": {
+    "total_questions": 1000,
+    "v32_answered": 379,
+    "v33_answered": 473,
+    "new_unlocked_answers": 94,
+    "value_changed_answers": 28,
+    "new_abstained_answers": 0,
+    "total_diff_count": 122,
+    "by_format": {
+      "number": 315,
+      "percent": 131,
+      "string": 3,
+      "date": 5,
+      "list": 7,
+      "unanswerable": 12,
+      "abstain": 527
+    },
+    "candidate_sha256": "36ecdf160767ac8376afe553ab31152d878a3f7a7d594cb2618caae019840e49"
+  },
+  "by_business": {
+    "dev_001": { "v32_ans": 45, "v33_ans": 51, "new_ans": 7, "val_changed": 0 },
+    "dev_002": { "v32_ans": 21, "v33_ans": 32, "new_ans": 11, "val_changed": 1 },
+    "dev_003": { "v32_ans": 38, "v33_ans": 52, "new_ans": 14, "val_changed": 0 },
+    "dev_004": { "v32_ans": 35, "v33_ans": 48, "new_ans": 13, "val_changed": 2 },
+    "dev_005": { "v32_ans": 45, "v33_ans": 54, "new_ans": 9, "val_changed": 0 },
+    "dev_006": { "v32_ans": 36, "v33_ans": 40, "new_ans": 5, "val_changed": 0 },
+    "dev_007": { "v32_ans": 28, "v33_ans": 33, "new_ans": 5, "val_changed": 0 },
+    "dev_008": { "v32_ans": 39, "v33_ans": 45, "new_ans": 6, "val_changed": 0 },
+    "dev_009": { "v32_ans": 16, "v33_ans": 16, "new_ans": 0, "val_changed": 0 },
+    "dev_010": { "v32_ans": 28, "v33_ans": 35, "new_ans": 7, "val_changed": 0 },
+    "dev_011": { "v32_ans": 17, "v33_ans": 20, "new_ans": 3, "val_changed": 6 },
+    "dev_012": { "v32_ans": 5, "v33_ans": 10, "new_ans": 5, "val_changed": 0 },
+    "dev_013": { "v32_ans": 21, "v33_ans": 25, "new_ans": 4, "val_changed": 15 },
+    "dev_014": { "v32_ans": 5, "v33_ans": 8, "new_ans": 3, "val_changed": 4 }
+  }
+}

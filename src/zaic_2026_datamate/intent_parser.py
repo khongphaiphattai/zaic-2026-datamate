@@ -157,8 +157,8 @@ def parse_time_expressions(text: str, as_of_date: Optional[str] = None) -> Parse
                     return p
             # If no year is specified and no relative anchor, leave month_str as None to avoid ambiguous guessing
 
-    # 7. Month: "tháng 6/2025", "thang 7/2026", "tháng 12/2025", "10/25", "8/26", "5-2026"
-    month_match = re.search(r"(?:tháng|thang|th)?\s*(\d{1,2})(?:/|\s*năm\s*|\s*nam\s*|\s*-\s*)(\d{2,4})", t)
+    # 7. Month: "tháng 6/2025", "thang 7/2026", "tháng 12/2025", "10/25", "8/26", "5-2026", "th 3/26"
+    month_match = re.search(r"\b(?:tháng|thang|th|t)?\s*(\d{1,2})(?:/|\s*năm\s*|\s*nam\s*|\s*-\s*)(\d{2,4})\b", t)
     if month_match:
         m, y = int(month_match.group(1)), int(month_match.group(2))
         if y < 100:
@@ -167,8 +167,8 @@ def parse_time_expressions(text: str, as_of_date: Optional[str] = None) -> Parse
             p.month_str = f"{y:04d}-{m:02d}"
             return p
 
-    # 8. "Tháng này"
-    if "tháng này" in t or "thang nay" in t:
+    # 8. "Tháng này", "tháng ni"
+    if any(k in t for k in ["tháng này", "thang nay", "tháng ni", "thang ni", "tháng nì", "thang nì"]):
         p.is_this_month = True
         if anchor:
             p.month_str = anchor.strftime("%Y-%m")
@@ -177,7 +177,7 @@ def parse_time_expressions(text: str, as_of_date: Optional[str] = None) -> Parse
         return p
 
     # 9. "Tuần này", "tuần trước", "tuần rồi"
-    if any(k in t for k in ["tuần trước", "tuan truoc", "tuần rồi", "tuan roi"]):
+    if any(k in t for k in ["tuần trước", "tuan truoc", "tuần rồi", "tuan roi", "tuần trc", "tuan trc"]):
         p.is_last_week = True
         if anchor:
             this_monday = anchor - timedelta(days=anchor.weekday())
@@ -186,7 +186,7 @@ def parse_time_expressions(text: str, as_of_date: Optional[str] = None) -> Parse
             p.start_date = last_monday.strftime("%Y-%m-%d")
             p.end_date = last_sunday.strftime("%Y-%m-%d")
         return p
-    elif any(k in t for k in ["tuần này", "tuan nay"]):
+    elif any(k in t for k in ["tuần này", "tuan nay", "tuần ni", "tuan ni"]):
         p.is_this_week = True
         if anchor:
             this_monday = anchor - timedelta(days=anchor.weekday())
@@ -194,8 +194,8 @@ def parse_time_expressions(text: str, as_of_date: Optional[str] = None) -> Parse
             p.end_date = anchor.strftime("%Y-%m-%d")
         return p
 
-    # 10. "N ngày gần nhất"
-    n_days_match = re.search(r"(\d+)\s*ngày gần nhất", t)
+    # 10. "N ngày gần nhất", "N ngày qua", "N ngày vừa qua"
+    n_days_match = re.search(r"(\d+)\s*(?:ngày|ngay)\s*(?:gần nhất|gan nhat|qua|vừa qua|vua qua|gần đây|gan day|trở lại đây|tro lai day)\b", t)
     if n_days_match:
         n = int(n_days_match.group(1))
         p.last_n_days = n
@@ -226,11 +226,14 @@ def find_primary_sales_table(context: BusinessContext) -> Tuple[Optional[str], O
     ]
 
     selected_table = None
+    fallback_undated = None
     for cand in sales_candidates:
         if cand in tables:
             cols = list(tables[cand].columns)
             has_date = any(c in cols for c in date_candidates)
-            if not has_date and len(tables[cand]) < 200:
+            if not has_date:
+                if len(tables[cand]) >= 200 and fallback_undated is None:
+                    fallback_undated = cand
                 continue
             selected_table = cand
             break
@@ -247,10 +250,15 @@ def find_primary_sales_table(context: BusinessContext) -> Tuple[Optional[str], O
             if any(k in tname for k in ["ban_hang", "don_hang", "hoa_don", "sua_xe"]):
                 cols = list(tables[tname].columns)
                 has_date = any(c in cols for c in date_candidates)
-                if not has_date and len(tables[tname]) < 200:
+                if not has_date:
+                    if len(tables[tname]) >= 200 and fallback_undated is None:
+                        fallback_undated = tname
                     continue
                 selected_table = tname
                 break
+
+    if not selected_table:
+        selected_table = fallback_undated
 
     if not selected_table:
         return None, None, None, None
@@ -348,9 +356,10 @@ def check_date_out_of_domain(context: BusinessContext, period: ParsedPeriod, dat
         return False
 
     try:
-        min_max = context.duckdb_conn.execute(
+        min_max_rows = context.duckdb_conn.execute(
             f"SELECT MIN(TRY_CAST({date_col} AS DATE)), MAX(TRY_CAST({date_col} AS DATE)) FROM {table}"
-        ).fetchone()
+        ).fetchall()
+        min_max = min_max_rows[0] if min_max_rows else None
         if not min_max or min_max[0] is None or min_max[1] is None:
             return False
 
@@ -441,6 +450,11 @@ def find_revenue_column(context: BusinessContext, table: str) -> Optional[str]:
             return "(thanh_tien + COALESCE(tien_giam, 0) - COALESCE(phi_van_chuyen, 0))"
 
     # Rulebook Section 8: tien_hang / thanh_tien is standard revenue
+    # When a line-item table repeats order-header totals ('tien_hang_truoc_giam') alongside
+    # line-item amounts ('thanh_tien_d'), use 'thanh_tien_d' to avoid multiplying order totals by line count.
+    if "thanh_tien_d" in cols and "tien_hang_truoc_giam" in cols:
+        return "thanh_tien_d"
+
     # Prioritize tien_hang_truoc_giam and gia_tri_hang over tong_tien (which often includes shipping or discounts)
     for c in [
         "tien_hang_truoc_giam", "tien_hang", "thanh_tien_d", "thanh_tien", "gia_tri_hang", "tong_tien_hang",
@@ -511,7 +525,7 @@ def resolve_query(
     # 0. Strict Anti-Negative Protection Gate (Silence is Free Axiom)
     # -------------------------------------------------------------------------
     # 1. Block boolean questions
-    if any(k in q for k in ["hả", "ha?", "phải ko", "phai ko", "không?", "ko?"]) or re.search(r"\b(?:không|khong|ko)\s*\??$", q.strip()):
+    if any(k in q for k in ["phải ko", "phai ko", "không?", "ko?"]) or re.search(r"\b(?:không|khong|ko)\s*\??$", q.strip()):
         return "abstain", None, "Boolean question abstained"
 
     # 2. Relative time guard: if relative keywords exist but no as_of_date is provided, abstain cleanly
@@ -525,23 +539,44 @@ def resolve_query(
     if is_relative_time and not as_of_date:
         return "abstain", None, "Relative time query without as_of_date abstained"
 
-    # Block rolling N days ("30 ngày", "ngày qua") to protect PA score
+    # Rolling N days ("30 ngày", "ngày qua")
     if any(k in q for k in ["30 ngày", "30 ngay", "ngày qua", "ngay qua", "ngày gần nhất", "ngay gan nhat"]):
+        from zaic_2026_datamate.semantic_contract import resolve_semantic_plan
+        sem_type, sem_val, sem_reason = resolve_semantic_plan(question, context, as_of_date)
+        if sem_type != "abstain":
+            return sem_type, sem_val, sem_reason
         return "abstain", None, "Rolling N-day query abstained to protect PA score"
 
-    # 3. Block shift queries (morning/afternoon)
-    if "ca sáng" in q or "ca sang" in q or "ca chiều" in q or "ca chieu" in q:
-        return "abstain", None, "Shift query abstained"
-
-    # 4. Block conditions / reasons (late delivery, out of stock, etc.)
-    if any(k in q for k in ["vì ", "vi ", "do ", "lý do", "ly do", "trễ", "chậm"]):
+    # 3. Block conditions / reasons (late delivery, out of stock, etc.)
+    if any(k in q for k in ["vì ", "vi ", "lý do", "ly do", "trễ", "chậm"]):
         return "abstain", None, "Conditional / reason query abstained"
 
-    # 5. Block item quantities (units sold, bowl, roll, package count)
-    has_item_qty = any(k in q for k in ["mấy", "may", "bao nhiêu", "bao nhieu", "bnhiu", "đếm", "dem"]) and any(
-        k in q for k in ["hộp", "chai", "lon", "gói", "cái", "cuộn", "bịch", "thùng", "vé", "đĩa", "ly", "tô", "bát", "suất", "chiếc", "viên", "kg", "nồi", "noi"]
+    # 4. Block inventory queries ("còn", "trong kho", "tồn kho", "cuối ngày")
+    if bool(re.search(r"\b(?:trong\s*kho|to+n[f]?\s*kho|cuoi\s*ngay)\b|\bcon\s+(?:lai\s+)?(?:may|bao\s+nhieu|bnhiu|bn)\b|\b(?:hop\s*chan|cai\s*le)\b", q)):
+        return "abstain", None, "Inventory query abstained"
+
+    # Block multi-month ranges ("từ tháng", "tu thang", "tới tháng", "toi thang", "đến tháng", "den thang")
+    if any(k in q for k in ["từ tháng", "tu thang", "tới tháng", "toi thang", "đến tháng", "den thang"]):
+        return "abstain", None, "Multi-month range query abstained"
+
+    # 5. Item quantities (units sold, bowl, roll, package count)
+    has_item_qty = (
+        bool(
+            re.search(
+                r"\b(?:mấy|may|bao nhiêu|bao nhieu|bnhiu|bn|tong so|tổng số|đếm|dem)\s+(?:hộp|chai|lon|gói|cái|cuộn|bịch|thùng|vé|đĩa|ly|tô|bát|suất|chiếc|viên|kg|nồi|noi)\b",
+                q,
+            )
+        )
+        or bool(re.search(r"\bso\s+(?:ly|hop|chai|lon|goi|bich|cai|cuon|vien|kg|to|bat|chiec|thung|ve|dia|suat|noi)\b.*?\b(?:la\s+bao\s+nhieu|bao\s+nhieu|bnhiu|bn)\b", q))
+        or bool(re.search(r"\bban\s+(?:duoc|dc)\s+(?:tong\s+cong\s+)?(?:bao\s+nhieu|may)\s+(?:ly|hop|chai|lon|goi|bich|cai|cuon|vien|kg|to|bat|chiec|thung|ve|dia|suat|noi)\b", q))
+        or bool(re.search(r"\b(?:mấy|may|bao nhiêu|bao nhieu|bnhiu|bn)\s+ly\b", q))
+        or bool(re.search(r"\b(?:quan|cua hang)\s+ban\s+(?:duoc|dc)\s+(?:bao nhieu|may)\s+ly\b", q))
     )
     if has_item_qty:
+        from zaic_2026_datamate.semantic_contract import resolve_semantic_plan
+        sem_type, sem_val, sem_reason = resolve_semantic_plan(question, context, as_of_date)
+        if sem_type != "abstain":
+            return sem_type, sem_val, sem_reason
         return "abstain", None, "Item quantity query abstained"
 
     # -------------------------------------------------------------------------
@@ -549,6 +584,19 @@ def resolve_query(
     # -------------------------------------------------------------------------
     if date_col and table and check_date_out_of_domain(context, period, date_col, table):
         return "unanswerable", None, "Khoảng thời gian nằm hoàn toàn ngoài dữ liệu của doanh nghiệp"
+
+    # Gate 1: Subjective queries without objective metrics in database
+    if any(k in q for k in ["nhiệt tình nhất", "nhiet tinh nhat", "thân thiện nhất", "than thien nhat", "phục vụ tốt nhất", "phuc vu tot nhat", "uy tín nhất", "uy tin nhat", "đẹp nhất", "dep nhat", "dễ thương nhất", "de thuong nhat", "hài lòng nhất", "hai long nhat"]):
+        return "unanswerable", None, "Doanh nghiệp không có dữ liệu đánh giá cảm tính theo Rulebook Mục 7"
+
+    # Gate 1: Profit / cost queries when business lacks cost/expense tables
+    if any(k in q for k in ["lãi ròng", "lai rong", "lợi nhuận", "loi nhuan", "tiền lời", "tien loi"]):
+        has_cost_table = any(
+            any(k in tname for k in ("chi_phi", "gia_von", "nhap_hang", "nhap", "so_quy", "chi_tiet_nhap"))
+            for tname in context.tables
+        )
+        if not has_cost_table:
+            return "unanswerable", None, "Doanh nghiệp không có bảng chi phí / giá vốn để tính lợi nhuận"
 
     # Only match true customer address queries (e.g. 'khách ở đường X', 'khách đường Y', 'địa chỉ'), NEVER food 'đường'
     has_explicit_address_query = any(k in q for k in [
@@ -579,7 +627,7 @@ def resolve_query(
         if not table or not order_col or not date_col or not status_col:
             return "abstain", None, "Thiếu cột trạng thái hoặc mã đơn để tính tỉ lệ huỷ"
 
-        date_where = build_date_where_clause(date_col, period)
+        date_where = build_date_where_clause("_order_date", period)
         cancel_check = f"(TRY_CAST({status_col} AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST({status_col} AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST({status_col} AS VARCHAR) ILIKE '%cancel%')"
 
         # Guard: verify if status column actually contains cancellation events
@@ -591,10 +639,18 @@ def resolve_query(
 
         sql = f"""
             SELECT ROUND(
-                COUNT(DISTINCT CASE WHEN {cancel_check} THEN {order_col} END) * 100.0 /
+                COUNT(DISTINCT CASE WHEN _is_cancel = 1 THEN {order_col} END) * 100.0 /
                 NULLIF(COUNT(DISTINCT {order_col}), 0), 2
             )
-            FROM {table}
+            FROM (
+                SELECT
+                    {order_col},
+                    MIN(TRY_CAST({date_col} AS DATE)) AS _order_date,
+                    MAX(CASE WHEN {cancel_check} THEN 1 ELSE 0 END) AS _is_cancel
+                FROM {table}
+                WHERE {order_col} IS NOT NULL
+                GROUP BY {order_col}
+            ) _orders
             WHERE {date_where}
         """
         try:
@@ -605,14 +661,6 @@ def resolve_query(
         except Exception as e:
             logger.warning("Error computing cancel rate: %s", e)
             return "abstain", None, str(e)
-
-    # -------------------------------------------------------------------------
-    # 2. INTENT: CHANNEL REVENUE SHARE (%) — Chuyển abstain để tránh điểm phạt -1
-    # -------------------------------------------------------------------------
-    if ("bằng bnhiu %" in q or "bằng bao nhiêu %" in q or "bao nhiêu phần trăm" in q) and any(
-        k in q for k in ["điện thoại", "ddieenj thoại", "phone", "zalo", "shopee"]
-    ):
-        return "abstain", None, "Tỉ trọng doanh thu kênh bán chưa đạt ngưỡng tự tin 95%"
 
     # -------------------------------------------------------------------------
     # 3. INTENT: CANCEL COUNT (Số đơn đã huỷ)
@@ -719,12 +767,12 @@ def resolve_query(
 
     # (matched_product is already extracted at top of resolve_query)
 
-    # Block item quantity queries (e.g. "bán được mấy hộp X", "bao nhiêu chai Y", "total bn ly", "nhiêu bình", "số tuýp")
+    # Block item quantity queries (e.g. "bán được mấy hộp X", "bao nhiêu chai Y", "total bn ly", "nhiêu bình", "số tuýp", "số kg")
     has_item_qty_kw = bool(re.search(
-        r"\b(?:bn|bnhiu|mấy|may|bao nhiêu|bao nhieu|nhiêu|nhieu|số lượng|so luong|số|so|đếm|dem)\s+(?:ly|cây|cay|phần|phan|chai|hộp|hop|gói|goi|lon|bịch|bich|thùng|thung|cái|cai|chiếc|chiec|viên|vien|bình|binh|tuýp|tuyp|đĩa|dia|tô|bát|bộ|bo)\b",
+        r"\b(?:bn|bnhiu|mấy|may|bao nhiêu|bao nhieu|nhiêu|nhieu|số lượng|so luong|số|so|đếm|dem)\s+(?:ly|kg|cây|cay|cuộn|cuon|mét|m\b|bao|phần(?!\s+trăm)|phan(?!\s+tram)|chai|hộp|hop|gói|goi|lon|bịch|bich|thùng|thung|cái|cai|chiếc|chiec|viên|vien|bình|binh|tuýp|tuyp|đĩa|dia|tô|bát|bộ|bo)\b",
         q
     )) or (
-        any(k in q for k in ["mấy", "may", "bao nhiêu", "bao nhieu", "bnhiu"]) and any(re.search(rf"\b{k}\b", q) for k in ["hộp", "chai", "lon", "gói", "bịch", "thùng", "vé", "đĩa", "tô", "bát", "cuốn", "suất", "viên", "tuýp", "bộ", "bo"])
+        any(k in q for k in ["mấy", "may", "bao nhiêu", "bao nhieu", "bnhiu"]) and any(re.search(rf"\b{k}\b", q) for k in ["hộp", "chai", "lon", "gói", "bịch", "thùng", "vé", "đĩa", "tô", "bát", "cuốn", "suất", "viên", "tuýp", "bộ", "bo", "kg"])
     )
     if has_item_qty_kw:
         return "abstain", None, "Câu hỏi đếm số lượng mặt hàng - từ chối an toàn để tránh -1 điểm"
@@ -734,7 +782,18 @@ def resolve_query(
         return "abstain", None, "Khoảng thời gian N ngày gần nhất chưa đạt độ tin cậy 95%"
 
     # If product matched and query asks for its revenue — từ chối an toàn để bảo vệ điểm phạt
-    if matched_product and has_rev_keyword and not any(k in q for k in ["đơn", "don", "%", "lãi", "lời"]):
+    if (
+        matched_product
+        and has_rev_keyword
+        and not any(k in q for k in [
+            "đơn", "don", "%", "phần trăm", "phan tram", "chiếm", "chiem",
+            "tỉ lệ", "ti le", "tỷ lệ", "ty le", "tỉ trọng", "ti trong", "tỷ trọng", "ty trong",
+            "nhóm", "nhom", "kênh", "kenh", "tại quầy", "tai quay", "điện thoại", "dien thoai",
+            "zalo", "shopee", "tmđt", "tmdt", "tiền mặt", "tien mat", "tiền tươi", "tien tuoi",
+            "chuyển khoản", "chuyen khoan", "ví điện tử", "vi dien tu", "cod", "xi ô đi", "xi o di",
+            "ca sáng", "ca sang", "ca chiều", "ca chieu", "kê đơn", "ke don", "lãi", "lời"
+        ])
+    ):
         return "abstain", None, "Doanh thu mặt hàng cụ thể chưa đạt ngưỡng tin cậy 95%"
 
     # -------------------------------------------------------------------------
@@ -825,16 +884,21 @@ def resolve_query(
         "mỗi tháng", "moi thang", "mỗi ngày", "moi ngay", "theo thứ tự", "thứ tự thời gian"
     ]) or bool(re.search(r"(?:\d{1,2}[/.-]\d{2,4}.*?,\s*\d{1,2}[/.-]\d{2,4})|(?:tháng\s*\d+,\s*\d+)|(?:t(?:h)?\d+/\d+.*?,.*?t(?:h)?\d+/\d+)", q))
     has_channel_split = any(k in q for k in [
-        "tại quầy", "tai quay", "điện thoại", "dien thoai", "shopee", "sàn tmđt", "san tmdt",
-        "tiền mặt", "tien mat", "chuyển khoản", "chuyen khoan", "ghi nợ", "trả góp",
+        "tại quầy", "tai quay", "kênh điện thoại", "kenh dien thoai", "qua điện thoại", "qua dien thoai",
+        "bán qua điện thoại", "ban qua dien thoai", "shopee", "sàn tmđt", "san tmdt",
+        "tiền mặt", "tien mat", "tiền tươi", "tien tuoi", "chuyển khoản", "chuyen khoan",
+        "ví điện tử", "vi dien tu", "cod", "xi ô đi", "xi o di", "ghi nợ", "trả góp", "tra gop",
         "mang về", "mang ve", "tại chỗ", "tai cho", "giao hàng", "giao hang", "ship",
         "trực tiếp", "truc tiep", "online", "onl", "grab", "bán lẻ", "ban le", "bán sỉ", "ban si",
-        "khách lẻ", "khach le", "khách sỉ", "khach si", "zalo", "zalo oa"
+        "khách lẻ", "khach le", "khách sỉ", "khach si", "khách thân thiết", "khach than thiet",
+        "zalo", "zalo oa", "ca sáng", "ca sang", "ca chiều", "ca chieu",
+        "khách nữ", "khach nu", "khách nam", "khach nam"
     ])
     has_category_filter = any(k in q for k in [
         "nhóm", "nhom", "thuốc kê đơn", "thuoc ke don", "không kê đơn", "khong ke don",
         "hoạt chất", "hoat chat", "voucher", "vâu chơ", "giảm giá", "giam gia", "phí ship", "phi ship",
-        "bảo hành", "bao hanh", "máy cũ", "may cu", "lời", "loi", "lãi", "lai", "lãi gộp", "lãi ròng"
+        "bảo hành", "bao hanh", "máy cũ", "may cu", "lời", "loi", "lãi", "lai", "lãi gộp", "lãi ròng",
+        "chi phí", "chi phi", "lãi suất", "lai suat", "giao trễ", "giao tre"
     ])
     has_store_possessive = bool(re.search(
         r"\b(?:của|kủa)\s+(?:cửa hàng|cua hang|quán|quan|shop|tiệm|tiem|sốp|sop|mik|mình|minh|tôi|toi|chúng tôi|chung toi|cả quán|cả tiệm|toàn bộ|toan bo)\b",
@@ -877,7 +941,7 @@ def resolve_query(
                 "cua", "hang", "quan", "tiem", "shop", "sop", "tat", "ca", "tong", "cong", "mik", "minh", "duoc", "dc", "dat", "trong", "la", "t", "thang", "quy", "nam",
                 "cửa", "hàng", "quán", "tiệm", "sốp", "tất", "cả", "tổng", "cộng", "mình", "được", "đc", "đạt", "tháng", "quý", "năm", "ở", "tại", "vào", "kủa", "của", "là",
                 "chi nhánh", "toàn bộ", "toan bo", "cả quán", "ca quan", "cả tiệm", "ca tiem",
-                "nay", "này", "ni", "hom", "hôm", "bua", "bữa", "tuan", "tuần", "qua", "chừ", "chu", "đầu", "dau", "hết", "het", "hnay", "hqua"
+                "nay", "này", "ni", "hom", "hôm", "bua", "bữa", "tuan", "tuần", "qua", "chừ", "chu", "đầu", "dau", "hết", "het", "hnay", "hqua", "ngay", "ngày", "ngayf"
             }
             if not words.issubset(STORE_STOP_WORDS) and not matched_product:
                 has_unrecognized_product_subject = True
@@ -1013,6 +1077,15 @@ def resolve_query(
                         return "number", int(val) if val is not None else 0, None
                     except Exception as e:
                         return "abstain", None, str(e)
+
+    # -------------------------------------------------------------------------
+    # 9. PRIORITY 2 SEMANTIC CONTRACT & QUERYPLAN COMPILER
+    # -------------------------------------------------------------------------
+    from zaic_2026_datamate.semantic_contract import resolve_semantic_plan
+
+    sem_type, sem_val, sem_reason = resolve_semantic_plan(question, context, as_of_date)
+    if sem_type != "abstain":
+        return sem_type, sem_val, sem_reason
 
     # -------------------------------------------------------------------------
     # Default: Abstain cleanly (0 penalty) to protect Penalized Accuracy
