@@ -1,0 +1,674 @@
+[
+  {
+    "id": "q_008fdebb6ec9",
+    "business_id": "dev_002",
+    "question": "Tháng 11 năm 2025, nhóm trà có mặt hàng nào bán được nhiều ly nhất?",
+    "as_of_date": "2026-05-24",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_008fdebb6ec9",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_008fdebb6ec9",
+      "type": "string",
+      "answer": "Trà đào cam sả (M)"
+    }
+  },
+  {
+    "id": "q_014cdcc1da6e",
+    "business_id": "dev_007",
+    "question": "8/26 tiền bán ca chiều là bnhiu?",
+    "as_of_date": "2026-09-19",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_014cdcc1da6e",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_014cdcc1da6e",
+      "type": "number",
+      "answer": 459334000
+    }
+  },
+  {
+    "id": "q_052834325528",
+    "business_id": "dev_006",
+    "question": "10/25 doanh thu ca chieu hon hay kem ca sang may %?",
+    "as_of_date": "2026-08-08",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_052834325528",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_052834325528",
+      "type": "percent",
+      "answer": 54.36
+    }
+  },
+  {
+    "id": "q_05ab1c71dcaa",
+    "business_id": "dev_001",
+    "question": "Ai là khách có số đơn mua nhiều nhất trong tháng 4 năm 2025?",
+    "as_of_date": "2026-07-08",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_05ab1c71dcaa",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_05ab1c71dcaa",
+      "type": "string",
+      "answer": "La Minh Dương"
+    }
+  },
+  {
+    "id": "q_16fc554b8db0",
+    "business_id": "dev_003",
+    "question": "Th7/2026 ca sáng có tổng cộng mấy đơn?",
+    "as_of_date": "2026-08-21",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_16fc554b8db0",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_16fc554b8db0",
+      "type": "number",
+      "answer": 2130
+    }
+  },
+  {
+    "id": "q_203767dd52af",
+    "business_id": "dev_004",
+    "question": "Trong tháng 3/2026, giờ cao điểm trong ngày của cửa hàng là mấy giờ?",
+    "as_of_date": "2026-06-10",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_203767dd52af",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_203767dd52af",
+      "type": "number",
+      "answer": 8
+    }
+  },
+  {
+    "id": "q_2199b91fe707",
+    "business_id": "dev_005",
+    "question": "T3/2025 ngay nao doanh thu cao nhta?",
+    "as_of_date": "2026-05-10",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_2199b91fe707",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_2199b91fe707",
+      "type": "date",
+      "answer": "2025-03-14"
+    }
+  },
+  {
+    "id": "q_30afaf6d51ca",
+    "business_id": "dev_011",
+    "question": "Thang 11 nam 2025 ngay nao doanh thu cao nhta?",
+    "as_of_date": "2026-07-31",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_30afaf6d51ca",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_30afaf6d51ca",
+      "type": "date",
+      "answer": "2025-11-12"
+    }
+  },
+  {
+    "id": "q_36f612a6b301",
+    "business_id": "dev_003",
+    "question": "Th4/2025 rieng ca chieu ban duoc tong bao nhieu tien vay?",
+    "as_of_date": "2026-08-21",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_36f612a6b301",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_36f612a6b301",
+      "type": "number",
+      "answer": 97280000
+    }
+  },
+  {
+    "id": "q_382bb57c049d",
+    "business_id": "dev_005",
+    "question": "Th3/2025 khách nào mua nhiều đơn nhất ha?",
+    "as_of_date": "2026-05-10",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_382bb57c049d",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_382bb57c049d",
+      "type": "string",
+      "answer": "Đoàn Bình Huy"
+    }
+  },
+  {
+    "id": "q_3d231754f550",
+    "business_id": "dev_003",
+    "question": "So với tháng ngay trước đó, dthu th4/2026 lên xuống mấy % vậy?",
+    "as_of_date": "2026-08-21",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_3d231754f550",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_3d231754f550",
+      "type": "percent",
+      "answer": -6.29
+    }
+  },
+  {
+    "id": "q_41922e7c51ec",
+    "business_id": "dev_004",
+    "question": "Tháng 1 năm 2026 dthu ca chiều so với ca sáng chênh bao nhiêu %?",
+    "as_of_date": "2026-06-10",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_41922e7c51ec",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_41922e7c51ec",
+      "type": "percent",
+      "answer": -51.33
+    }
+  },
+  {
+    "id": "q_42f82d1abde5",
+    "business_id": "dev_003",
+    "question": "Th1/2026 so don ca chieu cao hay thap hon ca sang bao nhieu %?",
+    "as_of_date": "2026-08-21",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_42f82d1abde5",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_42f82d1abde5",
+      "type": "percent",
+      "answer": -19.87
+    }
+  },
+  {
+    "id": "q_48469d4fc5d1",
+    "business_id": "dev_009",
+    "question": "Th8/2025 doanh thu ngay nao cao nhat?",
+    "as_of_date": "2026-06-24",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_48469d4fc5d1",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_48469d4fc5d1",
+      "type": "date",
+      "answer": "2025-08-30"
+    }
+  },
+  {
+    "id": "q_4cb8711073bd",
+    "business_id": "dev_004",
+    "question": "Tuan truoc so don ca chieu hon hay kem ca sang bnhiu %?",
+    "as_of_date": "2025-02-11",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_4cb8711073bd",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_4cb8711073bd",
+      "type": "percent",
+      "answer": -86.79
+    }
+  },
+  {
+    "id": "q_4e331ce1a042",
+    "business_id": "dev_007",
+    "question": "Tuần trước ca sáng bán được bao nhiêu tiền?",
+    "as_of_date": "2025-10-25",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_4e331ce1a042",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_4e331ce1a042",
+      "type": "number",
+      "answer": 72476500
+    }
+  },
+  {
+    "id": "q_55cfcde4c03f",
+    "business_id": "dev_007",
+    "question": "tuần trc ca chiều dduowcj mí đơn tổg cộg zị ha",
+    "as_of_date": "2026-02-22",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_55cfcde4c03f",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_55cfcde4c03f",
+      "type": "number",
+      "answer": 116
+    }
+  },
+  {
+    "id": "q_596f5cfa121c",
+    "business_id": "dev_003",
+    "question": "Tháng 5/2026 bán Cà phê muối (M) được bao nhiêu tiền?",
+    "as_of_date": "2026-08-21",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_596f5cfa121c",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_596f5cfa121c",
+      "type": "number",
+      "answer": 6288000
+    }
+  },
+  {
+    "id": "q_5a5a452f87d4",
+    "business_id": "dev_008",
+    "question": "5/2025 dthu ca chieu chenh ca sang may %?",
+    "as_of_date": "2026-07-22",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_5a5a452f87d4",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_5a5a452f87d4",
+      "type": "percent",
+      "answer": 48.14
+    }
+  },
+  {
+    "id": "q_5d05956fc827",
+    "business_id": "dev_003",
+    "question": "Dthu ca chiều 3-2026 cao hay thấp hơn ca sáng bnhiu %?",
+    "as_of_date": "2026-08-21",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_5d05956fc827",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_5d05956fc827",
+      "type": "percent",
+      "answer": -22.31
+    }
+  },
+  {
+    "id": "q_5df03c21af61",
+    "business_id": "dev_008",
+    "question": "Số đh ca chiều th4/2025 nhiều hay ít hơn ca sáng mấy %?",
+    "as_of_date": "2026-07-22",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_5df03c21af61",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_5df03c21af61",
+      "type": "percent",
+      "answer": 46.28
+    }
+  },
+  {
+    "id": "q_63cf15f33b1c",
+    "business_id": "dev_003",
+    "question": "Tháng 11 năm 2025, nhóm sinh tố có mặt hàng nào bán được nhiều ly nhất?",
+    "as_of_date": "2026-08-21",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_63cf15f33b1c",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_63cf15f33b1c",
+      "type": "string",
+      "answer": "Sinh tố xoài (M)"
+    }
+  },
+  {
+    "id": "q_69dbf1d3cdc5",
+    "business_id": "dev_004",
+    "question": "5-2026 khách nào mua nhiều đơn nhất hả?",
+    "as_of_date": "2026-06-10",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_69dbf1d3cdc5",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_69dbf1d3cdc5",
+      "type": "string",
+      "answer": "Mai Hoa Anh"
+    }
+  },
+  {
+    "id": "q_86dd535ae674",
+    "business_id": "dev_008",
+    "question": "T10/2025 số đơn ca chiều chênh so với ca sáng mấy phần trăm vậy?",
+    "as_of_date": "2026-07-22",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_86dd535ae674",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_86dd535ae674",
+      "type": "percent",
+      "answer": 57.58
+    }
+  },
+  {
+    "id": "q_8865baf2a84d",
+    "business_id": "dev_006",
+    "question": "Th6/2026 dthu ca chiều so ca sáng chênh bnhiu %?",
+    "as_of_date": "2026-08-08",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_8865baf2a84d",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_8865baf2a84d",
+      "type": "percent",
+      "answer": 36.68
+    }
+  },
+  {
+    "id": "q_91368b04415b",
+    "business_id": "dev_007",
+    "question": "cko mik bít xíu, tuan trc dthu ca chieu cao hay thap hon ca sang bnhiu %",
+    "as_of_date": "2026-08-30",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_91368b04415b",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_91368b04415b",
+      "type": "percent",
+      "answer": -1.58
+    }
+  },
+  {
+    "id": "q_92353891a456",
+    "business_id": "dev_003",
+    "question": "Dthu ca sáng tháng 3 năm 2025 đc bnhiu z?",
+    "as_of_date": "2026-08-21",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_92353891a456",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_92353891a456",
+      "type": "number",
+      "answer": 129276000
+    }
+  },
+  {
+    "id": "q_9aa0981148ef",
+    "business_id": "dev_008",
+    "question": "1/26 ca sang doanh thu duoc bao nhieu?",
+    "as_of_date": "2026-07-22",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_9aa0981148ef",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_9aa0981148ef",
+      "type": "number",
+      "answer": 467556100
+    }
+  },
+  {
+    "id": "q_9d8949165b5e",
+    "business_id": "dev_006",
+    "question": "Khách sộp nhất tháng 5/2026 là ai?",
+    "as_of_date": "2026-08-08",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_9d8949165b5e",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_9d8949165b5e",
+      "type": "string",
+      "answer": "Hồ Cường Hùng"
+    }
+  },
+  {
+    "id": "q_9e82414141dd",
+    "business_id": "dev_001",
+    "question": "Th1/2025 khách nào mua nhiều đơn nhất z?",
+    "as_of_date": "2026-07-08",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_9e82414141dd",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_9e82414141dd",
+      "type": "string",
+      "answer": "Tô Giang Hồng"
+    }
+  },
+  {
+    "id": "q_b38db1ef2bcc",
+    "business_id": "dev_008",
+    "question": "Trong quý 3/2025, ai là khách hay đổi ý nhất của cửa hàng?",
+    "as_of_date": "2026-07-22",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_b38db1ef2bcc",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_b38db1ef2bcc",
+      "type": "string",
+      "answer": "Dương Hồng Mai"
+    }
+  },
+  {
+    "id": "q_be3f968523bf",
+    "business_id": "dev_007",
+    "question": "T6/2026 số đơn ca chiều chênh ca sáng bnhiu %?",
+    "as_of_date": "2026-09-19",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_be3f968523bf",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_be3f968523bf",
+      "type": "percent",
+      "answer": 48.92
+    }
+  },
+  {
+    "id": "q_cdd8eec83c7a",
+    "business_id": "dev_008",
+    "question": "Tuan truoc dthu ca chieu hon ca sang bnhiu % nhi?",
+    "as_of_date": "2025-09-29",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_cdd8eec83c7a",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_cdd8eec83c7a",
+      "type": "percent",
+      "answer": 61.07
+    }
+  },
+  {
+    "id": "q_cf5c5dac1b20",
+    "business_id": "dev_003",
+    "question": "Tháng 7/2026 bán Topping Trân châu đen được bao nhiêu tiền?",
+    "as_of_date": "2026-08-21",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_cf5c5dac1b20",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_cf5c5dac1b20",
+      "type": "number",
+      "answer": 1295000
+    }
+  },
+  {
+    "id": "q_d3390eedd851",
+    "business_id": "dev_004",
+    "question": "Rieng ca sang th 5/25 ban duoc tong cong bao nhieu tien?",
+    "as_of_date": "2026-06-10",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_d3390eedd851",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_d3390eedd851",
+      "type": "number",
+      "answer": 946996800
+    }
+  },
+  {
+    "id": "q_d4b2f0aaf69a",
+    "business_id": "dev_001",
+    "question": "Tháng 8/2025 bán Bia Sài Gòn Special 330ml được bao nhiêu tiền?",
+    "as_of_date": "2026-07-08",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_d4b2f0aaf69a",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_d4b2f0aaf69a",
+      "type": "number",
+      "answer": 2516000
+    }
+  },
+  {
+    "id": "q_d6ff23824813",
+    "business_id": "dev_004",
+    "question": "08/2025 ai mua nhieu don nhat?",
+    "as_of_date": "2026-06-10",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_d6ff23824813",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_d6ff23824813",
+      "type": "string",
+      "answer": "Thân Khánh Hoàng"
+    }
+  },
+  {
+    "id": "q_dcb25c39e1cc",
+    "business_id": "dev_004",
+    "question": "02/2025 ca chieu len duoc bao nhieu don?",
+    "as_of_date": "2026-06-10",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_dcb25c39e1cc",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_dcb25c39e1cc",
+      "type": "number",
+      "answer": 169
+    }
+  },
+  {
+    "id": "q_dfe6c970b819",
+    "business_id": "dev_009",
+    "question": "T1/2025 ngày bán nhiều tiền nhất là ngày mô?",
+    "as_of_date": "2026-06-24",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_dfe6c970b819",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_dfe6c970b819",
+      "type": "date",
+      "answer": "2025-01-29"
+    }
+  },
+  {
+    "id": "q_ec61b4f5b9ab",
+    "business_id": "dev_004",
+    "question": "tuần trước số đơn ca chiều cao hay thấp hơn ca sáng bao nhiêu phần trăm?",
+    "as_of_date": "2025-05-18",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_ec61b4f5b9ab",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_ec61b4f5b9ab",
+      "type": "percent",
+      "answer": -53.1
+    }
+  },
+  {
+    "id": "q_edb6d4859798",
+    "business_id": "dev_004",
+    "question": "10/2025 khách nào có nhiều đơn nhất?",
+    "as_of_date": "2026-06-10",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_edb6d4859798",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_edb6d4859798",
+      "type": "string",
+      "answer": "Tô Dũng Quang"
+    }
+  },
+  {
+    "id": "q_f18a6235b749",
+    "business_id": "dev_005",
+    "question": "Th 4/25 ai mua nhieu don nhat?",
+    "as_of_date": "2026-05-10",
+    "change_type": "new_unlocked",
+    "v32": {
+      "id": "q_f18a6235b749",
+      "type": "abstain"
+    },
+    "v33": {
+      "id": "q_f18a6235b749",
+      "type": "string",
+      "answer": "Phùng Ngọc Thu"
+    }
+  }
+]

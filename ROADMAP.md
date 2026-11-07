@@ -1172,3 +1172,20 @@
 
 
 
+
+### 07/11/2026 — Kết quả Nộp bài Lần 17 (`v3.4a` — Portal Verified Score: `0.42300`)
+- **Kết quả Nộp bài Lần 17 (`v3.4a` — Portal Verified `07/11/2026 23:45:31`):**
+  - **File trên Portal:** `0e248783-c056-4b11-9a04-0cab8de3be4b.jsonl` (Model: `SLM`, Description: `v3.4a`).
+  - **Public Score:** **`0.42300`** (**+423 điểm ròng**, tăng thêm **`+0.03200` / `+32 điểm ròng`** so với `v3.3` `0.39100`!).
+  - **Giải phẫu Toán học trên 1.000 câu Public Test (`515` trả lời / `485` abstain):**
+    - Gọi $C$ là số câu đúng, $W$ là số câu sai:
+      $$\begin{cases} C + W = 515 \\ C - W = 423 \end{cases} \implies 2C = 938 \implies C = \mathbf{469\text{ câu ĐÚNG (+469đ)}}, \quad W = \mathbf{46\text{ câu SAI (-46đ)}}$$
+    - **Phân tích 42 câu mới mở khóa từ `v3.3` $\rightarrow$ `v3.4a`:**
+      - Số câu ĐÚNG mới: **+37 câu** (`432` $\rightarrow$ `469`).
+      - Số câu SAI mới: **+5 câu** (`41` $\rightarrow$ `46`).
+      - **Precision của riêng nhóm 42 câu mở mới:** Đạt **`88.10%`** (`37/42`)!
+      - **Precision toàn cục trên 515 câu trả lời:** Đạt ngưỡng xuất sắc **`91.07%`** (`469/515`).
+  - **Ý nghĩa Chiến lược:** 
+    - Chính thức phá vỡ mốc **`0.40000`**, xác lập vị thế vững chắc tại đỉnh bảng xếp hạng.
+    - Còn đúng **2 lượt nộp bài dự trữ** (#18 và #19).
+    - Vẫn còn **485 câu abstain an toàn** chưa bị phạt điểm để khai thác tiếp.

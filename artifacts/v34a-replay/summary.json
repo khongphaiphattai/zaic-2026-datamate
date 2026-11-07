@@ -1,0 +1,94 @@
+{
+  "v32_answered": 473,
+  "v33_answered": 515,
+  "new_unlocked_answers": 42,
+  "value_changed_answers": 0,
+  "new_abstained_answers": 0,
+  "total_diff_count": 42,
+  "by_business": {
+    "dev_002": {
+      "v32_ans": 32,
+      "v33_ans": 33,
+      "new_ans": 1,
+      "val_changed": 0
+    },
+    "dev_004": {
+      "v32_ans": 48,
+      "v33_ans": 57,
+      "new_ans": 9,
+      "val_changed": 0
+    },
+    "dev_013": {
+      "v32_ans": 25,
+      "v33_ans": 25,
+      "new_ans": 0,
+      "val_changed": 0
+    },
+    "dev_007": {
+      "v32_ans": 33,
+      "v33_ans": 38,
+      "new_ans": 5,
+      "val_changed": 0
+    },
+    "dev_003": {
+      "v32_ans": 52,
+      "v33_ans": 61,
+      "new_ans": 9,
+      "val_changed": 0
+    },
+    "dev_008": {
+      "v32_ans": 45,
+      "v33_ans": 51,
+      "new_ans": 6,
+      "val_changed": 0
+    },
+    "dev_005": {
+      "v32_ans": 54,
+      "v33_ans": 57,
+      "new_ans": 3,
+      "val_changed": 0
+    },
+    "dev_001": {
+      "v32_ans": 52,
+      "v33_ans": 55,
+      "new_ans": 3,
+      "val_changed": 0
+    },
+    "dev_012": {
+      "v32_ans": 10,
+      "v33_ans": 10,
+      "new_ans": 0,
+      "val_changed": 0
+    },
+    "dev_009": {
+      "v32_ans": 16,
+      "v33_ans": 18,
+      "new_ans": 2,
+      "val_changed": 0
+    },
+    "dev_006": {
+      "v32_ans": 42,
+      "v33_ans": 45,
+      "new_ans": 3,
+      "val_changed": 0
+    },
+    "dev_014": {
+      "v32_ans": 9,
+      "v33_ans": 9,
+      "new_ans": 0,
+      "val_changed": 0
+    },
+    "dev_010": {
+      "v32_ans": 35,
+      "v33_ans": 35,
+      "new_ans": 0,
+      "val_changed": 0
+    },
+    "dev_011": {
+      "v32_ans": 20,
+      "v33_ans": 21,
+      "new_ans": 1,
+      "val_changed": 0
+    }
+  }
+}

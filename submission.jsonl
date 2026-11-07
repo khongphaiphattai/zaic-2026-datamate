@@ -1,9 +1,9 @@
-{"id": "q_008fdebb6ec9", "type": "abstain"}
+{"id": "q_008fdebb6ec9", "type": "string", "answer": "Trà đào cam sả (M)"}
 {"id": "q_009187cd2960", "type": "abstain"}
 {"id": "q_00bf8df3ea0b", "type": "number", "answer": 4533000}
 {"id": "q_00c4e24fa228", "type": "number", "answer": 16226000}
 {"id": "q_013b4ff35811", "type": "number", "answer": 230034300}
-{"id": "q_014cdcc1da6e", "type": "abstain"}
+{"id": "q_014cdcc1da6e", "type": "number", "answer": 459334000}
 {"id": "q_01ac0fc9f2a2", "type": "number", "answer": 71724}
 {"id": "q_01ba91ff94c6", "type": "abstain"}
 {"id": "q_01d1099489a0", "type": "percent", "answer": -2.94}
@@ -20,11 +20,11 @@
 {"id": "q_040d437fdf09", "type": "number", "answer": 70324}
 {"id": "q_049f0a34efdc", "type": "number", "answer": 197}
 {"id": "q_04e55a8f8c0c", "type": "number", "answer": 69630}
-{"id": "q_052834325528", "type": "abstain"}
+{"id": "q_052834325528", "type": "percent", "answer": 54.36}
 {"id": "q_0537f6e4f5ab", "type": "date", "answer": "2025-03"}
 {"id": "q_05421814d0e3", "type": "number", "answer": 2826100}
 {"id": "q_0594583b3d46", "type": "abstain"}
-{"id": "q_05ab1c71dcaa", "type": "abstain"}
+{"id": "q_05ab1c71dcaa", "type": "string", "answer": "La Minh Dương"}
 {"id": "q_05cde771f4c3", "type": "abstain"}
 {"id": "q_0641a621b596", "type": "abstain"}
 {"id": "q_06b7f437fcc4", "type": "abstain"}
@@ -97,7 +97,7 @@
 {"id": "q_169bfdcce0ae", "type": "percent", "answer": 28.25}
 {"id": "q_16e72d67a5f4", "type": "abstain"}
 {"id": "q_16ec75d6c8a4", "type": "number", "answer": 10863}
-{"id": "q_16fc554b8db0", "type": "abstain"}
+{"id": "q_16fc554b8db0", "type": "number", "answer": 2130}
 {"id": "q_17743de8e260", "type": "number", "answer": 36}
 {"id": "q_180163673aaa", "type": "abstain"}
 {"id": "q_188436bf8db3", "type": "number", "answer": 9586}
@@ -121,11 +121,11 @@
 {"id": "q_1fafcc702c72", "type": "abstain"}
 {"id": "q_1fc8004b6900", "type": "abstain"}
 {"id": "q_20221903b95b", "type": "abstain"}
-{"id": "q_203767dd52af", "type": "abstain"}
+{"id": "q_203767dd52af", "type": "number", "answer": 8}
 {"id": "q_20b7bbf203c7", "type": "abstain"}
 {"id": "q_20fc83f06434", "type": "number", "answer": 2568866500}
 {"id": "q_210d0cfc81e5", "type": "abstain"}
-{"id": "q_2199b91fe707", "type": "abstain"}
+{"id": "q_2199b91fe707", "type": "date", "answer": "2025-03-14"}
 {"id": "q_219f01962c05", "type": "list", "answer": [648052000, 31254500]}
 {"id": "q_21b93db251ef", "type": "abstain"}
 {"id": "q_21c1f1a2bf98", "type": "percent", "answer": -7.53}
@@ -165,7 +165,7 @@
 {"id": "q_2f8852d2a6bc", "type": "number", "answer": 4959714000}
 {"id": "q_2fba3cf485d7", "type": "percent", "answer": 20.38}
 {"id": "q_30934dcc3831", "type": "abstain"}
-{"id": "q_30afaf6d51ca", "type": "abstain"}
+{"id": "q_30afaf6d51ca", "type": "date", "answer": "2025-11-12"}
 {"id": "q_30b4b858e958", "type": "abstain"}
 {"id": "q_30f08ce67f3e", "type": "abstain"}
 {"id": "q_3176702f9d3e", "type": "string", "answer": "Ốp silicon IP"}
@@ -192,7 +192,7 @@
 {"id": "q_36182821dc30", "type": "unanswerable", "reason": "Doanh nghiệp không có thông tin địa chỉ trong dữ liệu"}
 {"id": "q_363b113bf3bd", "type": "number", "answer": 72304}
 {"id": "q_36edc7d2e347", "type": "abstain"}
-{"id": "q_36f612a6b301", "type": "abstain"}
+{"id": "q_36f612a6b301", "type": "number", "answer": 97280000}
 {"id": "q_37305e6af527", "type": "number", "answer": 259604500}
 {"id": "q_373a4857ee55", "type": "number", "answer": 15}
 {"id": "q_3751b6361499", "type": "number", "answer": 224}
@@ -201,7 +201,7 @@
 {"id": "q_37a4aca072a6", "type": "abstain"}
 {"id": "q_37d9de7f49d9", "type": "percent", "answer": -4.14}
 {"id": "q_37ee6372a9be", "type": "abstain"}
-{"id": "q_382bb57c049d", "type": "abstain"}
+{"id": "q_382bb57c049d", "type": "string", "answer": "Đoàn Bình Huy"}
 {"id": "q_383e2d2f282a", "type": "abstain"}
 {"id": "q_38b56b8238b5", "type": "abstain"}
 {"id": "q_38c42c83e2ff", "type": "percent", "answer": 4.2}
@@ -223,7 +223,7 @@
 {"id": "q_3c935a94dc79", "type": "abstain"}
 {"id": "q_3cac54cdb967", "type": "abstain"}
 {"id": "q_3cd196c4dc4d", "type": "number", "answer": 29}
-{"id": "q_3d231754f550", "type": "abstain"}
+{"id": "q_3d231754f550", "type": "percent", "answer": -6.29}
 {"id": "q_3d519482d665", "type": "number", "answer": 61}
 {"id": "q_3d543c5b23c8", "type": "percent", "answer": 22.74}
 {"id": "q_3da612131082", "type": "abstain"}
@@ -247,14 +247,14 @@
 {"id": "q_411cb8ae0f94", "type": "abstain"}
 {"id": "q_4162fa76a222", "type": "abstain"}
 {"id": "q_416be8994e14", "type": "number", "answer": 14}
-{"id": "q_41922e7c51ec", "type": "abstain"}
+{"id": "q_41922e7c51ec", "type": "percent", "answer": -51.33}
 {"id": "q_41a1d3818421", "type": "percent", "answer": 25.08}
 {"id": "q_41e962bb640f", "type": "number", "answer": 51408400}
 {"id": "q_4217e6c4305e", "type": "number", "answer": 84}
 {"id": "q_4263ec258265", "type": "number", "answer": 553626}
 {"id": "q_427b79554ed7", "type": "abstain"}
 {"id": "q_429155557e11", "type": "abstain"}
-{"id": "q_42f82d1abde5", "type": "abstain"}
+{"id": "q_42f82d1abde5", "type": "percent", "answer": -19.87}
 {"id": "q_435a38fb843b", "type": "abstain"}
 {"id": "q_4375c623b7c7", "type": "abstain"}
 {"id": "q_4497ce0830d8", "type": "abstain"}
@@ -274,7 +274,7 @@
 {"id": "q_481401f5b908", "type": "abstain"}
 {"id": "q_481f40acc2f3", "type": "abstain"}
 {"id": "q_4838293f61b5", "type": "abstain"}
-{"id": "q_48469d4fc5d1", "type": "abstain"}
+{"id": "q_48469d4fc5d1", "type": "date", "answer": "2025-08-30"}
 {"id": "q_4847f9b75280", "type": "abstain"}
 {"id": "q_48958d7402b0", "type": "percent", "answer": -11.54}
 {"id": "q_48964017991a", "type": "abstain"}
@@ -294,7 +294,7 @@
 {"id": "q_4c24acd737a8", "type": "abstain"}
 {"id": "q_4c849b6df27d", "type": "number", "answer": 133}
 {"id": "q_4c8fda6cf0df", "type": "abstain"}
-{"id": "q_4cb8711073bd", "type": "abstain"}
+{"id": "q_4cb8711073bd", "type": "percent", "answer": -86.79}
 {"id": "q_4cdc20a8b400", "type": "percent", "answer": 2.78}
 {"id": "q_4cffc6443c2c", "type": "abstain"}
 {"id": "q_4d15340145ad", "type": "date", "answer": "2026-08-30"}
@@ -305,7 +305,7 @@
 {"id": "q_4dff582efe40", "type": "abstain"}
 {"id": "q_4e1c4ca89508", "type": "abstain"}
 {"id": "q_4e280a1755de", "type": "abstain"}
-{"id": "q_4e331ce1a042", "type": "abstain"}
+{"id": "q_4e331ce1a042", "type": "number", "answer": 72476500}
 {"id": "q_4e3c77d294d3", "type": "percent", "answer": 89.26}
 {"id": "q_4e7e3bde5a15", "type": "number", "answer": 3195242500}
 {"id": "q_4eb97c2cc49a", "type": "number", "answer": 105907}
@@ -339,7 +339,7 @@
 {"id": "q_55929bed8ced", "type": "number", "answer": 501}
 {"id": "q_5598af728eea", "type": "abstain"}
 {"id": "q_5599ff7c9e28", "type": "number", "answer": 2740224000}
-{"id": "q_55cfcde4c03f", "type": "abstain"}
+{"id": "q_55cfcde4c03f", "type": "number", "answer": 116}
 {"id": "q_55e2e56d2787", "type": "abstain"}
 {"id": "q_569dcd86abb4", "type": "abstain"}
 {"id": "q_56f2859cb47d", "type": "abstain"}
@@ -356,13 +356,13 @@
 {"id": "q_5860bae9659f", "type": "abstain"}
 {"id": "q_588a7c489b8e", "type": "percent", "answer": -6.26}
 {"id": "q_5896bf2cce00", "type": "percent", "answer": 1.87}
-{"id": "q_596f5cfa121c", "type": "abstain"}
+{"id": "q_596f5cfa121c", "type": "number", "answer": 6288000}
 {"id": "q_5971d8343cc7", "type": "abstain"}
 {"id": "q_599716cf226a", "type": "abstain"}
 {"id": "q_599dbed4790f", "type": "number", "answer": 39}
 {"id": "q_59b28582f30e", "type": "abstain"}
 {"id": "q_59f27903845e", "type": "abstain"}
-{"id": "q_5a5a452f87d4", "type": "abstain"}
+{"id": "q_5a5a452f87d4", "type": "percent", "answer": 48.14}
 {"id": "q_5a9e0b8dce13", "type": "abstain"}
 {"id": "q_5aad27b686f6", "type": "number", "answer": 125072}
 {"id": "q_5ab41aca6861", "type": "percent", "answer": 29.05}
@@ -376,11 +376,11 @@
 {"id": "q_5c681795e6a0", "type": "abstain"}
 {"id": "q_5cb9576befc6", "type": "number", "answer": 500782000}
 {"id": "q_5cd8a3c09d08", "type": "abstain"}
-{"id": "q_5d05956fc827", "type": "abstain"}
+{"id": "q_5d05956fc827", "type": "percent", "answer": -22.31}
 {"id": "q_5d6f195dd3e7", "type": "number", "answer": 1256267}
 {"id": "q_5da7465fcd06", "type": "number", "answer": 1637142000}
 {"id": "q_5dce492e5f1a", "type": "percent", "answer": 19.19}
-{"id": "q_5df03c21af61", "type": "abstain"}
+{"id": "q_5df03c21af61", "type": "percent", "answer": 46.28}
 {"id": "q_5e195033ee9d", "type": "abstain"}
 {"id": "q_5e570feb5c4c", "type": "percent", "answer": 6.51}
 {"id": "q_5e7b3b2822b9", "type": "abstain"}
@@ -410,7 +410,7 @@
 {"id": "q_62ec9b7dc79b", "type": "abstain"}
 {"id": "q_632bc2910cb3", "type": "abstain"}
 {"id": "q_6396e1b202a6", "type": "abstain"}
-{"id": "q_63cf15f33b1c", "type": "abstain"}
+{"id": "q_63cf15f33b1c", "type": "string", "answer": "Sinh tố xoài (M)"}
 {"id": "q_64045044c253", "type": "abstain"}
 {"id": "q_647711394825", "type": "abstain"}
 {"id": "q_64e62d4bea7d", "type": "abstain"}
@@ -432,7 +432,7 @@
 {"id": "q_69a3f480bb53", "type": "number", "answer": 6542000}
 {"id": "q_69b7d08012e5", "type": "abstain"}
 {"id": "q_69cc1e2a87ca", "type": "number", "answer": 10}
-{"id": "q_69dbf1d3cdc5", "type": "abstain"}
+{"id": "q_69dbf1d3cdc5", "type": "string", "answer": "Mai Hoa Anh"}
 {"id": "q_6a138cfe1257", "type": "percent", "answer": 36.18}
 {"id": "q_6a52cddced60", "type": "abstain"}
 {"id": "q_6a752a1d37b5", "type": "abstain"}
@@ -545,10 +545,10 @@
 {"id": "q_8620011d3670", "type": "abstain"}
 {"id": "q_8694ac4443ef", "type": "number", "answer": 265}
 {"id": "q_86a32a09633a", "type": "abstain"}
-{"id": "q_86dd535ae674", "type": "abstain"}
+{"id": "q_86dd535ae674", "type": "percent", "answer": 57.58}
 {"id": "q_8728cb609428", "type": "percent", "answer": 45.88}
 {"id": "q_8818447349a6", "type": "list", "answer": [26841000, 450312500]}
-{"id": "q_8865baf2a84d", "type": "abstain"}
+{"id": "q_8865baf2a84d", "type": "percent", "answer": 36.68}
 {"id": "q_88aeb2f7b1a7", "type": "number", "answer": 17912000}
 {"id": "q_8960949c2614", "type": "number", "answer": 7}
 {"id": "q_89d88aa1eae8", "type": "abstain"}
@@ -577,12 +577,12 @@
 {"id": "q_90375e5beeab", "type": "number", "answer": 75}
 {"id": "q_908ce2873a57", "type": "abstain"}
 {"id": "q_908d0d681cd8", "type": "number", "answer": 8}
-{"id": "q_91368b04415b", "type": "abstain"}
+{"id": "q_91368b04415b", "type": "percent", "answer": -1.58}
 {"id": "q_9142ba5ec94a", "type": "abstain"}
 {"id": "q_914529f4d2e2", "type": "number", "answer": 33}
 {"id": "q_917d6af4418e", "type": "abstain"}
 {"id": "q_91a333e16eae", "type": "abstain"}
-{"id": "q_92353891a456", "type": "abstain"}
+{"id": "q_92353891a456", "type": "number", "answer": 129276000}
 {"id": "q_928423a8bbc6", "type": "percent", "answer": 8.54}
 {"id": "q_929a9dcb0a38", "type": "number", "answer": 1101}
 {"id": "q_92c6660df209", "type": "number", "answer": 48}
@@ -610,17 +610,17 @@
 {"id": "q_99f979b5d0b4", "type": "percent", "answer": 3.07}
 {"id": "q_99fba89f30fa", "type": "abstain"}
 {"id": "q_9a905959d8ff", "type": "number", "answer": 14263}
-{"id": "q_9aa0981148ef", "type": "abstain"}
+{"id": "q_9aa0981148ef", "type": "number", "answer": 467556100}
 {"id": "q_9ab76e4d9f5e", "type": "abstain"}
 {"id": "q_9b5377726889", "type": "number", "answer": 9935}
 {"id": "q_9b5bf8a560a1", "type": "abstain"}
 {"id": "q_9bcd14f14b1f", "type": "percent", "answer": 60.66}
 {"id": "q_9c2c85d9330d", "type": "abstain"}
 {"id": "q_9d4a0d4b4bcd", "type": "abstain"}
-{"id": "q_9d8949165b5e", "type": "abstain"}
+{"id": "q_9d8949165b5e", "type": "string", "answer": "Hồ Cường Hùng"}
 {"id": "q_9e28638a40cb", "type": "number", "answer": 1123614700}
 {"id": "q_9e6f314a5bd8", "type": "abstain"}
-{"id": "q_9e82414141dd", "type": "abstain"}
+{"id": "q_9e82414141dd", "type": "string", "answer": "Tô Giang Hồng"}
 {"id": "q_9ed7874d83b8", "type": "number", "answer": 719572600}
 {"id": "q_9eddae22a244", "type": "abstain"}
 {"id": "q_9ee4a6de0ca1", "type": "unanswerable", "reason": "Doanh nghiệp không ghi nhận kênh bán hàng"}
@@ -696,7 +696,7 @@
 {"id": "q_b342fe1e1211", "type": "abstain"}
 {"id": "q_b362a46fa102", "type": "abstain"}
 {"id": "q_b36cb72072f1", "type": "number", "answer": 50}
-{"id": "q_b38db1ef2bcc", "type": "abstain"}
+{"id": "q_b38db1ef2bcc", "type": "string", "answer": "Dương Hồng Mai"}
 {"id": "q_b3a65abd54c2", "type": "number", "answer": 2306809000}
 {"id": "q_b3c49510b3b7", "type": "percent", "answer": 16.59}
 {"id": "q_b3c5bd56d757", "type": "number", "answer": 52}
@@ -737,7 +737,7 @@
 {"id": "q_bc879c2a6de5", "type": "abstain"}
 {"id": "q_bd0fbda87c14", "type": "abstain"}
 {"id": "q_bdbe8ca608ce", "type": "abstain"}
-{"id": "q_be3f968523bf", "type": "abstain"}
+{"id": "q_be3f968523bf", "type": "percent", "answer": 48.92}
 {"id": "q_be4ad5df428d", "type": "number", "answer": 3102552000}
 {"id": "q_be70a1626009", "type": "abstain"}
 {"id": "q_be8b3469756d", "type": "abstain"}
@@ -804,13 +804,13 @@
 {"id": "q_cd0cfcf59c38", "type": "number", "answer": 520000}
 {"id": "q_cd3203f2d813", "type": "number", "answer": 90}
 {"id": "q_cda272637d58", "type": "number", "answer": 67001700}
-{"id": "q_cdd8eec83c7a", "type": "abstain"}
+{"id": "q_cdd8eec83c7a", "type": "percent", "answer": 61.07}
 {"id": "q_cdf9857d8c64", "type": "abstain"}
 {"id": "q_ce16270f4c20", "type": "abstain"}
 {"id": "q_ce3bd6c20b25", "type": "abstain"}
 {"id": "q_ce8675d1ef06", "type": "number", "answer": 88}
 {"id": "q_cf2c969d8471", "type": "number", "answer": 1}
-{"id": "q_cf5c5dac1b20", "type": "abstain"}
+{"id": "q_cf5c5dac1b20", "type": "number", "answer": 1295000}
 {"id": "q_cfa36137a14a", "type": "percent", "answer": 16.57}
 {"id": "q_cfcb5f8a241f", "type": "number", "answer": 1350}
 {"id": "q_d08785ea5577", "type": "abstain"}
@@ -822,12 +822,12 @@
 {"id": "q_d29c19d6d13e", "type": "number", "answer": 1815020000}
 {"id": "q_d2c646bb39ec", "type": "abstain"}
 {"id": "q_d2f89e3c815d", "type": "percent", "answer": 4.14}
-{"id": "q_d3390eedd851", "type": "abstain"}
+{"id": "q_d3390eedd851", "type": "number", "answer": 946996800}
 {"id": "q_d3b768308def", "type": "percent", "answer": -6.69}
 {"id": "q_d3ed369d528c", "type": "abstain"}
 {"id": "q_d3ef941d6105", "type": "percent", "answer": -1.28}
 {"id": "q_d41b61e31b85", "type": "abstain"}
-{"id": "q_d4b2f0aaf69a", "type": "abstain"}
+{"id": "q_d4b2f0aaf69a", "type": "number", "answer": 2516000}
 {"id": "q_d4d9ce010db3", "type": "number", "answer": 390}
 {"id": "q_d4ef0c5d0bb2", "type": "abstain"}
 {"id": "q_d5157cc4acfe", "type": "number", "answer": 19008100}
@@ -838,7 +838,7 @@
 {"id": "q_d622b78573c8", "type": "abstain"}
 {"id": "q_d62edb3b5bc6", "type": "date", "answer": "2025-06"}
 {"id": "q_d69464555c58", "type": "number", "answer": 35}
-{"id": "q_d6ff23824813", "type": "abstain"}
+{"id": "q_d6ff23824813", "type": "string", "answer": "Thân Khánh Hoàng"}
 {"id": "q_d721d81da2d5", "type": "abstain"}
 {"id": "q_d75952be2f51", "type": "number", "answer": 912757000}
 {"id": "q_d76d6563e547", "type": "abstain"}
@@ -859,7 +859,7 @@
 {"id": "q_db10e5d30a18", "type": "abstain"}
 {"id": "q_dbb084b9361d", "type": "number", "answer": 245571500}
 {"id": "q_dbb9f4aff4c3", "type": "abstain"}
-{"id": "q_dcb25c39e1cc", "type": "abstain"}
+{"id": "q_dcb25c39e1cc", "type": "number", "answer": 169}
 {"id": "q_dcd34fbf05f0", "type": "abstain"}
 {"id": "q_dce7cb2e38a8", "type": "number", "answer": 85}
 {"id": "q_dd2362109dd4", "type": "abstain"}
@@ -870,7 +870,7 @@
 {"id": "q_de76013dcb99", "type": "abstain"}
 {"id": "q_dec759a2f085", "type": "number", "answer": 121}
 {"id": "q_df258c67efec", "type": "abstain"}
-{"id": "q_dfe6c970b819", "type": "abstain"}
+{"id": "q_dfe6c970b819", "type": "date", "answer": "2025-01-29"}
 {"id": "q_e096ce51b13d", "type": "percent", "answer": -4.99}
 {"id": "q_e0ac213834f6", "type": "abstain"}
 {"id": "q_e0e7974d6923", "type": "percent", "answer": -9.54}
@@ -909,14 +909,14 @@
 {"id": "q_eb606434a18e", "type": "abstain"}
 {"id": "q_eb7f3881e7e9", "type": "abstain"}
 {"id": "q_ec17ef854d8a", "type": "number", "answer": 232737700}
-{"id": "q_ec61b4f5b9ab", "type": "abstain"}
+{"id": "q_ec61b4f5b9ab", "type": "percent", "answer": -53.1}
 {"id": "q_ec8d9cfa0f6b", "type": "abstain"}
 {"id": "q_ec9ca5f0dec1", "type": "number", "answer": 448559000}
 {"id": "q_eced47bf8f4b", "type": "number", "answer": 166285}
 {"id": "q_ed4d0362d039", "type": "abstain"}
 {"id": "q_ed68b2a7cb63", "type": "abstain"}
 {"id": "q_ed841139ac0a", "type": "number", "answer": 29100500}
-{"id": "q_edb6d4859798", "type": "abstain"}
+{"id": "q_edb6d4859798", "type": "string", "answer": "Tô Dũng Quang"}
 {"id": "q_edce3c50d4f7", "type": "abstain"}
 {"id": "q_ede70b7f6c13", "type": "abstain"}
 {"id": "q_edf890b68dfd", "type": "number", "answer": 46}
@@ -937,7 +937,7 @@
 {"id": "q_f15ae79ed4ba", "type": "percent", "answer": 2.26}
 {"id": "q_f16bd70756d1", "type": "number", "answer": 8342718300}
 {"id": "q_f1772e835811", "type": "number", "answer": 65110500}
-{"id": "q_f18a6235b749", "type": "abstain"}
+{"id": "q_f18a6235b749", "type": "string", "answer": "Phùng Ngọc Thu"}
 {"id": "q_f1c0ff1d2330", "type": "abstain"}
 {"id": "q_f20f4f3ec923", "type": "abstain"}
 {"id": "q_f264ab49a2c8", "type": "number", "answer": 64}

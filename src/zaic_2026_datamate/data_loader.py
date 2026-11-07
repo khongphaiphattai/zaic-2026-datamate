@@ -11,6 +11,7 @@ import re
 import sqlite3
 import unicodedata
 from dataclasses import dataclass, field
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -65,63 +66,72 @@ def is_monthly_sheet(sheet_name: str) -> bool:
 
 
 def _parse_single_date(val: Any, sheet_year: Optional[int] = None) -> Optional[str]:
-    """Deterministically parse a date string or serial into ISO YYYY-MM-DD format."""
+    """Deterministically parse a date string or serial into ISO format 'YYYY-MM-DD HH:MM:SS', preserving timestamp."""
     if pd.isna(val):
         return None
+    if isinstance(val, (datetime, pd.Timestamp)):
+        return val.strftime("%Y-%m-%d %H:%M:%S")
     val_str = str(val).strip()
     if not val_str or val_str.lower() in ("nan", "nat", "none", "null"):
         return None
+
+    # Extract time part if attached: e.g. "14:25:00" or "08:30"
+    time_part = "00:00:00"
+    parts = val_str.split()
+    date_part = parts[0]
+    if len(parts) >= 2:
+        m_time = re.search(r"(\d{1,2}:\d{2}(?::\d{2})?)", parts[1])
+        if m_time:
+            t = m_time.group(1)
+            time_part = t if len(t.split(":")) == 3 else f"{t}:00"
 
     # 0. Vietnamese text month format: '1 thg 5 2025', '15 tháng 04 2025', '1 thg 1 2026'
     m_thg = re.search(r"(\d{1,2})\s*(?:thg|tháng|thang)\s*(\d{1,2})\s*(\d{4})", val_str, re.IGNORECASE)
     if m_thg:
         d, m, y = int(m_thg.group(1)), int(m_thg.group(2)), int(m_thg.group(3))
         if 1990 <= y <= 2100 and 1 <= m <= 12 and 1 <= d <= 31:
-            return f"{y:04d}-{m:02d}-{d:02d}"
-
-    # Handle time if attached, take date part
-    date_part = val_str.split(" ")[0].strip()
+            return f"{y:04d}-{m:02d}-{d:02d} {time_part}"
 
     # 1. Slash format: DD/MM/YYYY or DD/MM
     if "/" in date_part:
-        parts = date_part.split("/")
-        if len(parts) == 3:
+        parts_d = date_part.split("/")
+        if len(parts_d) == 3:
             try:
-                d, m, y = int(parts[0]), int(parts[1]), int(parts[2])
+                d, m, y = int(parts_d[0]), int(parts_d[1]), int(parts_d[2])
                 if y < 100:
                     y += 2000
                 if 1990 <= y <= 2100 and 1 <= m <= 12 and 1 <= d <= 31:
-                    return f"{y:04d}-{m:02d}-{d:02d}"
+                    return f"{y:04d}-{m:02d}-{d:02d} {time_part}"
             except (ValueError, TypeError):
                 pass
-        elif len(parts) == 2 and sheet_year:
+        elif len(parts_d) == 2 and sheet_year:
             try:
-                d, m = int(parts[0]), int(parts[1])
+                d, m = int(parts_d[0]), int(parts_d[1])
                 if 1 <= m <= 12 and 1 <= d <= 31:
-                    return f"{sheet_year:04d}-{m:02d}-{d:02d}"
+                    return f"{sheet_year:04d}-{m:02d}-{d:02d} {time_part}"
             except (ValueError, TypeError):
                 pass
 
     # 2. Hyphen / ISO format: YYYY-MM-DD or DD-MM-YYYY or DD-MM
     elif "-" in date_part:
-        parts = date_part.split("-")
-        if len(parts) == 3:
+        parts_d = date_part.split("-")
+        if len(parts_d) == 3:
             try:
-                if len(parts[0]) == 4:  # YYYY-MM-DD
-                    y, m, d = int(parts[0]), int(parts[1]), int(parts[2])
+                if len(parts_d[0]) == 4:  # YYYY-MM-DD
+                    y, m, d = int(parts_d[0]), int(parts_d[1]), int(parts_d[2])
                 else:  # DD-MM-YYYY
-                    d, m, y = int(parts[0]), int(parts[1]), int(parts[2])
+                    d, m, y = int(parts_d[0]), int(parts_d[1]), int(parts_d[2])
                     if y < 100:
                         y += 2000
                 if 1990 <= y <= 2100 and 1 <= m <= 12 and 1 <= d <= 31:
-                    return f"{y:04d}-{m:02d}-{d:02d}"
+                    return f"{y:04d}-{m:02d}-{d:02d} {time_part}"
             except (ValueError, TypeError):
                 pass
-        elif len(parts) == 2 and sheet_year:
+        elif len(parts_d) == 2 and sheet_year:
             try:
-                d, m = int(parts[0]), int(parts[1])
+                d, m = int(parts_d[0]), int(parts_d[1])
                 if 1 <= m <= 12 and 1 <= d <= 31:
-                    return f"{sheet_year:04d}-{m:02d}-{d:02d}"
+                    return f"{sheet_year:04d}-{m:02d}-{d:02d} {time_part}"
             except (ValueError, TypeError):
                 pass
 
@@ -129,16 +139,16 @@ def _parse_single_date(val: Any, sheet_year: Optional[int] = None) -> Optional[s
 
 
 def parse_mixed_excel_dates(s: pd.Series, sheet_year: Optional[int] = None) -> pd.Series:
-    """Parse a date Series that may contain mixed Excel serial numbers and string dates."""
+    """Parse a date Series that may contain mixed Excel serial numbers and string dates, preserving timestamps."""
     # 1. Handle numeric / Excel serial dates (e.g. 45809 = 2025-06-01)
     num_s = pd.to_numeric(s, errors="coerce")
     is_serial = (num_s >= 35000) & (num_s <= 65000)
     serials_converted = pd.to_datetime(num_s[is_serial], unit="D", origin="1899-12-30", errors="coerce")
 
-    # 2. Convert remaining string dates deterministically
+    # 2. Convert remaining string dates deterministically to YYYY-MM-DD HH:MM:SS
     str_s = s[~is_serial]
     parsed_iso = str_s.apply(lambda v: _parse_single_date(v, sheet_year=sheet_year))
-    strs_converted = pd.to_datetime(parsed_iso, format="%Y-%m-%d", errors="coerce")
+    strs_converted = pd.to_datetime(parsed_iso, format="%Y-%m-%d %H:%M:%S", errors="coerce")
 
     # Filter out wild/invalid years (< 1990 or > 2100) to prevent OutOfBoundsDatetime
     serials_converted = serials_converted.where((serials_converted.dt.year >= 1990) & (serials_converted.dt.year <= 2100))
@@ -300,6 +310,7 @@ def clean_dataframe(df: pd.DataFrame) -> Tuple[pd.DataFrame, Dict[str, str]]:
         "ma_don_hang", "ma_hoa_don", "ma_giao_dich", "ma_chung_tu", "order_id",
         "ma_phieu", "ma_bill", "bill", "so_phieu", "ma_gd", "so_hd", "ma_dh", "so_ct", "hd", "don_so", "ma_don", "stt",
         "ngay_dat_hang", "thoi_gian", "ngay", "ngay_ban", "ngay_lap", "gio", "thoi_gian_tao",
+        "ngay_thang", "ngay_hd", "ngay_xuat", "ngay_giao_dich", "gio_ban", "gio_tao_don", "ngay_ban_hang",
         "trang_thai_don_hang", "trang_thai", "status", "ghi_chu_tt", "trang_thai_xu_ly",
         "tien_do", "xu_ly", "ghi_chu", "kenh", "kenh_ban",
         "ten_khach_hang", "khach_hang", "khach", "tenkh", "ma_kh", "ma_khach_hang"

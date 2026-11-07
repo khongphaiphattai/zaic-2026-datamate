@@ -1,0 +1,21 @@
+{
+  "description": "Holdout set of 6 businesses (710 questions) for v3.4 generalization audit across diverse merchant domains.",
+  "created_at": "2026-11-07",
+  "holdout_businesses": [
+    "biz_102",
+    "biz_106",
+    "biz_112",
+    "biz_115",
+    "biz_121",
+    "biz_127"
+  ],
+  "domain_mapping": {
+    "biz_102": "General Grocery / Multi-table Excel POS",
+    "biz_106": "Beverage / POS Machine",
+    "biz_112": "F&B Detail / Service",
+    "biz_115": "Construction Materials / Weight & Multiple delivery",
+    "biz_121": "Pharmacy / Prescription Rx & Unit conversions",
+    "biz_127": "Multi-file Sales / AOV & Customers"
+  },
+  "total_questions": 710
+}

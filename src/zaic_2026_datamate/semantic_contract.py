@@ -75,6 +75,14 @@ def norm_vn(text: Any) -> str:
         return ""
     s = s.replace("đ", "d")
     s = "".join(c for c in unicodedata.normalize("NFD", s) if unicodedata.category(c) != "Mn")
+    # Common telex and typo normalizations
+    s = re.sub(r"\btrawm\b", "tram", s)
+    s = re.sub(r"\bptram\b", "phan tram", s)
+    s = re.sub(r"\bnhta\b", "nhat", s)
+    s = re.sub(r"\bdduowcj\b", "duoc", s)
+    s = re.sub(r"\bcko\b", "cho", s)
+    s = re.sub(r"\btoor?g\s*coor?g\b", "tong cong", s)
+    s = re.sub(r"\bmi\s+(?=(?:don|cuon|cay|ly|cai|mon|tram|trieu|nghin|k\b|ngay|thang|hop|chai|lon|phan|khach))", "may ", s)
     return re.sub(r"\s+", " ", s).strip()
 
 
@@ -395,6 +403,7 @@ class BusinessSemanticContract:
 
         # 1. Build lookup maps from auxiliary tables (Customer Group, Product Category, Prescription)
         cust_group_map: Dict[str, str] = {}
+        cust_name_map: Dict[str, str] = {}
         has_gender = False
         for tname, df in tables.items():
             if tname == "calendar":
@@ -423,12 +432,26 @@ class BusinessSemanticContract:
                     ),
                     None,
                 )
-                if id_col and grp_col:
-                    for k_val, g_val in zip(df[id_col], df[grp_col]):
-                        k_norm = norm_vn(k_val)
-                        g_norm = normalize_customer_group_value(g_val)
-                        if k_norm and g_norm:
-                            cust_group_map[k_norm] = g_norm
+                name_col = next(
+                    (
+                        c
+                        for c in ("ten_goi", "ten_khach_hang", "ten_kh", "tenkh", "ho_ten", "ten")
+                        if c in cols
+                    ),
+                    None,
+                )
+                if id_col:
+                    if grp_col:
+                        for k_val, g_val in zip(df[id_col], df[grp_col]):
+                            k_norm = norm_vn(k_val)
+                            g_norm = normalize_customer_group_value(g_val)
+                            if k_norm and g_norm:
+                                cust_group_map[k_norm] = g_norm
+                    if name_col:
+                        for k_val, n_val in zip(df[id_col], df[name_col]):
+                            k_norm = norm_vn(k_val)
+                            if k_norm and pd.notna(n_val) and str(n_val).strip():
+                                cust_name_map[k_norm] = str(n_val).strip()
 
         # Product catalog & prescription lookups
         id_to_cat: Dict[str, str] = {}
@@ -552,6 +575,7 @@ class BusinessSemanticContract:
                     "channel",
                     "payment_method",
                     "customer_key",
+                    "customer_name",
                     "customer_group",
                 ]
             )
@@ -581,6 +605,7 @@ class BusinessSemanticContract:
             header_table=header_table,
             detail_table=detail_table,
             cust_group_map=cust_group_map,
+            cust_name_map=cust_name_map,
             id_to_cat=id_to_cat,
             name_to_cat=name_to_cat,
             name_to_id=name_to_id,
@@ -691,6 +716,7 @@ class BusinessSemanticContract:
         header_table: Optional[str],
         detail_table: Optional[str],
         cust_group_map: Dict[str, str],
+        cust_name_map: Dict[str, str],
         id_to_cat: Dict[str, str],
         name_to_cat: Dict[str, str],
         name_to_id: Dict[str, str],
@@ -707,6 +733,7 @@ class BusinessSemanticContract:
                 header_df=tables[header_table],
                 detail_df=tables[detail_table],
                 cust_group_map=cust_group_map,
+                cust_name_map=cust_name_map,
                 id_to_cat=id_to_cat,
                 name_to_cat=name_to_cat,
                 name_to_id=name_to_id,
@@ -722,6 +749,7 @@ class BusinessSemanticContract:
             table_name=detail_table,
             df=tables[detail_table],
             cust_group_map=cust_group_map,
+            cust_name_map=cust_name_map,
             id_to_cat=id_to_cat,
             name_to_cat=name_to_cat,
             name_to_id=name_to_id,
@@ -738,6 +766,7 @@ class BusinessSemanticContract:
         header_df: pd.DataFrame,
         detail_df: pd.DataFrame,
         cust_group_map: Dict[str, str],
+        cust_name_map: Dict[str, str],
         id_to_cat: Dict[str, str],
         name_to_cat: Dict[str, str],
         name_to_id: Dict[str, str],
@@ -759,7 +788,25 @@ class BusinessSemanticContract:
         )
 
         # Date & timestamp on header
-        date_cands = [c for c in ("ngay_ban", "ngay_lap", "ngay", "date", "thoi_gian", "thoi_gian_tao") if c in h_cols]
+        date_cands = [
+            c
+            for c in (
+                "ngay_dat_hang",
+                "ngay_dat",
+                "ngay_tao",
+                "ngay_thang",
+                "ngay_ban",
+                "ngay_lap",
+                "ngay_hd",
+                "ngay_giao_dich",
+                "ngay_xuat",
+                "ngay",
+                "date",
+                "thoi_gian",
+                "thoi_gian_tao",
+            )
+            if c in h_cols
+        ]
         h_date_col = min(date_cands, key=lambda c: header_df[c].isna().sum()) if date_cands else None
         h_ts_col = next(
             (c for c in ("thoi_gian_tao", "thoi_gian_lap", "gio_tao_don", "gio_ban", "thoi_gian") if c in h_cols),
@@ -929,8 +976,9 @@ class BusinessSemanticContract:
             else pd.Series(None, index=header_df.index, dtype="object")
         )
 
-        # Customer key & group
+        # Customer key & group & display name
         cust_keys: List[Optional[str]] = []
+        cust_names: List[Optional[str]] = []
         cust_groups: List[Optional[str]] = []
         raw_cids = header_df[h_cust_id_col] if h_cust_id_col else pd.Series(None, index=header_df.index)
         raw_cnames = header_df[h_cust_name_col] if h_cust_name_col else pd.Series(None, index=header_df.index)
@@ -940,6 +988,16 @@ class BusinessSemanticContract:
             if not ck:
                 ck = normalize_customer_key(cname)
             cust_keys.append(ck)
+
+            # Resolve unnormalized customer display name
+            resolved_cname = None
+            if pd.notna(cname) and str(cname).strip() and norm_vn(cname) not in ("le", "khach le", "ban le", "vang lai"):
+                resolved_cname = str(cname).strip()
+            elif pd.notna(cid):
+                cid_norm = norm_vn(cid)
+                resolved_cname = cust_name_map.get(cid_norm) or str(cid).strip()
+            cust_names.append(resolved_cname)
+
             c_grp = cust_group_map.get(norm_vn(cid)) if pd.notna(cid) else None
             if not c_grp and ck:
                 c_grp = cust_group_map.get(ck)
@@ -955,6 +1013,7 @@ class BusinessSemanticContract:
                 "channel": channels,
                 "payment_method": payments,
                 "customer_key": pd.Series(cust_keys, dtype="object"),
+                "customer_name": pd.Series(cust_names, dtype="object"),
                 "customer_group": pd.Series(cust_groups, dtype="object"),
             }
         )
@@ -972,6 +1031,7 @@ class BusinessSemanticContract:
                         "channel": "first",
                         "payment_method": "first",
                         "customer_key": "first",
+                        "customer_name": "first",
                         "customer_group": "first",
                     }
                 )
@@ -1005,6 +1065,7 @@ class BusinessSemanticContract:
         table_name: str,
         df: pd.DataFrame,
         cust_group_map: Dict[str, str],
+        cust_name_map: Dict[str, str],
         id_to_cat: Dict[str, str],
         name_to_cat: Dict[str, str],
         name_to_id: Dict[str, str],
@@ -1037,7 +1098,7 @@ class BusinessSemanticContract:
                 )
                 if c in cols
             ),
-            cols[0],
+            None,
         )
 
         # Date & timestamp columns
@@ -1047,11 +1108,16 @@ class BusinessSemanticContract:
             c
             for c in (
                 "ngay_dat_hang",
+                "ngay_dat",
+                "ngay_tao",
+                "ngay_thang",
                 "ngay_hd",
                 "ngay_giao_dich",
                 "ngay_xuat",
                 "ngay_ban",
+                "ngay_lap",
                 "ngay",
+                "date",
                 "thoi_gian",
                 "gio",
                 "thoi_gian_tao",
@@ -1182,7 +1248,10 @@ class BusinessSemanticContract:
                 None,
             )
 
-        order_ids = df[order_col].fillna("").astype(str).str.strip()
+        if order_col:
+            order_ids = df[order_col].fillna("").astype(str).str.strip()
+        else:
+            order_ids = pd.Series([f"row_{i}" for i in range(len(df))], index=df.index)
         raw_dates = pd.to_datetime(df[date_col], errors="coerce") if date_col else pd.Series(pd.NaT, index=df.index)
         raw_hours = extract_hour_series(df[ts_col]) if ts_col else pd.Series(np.nan, index=df.index)
 
@@ -1238,6 +1307,7 @@ class BusinessSemanticContract:
         pay_series = df[pay_col].map(normalize_payment_value) if pay_col else pd.Series(None, index=df.index, dtype="object")
 
         cust_keys: List[Optional[str]] = []
+        cust_names: List[Optional[str]] = []
         cust_groups: List[Optional[str]] = []
         cids = df[cust_id_col] if cust_id_col else pd.Series(None, index=df.index)
         cnames = df[cust_name_col] if cust_name_col else pd.Series(None, index=df.index)
@@ -1248,6 +1318,15 @@ class BusinessSemanticContract:
             if not ck:
                 ck = normalize_customer_key(cname)
             cust_keys.append(ck)
+
+            # Resolve unnormalized customer display name
+            resolved_cname = None
+            if pd.notna(cname) and str(cname).strip() and norm_vn(cname) not in ("le", "khach le", "ban le", "vang lai"):
+                resolved_cname = str(cname).strip()
+            elif pd.notna(cid):
+                cid_norm = norm_vn(cid)
+                resolved_cname = cust_name_map.get(cid_norm) or str(cid).strip()
+            cust_names.append(resolved_cname)
 
             grp = normalize_customer_group_value(cgrp)
             if not grp and pd.notna(cid):
@@ -1266,6 +1345,7 @@ class BusinessSemanticContract:
                 "channel": chan_series,
                 "payment_method": pay_series,
                 "customer_key": pd.Series(cust_keys, dtype="object"),
+                "customer_name": pd.Series(cust_names, dtype="object"),
                 "customer_group": pd.Series(cust_groups, dtype="object"),
             }
         )
@@ -1281,6 +1361,7 @@ class BusinessSemanticContract:
                 channel=("channel", "first"),
                 payment_method=("payment_method", "first"),
                 customer_key=("customer_key", "first"),
+                customer_name=("customer_name", "first"),
                 customer_group=("customer_group", "first"),
             )
         )
@@ -1609,7 +1690,7 @@ def _parse_growth_periods(q_norm: str, as_of_date: Optional[str]) -> Optional[Tu
     anchor = datetime.strptime(as_of_date, "%Y-%m-%d").date() if as_of_date else None
 
     # Exclude price change windows or shift comparison
-    if any(k in q_norm for k in ("doi gia", "tang gia", "len gia", "ke tu ngay")):
+    if re.search(r"\b(?:doi\s+gia|tang\s+gia|len\s+gia|ke\s+tu\s+ngay)\b", q_norm):
         return None
     if "ca sang" in q_norm and "ca chieu" in q_norm:
         return None
@@ -1622,7 +1703,8 @@ def _parse_growth_periods(q_norm: str, as_of_date: Optional[str]) -> Optional[Tu
             "cao hay thap", "thay doi", "tang bao nhieu", "giam bao nhieu",
             "chenh bao nhieu", "hon hay kem", "len hay xuong", "nhieu hon hay it hon",
             "nhieu hon", "it hon", "cung ky", "thang lien truoc", "thang trc do",
-            "thang truoc do", "so thang truoc", "so thang trc"
+            "thang truoc do", "so thang truoc", "so thang trc", "tang giam", "len xuong",
+            "thang ngay truoc do", "thang ngay trc do", "thang lien ke truoc", "thang lien truoc do"
         )
     )
     if not has_growth_kw:
@@ -1666,7 +1748,28 @@ def _parse_growth_periods(q_norm: str, as_of_date: Optional[str]) -> Optional[Tu
             return ParsedPeriod(month_str=f"{y1:04d}-{m1:02d}"), ParsedPeriod(month_str=f"{y1-1:04d}-{m1:02d}")
 
     # Form 4: Single month MoM (so với tháng liền trước / tháng trước đó / tháng trước)
-    is_mom = any(k in q_norm for k in ("thang lien truoc", "thang trc do", "thang truoc do", "so thang truoc", "so voi thang truoc", "so vs thang truoc", "so thang trc", "thang lien trc", "thang truoc", "thang trc"))
+    is_mom = any(
+        k in q_norm
+        for k in (
+            "thang ngay truoc do",
+            "thang ngay trc do",
+            "thang lien ke truoc",
+            "thang lien truoc do",
+            "thang lien truoc",
+            "thang trc do",
+            "thang truoc do",
+            "so voi thang lien truoc",
+            "so thang lien truoc",
+            "so voi thang truoc do",
+            "so thang truoc",
+            "so voi thang truoc",
+            "so vs thang truoc",
+            "so thang trc",
+            "thang lien trc",
+            "thang truoc",
+            "thang trc",
+        )
+    )
     if m_single and is_mom:
         m1, y1 = int(m_single.group(1)), int(m_single.group(2))
         if y1 < 100:
@@ -1881,6 +1984,118 @@ def build_query_plan(
             output_type="string",
         )
 
+    # Busiest day (ngày đắt khách nhất / nhiều đơn nhất theo Rulebook Mục 9)
+    is_busiest_day = not any(k in q_norm for k in ("khach", "ai")) and (
+        any(k in q_norm for k in (
+            "dat khach nhat", "dong don nhat",
+            "ngay nao nhieu don nhat", "ngay nao ban duoc nhieu don nhat", "ngay ban dc nhieu don nhat",
+            "ngay nao dong don nhat", "ngay nhieu don nhat", "hom nao nhieu don nhat"
+        ))
+        or bool(re.search(r"\b(?:ngay|hom)\s+(?:nao\s+)?(?:co\s+)?nhieu\s+don\b", q_norm))
+    )
+    if is_busiest_day and has_valid_period:
+        return QueryPlan(
+            operation="ranking_top_k",
+            metric="order_count",
+            period=period,
+            target_dimension="date",
+            limit_k=1,
+            output_type="date",
+        )
+
+    # Peak hour (giờ cao điểm theo Rulebook Mục 9: khung 1 giờ tròn theo giờ tạo đơn có nhiều đơn nhất)
+    is_peak_hour = any(k in q_norm for k in (
+        "gio cao diem", "khung gio nao dong khach nhat", "khung gio dong khach nhat",
+        "dong khach nhat vao may gio", "dong khach nhat dao may gio", "gio nao dong khach nhat"
+    ))
+    if is_peak_hour and has_valid_period:
+        return QueryPlan(
+            operation="ranking_top_k",
+            metric="order_count",
+            period=period,
+            target_dimension="peak_hour",
+            limit_k=1,
+            output_type="number",
+        )
+
+    # Customer ranking (Rulebook Mục 9: trung thành nhất = số ngày đặt hàng, sộp nhất = AOV với >= 3 đơn, hay đổi ý nhất = đơn huỷ)
+    is_loyal_customer = any(k in q_norm for k in ("khach hang trung thanh nhat", "khach trung thanh nhat"))
+    if is_loyal_customer and has_valid_period:
+        return QueryPlan(
+            operation="ranking_top_k",
+            metric="order_date_count",
+            period=period,
+            target_dimension="customer",
+            limit_k=1,
+            output_type="string",
+        )
+
+    is_big_spender = any(k in q_norm for k in ("khach sop nhat", "khach hang sop nhat", "khach chi dam nhat"))
+    if is_big_spender and has_valid_period:
+        return QueryPlan(
+            operation="ranking_top_k",
+            metric="aov",
+            period=period,
+            target_dimension="customer",
+            limit_k=1,
+            output_type="string",
+        )
+
+    is_indecisive_customer = any(k in q_norm for k in ("khach hay doi y nhat", "hay doi y nhat", "huy nhieu don nhat"))
+    if is_indecisive_customer and has_valid_period:
+        return QueryPlan(
+            operation="ranking_top_k",
+            metric="canceled_orders",
+            period=period,
+            target_dimension="customer",
+            limit_k=1,
+            output_type="string",
+        )
+
+    is_top_customer_orders = any(k in q_norm for k in (
+        "ai la khach co so don mua nhieu nhat", "khach co so don mua nhieu nhat",
+        "khach nao mua nhieu don nhat", "ai mua nhieu don nhat", "khach mua nhieu don nhat",
+        "khach nao co nhieu don nhat", "ai co nhieu don nhat"
+    ))
+    if is_top_customer_orders and has_valid_period:
+        return QueryPlan(
+            operation="ranking_top_k",
+            metric="order_count",
+            period=period,
+            target_dimension="customer",
+            limit_k=1,
+            output_type="string",
+        )
+
+    # Popular item (Rulebook Mục 9: mặt hàng được ưa chuộng nhất = có mặt trong nhiều đơn nhất)
+    is_popular_item = any(k in q_norm for k in ("duoc ua chuong nhat", "ua chuong nhat", "mat hang duoc ua chuong nhat"))
+    if is_popular_item and has_valid_period:
+        return QueryPlan(
+            operation="ranking_top_k",
+            metric="order_count",
+            period=period,
+            target_dimension="item",
+            limit_k=1,
+            output_type="string",
+        )
+
+    # Category top item: e.g. "nhóm trà có mặt hàng nào bán được nhiều ly nhất?"
+    matched_cat = _extract_category_from_query(q_lower, q_norm, contract)
+    is_cat_top_item = matched_cat is not None and any(k in q_norm for k in (
+        "ban chay nhat", "ban nhieu nhat", "ban dc nhieu nhat", "ban duoc nhieu nhat",
+        "nhieu ly nhat", "nhieu cai nhat", "nhieu nhat"
+    )) and any(k in q_norm for k in ("mat hang nao", "mon nao", "san pham nao", "sp nao", "hang nao"))
+    if is_cat_top_item and has_valid_period:
+        return QueryPlan(
+            operation="ranking_top_k",
+            metric="base_quantity",
+            period=period,
+            numerator_filter=DimensionFilter(category=matched_cat),
+            target_dimension="item",
+            limit_k=1,
+            output_type="string",
+        )
+
     # Guard against other unhandled superlative / ranking questions
     if any(
         k in q_norm
@@ -1891,6 +2106,9 @@ def build_query_plan(
             "thang nao",
             "ngay nao",
             "hom nao",
+            "khach hang nao",
+            "khach nao",
+            "ai la khach",
             "nhieu nhat",
             "cao nhat",
             "thap nhat",
@@ -1904,23 +2122,31 @@ def build_query_plan(
         return None
 
     has_pct_kw = any(
-        k in q_norm for k in ("%", "phan tram", "ti le", "ty le", "ti trong", "ty trong", "chiem", "dong gop")
+        k in q_norm
+        for k in (
+            "%", "phan tram", "ti le", "ty le", "ti trong", "ty trong", "chiem", "dong gop",
+            "trawm", "ptram", "phan trawm", "chiem bao nhieu", "bao nhieu %", "bn %", "bnhiu %", "may %"
+        )
     )
     has_explicit_rev_kw = any(
         k in q_norm
         for k in ("doanh thu", "dthu", "revenue", "tien ban", "tien hang")
     ) or bool(re.search(r"\b(?:bao nhieu|bnhiu|bn|nhieu|mấy|may)\s+(?:tien|tieenf|dong)\b", q_norm))
 
+    units_regex = r"(?:ly|coc|hộp|hop|lon|bịch|bich|chai|cái|cai|cuộn|cuon|viên|vien|kg|gói|goi|tô|to|bát|bat|chiếc|chiec|thùng|thung|vé|ve|đĩa|dia|suất|suat|nồi|noi|cây|cay|ống|ong|bộ|bo|can|thanh|tấm|tam|ram|tờ|to|mét|met|m)"
     has_qty_q = (
         bool(re.search(
-            r"\b(?:mấy|may|bao nhiêu|bao nhieu|bnhiu|bn|tong so|tổng số|đếm|dem)\s+(?:ly|hộp|hop|lon|bịch|bich|chai|cái|cai|cuộn|cuon|viên|vien|kg|gói|goi|tô|to|bát|bat|chiếc|chiec|thùng|thung|vé|ve|đĩa|dia|suất|suat|nồi|noi)\b",
+            rf"\b(?:mấy|may|bao nhiêu|bao nhieu|bnhiu|bn|tong so|tổng số|đếm|dem)\s+{units_regex}\b",
             q_norm,
         ))
-        or bool(re.search(r"\bso\s+(?:ly|hop|chai|lon|goi|bich|cai|cuon|vien|kg|to|bat|chiec|thung|ve|dia|suat|noi)\b.*?\b(?:la\s+bao\s+nhieu|bao\s+nhieu|bnhiu|bn)\b", q_norm))
-        or bool(re.search(r"\bban\s+(?:duoc|dc)\s+(?:tong\s+cong\s+)?(?:bao\s+nhieu|may)\s+(?:ly|hop|chai|lon|goi|bich|cai|cuon|vien|kg|to|bat|chiec|thung|ve|dia|suat|noi)\b", q_norm))
+        or bool(re.search(rf"\bso\s+{units_regex}\b.*?\b(?:la\s+bao\s+nhieu|bao\s+nhieu|bnhiu|bn)\b", q_norm))
+        or bool(re.search(rf"\bban\s+(?:duoc|dc|ra)\s+(?:tong\s+cong\s+)?(?:bao\s+nhieu|may)\s+{units_regex}\b", q_norm))
         or bool(re.search(r"\b(?:mấy|may|bao nhiêu|bao nhieu|bnhiu|bn)\s+ly\b", q_norm))
-        or bool(re.search(r"\b(?:quan|cua hang)\s+ban\s+(?:duoc|dc)\s+(?:bao nhieu|may)\s+ly\b", q_norm))
+        or bool(re.search(r"\b(?:quan|cua hang)\s+ban\s+(?:duoc|dc|ra)\s+(?:bao nhieu|may)\s+ly\b", q_norm))
     )
+    # Price inquiry guard (e.g. 'đơn giá bao nhiêu một lốc', 'giá bán bao nhiêu') -> never interpret as quantity sold
+    if bool(re.search(r"\b(?:don\s+gia|gia\s+ban|gia\s+bao\s+nhieu|bao\s+nhieu\s+(?:mot|1)\s+(?:loc|hop|chai|lon|cai|goi|cuon))\b", q_norm)):
+        has_qty_q = False
 
     if has_qty_q:
         has_rev_kw = has_explicit_rev_kw
@@ -1930,7 +2156,7 @@ def build_query_plan(
             for k in ("ban duoc", "ban dc", "ban duco", "thu duoc", "thu dc", "thu ve", "mang ve", "dem ve", "mua tong", "mua total")
         )
 
-    has_order_kw = bool(re.search(r"\b(?:don|ddown|dh|bill|hoa don|phieu sua xe|phieu sua|luot xe)\b", q_norm))
+    has_order_kw = bool(re.search(r"\b(?:don(?!\s+gia)|ddown|dh|bill|hoa\s+don|phieu\s+sua\s+xe|phieu\s+sua|luot\s+xe)\b", q_norm))
     has_avg_kw = any(k in q_norm for k in ("trung binh", "binh quan", "binh wan", "bin quan", "da tri trung binh", "gia tri trung binh"))
 
     # -------------------------------------------------------------------------
@@ -1942,7 +2168,7 @@ def build_query_plan(
         matched_cat = _extract_category_from_query(q_lower, q_norm, contract)
         chan_codes = _extract_ordered_channels(q_norm)
         matched_chan = chan_codes[0] if chan_codes else None
-        metric = "order_count" if (has_order_kw and not has_rev_kw) else "revenue"
+        metric = "order_count" if (has_order_kw and not has_explicit_rev_kw) else "revenue"
         output_type = "percent" if has_pct_kw else "number"
         return QueryPlan(
             operation="period_growth_pct",
@@ -1997,6 +2223,30 @@ def build_query_plan(
             )
 
     # -------------------------------------------------------------------------
+    # 0.3 SPECIFIC ITEM REVENUE OR ORDER COUNT
+    # -------------------------------------------------------------------------
+    if has_valid_period and not has_pct_kw:
+        matched_item = _extract_item_from_query(q_norm, contract)
+        if matched_item is not None:
+            iname, ikey = matched_item
+            if (has_rev_kw or has_explicit_rev_kw) and not has_qty_q:
+                return QueryPlan(
+                    operation="filtered_revenue",
+                    metric="revenue",
+                    period=period,
+                    numerator_filter=DimensionFilter(item_name=iname, item_key=ikey),
+                    output_type="number",
+                )
+            if has_order_kw and not has_explicit_rev_kw and not has_qty_q:
+                return QueryPlan(
+                    operation="filtered_order_count",
+                    metric="order_count",
+                    period=period,
+                    numerator_filter=DimensionFilter(item_name=iname, item_key=ikey),
+                    output_type="number",
+                )
+
+    # -------------------------------------------------------------------------
     # 1. Gender queries (khách nữ / khách nam) -> Gate 1 unanswerable
     if re.search(r"\bkhach\s+(?:nu|nam)\b", q_norm):
         return QueryPlan(
@@ -2035,7 +2285,7 @@ def build_query_plan(
                     numerator_filter=DimensionFilter(category=matched_cat),
                     output_type="percent",
                 )
-            if has_order_kw and not has_rev_kw:
+            if has_order_kw and not has_explicit_rev_kw:
                 return QueryPlan(
                     operation="filtered_order_count",
                     metric="order_count",
@@ -2062,7 +2312,7 @@ def build_query_plan(
             return None
         # 2A: Shift comparison percentage (ca chiều so với ca sáng chênh/tăng/giảm bao nhiêu %)
         if has_morning and has_afternoon and has_pct_kw:
-            metric = "order_count" if (has_order_kw and not has_rev_kw) else "revenue"
+            metric = "order_count" if (has_order_kw and not has_explicit_rev_kw) else "revenue"
             return QueryPlan(
                 operation="shift_diff_pct",
                 metric=metric,
@@ -2074,7 +2324,7 @@ def build_query_plan(
         # 2B: Single shift revenue or order count
         if has_morning ^ has_afternoon:
             target_shift = "morning" if has_morning else "afternoon"
-            if has_order_kw and not has_rev_kw:
+            if has_order_kw and not has_explicit_rev_kw:
                 return QueryPlan(
                     operation="filtered_order_count",
                     metric="order_count",
@@ -2360,6 +2610,9 @@ def _build_dimension_where(dfilter: DimensionFilter) -> str:
 
 def _check_missing_capability(plan: QueryPlan, contract: BusinessSemanticContract) -> Optional[str]:
     """Return unanswerable reason if plan requires a dimension that does not exist in this business's schema."""
+    if plan.target_dimension == "customer" and not contract.has_customer_key:
+        return "Doanh nghiệp không ghi nhận thông tin khách hàng"
+
     for df in (plan.numerator_filter, plan.denominator_filter, plan.secondary_filter):
         if df is None:
             continue
@@ -2412,7 +2665,12 @@ def execute_query_plan(
             prior_where = _build_canonical_date_where("order_date", plan.prior_period)
 
             nf = plan.numerator_filter
-            use_lines = nf is not None and (nf.category is not None or nf.is_prescription is not None)
+            use_lines = nf is not None and (
+                nf.category is not None
+                or nf.is_prescription is not None
+                or nf.item_key is not None
+                or nf.item_name is not None
+            )
             view_name = "canonical_order_lines" if use_lines else "canonical_orders"
             dim_where = _build_dimension_where(nf) if nf else "1=1"
 
@@ -2466,15 +2724,16 @@ def execute_query_plan(
                 return "abstain", None, "Số lượng bán bằng 0 hoặc NULL"
             return "number", int(val), None
 
-        # Operation: Ranking Top K (string | list | date)
+        # Operation: Ranking Top K (string | list | date | number)
         if plan.operation == "ranking_top_k":
             if plan.target_dimension == "date":
+                order_expr = "COUNT(DISTINCT order_id) DESC, d ASC" if plan.metric == "order_count" else "SUM(order_revenue) DESC, d ASC"
                 sql = f"""
                     SELECT CAST(order_date AS DATE) AS d
                     FROM canonical_orders
                     WHERE {date_where} AND is_valid_sale = TRUE
                     GROUP BY CAST(order_date AS DATE)
-                    ORDER BY SUM(order_revenue) DESC, d ASC
+                    ORDER BY {order_expr}
                     LIMIT 1
                 """
                 context.last_sql = sql
@@ -2482,6 +2741,21 @@ def execute_query_plan(
                 if not rows or rows[0][0] is None:
                     return "abstain", None, "Không tìm thấy ngày cao nhất"
                 return "date", str(rows[0][0]), None
+
+            if plan.target_dimension == "peak_hour":
+                sql = f"""
+                    SELECT CAST(order_hour AS INTEGER) AS h
+                    FROM canonical_orders
+                    WHERE {date_where} AND is_valid_sale = TRUE AND order_hour IS NOT NULL
+                    GROUP BY h
+                    ORDER BY COUNT(DISTINCT order_id) DESC, h ASC
+                    LIMIT 1
+                """
+                context.last_sql = sql
+                rows = conn.execute(sql).fetchall()
+                if not rows or rows[0][0] is None:
+                    return "abstain", None, "Không tìm thấy giờ cao điểm"
+                return "number", int(rows[0][0]), None
 
             if plan.target_dimension == "month":
                 sql = f"""
@@ -2499,12 +2773,20 @@ def execute_query_plan(
                 return "date", str(rows[0][0]), None
 
             if plan.target_dimension == "item":
-                metric_col = "SUM(base_quantity)" if plan.metric == "base_quantity" else "SUM(line_revenue)"
+                nf = plan.numerator_filter
+                dim_where = _build_dimension_where(nf) if nf else "is_valid_sale = TRUE"
+                if plan.metric == "order_count":
+                    metric_expr = "COUNT(DISTINCT order_id)"
+                elif plan.metric == "revenue":
+                    metric_expr = "SUM(line_revenue)"
+                else:
+                    metric_expr = "SUM(base_quantity)"
+
                 sql = f"""
-                    SELECT item_name, item_key, {metric_col} AS metric_val
+                    SELECT item_name, item_key, {metric_expr} AS metric_val
                     FROM canonical_order_lines
-                    WHERE {date_where} AND is_valid_sale = TRUE AND is_service_fee = FALSE
-                      AND item_key IS NOT NULL AND item_key != ''
+                    WHERE {date_where} AND {dim_where} AND is_service_fee = FALSE
+                      AND item_name IS NOT NULL AND item_name != ''
                     GROUP BY item_name, item_key
                     ORDER BY metric_val DESC, item_key ASC
                     LIMIT {plan.limit_k}
@@ -2519,13 +2801,34 @@ def execute_query_plan(
                     return "list", [str(r[0]) for r in rows], None
 
             if plan.target_dimension == "customer":
+                if plan.metric == "order_count":
+                    order_clause = "COUNT(DISTINCT order_id) DESC, customer_name ASC"
+                    metric_expr = "COUNT(DISTINCT order_id)"
+                elif plan.metric == "order_date_count":
+                    order_clause = "COUNT(DISTINCT order_date) DESC, customer_name ASC"
+                    metric_expr = "COUNT(DISTINCT order_date)"
+                elif plan.metric == "aov":
+                    order_clause = "AVG(order_revenue) DESC, customer_name ASC"
+                    metric_expr = "AVG(order_revenue)"
+                elif plan.metric == "canceled_orders":
+                    order_clause = "COUNT(DISTINCT order_id) DESC, customer_name ASC"
+                    metric_expr = "COUNT(DISTINCT order_id)"
+                else:
+                    order_clause = "SUM(order_revenue) DESC, customer_name ASC"
+                    metric_expr = "SUM(order_revenue)"
+
+                having_clause = "HAVING COUNT(DISTINCT order_id) >= 3" if plan.metric == "aov" else ""
+                val_filter = "is_valid_sale = FALSE" if plan.metric == "canceled_orders" else "is_valid_sale = TRUE"
+
                 sql = f"""
-                    SELECT customer_key, SUM(order_revenue) AS metric_val
+                    SELECT customer_name, {metric_expr} AS metric_val
                     FROM canonical_orders
-                    WHERE {date_where} AND is_valid_sale = TRUE
+                    WHERE {date_where} AND {val_filter}
                       AND customer_key IS NOT NULL AND customer_key != ''
-                    GROUP BY customer_key
-                    ORDER BY metric_val DESC, customer_key ASC
+                      AND customer_name IS NOT NULL AND customer_name != ''
+                    GROUP BY customer_key, customer_name
+                    {having_clause}
+                    ORDER BY {order_clause}
                     LIMIT {plan.limit_k}
                 """
                 context.last_sql = sql
@@ -2536,10 +2839,16 @@ def execute_query_plan(
                     return "string", str(rows[0][0]), None
                 else:
                     return "list", [str(r[0]) for r in rows], None
+
         # Operation 1: Filtered Revenue (number)
         if plan.operation == "filtered_revenue":
             nf = plan.numerator_filter
-            use_lines = nf.category is not None or nf.is_prescription is not None
+            use_lines = nf is not None and (
+                nf.category is not None
+                or nf.is_prescription is not None
+                or nf.item_key is not None
+                or nf.item_name is not None
+            )
             view_name = "canonical_order_lines" if use_lines else "canonical_orders"
             rev_col = "line_revenue" if use_lines else "order_revenue"
             dim_where = _build_dimension_where(nf)
@@ -2553,7 +2862,12 @@ def execute_query_plan(
         # Operation 2: Filtered Order Count (number)
         if plan.operation == "filtered_order_count":
             nf = plan.numerator_filter
-            use_lines = nf.category is not None or nf.is_prescription is not None
+            use_lines = nf is not None and (
+                nf.category is not None
+                or nf.is_prescription is not None
+                or nf.item_key is not None
+                or nf.item_name is not None
+            )
             view_name = "canonical_order_lines" if use_lines else "canonical_orders"
             dim_where = _build_dimension_where(nf)
             sql = f"SELECT COUNT(DISTINCT order_id) FROM {view_name} WHERE {date_where} AND {dim_where}"

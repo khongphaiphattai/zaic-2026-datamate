@@ -1,10 +1,14 @@
 # Kế hoạch Triển khai Chi tiết — Zalo AI Challenge 2026 (Track 2: DataMate)
 
-## Trạng thái mới nhất 04/11/2026 — sau v3.1
+## Trạng thái mới nhất 07/11/2026 — sau khi nộp `v3.2` đạt `0.27300` (+0.13800)
 
-- Người dùng báo đã nộp v3.1, Public **0.13500**, tăng0.00100. Root/snapshot205trả lời/795abstain; SHA `8c2c06b47b0033a92376a2c01da04e9a92b1a38decb02a494dd5ae6dcadca7f7`. Chi tiết nguồn xác nhận trong receipt release; chưa có nhãn Public.
-- Không còn đúng khi coi root là baseline v2.8 hoặc file5dòng; các mục01/11 phía dưới là lịch sử. Model chưa có đáp án Public được chấp nhận trong trace v3.1.
-- Đề xuất ưu tiên mới (chưa duyệt triển khai): `docs/plans/2026-11-04-post-v31-strategy.md`. Kiểm độ đúng đáp án hiện có và xây hợp đồng dữ liệu nghiệp vụ dùng chung trước mở rộng kế hoạch truy vấn/model. Chưa training hoặc yêu cầu bật Colab.
+- **Bản `v3.2` (`f3c11cb0-9694-43d0-89a2-22f334ab2915.jsonl`, SHA256 `a6c97059d5832be4bd9add01bdd365f3b6b0bea8d21220eecf43c7146c03b2cc`)** đã nộp lên Portal lúc `18:44:44 07/11/2026`, đạt **Public Score `0.27300`** (tăng vọt **`+0.13800` / `+138 điểm ròng`**, gấp hơn 2 lần `v3.1` `0.13500`).
+- **Kết quả định lượng của `v3.2`:**
+  - **Train (`3.000` câu):** `1.268` trả lời / **`1.268` đúng / `0` sai** / `1.732` abstain (**Precision `100.00%`**, **PA = `+0.4227`**, tăng `+403` điểm ròng so với `v3.1`).
+  - **Public Test (`1.000` câu):** `379` trả lời / `621` abstain (`295` number, `68` percent, `9` unanswerable, `7` list) $\implies$ **`326` câu ĐÚNG / `53` câu SAI**, **Precision Public đạt `86.02%`** (tăng từ `82.93%` của `v3.1`).
+- **Đối chiếu với Lịch trình Gốc (Mục II bên dưới):**
+  - Chúng ta đã hoàn thành **Giai đoạn 1 (26/10–01/11)**, **Giai đoạn 2 (02/11–08/11)** và sớm hoàn thành luôn phần **Huấn luyện & Đối sánh LoRA 7B (`business24`) của Giai đoạn 3** thông qua bài kiểm chứng 3 nhánh (`artifacts/v32-priority3-ablation/`).
+  - Hiện tại (07/11/2026 — **Ngày 13/14 trên lịch trình**) chúng ta đang ở **điểm giao giữa cuối Giai đoạn 2 và đầu Giai đoạn 3 (09/11–14/11: Bứt phá Leaderboard trên nền `BusinessSemanticContract` + `QueryPlan` Compiler)** trước khi bước sang **Giai đoạn 4 (15/11–16/11: Đóng gói Docker Offline & Freeze Solution)**.
 
 ## Cập nhật thực tế ngày 01/11/2026 — đọc trước lịch trình gốc
 
