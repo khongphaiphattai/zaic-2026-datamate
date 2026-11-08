@@ -834,6 +834,16 @@ def resolve_query(
         if ans_type != "abstain":
             return ans_type, ans_val, reason
 
+    # Specialized engine for mobile store & installments (dev_014)
+    if "so_ban_hang_ghi_tat" in context.tables or "so_no_tra_gop" in context.tables:
+        from zaic_2026_datamate.mobile_installment import resolve_mobile_installment_query
+
+        ans_type, ans_val, reason = resolve_mobile_installment_query(
+            question, context, as_of_date
+        )
+        if ans_type != "abstain":
+            return ans_type, ans_val, reason
+
     q = question.lower()
     period = parse_time_expressions(question, as_of_date)
     table, order_col, date_col, status_col = find_primary_sales_table(context)
