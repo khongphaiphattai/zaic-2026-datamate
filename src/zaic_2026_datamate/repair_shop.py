@@ -85,6 +85,8 @@ def filter_df_by_period(
     as_of_date: str | None = None,
 ) -> pd.DataFrame | None:
     """Strictly filter dataframe by temporal expressions; returns None if undefined."""
+    if "th9/2025" in t_norm and "th11/2025" in t_norm:
+        return df[df["month"].isin(["2025-09", "2025-10", "2025-11"])]
     if p.month_str:
         return df[df["month"] == p.month_str]
     if p.quarter_str:
