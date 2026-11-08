@@ -15,13 +15,13 @@ Orchestrates:
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 from zaic_2026_datamate.data_loader import BusinessContext
 from zaic_2026_datamate.intent_parser import resolve_query
 from zaic_2026_datamate.llm_client import LLMClient
-from zaic_2026_datamate.slow_path import SlowPathEngine
 from zaic_2026_datamate.selective_gate import daily_revenue_date
+from zaic_2026_datamate.slow_path import SlowPathEngine
 
 logger = logging.getLogger(__name__)
 
@@ -35,11 +35,11 @@ class HybridAgent:
     def __init__(
         self,
         enable_slow_path: bool = False,
-        llm_client: Optional[LLMClient] = None,
+        llm_client: LLMClient | None = None,
         confidence_threshold: float = 0.95,
     ):
         self.enable_slow_path = enable_slow_path
-        self.slow_engine: Optional[SlowPathEngine] = None
+        self.slow_engine: SlowPathEngine | None = None
         if enable_slow_path and llm_client is not None:
             self.slow_engine = SlowPathEngine(
                 llm_client=llm_client,
@@ -51,8 +51,8 @@ class HybridAgent:
         self,
         question: str,
         context: BusinessContext,
-        as_of_date: Optional[str] = None,
-    ) -> Tuple[str, Any, Optional[str], str]:
+        as_of_date: str | None = None,
+    ) -> tuple[str, Any, str | None, str]:
         """Resolve a query using the Hybrid Fast-Slow cascade.
 
         Returns:
@@ -79,8 +79,15 @@ class HybridAgent:
         # =====================================================================
         if self.enable_slow_path and self.slow_engine is not None:
             if daily_revenue_date(question, as_of_date) is None:
-                return "abstain", None, "Selective gate: only single-day store revenue is eligible", "abstain"
-            logger.info("Fast Path abstained. Invoking Slow Path for: '%s'", question[:60])
+                return (
+                    "abstain",
+                    None,
+                    "Selective gate: only single-day store revenue is eligible",
+                    "abstain",
+                )
+            logger.info(
+                "Fast Path abstained. Invoking Slow Path for: '%s'", question[:60]
+            )
             slow_type, slow_val, slow_reason = self.slow_engine.resolve_slow_path(
                 question=question,
                 context=context,
@@ -89,7 +96,12 @@ class HybridAgent:
 
             if slow_type == "number":
                 return slow_type, slow_val, slow_reason, "slow_path"
-            return "abstain", None, slow_reason or "Selective gate rejected output type", "abstain"
+            return (
+                "abstain",
+                None,
+                slow_reason or "Selective gate rejected output type",
+                "abstain",
+            )
 
         # =====================================================================
         # ROUTE 3: SAFE ABSTENTION (Silence is Free Axiom - 0 Points Protected)

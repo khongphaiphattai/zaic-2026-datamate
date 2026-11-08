@@ -15,10 +15,8 @@ from __future__ import annotations
 import json
 import re
 import unicodedata
-from typing import Any, Dict, List, Optional, Set, Tuple
 
 import pandas as pd
-from rapidfuzz import fuzz
 
 from zaic_2026_datamate.data_loader import BusinessContext
 
@@ -73,10 +71,10 @@ def select_relevant_tables(
     question: str,
     context: BusinessContext,
     max_tables: int = 5,
-) -> List[Tuple[str, pd.DataFrame]]:
+) -> list[tuple[str, pd.DataFrame]]:
     """Select the top most relevant tables for the given question."""
     q_norm = _normalize_text(question)
-    candidates: List[Tuple[str, pd.DataFrame]] = []
+    candidates: list[tuple[str, pd.DataFrame]] = []
 
     # 1. Deduplicate table names ending in _sheet1, _sheet2, etc.
     existing_tables = set(context.tables.keys())
@@ -111,17 +109,28 @@ def select_relevant_tables(
                 score += 15.0
 
         # Domain bonuses
-        if any(k in q_norm for k in ["nhap", "ncc", "nha cung cap"]) and "nhap" in t_norm:
+        if (
+            any(k in q_norm for k in ["nhap", "ncc", "nha cung cap"])
+            and "nhap" in t_norm
+        ):
             score += 30.0
-        if any(k in q_norm for k in ["khach", "no", "cong no"]) and ("khach" in t_norm or "no" in t_norm or "thu" in t_norm):
+        if any(k in q_norm for k in ["khach", "no", "cong no"]) and (
+            "khach" in t_norm or "no" in t_norm or "thu" in t_norm
+        ):
             score += 30.0
-        if any(k in q_norm for k in ["thuoc", "duoc", "hoat chat", "sku"]) and ("thuoc" in t_norm or "hang_hoa" in t_norm):
+        if any(k in q_norm for k in ["thuoc", "duoc", "hoat chat", "sku"]) and (
+            "thuoc" in t_norm or "hang_hoa" in t_norm
+        ):
             score += 30.0
-        if any(k in q_norm for k in ["hoa don", "don hang", "doanh thu", "ban duoc"]) and ("hoa_don" in t_norm or "ban_hang" in t_norm or "don_hang" in t_norm):
+        if any(
+            k in q_norm for k in ["hoa don", "don hang", "doanh thu", "ban duoc"]
+        ) and ("hoa_don" in t_norm or "ban_hang" in t_norm or "don_hang" in t_norm):
             score += 25.0
         if any(k in q_norm for k in ["chi phi", "phi", "chi"]) and "chi" in t_norm:
             score += 25.0
-        if any(k in q_norm for k in ["tho", "nhan vien", "nv", "hoa hong"]) and ("tho" in t_norm or "nhan_vien" in t_norm):
+        if any(k in q_norm for k in ["tho", "nhan vien", "nv", "hoa hong"]) and (
+            "tho" in t_norm or "nhan_vien" in t_norm
+        ):
             score += 30.0
 
         # Column matches
@@ -143,7 +152,7 @@ def select_relevant_tables(
 
 def build_schema_markdown(
     context: BusinessContext,
-    relevant_tables: List[Tuple[str, pd.DataFrame]],
+    relevant_tables: list[tuple[str, pd.DataFrame]],
     max_sample_rows: int = 2,
 ) -> str:
     """Build a concise, clean schema description of selected tables."""
@@ -163,8 +172,20 @@ def build_schema_markdown(
         cat_samples = []
         for col in df.columns:
             c_lower = col.lower()
-            if any(k in c_lower for k in ["trang_thai", "tinh_trang", "thanh_toan", "phuong_thuc", "kenh", "loai"]):
-                unique_vals = [str(x) for x in df[col].dropna().unique()[:6] if str(x).strip()]
+            if any(
+                k in c_lower
+                for k in [
+                    "trang_thai",
+                    "tinh_trang",
+                    "thanh_toan",
+                    "phuong_thuc",
+                    "kenh",
+                    "loai",
+                ]
+            ):
+                unique_vals = [
+                    str(x) for x in df[col].dropna().unique()[:6] if str(x).strip()
+                ]
                 if unique_vals:
                     cat_samples.append(f"  * `{col}`: {unique_vals}")
 
@@ -177,9 +198,18 @@ def build_schema_markdown(
         sample_records = sample_df.to_dict(orient="records")
         sample_clean = []
         for r in sample_records:
-            sample_clean.append({k: (v if not isinstance(v, str) or len(v) < 45 else v[:42] + "...") for k, v in r.items()})
+            sample_clean.append(
+                {
+                    k: (v if not isinstance(v, str) or len(v) < 45 else v[:42] + "...")
+                    for k, v in r.items()
+                }
+            )
 
-        sample_text = f"- **{len(sample_clean)} dòng mẫu:**\n```json\n" + json.dumps(sample_clean, ensure_ascii=False, default=str) + "\n```\n"
+        sample_text = (
+            f"- **{len(sample_clean)} dòng mẫu:**\n```json\n"
+            + json.dumps(sample_clean, ensure_ascii=False, default=str)
+            + "\n```\n"
+        )
         schema_parts.append(header + cols_text + cat_text + sample_text)
 
     return "\n".join(schema_parts)
@@ -188,8 +218,8 @@ def build_schema_markdown(
 def generate_text_to_sql_prompt(
     question: str,
     context: BusinessContext,
-    as_of_date: Optional[str] = None,
-    business_id: Optional[str] = None,
+    as_of_date: str | None = None,
+    business_id: str | None = None,
 ) -> str:
     """Construct a dense, token-budgeted user prompt for Text-to-SQL generation."""
     biz_id = business_id or context.business_id or "Chưa rõ"
@@ -198,7 +228,9 @@ def generate_text_to_sql_prompt(
     selected_tables = select_relevant_tables(question, context, max_tables=5)
     schema_md = build_schema_markdown(context, selected_tables, max_sample_rows=2)
 
-    readme_snippet = context.readme.strip() if context.readme else "Không có ghi chú thêm."
+    readme_snippet = (
+        context.readme.strip() if context.readme else "Không có ghi chú thêm."
+    )
     if len(readme_snippet) > 600:
         readme_snippet = readme_snippet[:600] + "..."
 

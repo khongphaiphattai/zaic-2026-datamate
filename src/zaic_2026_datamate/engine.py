@@ -6,8 +6,8 @@ and Gate 2 Sanity & Refusal Verification.
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import duckdb
 import pandas as pd
@@ -18,10 +18,10 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ExecutionResult:
     success: bool
-    df_result: Optional[pd.DataFrame] = None
-    error_message: Optional[str] = None
+    df_result: pd.DataFrame | None = None
+    error_message: str | None = None
     is_refused: bool = False
-    refusal_reason: Optional[str] = None
+    refusal_reason: str | None = None
     retry_count: int = 0
 
 
@@ -33,9 +33,9 @@ class DuckDBAgentEngine:
 
     def __init__(
         self,
-        df: Optional[pd.DataFrame] = None,
+        df: pd.DataFrame | None = None,
         table_name: str = "dataset",
-        con: Optional[duckdb.DuckDBPyConnection] = None,
+        con: duckdb.DuckDBPyConnection | None = None,
     ):
         self.df = df
         self.table_name = table_name
@@ -46,7 +46,7 @@ class DuckDBAgentEngine:
             if df is not None:
                 self.con.register(table_name, df)
 
-    def execute_query(self, sql: str) -> Tuple[bool, Optional[pd.DataFrame], Optional[str]]:
+    def execute_query(self, sql: str) -> tuple[bool, pd.DataFrame | None, str | None]:
         """Run SQL safely against the in-memory registered DataFrame."""
         try:
             # Clean common markdown formatting if present
@@ -70,7 +70,7 @@ class DuckDBAgentEngine:
             max_retries: Maximum number of correction attempts.
         """
         current_sql = initial_sql
-        last_error: Optional[str] = None
+        last_error: str | None = None
 
         for attempt in range(max_retries + 1):
             success, res_df, err = self.execute_query(current_sql)
@@ -86,7 +86,12 @@ class DuckDBAgentEngine:
                 )
             else:
                 last_error = err
-                logger.warning("SQL execution failed (attempt %d/%d): %s", attempt + 1, max_retries + 1, err)
+                logger.warning(
+                    "SQL execution failed (attempt %d/%d): %s",
+                    attempt + 1,
+                    max_retries + 1,
+                    err,
+                )
                 if attempt < max_retries:
                     # Self-correction: Generate refined SQL using the error feedback
                     current_sql = sql_generator(current_sql, err, attempt + 1)
@@ -100,15 +105,21 @@ class DuckDBAgentEngine:
             retry_count=max_retries,
         )
 
-    def _sanity_check(self, res_df: Optional[pd.DataFrame]) -> Tuple[bool, Optional[str]]:
+    def _sanity_check(self, res_df: pd.DataFrame | None) -> tuple[bool, str | None]:
         """Gate 2 (Strict-Refusal-Eval): Check if result is empty, all-null, or ambiguous."""
         if res_df is None or res_df.empty:
-            return True, "Dữ liệu trả về rỗng, không tìm thấy bản ghi thỏa mãn điều kiện."
+            return (
+                True,
+                "Dữ liệu trả về rỗng, không tìm thấy bản ghi thỏa mãn điều kiện.",
+            )
 
         # If scalar result is NaN/None
         if res_df.shape == (1, 1):
             val = res_df.iloc[0, 0]
             if pd.isna(val) or val is None:
-                return True, "Kết quả tính toán trả về giá trị NULL hoặc không xác định."
+                return (
+                    True,
+                    "Kết quả tính toán trả về giá trị NULL hoặc không xác định.",
+                )
 
         return False, None

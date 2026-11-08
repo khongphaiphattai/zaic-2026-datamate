@@ -13,7 +13,8 @@ import logging
 import os
 import urllib.error
 import urllib.request
-from typing import Any, Callable, Dict, Optional, Protocol
+from collections.abc import Callable
+from typing import Protocol
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +22,7 @@ logger = logging.getLogger(__name__)
 class LLMClient(Protocol):
     """Protocol for LLM inference engines."""
 
-    def generate(self, prompt: str, system_prompt: Optional[str] = None) -> str:
+    def generate(self, prompt: str, system_prompt: str | None = None) -> str:
         """Generate response text from prompt."""
         ...
 
@@ -31,19 +32,21 @@ class OpenAICompatibleClient:
 
     def __init__(
         self,
-        base_url: Optional[str] = None,
-        api_key: Optional[str] = None,
-        model: Optional[str] = None,
+        base_url: str | None = None,
+        api_key: str | None = None,
+        model: str | None = None,
         timeout: float = 45.0,
         max_tokens: int = 1024,
     ):
-        self.base_url = (base_url or os.getenv("LLM_BASE_URL", "http://localhost:8000/v1")).rstrip("/")
+        self.base_url = (
+            base_url or os.getenv("LLM_BASE_URL", "http://localhost:8000/v1")
+        ).rstrip("/")
         self.api_key = api_key or os.getenv("LLM_API_KEY", "dummy")
         self.model = model or os.getenv("LLM_MODEL", "Qwen/Qwen2.5-Coder-7B-Instruct")
         self.timeout = timeout
         self.max_tokens = max_tokens
 
-    def generate(self, prompt: str, system_prompt: Optional[str] = None) -> str:
+    def generate(self, prompt: str, system_prompt: str | None = None) -> str:
         """Call the chat completions endpoint with temperature=0.0, seed=42."""
         url = f"{self.base_url}/chat/completions"
 
@@ -56,7 +59,7 @@ class OpenAICompatibleClient:
             "model": self.model,
             "messages": messages,
             "temperature": 0.0,  # Strict Rule 4.4 Invariant
-            "seed": 42,          # Strict Rule 4.4 Invariant
+            "seed": 42,  # Strict Rule 4.4 Invariant
             "max_tokens": self.max_tokens,
         }
 
@@ -84,11 +87,17 @@ class OpenAICompatibleClient:
                 err_body = e.read().decode("utf-8")
             except Exception:
                 pass
-            logger.error("LLM API HTTPError %d: %s | Body: %s", e.code, e.reason, err_body)
-            raise ConnectionError(f"LLM endpoint HTTP {e.code}: {err_body or e.reason}") from e
+            logger.error(
+                "LLM API HTTPError %d: %s | Body: %s", e.code, e.reason, err_body
+            )
+            raise ConnectionError(
+                f"LLM endpoint HTTP {e.code}: {err_body or e.reason}"
+            ) from e
         except urllib.error.URLError as e:
             logger.error("LLM API request failed: %s", e)
-            raise ConnectionError(f"Failed to connect to LLM endpoint {url}: {e}") from e
+            raise ConnectionError(
+                f"Failed to connect to LLM endpoint {url}: {e}"
+            ) from e
         except Exception as e:
             logger.error("Unexpected error during LLM generation: %s", e)
             raise
@@ -97,16 +106,18 @@ class OpenAICompatibleClient:
 class MockLLMClient:
     """Deterministic mock client for offline tests and evaluation."""
 
-    def __init__(self, handler: Optional[Callable[[str], str]] = None):
+    def __init__(self, handler: Callable[[str], str] | None = None):
         self.handler = handler
 
-    def generate(self, prompt: str, system_prompt: Optional[str] = None) -> str:
+    def generate(self, prompt: str, system_prompt: str | None = None) -> str:
         if self.handler:
             return self.handler(prompt)
         # Default mock response: safe abstain
-        return json.dumps({
-            "thought": "Mock client default refusal",
-            "type": "abstain",
-            "sql": None,
-            "confidence": 0.0,
-        })
+        return json.dumps(
+            {
+                "thought": "Mock client default refusal",
+                "type": "abstain",
+                "sql": None,
+                "confidence": 0.0,
+            }
+        )

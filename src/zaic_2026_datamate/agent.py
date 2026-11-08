@@ -8,9 +8,10 @@ agent.py: Unified DataMate Agent orchestrating the 3 SOTA techniques:
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, Optional
+from typing import Any
 
 import pandas as pd
 
@@ -20,7 +21,7 @@ from zaic_2026_datamate.cleaner import (
 )
 from zaic_2026_datamate.data_loader import BusinessContext, DataLoader
 from zaic_2026_datamate.engine import DuckDBAgentEngine, ExecutionResult
-from zaic_2026_datamate.schema_linker import LinkedSchema, SchemaLinker
+from zaic_2026_datamate.schema_linker import SchemaLinker
 
 logger = logging.getLogger(__name__)
 
@@ -30,13 +31,13 @@ class AgentAnswer:
     query: str
     is_refused: bool
     answer_value: Any = None
-    refusal_reason: Optional[str] = None
-    executed_sql: Optional[str] = None
+    refusal_reason: str | None = None
+    executed_sql: str | None = None
     retry_count: int = 0
 
-    def to_submission_dict(self, query_id: Optional[str] = None) -> Dict[str, Any]:
+    def to_submission_dict(self, query_id: str | None = None) -> dict[str, Any]:
         """Format the output dictionary suitable for ZAIC streaming .jsonl evaluation."""
-        data: Dict[str, Any] = {
+        data: dict[str, Any] = {
             "query": self.query,
             "is_refused": self.is_refused,
         }
@@ -62,9 +63,9 @@ class DataMateAgent:
 
     def __init__(
         self,
-        df: Optional[pd.DataFrame] = None,
+        df: pd.DataFrame | None = None,
         table_name: str = "dataset",
-        context: Optional[BusinessContext] = None,
+        context: BusinessContext | None = None,
     ):
         self.context = context
         if context is not None:
@@ -75,13 +76,16 @@ class DataMateAgent:
             self.business_id = context.business_id
             self.engine = DuckDBAgentEngine(con=context.duckdb_conn)
             from zaic_2026_datamate.schema_linker import MultiTableSchemaLinker
+
             self.multi_linker = MultiTableSchemaLinker(context.tables)
             self.linker = None
         else:
             self.df = df if df is not None else pd.DataFrame()
             self.table_name = table_name
             self.tables = {table_name: self.df}
-            self.table_metadata = {table_name: {"columns": self.df.columns.tolist(), "rows": len(self.df)}}
+            self.table_metadata = {
+                table_name: {"columns": self.df.columns.tolist(), "rows": len(self.df)}
+            }
             self.readme = ""
             self.business_id = "default"
             self.linker = SchemaLinker(self.df, table_name=table_name)
@@ -99,7 +103,7 @@ class DataMateAgent:
         cls,
         business_id: str,
         data_dir: str | Path = "data/train/train/data",
-        calendar_path: Optional[str | Path] = None,
+        calendar_path: str | Path | None = None,
     ) -> DataMateAgent:
         """Create a DataMateAgent by loading a business ID via DataLoader."""
         loader = DataLoader(data_dir=data_dir, calendar_path=calendar_path)
@@ -110,7 +114,7 @@ class DataMateAgent:
     def from_excel(
         cls,
         excel_path: str | Path,
-        sheet_name: Optional[str] = None,
+        sheet_name: str | None = None,
         temp_dir: str = "/tmp",
     ) -> DataMateAgent:
         """Load and normalize a messy Excel file into a ready DataMateAgent."""
@@ -127,18 +131,20 @@ class DataMateAgent:
 
         return cls(df=clean_df)
 
-    def generate_prompt(self, query: str, as_of_date: Optional[str] = None) -> str:
+    def generate_prompt(self, query: str, as_of_date: str | None = None) -> str:
         """Construct a comprehensive prompt with as_of_date, business README, and table schemas."""
         tables_summary = []
         for tname, meta in self.table_metadata.items():
             cols = meta.get("columns", [])
             rows = meta.get("rows", 0)
-            tables_summary.append(f"- Bảng `{tname}` ({rows} dòng): {', '.join([f'`{c}`' for c in cols[:12]])}")
+            tables_summary.append(
+                f"- Bảng `{tname}` ({rows} dòng): {', '.join([f'`{c}`' for c in cols[:12]])}"
+            )
 
         readme_snippet = self.readme[:600] if self.readme else "Không có ghi chú thêm."
 
         prompt = f"""-- Doanh nghiệp: {self.business_id}
--- Ngày neo thời gian (as_of_date / hôm nay): {as_of_date or 'Chưa xác định'}
+-- Ngày neo thời gian (as_of_date / hôm nay): {as_of_date or "Chưa xác định"}
 -- Ghi chú nghiệp vụ:
 {readme_snippet}
 
@@ -158,9 +164,9 @@ Quy tắc sinh DuckDB SQL chuẩn ZAIC 2026:
     def answer_query(
         self,
         query: str,
-        as_of_date: Optional[str] = None,
-        sql_generator_fn: Optional[Callable[[str, Any], str]] = None,
-        query_id: Optional[str] = None,
+        as_of_date: str | None = None,
+        sql_generator_fn: Callable[[str, Any], str] | None = None,
+        query_id: str | None = None,
     ) -> AgentAnswer:
         """Answer a Vietnamese natural language business query with strict refusal evaluation."""
         # =========================================================================
@@ -169,7 +175,10 @@ Quy tắc sinh DuckDB SQL chuẩn ZAIC 2026:
         if self.multi_linker is not None:
             linked = self.multi_linker.link(query)
             if linked.is_ambiguous:
-                logger.info("Cổng 1 từ chối câu hỏi do thiếu dữ liệu / mơ hồ: %s", linked.refusal_reason)
+                logger.info(
+                    "Cổng 1 từ chối câu hỏi do thiếu dữ liệu / mơ hồ: %s",
+                    linked.refusal_reason,
+                )
                 return AgentAnswer(
                     query=query,
                     is_refused=True,
@@ -178,7 +187,10 @@ Quy tắc sinh DuckDB SQL chuẩn ZAIC 2026:
         elif self.linker is not None:
             linked = self.linker.link(query)
             if linked.is_ambiguous:
-                logger.info("Cổng 1 từ chối câu hỏi do thiếu dữ liệu / mơ hồ: %s", linked.refusal_reason)
+                logger.info(
+                    "Cổng 1 từ chối câu hỏi do thiếu dữ liệu / mơ hồ: %s",
+                    linked.refusal_reason,
+                )
                 return AgentAnswer(
                     query=query,
                     is_refused=True,

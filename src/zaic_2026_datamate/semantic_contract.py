@@ -43,14 +43,14 @@ Implements Priority 2 of the v3.2 Architecture:
 
 from __future__ import annotations
 
+import calendar
 import logging
 import math
 import re
 import unicodedata
-import calendar
 from dataclasses import dataclass, field
-from datetime import date, datetime, timedelta
-from typing import Any, Dict, List, Optional, Set, Tuple
+from datetime import datetime, timedelta
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -74,7 +74,9 @@ def norm_vn(text: Any) -> str:
     if not s or s in ("nan", "none", "null", "nat"):
         return ""
     s = s.replace("đ", "d")
-    s = "".join(c for c in unicodedata.normalize("NFD", s) if unicodedata.category(c) != "Mn")
+    s = "".join(
+        c for c in unicodedata.normalize("NFD", s) if unicodedata.category(c) != "Mn"
+    )
     # Common telex and typo normalizations
     s = re.sub(r"\btrawm\b", "tram", s)
     s = re.sub(r"\bptram\b", "phan tram", s)
@@ -82,7 +84,11 @@ def norm_vn(text: Any) -> str:
     s = re.sub(r"\bdduowcj\b", "duoc", s)
     s = re.sub(r"\bcko\b", "cho", s)
     s = re.sub(r"\btoor?g\s*coor?g\b", "tong cong", s)
-    s = re.sub(r"\bmi\s+(?=(?:don|cuon|cay|ly|cai|mon|tram|trieu|nghin|k\b|ngay|thang|hop|chai|lon|phan|khach))", "may ", s)
+    s = re.sub(
+        r"\bmi\s+(?=(?:don|cuon|cay|ly|cai|mon|tram|trieu|nghin|k\b|ngay|thang|hop|chai|lon|phan|khach))",
+        "may ",
+        s,
+    )
     return re.sub(r"\s+", " ", s).strip()
 
 
@@ -98,7 +104,7 @@ def clean_spaces_lower(text: Any) -> str:
 
 # Standardized domain product-to-category lookup tables for businesses without a separate catalog table
 # (derived deterministically from the identical product catalogs in biz_106/112 and biz_115/116/118)
-CAFE_CATEGORY_LOOKUP: Dict[str, str] = {
+CAFE_CATEGORY_LOOKUP: dict[str, str] = {
     "ca phe den (m)": "cà phê",
     "ca phe den (l)": "cà phê",
     "ca phe sua (m)": "cà phê",
@@ -151,7 +157,7 @@ CAFE_CATEGORY_LOOKUP: Dict[str, str] = {
     "banh tiramisu": "bánh",
 }
 
-HARDWARE_CATEGORY_LOOKUP: Dict[str, str] = {
+HARDWARE_CATEGORY_LOOKUP: dict[str, str] = {
     "xi mang ha tien pcb40 bao 50kg": "xi măng",
     "xi mang insee power-s bao 50kg": "xi măng",
     "cat xay to": "cát đá",
@@ -215,23 +221,40 @@ HARDWARE_CATEGORY_LOOKUP: Dict[str, str] = {
 }
 
 
-def normalize_channel_value(val: Any) -> Optional[str]:
+def normalize_channel_value(val: Any) -> str | None:
     """Map raw channel value to canonical ('store', 'phone', 'zalo_oa', 'ecommerce')."""
     s = norm_vn(val)
     if not s:
         return None
-    if s in ("store", "tai quay", "quay", "truc tiep", "ban truc tiep", "ban tai quay", "tai cho", "mang ve"):
+    if s in (
+        "store",
+        "tai quay",
+        "quay",
+        "truc tiep",
+        "ban truc tiep",
+        "ban tai quay",
+        "tai cho",
+        "mang ve",
+    ):
         return "store"
     if "zalo" in s:
         return "zalo_oa"
     if s in ("phone", "dien thoai", "dt", "goi dien", "qua dien thoai"):
         return "phone"
-    if s in ("ecommerce", "san tmdt", "tmdt", "shopee", "lazada", "tiktok", "san thuong mai dien tu"):
+    if s in (
+        "ecommerce",
+        "san tmdt",
+        "tmdt",
+        "shopee",
+        "lazada",
+        "tiktok",
+        "san thuong mai dien tu",
+    ):
         return "ecommerce"
     return s
 
 
-def normalize_payment_value(val: Any) -> Optional[str]:
+def normalize_payment_value(val: Any) -> str | None:
     """Map raw payment method value to canonical ('cash', 'transfer', 'ewallet', 'cod', 'debt')."""
     s = norm_vn(val)
     if not s:
@@ -240,7 +263,17 @@ def normalize_payment_value(val: Any) -> Optional[str]:
         return "cash"
     if s in ("transfer", "chuyen khoan", "ck", "ngan hang", "bank"):
         return "transfer"
-    if s in ("ewallet", "vi dien tu", "vi", "momo", "vi momo", "zalopay", "vi zalopay", "vnpay", "vi vnpay"):
+    if s in (
+        "ewallet",
+        "vi dien tu",
+        "vi",
+        "momo",
+        "vi momo",
+        "zalopay",
+        "vi zalopay",
+        "vnpay",
+        "vi vnpay",
+    ):
         return "ewallet"
     if "cod" in s or "thu ho" in s:
         return "cod"
@@ -249,7 +282,7 @@ def normalize_payment_value(val: Any) -> Optional[str]:
     return s
 
 
-def normalize_customer_group_value(val: Any) -> Optional[str]:
+def normalize_customer_group_value(val: Any) -> str | None:
     """Map raw customer group value to canonical ('thân thiết', 'sỉ', 'lẻ')."""
     s = norm_vn(val)
     if not s:
@@ -263,7 +296,7 @@ def normalize_customer_group_value(val: Any) -> Optional[str]:
     return None
 
 
-def normalize_customer_key(val: Any) -> Optional[str]:
+def normalize_customer_key(val: Any) -> str | None:
     """Return canonical non-walk-in customer key, or None for walk-in / blank customers."""
     if val is None or (isinstance(val, float) and np.isnan(val)):
         return None
@@ -299,7 +332,16 @@ def is_Prescription_True(val: Any) -> bool:
     if isinstance(val, (int, float, np.number)):
         return float(val) == 1.0
     s = norm_vn(val)
-    return s in ("1", "1.0", "true", "co", "yes", "ke don", "thuoc ke don", "ban theo don")
+    return s in (
+        "1",
+        "1.0",
+        "true",
+        "co",
+        "yes",
+        "ke don",
+        "thuoc ke don",
+        "ban theo don",
+    )
 
 
 def extract_hour_series(series: pd.Series) -> pd.Series:
@@ -319,21 +361,25 @@ def extract_hour_series(series: pd.Series) -> pd.Series:
 class DimensionFilter:
     """Represents a 1D or composite semantic filter on canonical views."""
 
-    channel: Optional[str] = None  # 'store' | 'phone' | 'zalo_oa' | 'ecommerce'
-    payment_method: Optional[str] = None  # 'cash' | 'transfer' | 'ewallet' | 'cod' | 'debt'
-    customer_group: Optional[str] = None  # 'thân thiết' | 'sỉ' | 'lẻ'
-    category: Optional[str] = None  # lowercase category name
-    is_prescription: Optional[bool] = None  # True (Rx) | False (non-Rx)
-    shift: Optional[str] = None  # 'morning' | 'afternoon'
-    min_orders_per_customer: Optional[int] = None
-    min_order_revenue: Optional[float] = None
-    min_daily_revenue: Optional[float] = None
-    min_orders_per_item: Optional[int] = None
-    gender: Optional[str] = None  # 'female' | 'male' -> triggers OOD check
-    item_key: Optional[str] = None
-    item_name: Optional[str] = None
-    size: Optional[str] = None  # 'M' | 'L'
-    drink_only: bool = False  # exclude topping and food when asking for ly / drink count
+    channel: str | None = None  # 'store' | 'phone' | 'zalo_oa' | 'ecommerce'
+    payment_method: str | None = (
+        None  # 'cash' | 'transfer' | 'ewallet' | 'cod' | 'debt'
+    )
+    customer_group: str | None = None  # 'thân thiết' | 'sỉ' | 'lẻ'
+    category: str | None = None  # lowercase category name
+    is_prescription: bool | None = None  # True (Rx) | False (non-Rx)
+    shift: str | None = None  # 'morning' | 'afternoon'
+    min_orders_per_customer: int | None = None
+    min_order_revenue: float | None = None
+    min_daily_revenue: float | None = None
+    min_orders_per_item: int | None = None
+    gender: str | None = None  # 'female' | 'male' -> triggers OOD check
+    item_key: str | None = None
+    item_name: str | None = None
+    size: str | None = None  # 'M' | 'L'
+    drink_only: bool = (
+        False  # exclude topping and food when asking for ly / drink count
+    )
 
 
 @dataclass
@@ -359,12 +405,16 @@ class QueryPlan:
     # - 'period_growth_pct'
     metric: str  # 'revenue' | 'order_count' | 'customer_count' | 'day_count' | 'item_count' | 'aov' | 'quantity' | 'base_quantity'
     period: ParsedPeriod
-    prior_period: Optional[ParsedPeriod] = None
+    prior_period: ParsedPeriod | None = None
     numerator_filter: DimensionFilter = field(default_factory=DimensionFilter)
     denominator_filter: DimensionFilter = field(default_factory=DimensionFilter)
-    secondary_filter: Optional[DimensionFilter] = None  # For 2-element list or shift comparison
+    secondary_filter: DimensionFilter | None = (
+        None  # For 2-element list or shift comparison
+    )
     limit_k: int = 1
-    target_dimension: Optional[str] = None  # 'item' | 'date' | 'month' | 'customer' | 'category'
+    target_dimension: str | None = (
+        None  # 'item' | 'date' | 'month' | 'customer' | 'category'
+    )
     output_type: str = "number"  # 'number' | 'percent' | 'list' | 'date' | 'string' | 'unanswerable' | 'abstain'
 
 
@@ -383,27 +433,29 @@ class BusinessSemanticContract:
     has_shift: bool = False
     has_category: bool = False
     has_prescription: bool = False
-    available_categories: Set[str] = field(default_factory=set)
-    available_products: List[Tuple[str, str, str]] = field(default_factory=list)  # (norm_name, original_name, item_key)
+    available_categories: set[str] = field(default_factory=set)
+    available_products: list[tuple[str, str, str]] = field(
+        default_factory=list
+    )  # (norm_name, original_name, item_key)
 
     @classmethod
-    def from_context(cls, context: BusinessContext) -> "BusinessSemanticContract":
+    def from_context(cls, context: BusinessContext) -> BusinessSemanticContract:
         """Build or retrieve cached BusinessSemanticContract for a BusinessContext."""
         cached = getattr(context, "_semantic_contract", None)
         if cached is not None:
             return cached
 
         contract = cls._build(context)
-        setattr(context, "_semantic_contract", contract)
+        context._semantic_contract = contract
         return contract
 
     @classmethod
-    def _build(cls, context: BusinessContext) -> "BusinessSemanticContract":
+    def _build(cls, context: BusinessContext) -> BusinessSemanticContract:
         tables = context.tables
 
         # 1. Build lookup maps from auxiliary tables (Customer Group, Product Category, Prescription)
-        cust_group_map: Dict[str, str] = {}
-        cust_name_map: Dict[str, str] = {}
+        cust_group_map: dict[str, str] = {}
+        cust_name_map: dict[str, str] = {}
         has_gender = False
         for tname, df in tables.items():
             if tname == "calendar":
@@ -419,7 +471,15 @@ class BusinessSemanticContract:
                 id_col = next(
                     (
                         c
-                        for c in ("ma_khach_hang", "ma_kh", "customer_id", "ma_kh_mua", "ma_khach_le_si", "ma_khach", "id_kh")
+                        for c in (
+                            "ma_khach_hang",
+                            "ma_kh",
+                            "customer_id",
+                            "ma_kh_mua",
+                            "ma_khach_le_si",
+                            "ma_khach",
+                            "id_kh",
+                        )
                         if c in cols
                     ),
                     None,
@@ -427,7 +487,15 @@ class BusinessSemanticContract:
                 grp_col = next(
                     (
                         c
-                        for c in ("nhom_khach_hang", "loai_khach_hang", "nhom", "hang", "kieu_khach", "loai_khach", "phan_nhom")
+                        for c in (
+                            "nhom_khach_hang",
+                            "loai_khach_hang",
+                            "nhom",
+                            "hang",
+                            "kieu_khach",
+                            "loai_khach",
+                            "phan_nhom",
+                        )
                         if c in cols
                     ),
                     None,
@@ -435,7 +503,14 @@ class BusinessSemanticContract:
                 name_col = next(
                     (
                         c
-                        for c in ("ten_goi", "ten_khach_hang", "ten_kh", "tenkh", "ho_ten", "ten")
+                        for c in (
+                            "ten_goi",
+                            "ten_khach_hang",
+                            "ten_kh",
+                            "tenkh",
+                            "ho_ten",
+                            "ten",
+                        )
                         if c in cols
                     ),
                     None,
@@ -454,18 +529,35 @@ class BusinessSemanticContract:
                                 cust_name_map[k_norm] = str(n_val).strip()
 
         # Product catalog & prescription lookups
-        id_to_cat: Dict[str, str] = {}
-        name_to_cat: Dict[str, str] = {}
-        name_to_id: Dict[str, str] = {}
-        id_to_name: Dict[str, str] = {}
-        id_to_rx: Dict[str, bool] = {}
-        name_to_rx: Dict[str, bool] = {}
+        id_to_cat: dict[str, str] = {}
+        name_to_cat: dict[str, str] = {}
+        name_to_id: dict[str, str] = {}
+        id_to_name: dict[str, str] = {}
+        id_to_rx: dict[str, bool] = {}
+        name_to_rx: dict[str, bool] = {}
 
         # First pass: product catalog tables
         for tname, df in tables.items():
-            if tname == "calendar" or any(
-                k in tname for k in ("hoa_don", "chi_tiet", "don_hang", "so_ban_hang", "nhap", "ton_kho", "so_quy", "phieu_thu")
-            ) and "hang_hoa" not in tname and "san_pham" not in tname and "ghi_tat" not in tname and "danh_muc" not in tname:
+            if (
+                tname == "calendar"
+                or any(
+                    k in tname
+                    for k in (
+                        "hoa_don",
+                        "chi_tiet",
+                        "don_hang",
+                        "so_ban_hang",
+                        "nhap",
+                        "ton_kho",
+                        "so_quy",
+                        "phieu_thu",
+                    )
+                )
+                and "hang_hoa" not in tname
+                and "san_pham" not in tname
+                and "ghi_tat" not in tname
+                and "danh_muc" not in tname
+            ):
                 continue
             cols = list(df.columns)
             cat_col = next(
@@ -488,7 +580,17 @@ class BusinessSemanticContract:
             id_col = next(
                 (
                     c
-                    for c in ("ma_hang", "ma_hang_hoa", "ma_sku", "sku", "ma_sp", "ma_san_pham_ban", "ma_hh", "ma_vach", "ma_h")
+                    for c in (
+                        "ma_hang",
+                        "ma_hang_hoa",
+                        "ma_sku",
+                        "sku",
+                        "ma_sp",
+                        "ma_san_pham_ban",
+                        "ma_hh",
+                        "ma_vach",
+                        "ma_h",
+                    )
                     if c in cols
                 ),
                 None,
@@ -496,12 +598,22 @@ class BusinessSemanticContract:
             name_col = next(
                 (
                     c
-                    for c in ("ten_hang", "ten_hang_hoa", "ten_san_pham", "san_pham", "ten_goi", "mon", "ten_sp")
+                    for c in (
+                        "ten_hang",
+                        "ten_hang_hoa",
+                        "ten_san_pham",
+                        "san_pham",
+                        "ten_goi",
+                        "mon",
+                        "ten_sp",
+                    )
                     if c in cols
                 ),
                 None,
             )
-            barcode_col = next((c for c in ("ma_barcode", "ma_vach_ean", "barcode") if c in cols), None)
+            barcode_col = next(
+                (c for c in ("ma_barcode", "ma_vach_ean", "barcode") if c in cols), None
+            )
 
             if name_col and id_col:
                 for iv, nv in zip(df[id_col], df[name_col]):
@@ -539,11 +651,21 @@ class BusinessSemanticContract:
         has_rx_table = False
         for tname, df in tables.items():
             cols = list(df.columns)
-            rx_col = next((c for c in ("thuoc_ke_don", "ban_theo_don", "ke_don") if c in cols), None)
+            rx_col = next(
+                (c for c in ("thuoc_ke_don", "ban_theo_don", "ke_don") if c in cols),
+                None,
+            )
             if rx_col:
                 has_rx_table = True
             if "thuoc" in tname:
-                id_col = next((c for c in ("ma_hang", "ma_sku", "ma_hang_hoa", "ma_hh", "sku") if c in cols), None)
+                id_col = next(
+                    (
+                        c
+                        for c in ("ma_hang", "ma_sku", "ma_hang_hoa", "ma_hh", "sku")
+                        if c in cols
+                    ),
+                    None,
+                )
                 if rx_col and id_col:
                     for iv, rv in zip(df[id_col], df[rx_col]):
                         inorm = norm_vn(iv)
@@ -597,7 +719,11 @@ class BusinessSemanticContract:
             )
             context.duckdb_conn.register("canonical_orders", empty_orders)
             context.duckdb_conn.register("canonical_order_lines", empty_lines)
-            return cls(business_id=context.business_id, orders_df=empty_orders, lines_df=empty_lines)
+            return cls(
+                business_id=context.business_id,
+                orders_df=empty_orders,
+                lines_df=empty_lines,
+            )
 
         # 3. Construct canonical_orders and canonical_order_lines
         orders_df, lines_df = cls._construct_canonical_frames(
@@ -619,26 +745,57 @@ class BusinessSemanticContract:
         context.duckdb_conn.register("canonical_orders", orders_df)
         context.duckdb_conn.register("canonical_order_lines", lines_df)
 
-        has_channel = bool(orders_df["channel"].dropna().ne("").any()) if len(orders_df) > 0 else False
-        has_payment = bool(orders_df["payment_method"].dropna().ne("").any()) if len(orders_df) > 0 else False
-        has_cust_key = bool(orders_df["customer_key"].dropna().ne("").any()) if len(orders_df) > 0 else False
-        has_cust_grp = bool(orders_df["customer_group"].dropna().ne("").any()) if len(orders_df) > 0 else False
-        has_shift = bool(orders_df["order_hour"].notna().any()) if len(orders_df) > 0 else False
-        avail_cats = set(lines_df["category"].dropna().unique().tolist()) - {"", "phí dịch vụ"}
+        has_channel = (
+            bool(orders_df["channel"].dropna().ne("").any())
+            if len(orders_df) > 0
+            else False
+        )
+        has_payment = (
+            bool(orders_df["payment_method"].dropna().ne("").any())
+            if len(orders_df) > 0
+            else False
+        )
+        has_cust_key = (
+            bool(orders_df["customer_key"].dropna().ne("").any())
+            if len(orders_df) > 0
+            else False
+        )
+        has_cust_grp = (
+            bool(orders_df["customer_group"].dropna().ne("").any())
+            if len(orders_df) > 0
+            else False
+        )
+        has_shift = (
+            bool(orders_df["order_hour"].notna().any()) if len(orders_df) > 0 else False
+        )
+        avail_cats = set(lines_df["category"].dropna().unique().tolist()) - {
+            "",
+            "phí dịch vụ",
+        }
         has_category = len(avail_cats) > 0
 
-        avail_prods: List[Tuple[str, str, str]] = []
+        avail_prods: list[tuple[str, str, str]] = []
         seen_prods = set()
         for inorm, nstr in id_to_name.items():
             nnorm = norm_vn(nstr)
-            if len(nnorm) >= 3 and nnorm not in seen_prods and nnorm not in ("voucher", "phi ship", "phi phuc vu"):
+            if (
+                len(nnorm) >= 3
+                and nnorm not in seen_prods
+                and nnorm not in ("voucher", "phi ship", "phi phuc vu")
+            ):
                 seen_prods.add(nnorm)
                 avail_prods.append((nnorm, nstr, inorm))
         if len(lines_df) > 0 and "item_name" in lines_df.columns:
-            for iname, ikey in zip(lines_df["item_name"].dropna(), lines_df["item_key"].dropna()):
+            for iname, ikey in zip(
+                lines_df["item_name"].dropna(), lines_df["item_key"].dropna()
+            ):
                 s_name = str(iname).strip()
                 s_norm = norm_vn(s_name)
-                if len(s_norm) >= 3 and s_norm not in seen_prods and s_norm not in ("voucher", "phi ship", "phi phuc vu"):
+                if (
+                    len(s_norm) >= 3
+                    and s_norm not in seen_prods
+                    and s_norm not in ("voucher", "phi ship", "phi phuc vu")
+                ):
                     seen_prods.add(s_norm)
                     avail_prods.append((s_norm, s_name, str(ikey)))
         avail_prods.sort(key=lambda x: len(x[0]), reverse=True)
@@ -660,15 +817,44 @@ class BusinessSemanticContract:
         )
 
     @staticmethod
-    def _build_conversion_map(context: BusinessContext) -> Dict[str, float]:
+    def _build_conversion_map(context: BusinessContext) -> dict[str, float]:
         """Parse unit conversion factors for bulk packaging units (e.g. 1 thùng = 6 bịch / 1 hộp = 10 vỉ)."""
-        conv_map: Dict[str, float] = {}
+        conv_map: dict[str, float] = {}
         for tname, df in context.tables.items():
-            if not any(k in tname for k in ("quy_doi", "quy đổi", "danh_muc", "danh muc", "don_vi", "san_pham")):
+            if not any(
+                k in tname
+                for k in (
+                    "quy_doi",
+                    "quy đổi",
+                    "danh_muc",
+                    "danh muc",
+                    "don_vi",
+                    "san_pham",
+                )
+            ):
                 continue
             cols = [c.lower() for c in df.columns]
-            item_col = next((c for c in cols if any(k in c for k in ("ten_hang", "ten_sp", "ma_hang", "ma_sp", "hang_hoa"))), None)
-            ratio_col = next((c for c in cols if any(k in c for k in ("he_so_quy_doi", "ti_le_quy_doi", "quy_doi"))), None)
+            item_col = next(
+                (
+                    c
+                    for c in cols
+                    if any(
+                        k in c
+                        for k in ("ten_hang", "ten_sp", "ma_hang", "ma_sp", "hang_hoa")
+                    )
+                ),
+                None,
+            )
+            ratio_col = next(
+                (
+                    c
+                    for c in cols
+                    if any(
+                        k in c for k in ("he_so_quy_doi", "ti_le_quy_doi", "quy_doi")
+                    )
+                ),
+                None,
+            )
             if item_col and ratio_col:
                 sub_df = df[df[ratio_col].notna()]
                 for _, r in sub_df.iterrows():
@@ -691,10 +877,13 @@ class BusinessSemanticContract:
     @staticmethod
     def _identify_header_and_detail_tables(
         context: BusinessContext,
-    ) -> Tuple[Optional[str], Optional[str]]:
+    ) -> tuple[str | None, str | None]:
         tables = context.tables
         # Case A: Explicit separate header + detail tables
-        if "du_lieu_ban_hang_danh_sach_hoa_don" in tables and "danh_sach_hoa_don_chi_tiet" in tables:
+        if (
+            "du_lieu_ban_hang_danh_sach_hoa_don" in tables
+            and "danh_sach_hoa_don_chi_tiet" in tables
+        ):
             return "du_lieu_ban_hang_danh_sach_hoa_don", "danh_sach_hoa_don_chi_tiet"
         if "danh_sach_hoa_don" in tables and "danh_sach_hoa_don_chi_tiet" in tables:
             return "danh_sach_hoa_don", "danh_sach_hoa_don_chi_tiet"
@@ -713,18 +902,18 @@ class BusinessSemanticContract:
     def _construct_canonical_frames(
         cls,
         context: BusinessContext,
-        header_table: Optional[str],
-        detail_table: Optional[str],
-        cust_group_map: Dict[str, str],
-        cust_name_map: Dict[str, str],
-        id_to_cat: Dict[str, str],
-        name_to_cat: Dict[str, str],
-        name_to_id: Dict[str, str],
-        id_to_name: Dict[str, str],
-        id_to_rx: Dict[str, bool],
-        name_to_rx: Dict[str, bool],
+        header_table: str | None,
+        detail_table: str | None,
+        cust_group_map: dict[str, str],
+        cust_name_map: dict[str, str],
+        id_to_cat: dict[str, str],
+        name_to_cat: dict[str, str],
+        name_to_id: dict[str, str],
+        id_to_name: dict[str, str],
+        id_to_rx: dict[str, bool],
+        name_to_rx: dict[str, bool],
         has_rx_table: bool,
-    ) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    ) -> tuple[pd.DataFrame, pd.DataFrame]:
         tables = context.tables
 
         if header_table is not None and detail_table is not None:
@@ -765,25 +954,49 @@ class BusinessSemanticContract:
         context: BusinessContext,
         header_df: pd.DataFrame,
         detail_df: pd.DataFrame,
-        cust_group_map: Dict[str, str],
-        cust_name_map: Dict[str, str],
-        id_to_cat: Dict[str, str],
-        name_to_cat: Dict[str, str],
-        name_to_id: Dict[str, str],
-        id_to_name: Dict[str, str],
-        id_to_rx: Dict[str, bool],
-        name_to_rx: Dict[str, bool],
+        cust_group_map: dict[str, str],
+        cust_name_map: dict[str, str],
+        id_to_cat: dict[str, str],
+        name_to_cat: dict[str, str],
+        name_to_id: dict[str, str],
+        id_to_name: dict[str, str],
+        id_to_rx: dict[str, bool],
+        name_to_rx: dict[str, bool],
         has_rx_table: bool,
-    ) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    ) -> tuple[pd.DataFrame, pd.DataFrame]:
         h_cols = list(header_df.columns)
         d_cols = list(detail_df.columns)
 
         h_order_col = next(
-            (c for c in ("order_id", "ma_hoa_don", "ma_chung_tu", "so_phieu", "so_ct", "ma_don_hang", "ma_don") if c in h_cols),
+            (
+                c
+                for c in (
+                    "order_id",
+                    "ma_hoa_don",
+                    "ma_chung_tu",
+                    "so_phieu",
+                    "so_ct",
+                    "ma_don_hang",
+                    "ma_don",
+                )
+                if c in h_cols
+            ),
             h_cols[0],
         )
         d_order_col = next(
-            (c for c in ("ma_hoa_don", "ma_don", "ma_giao_dich", "ma_don_hang", "so_ct", "ma_bill", "order_id") if c in d_cols),
+            (
+                c
+                for c in (
+                    "ma_hoa_don",
+                    "ma_don",
+                    "ma_giao_dich",
+                    "ma_don_hang",
+                    "so_ct",
+                    "ma_bill",
+                    "order_id",
+                )
+                if c in d_cols
+            ),
             d_cols[0],
         )
 
@@ -807,54 +1020,168 @@ class BusinessSemanticContract:
             )
             if c in h_cols
         ]
-        h_date_col = min(date_cands, key=lambda c: header_df[c].isna().sum()) if date_cands else None
+        h_date_col = (
+            min(date_cands, key=lambda c: header_df[c].isna().sum())
+            if date_cands
+            else None
+        )
         h_ts_col = next(
-            (c for c in ("thoi_gian_tao", "thoi_gian_lap", "gio_tao_don", "gio_ban", "thoi_gian") if c in h_cols),
+            (
+                c
+                for c in (
+                    "thoi_gian_tao",
+                    "thoi_gian_lap",
+                    "gio_tao_don",
+                    "gio_ban",
+                    "thoi_gian",
+                )
+                if c in h_cols
+            ),
             None,
         )
 
         # Status on header
         h_status_col = next(
-            (c for c in ("trang_thai", "xu_ly", "tinh_trang", "tinh_trang_don", "status") if c in h_cols),
+            (
+                c
+                for c in (
+                    "trang_thai",
+                    "xu_ly",
+                    "tinh_trang",
+                    "tinh_trang_don",
+                    "status",
+                )
+                if c in h_cols
+            ),
             None,
         )
 
         # Channel & Payment on header (Rulebook §1: payment method is strictly from the order, NOT from debt payments)
         h_chan_col = next(
-            (c for c in ("kenh_ban", "ban_qua", "kenh_ban_hang", "nguon_don", "loai_ban", "kenh_dat", "kenh") if c in h_cols),
+            (
+                c
+                for c in (
+                    "kenh_ban",
+                    "ban_qua",
+                    "kenh_ban_hang",
+                    "nguon_don",
+                    "loai_ban",
+                    "kenh_dat",
+                    "kenh",
+                )
+                if c in h_cols
+            ),
             None,
         )
         h_pay_col = next(
-            (c for c in ("phuong_thuc_thanh_toan", "phuong_thuc_tt", "tra_bang", "hinh_thuc_thanh_toan", "thanh_toan_bang") if c in h_cols),
+            (
+                c
+                for c in (
+                    "phuong_thuc_thanh_toan",
+                    "phuong_thuc_tt",
+                    "tra_bang",
+                    "hinh_thuc_thanh_toan",
+                    "thanh_toan_bang",
+                )
+                if c in h_cols
+            ),
             None,
         )
 
         # Customer on header
         h_cust_id_col = next(
-            (c for c in ("ma_kh", "so_kh", "ma_khach_hang", "ma_kh_mua", "customer_id", "ma_khach_mua", "ma_the") if c in h_cols),
+            (
+                c
+                for c in (
+                    "ma_kh",
+                    "so_kh",
+                    "ma_khach_hang",
+                    "ma_kh_mua",
+                    "customer_id",
+                    "ma_khach_mua",
+                    "ma_the",
+                )
+                if c in h_cols
+            ),
             None,
         )
-        h_cust_name_col = next((c for c in ("ten_khach_hang", "ten_kh", "tenkh", "khach_hang") if c in h_cols), None)
+        h_cust_name_col = next(
+            (
+                c
+                for c in ("ten_khach_hang", "ten_kh", "tenkh", "khach_hang")
+                if c in h_cols
+            ),
+            None,
+        )
 
         # Line detail columns
         d_item_id_col = next(
-            (c for c in ("ma_hang", "id_sp", "ma_hang_hoa", "ma_mat_hang", "ma_hang_ban", "ma_h") if c in d_cols),
+            (
+                c
+                for c in (
+                    "ma_hang",
+                    "id_sp",
+                    "ma_hang_hoa",
+                    "ma_mat_hang",
+                    "ma_hang_ban",
+                    "ma_h",
+                )
+                if c in d_cols
+            ),
             None,
         )
         d_item_name_col = next(
-            (c for c in ("ten_hang", "chi_tiet_hang", "ten_san_pham", "ten_hang_hoa", "mat_hang") if c in d_cols),
+            (
+                c
+                for c in (
+                    "ten_hang",
+                    "chi_tiet_hang",
+                    "ten_san_pham",
+                    "ten_hang_hoa",
+                    "mat_hang",
+                )
+                if c in d_cols
+            ),
             None,
         )
         d_rev_col = next(
-            (c for c in ("thanh_tien", "t", "tri_gia", "amount", "tien_ban", "cong") if c in d_cols),
+            (
+                c
+                for c in ("thanh_tien", "t", "tri_gia", "amount", "tien_ban", "cong")
+                if c in d_cols
+            ),
             None,
         )
         d_base_qty_col = next(
-            (c for c in ("so_luong_quy_doi", "sl_quy_doi", "so_luong_le", "sl_le", "sl_dv_co_ban") if c in d_cols),
+            (
+                c
+                for c in (
+                    "so_luong_quy_doi",
+                    "sl_quy_doi",
+                    "so_luong_le",
+                    "sl_le",
+                    "sl_dv_co_ban",
+                )
+                if c in d_cols
+            ),
             None,
         )
         d_raw_qty_col = next(
-            (c for c in ("so_luong_san_pham", "so_luong_ban", "sl_ban", "so_luong", "sluong", "soluong", "sl", "quantity", "qty") if c in d_cols),
+            (
+                c
+                for c in (
+                    "so_luong_san_pham",
+                    "so_luong_ban",
+                    "sl_ban",
+                    "so_luong",
+                    "sluong",
+                    "soluong",
+                    "sl",
+                    "quantity",
+                    "qty",
+                )
+                if c in d_cols
+            ),
             None,
         )
         d_unit_col = next(
@@ -870,17 +1197,25 @@ class BusinessSemanticContract:
             line_revs = pd.Series(0.0, index=detail_df.index)
 
         if d_raw_qty_col:
-            raw_qtys = pd.to_numeric(detail_df[d_raw_qty_col], errors="coerce").fillna(1.0)
+            raw_qtys = pd.to_numeric(detail_df[d_raw_qty_col], errors="coerce").fillna(
+                1.0
+            )
         else:
             raw_qtys = pd.Series(1.0, index=detail_df.index)
 
         conv_map = cls._build_conversion_map(context)
         if d_base_qty_col:
-            base_qtys = pd.to_numeric(detail_df[d_base_qty_col], errors="coerce").fillna(raw_qtys)
+            base_qtys = pd.to_numeric(
+                detail_df[d_base_qty_col], errors="coerce"
+            ).fillna(raw_qtys)
         elif d_unit_col:
             units = detail_df[d_unit_col].fillna("").astype(str).map(norm_vn)
-            bqtys: List[float] = []
-            for rq, u, iname in zip(raw_qtys, units, detail_df[d_item_name_col] if d_item_name_col else raw_item_ids):
+            bqtys: list[float] = []
+            for rq, u, iname in zip(
+                raw_qtys,
+                units,
+                detail_df[d_item_name_col] if d_item_name_col else raw_item_ids,
+            ):
                 factor = 1.0
                 if u in ("thung", "hop", "loc") and norm_vn(iname) in conv_map:
                     factor = conv_map[norm_vn(iname)]
@@ -896,35 +1231,53 @@ class BusinessSemanticContract:
 
         if d_item_name_col:
             raw_item_names = pd.Series(
-                [re.sub(r"\s+", " ", id_to_name.get(norm_vn(x), str(x))).strip() if norm_vn(x) in id_to_name or not str(x).strip() else re.sub(r"\s+", " ", str(x)).strip() for x in detail_df[d_item_name_col].fillna("")],
+                [
+                    re.sub(r"\s+", " ", id_to_name.get(norm_vn(x), str(x))).strip()
+                    if norm_vn(x) in id_to_name or not str(x).strip()
+                    else re.sub(r"\s+", " ", str(x)).strip()
+                    for x in detail_df[d_item_name_col].fillna("")
+                ],
                 index=detail_df.index,
                 dtype="object",
             )
         else:
             raw_item_names = pd.Series(
-                [re.sub(r"\s+", " ", id_to_name.get(norm_vn(x), str(x))).strip() for x in raw_item_ids],
+                [
+                    re.sub(r"\s+", " ", id_to_name.get(norm_vn(x), str(x))).strip()
+                    for x in raw_item_ids
+                ],
                 index=detail_df.index,
                 dtype="object",
             )
 
         # Map item_key, category, is_prescription, is_service_fee
-        item_keys: List[str] = []
-        categories: List[Optional[str]] = []
-        is_rx_list: List[bool] = []
-        is_svc_list: List[bool] = []
+        item_keys: list[str] = []
+        categories: list[str | None] = []
+        is_rx_list: list[bool] = []
+        is_svc_list: list[bool] = []
 
         for iid, iname in zip(raw_item_ids, raw_item_names):
             inorm = norm_vn(iid)
             nnorm = norm_vn(iname)
-            ikey = iid if (inorm and inorm not in ("nan", "none")) else name_to_id.get(nnorm, nnorm)
+            ikey = (
+                iid
+                if (inorm and inorm not in ("nan", "none"))
+                else name_to_id.get(nnorm, nnorm)
+            )
             item_keys.append(str(ikey))
 
             cat = id_to_cat.get(inorm) or name_to_cat.get(nnorm)
             if not cat:
-                cat = CAFE_CATEGORY_LOOKUP.get(nnorm) or HARDWARE_CATEGORY_LOOKUP.get(nnorm)
+                cat = CAFE_CATEGORY_LOOKUP.get(nnorm) or HARDWARE_CATEGORY_LOOKUP.get(
+                    nnorm
+                )
             categories.append(cat)
 
-            rx_val = id_to_rx.get(inorm, name_to_rx.get(nnorm, False)) if has_rx_table else False
+            rx_val = (
+                id_to_rx.get(inorm, name_to_rx.get(nnorm, False))
+                if has_rx_table
+                else False
+            )
             is_rx_list.append(bool(rx_val))
 
             is_svc_list.append(nnorm in ("phi phuc vu", "phi dich vu"))
@@ -935,12 +1288,22 @@ class BusinessSemanticContract:
             .groupby("order_id", as_index=False)["line_rev"]
             .sum()
         )
-        order_rev_map = dict(zip(line_rev_by_order["order_id"], line_rev_by_order["line_rev"]))
+        order_rev_map = dict(
+            zip(line_rev_by_order["order_id"], line_rev_by_order["line_rev"])
+        )
 
         # Build canonical_orders from header_df
         h_order_ids = header_df[h_order_col].fillna("").astype(str).str.strip()
-        order_dates = pd.to_datetime(header_df[h_date_col], errors="coerce").dt.date if h_date_col else pd.Series(None, index=header_df.index)
-        order_hours = extract_hour_series(header_df[h_ts_col]) if h_ts_col else pd.Series(np.nan, index=header_df.index)
+        order_dates = (
+            pd.to_datetime(header_df[h_date_col], errors="coerce").dt.date
+            if h_date_col
+            else pd.Series(None, index=header_df.index)
+        )
+        order_hours = (
+            extract_hour_series(header_df[h_ts_col])
+            if h_ts_col
+            else pd.Series(np.nan, index=header_df.index)
+        )
 
         if h_status_col:
             valid_flags = ~header_df[h_status_col].map(is_bad_status)
@@ -949,20 +1312,31 @@ class BusinessSemanticContract:
 
         # Revenue: prefer sum of detail line_revenue (which is guaranteed to be post-line-discount and pre-order-discount/shipping)
         # Fallback to header merchandise revenue if detail has no rows for an order
-        h_merch_col = next((c for c in ("tong_tien_hang", "tien_hang_truoc_giam") if c in h_cols), None)
+        h_merch_col = next(
+            (c for c in ("tong_tien_hang", "tien_hang_truoc_giam") if c in h_cols), None
+        )
         if h_merch_col:
-            h_merch_vals = pd.to_numeric(header_df[h_merch_col], errors="coerce").fillna(0.0)
-        elif "thanh_tien" in h_cols and "tien_giam" in h_cols and "phi_van_chuyen" in h_cols:
+            h_merch_vals = pd.to_numeric(
+                header_df[h_merch_col], errors="coerce"
+            ).fillna(0.0)
+        elif (
+            "thanh_tien" in h_cols
+            and "tien_giam" in h_cols
+            and "phi_van_chuyen" in h_cols
+        ):
             h_merch_vals = (
                 pd.to_numeric(header_df["thanh_tien"], errors="coerce").fillna(0.0)
                 + pd.to_numeric(header_df["tien_giam"], errors="coerce").fillna(0.0)
-                - pd.to_numeric(header_df["phi_van_chuyen"], errors="coerce").fillna(0.0)
+                - pd.to_numeric(header_df["phi_van_chuyen"], errors="coerce").fillna(
+                    0.0
+                )
             )
         else:
             h_merch_vals = pd.Series(0.0, index=header_df.index)
 
         order_revs = [
-            float(order_rev_map.get(oid, hval)) for oid, hval in zip(h_order_ids, h_merch_vals)
+            float(order_rev_map.get(oid, hval))
+            for oid, hval in zip(h_order_ids, h_merch_vals)
         ]
 
         channels = (
@@ -977,11 +1351,19 @@ class BusinessSemanticContract:
         )
 
         # Customer key & group & display name
-        cust_keys: List[Optional[str]] = []
-        cust_names: List[Optional[str]] = []
-        cust_groups: List[Optional[str]] = []
-        raw_cids = header_df[h_cust_id_col] if h_cust_id_col else pd.Series(None, index=header_df.index)
-        raw_cnames = header_df[h_cust_name_col] if h_cust_name_col else pd.Series(None, index=header_df.index)
+        cust_keys: list[str | None] = []
+        cust_names: list[str | None] = []
+        cust_groups: list[str | None] = []
+        raw_cids = (
+            header_df[h_cust_id_col]
+            if h_cust_id_col
+            else pd.Series(None, index=header_df.index)
+        )
+        raw_cnames = (
+            header_df[h_cust_name_col]
+            if h_cust_name_col
+            else pd.Series(None, index=header_df.index)
+        )
 
         for cid, cname in zip(raw_cids, raw_cnames):
             ck = normalize_customer_key(cid)
@@ -991,7 +1373,11 @@ class BusinessSemanticContract:
 
             # Resolve unnormalized customer display name
             resolved_cname = None
-            if pd.notna(cname) and str(cname).strip() and norm_vn(cname) not in ("le", "khach le", "ban le", "vang lai"):
+            if (
+                pd.notna(cname)
+                and str(cname).strip()
+                and norm_vn(cname) not in ("le", "khach le", "ban le", "vang lai")
+            ):
                 resolved_cname = str(cname).strip()
             elif pd.notna(cid):
                 cid_norm = norm_vn(cid)
@@ -1020,21 +1406,18 @@ class BusinessSemanticContract:
 
         # Deduplicate orders_df by order_id if header had split rows
         if orders_df["order_id"].duplicated().any():
-            orders_df = (
-                orders_df.groupby("order_id", as_index=False)
-                .agg(
-                    {
-                        "order_date": "min",
-                        "order_hour": "min",
-                        "is_valid_sale": "all",
-                        "order_revenue": "first",
-                        "channel": "first",
-                        "payment_method": "first",
-                        "customer_key": "first",
-                        "customer_name": "first",
-                        "customer_group": "first",
-                    }
-                )
+            orders_df = orders_df.groupby("order_id", as_index=False).agg(
+                {
+                    "order_date": "min",
+                    "order_hour": "min",
+                    "is_valid_sale": "all",
+                    "order_revenue": "first",
+                    "channel": "first",
+                    "payment_method": "first",
+                    "customer_key": "first",
+                    "customer_name": "first",
+                    "customer_group": "first",
+                }
             )
 
         # Map order metadata onto lines_df
@@ -1044,7 +1427,9 @@ class BusinessSemanticContract:
                 "order_id": d_order_ids,
                 "order_date": d_order_ids.map(order_meta["order_date"]),
                 "order_hour": d_order_ids.map(order_meta["order_hour"]),
-                "is_valid_sale": d_order_ids.map(order_meta["is_valid_sale"]).fillna(False).astype(bool),
+                "is_valid_sale": d_order_ids.map(order_meta["is_valid_sale"])
+                .fillna(False)
+                .astype(bool),
                 "item_key": pd.Series(item_keys, dtype="object"),
                 "item_name": raw_item_names,
                 "category": pd.Series(categories, dtype="object"),
@@ -1064,16 +1449,16 @@ class BusinessSemanticContract:
         context: BusinessContext,
         table_name: str,
         df: pd.DataFrame,
-        cust_group_map: Dict[str, str],
-        cust_name_map: Dict[str, str],
-        id_to_cat: Dict[str, str],
-        name_to_cat: Dict[str, str],
-        name_to_id: Dict[str, str],
-        id_to_name: Dict[str, str],
-        id_to_rx: Dict[str, bool],
-        name_to_rx: Dict[str, bool],
+        cust_group_map: dict[str, str],
+        cust_name_map: dict[str, str],
+        id_to_cat: dict[str, str],
+        name_to_cat: dict[str, str],
+        name_to_id: dict[str, str],
+        id_to_name: dict[str, str],
+        id_to_rx: dict[str, bool],
+        name_to_rx: dict[str, bool],
         has_rx_table: bool,
-    ) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    ) -> tuple[pd.DataFrame, pd.DataFrame]:
         cols = list(df.columns)
 
         order_col = next(
@@ -1125,9 +1510,21 @@ class BusinessSemanticContract:
             )
             if c in cols
         ]
-        date_col = min(date_cands, key=lambda c: df[c].isna().sum()) if date_cands else None
+        date_col = (
+            min(date_cands, key=lambda c: df[c].isna().sum()) if date_cands else None
+        )
         ts_col = next(
-            (c for c in ("gio_tao_don", "gio_ban", "gio", "thoi_gian_tao", "thoi_gian_lap") if c in cols),
+            (
+                c
+                for c in (
+                    "gio_tao_don",
+                    "gio_ban",
+                    "gio",
+                    "thoi_gian_tao",
+                    "thoi_gian_lap",
+                )
+                if c in cols
+            ),
             None,
         )
 
@@ -1158,33 +1555,86 @@ class BusinessSemanticContract:
             for c in ("ghi_chu", "note", "luu_y"):
                 if c in cols and df[c].notna().any():
                     s_lower = df[c].dropna().astype(str).str.lower()
-                    if s_lower.str.contains(r"hủy|huỷ|cancel|trả|return", regex=True).any():
+                    if s_lower.str.contains(
+                        r"hủy|huỷ|cancel|trả|return", regex=True
+                    ).any():
                         status_col = c
                         break
 
         # Channel & Payment columns
-        chan_col = next((c for c in ("kenh_ban", "nguon", "kenh", "ban_qua", "loai_ban") if c in cols), None)
+        chan_col = next(
+            (
+                c
+                for c in ("kenh_ban", "nguon", "kenh", "ban_qua", "loai_ban")
+                if c in cols
+            ),
+            None,
+        )
         pay_col = next(
-            (c for c in ("hinh_thuc_thanh_toan", "hinh_thuc_tt", "thanh_toan_bang", "phuong_thuc_thanh_toan", "phuong_thuc_tt", "tra_bang") if c in cols),
+            (
+                c
+                for c in (
+                    "hinh_thuc_thanh_toan",
+                    "hinh_thuc_tt",
+                    "thanh_toan_bang",
+                    "phuong_thuc_thanh_toan",
+                    "phuong_thuc_tt",
+                    "tra_bang",
+                )
+                if c in cols
+            ),
             None,
         )
 
         # Customer ID / Name / Group columns
         cust_id_col = next(
-            (c for c in ("ma_khach", "ma_khach_mua", "ma_nguoi_mua", "ma_kh", "customer_id") if c in cols),
+            (
+                c
+                for c in (
+                    "ma_khach",
+                    "ma_khach_mua",
+                    "ma_nguoi_mua",
+                    "ma_kh",
+                    "customer_id",
+                )
+                if c in cols
+            ),
             None,
         )
         cust_name_col = next(
-            (c for c in ("khach_hang", "ten_khach_hang", "khach_hang_ten", "tenkh", "ten_kh", "khach") if c in cols),
+            (
+                c
+                for c in (
+                    "khach_hang",
+                    "ten_khach_hang",
+                    "khach_hang_ten",
+                    "tenkh",
+                    "ten_kh",
+                    "khach",
+                )
+                if c in cols
+            ),
             None,
         )
         cust_grp_col = next(
-            (c for c in ("nhom_khach_hang", "nhom_khach", "loai_khach_hang", "kieu_khach") if c in cols),
+            (
+                c
+                for c in (
+                    "nhom_khach_hang",
+                    "nhom_khach",
+                    "loai_khach_hang",
+                    "kieu_khach",
+                )
+                if c in cols
+            ),
             None,
         )
 
         # Item Name / ID / Category / Revenue columns
-        item_id_col = next((c for c in ("ma_hang", "ma_hang_hoa", "barcode", "ma_sp") if c in cols), None)
+        item_id_col = next(
+            (c for c in ("ma_hang", "ma_hang_hoa", "barcode", "ma_sp") if c in cols),
+            None,
+        )
         item_name_col = next(
             (
                 c
@@ -1204,14 +1654,47 @@ class BusinessSemanticContract:
             ),
             None,
         )
-        inline_cat_col = next((c for c in ("phan_loai", "nhom_hang", "nhom_hang_hoa", "nhom_mon", "loai") if c in cols), None)
-        inline_rx_col = next((c for c in ("thuoc_ke_don", "ban_theo_don", "ke_don") if c in cols), None)
+        inline_cat_col = next(
+            (
+                c
+                for c in ("phan_loai", "nhom_hang", "nhom_hang_hoa", "nhom_mon", "loai")
+                if c in cols
+            ),
+            None,
+        )
+        inline_rx_col = next(
+            (c for c in ("thuoc_ke_don", "ban_theo_don", "ke_don") if c in cols), None
+        )
         base_qty_col = next(
-            (c for c in ("so_luong_quy_doi", "sl_quy_doi", "so_luong_le", "sl_le", "sl_dv_co_ban") if c in cols),
+            (
+                c
+                for c in (
+                    "so_luong_quy_doi",
+                    "sl_quy_doi",
+                    "so_luong_le",
+                    "sl_le",
+                    "sl_dv_co_ban",
+                )
+                if c in cols
+            ),
             None,
         )
         raw_qty_col = next(
-            (c for c in ("so_luong_san_pham", "so_luong_ban", "sl_ban", "so_luong", "sluong", "soluong", "sl", "quantity", "qty") if c in cols),
+            (
+                c
+                for c in (
+                    "so_luong_san_pham",
+                    "so_luong_ban",
+                    "sl_ban",
+                    "so_luong",
+                    "sluong",
+                    "soluong",
+                    "sl",
+                    "quantity",
+                    "qty",
+                )
+                if c in cols
+            ),
             None,
         )
         unit_col = next(
@@ -1252,8 +1735,16 @@ class BusinessSemanticContract:
             order_ids = df[order_col].fillna("").astype(str).str.strip()
         else:
             order_ids = pd.Series([f"row_{i}" for i in range(len(df))], index=df.index)
-        raw_dates = pd.to_datetime(df[date_col], errors="coerce") if date_col else pd.Series(pd.NaT, index=df.index)
-        raw_hours = extract_hour_series(df[ts_col]) if ts_col else pd.Series(np.nan, index=df.index)
+        raw_dates = (
+            pd.to_datetime(df[date_col], errors="coerce")
+            if date_col
+            else pd.Series(pd.NaT, index=df.index)
+        )
+        raw_hours = (
+            extract_hour_series(df[ts_col])
+            if ts_col
+            else pd.Series(np.nan, index=df.index)
+        )
 
         # Row-level bad status check (if any row in an order has a bad status, the whole order is invalid per Rulebook §1)
         if status_col:
@@ -1261,22 +1752,46 @@ class BusinessSemanticContract:
         else:
             row_bad_status = pd.Series(False, index=df.index)
 
-        raw_revs = pd.to_numeric(df[rev_col], errors="coerce").fillna(0.0) if rev_col else pd.Series(0.0, index=df.index)
-        raw_item_ids = df[item_id_col].fillna("").astype(str).str.strip() if item_id_col else pd.Series("", index=df.index, dtype="object")
+        raw_revs = (
+            pd.to_numeric(df[rev_col], errors="coerce").fillna(0.0)
+            if rev_col
+            else pd.Series(0.0, index=df.index)
+        )
+        raw_item_ids = (
+            df[item_id_col].fillna("").astype(str).str.strip()
+            if item_id_col
+            else pd.Series("", index=df.index, dtype="object")
+        )
         if item_name_col:
             raw_item_names = pd.Series(
-                [re.sub(r"\s+", " ", id_to_name.get(norm_vn(x), str(x))).strip() if norm_vn(x) in id_to_name or not str(x).strip() else re.sub(r"\s+", " ", str(x)).strip() for x in df[item_name_col].fillna("")],
+                [
+                    re.sub(r"\s+", " ", id_to_name.get(norm_vn(x), str(x))).strip()
+                    if norm_vn(x) in id_to_name or not str(x).strip()
+                    else re.sub(r"\s+", " ", str(x)).strip()
+                    for x in df[item_name_col].fillna("")
+                ],
                 index=df.index,
                 dtype="object",
             )
         else:
             raw_item_names = pd.Series(
-                [re.sub(r"\s+", " ", id_to_name.get(norm_vn(x), str(x))).strip() for x in raw_item_ids],
+                [
+                    re.sub(r"\s+", " ", id_to_name.get(norm_vn(x), str(x))).strip()
+                    for x in raw_item_ids
+                ],
                 index=df.index,
                 dtype="object",
             )
-        raw_inline_cats = df[inline_cat_col] if inline_cat_col else pd.Series(None, index=df.index, dtype="object")
-        raw_inline_rx = df[inline_rx_col] if inline_rx_col else pd.Series(None, index=df.index, dtype="object")
+        raw_inline_cats = (
+            df[inline_cat_col]
+            if inline_cat_col
+            else pd.Series(None, index=df.index, dtype="object")
+        )
+        raw_inline_rx = (
+            df[inline_rx_col]
+            if inline_rx_col
+            else pd.Series(None, index=df.index, dtype="object")
+        )
 
         if raw_qty_col:
             raw_qtys = pd.to_numeric(df[raw_qty_col], errors="coerce").fillna(1.0)
@@ -1285,10 +1800,12 @@ class BusinessSemanticContract:
 
         conv_map = cls._build_conversion_map(context)
         if base_qty_col:
-            base_qtys = pd.to_numeric(df[base_qty_col], errors="coerce").fillna(raw_qtys)
+            base_qtys = pd.to_numeric(df[base_qty_col], errors="coerce").fillna(
+                raw_qtys
+            )
         elif unit_col:
             units = df[unit_col].fillna("").astype(str).map(norm_vn)
-            bqtys: List[float] = []
+            bqtys: list[float] = []
             for rq, u, iname in zip(raw_qtys, units, raw_item_names):
                 factor = 1.0
                 if u in ("thung", "hop", "loc") and norm_vn(iname) in conv_map:
@@ -1299,16 +1816,26 @@ class BusinessSemanticContract:
             base_qtys = raw_qtys.copy()
 
         # Filter out non-merchandise adjustment rows in dev_013 ('Voucher', 'Phí ship', 'Dùng ... điểm')
-        is_adjustment_row = raw_item_names.isin(["Voucher", "Phí ship"]) | raw_item_names.str.startswith("Dùng ", na=False)
+        is_adjustment_row = raw_item_names.isin(
+            ["Voucher", "Phí ship"]
+        ) | raw_item_names.str.startswith("Dùng ", na=False)
         effective_line_revs = raw_revs.where(~is_adjustment_row, 0.0)
 
         # Build order-level aggregations
-        chan_series = df[chan_col].map(normalize_channel_value) if chan_col else pd.Series(None, index=df.index, dtype="object")
-        pay_series = df[pay_col].map(normalize_payment_value) if pay_col else pd.Series(None, index=df.index, dtype="object")
+        chan_series = (
+            df[chan_col].map(normalize_channel_value)
+            if chan_col
+            else pd.Series(None, index=df.index, dtype="object")
+        )
+        pay_series = (
+            df[pay_col].map(normalize_payment_value)
+            if pay_col
+            else pd.Series(None, index=df.index, dtype="object")
+        )
 
-        cust_keys: List[Optional[str]] = []
-        cust_names: List[Optional[str]] = []
-        cust_groups: List[Optional[str]] = []
+        cust_keys: list[str | None] = []
+        cust_names: list[str | None] = []
+        cust_groups: list[str | None] = []
         cids = df[cust_id_col] if cust_id_col else pd.Series(None, index=df.index)
         cnames = df[cust_name_col] if cust_name_col else pd.Series(None, index=df.index)
         cgrps = df[cust_grp_col] if cust_grp_col else pd.Series(None, index=df.index)
@@ -1321,7 +1848,11 @@ class BusinessSemanticContract:
 
             # Resolve unnormalized customer display name
             resolved_cname = None
-            if pd.notna(cname) and str(cname).strip() and norm_vn(cname) not in ("le", "khach le", "ban le", "vang lai"):
+            if (
+                pd.notna(cname)
+                and str(cname).strip()
+                and norm_vn(cname) not in ("le", "khach le", "ban le", "vang lai")
+            ):
                 resolved_cname = str(cname).strip()
             elif pd.notna(cid):
                 cid_norm = norm_vn(cid)
@@ -1351,19 +1882,16 @@ class BusinessSemanticContract:
         )
 
         # Group by order_id to form canonical_orders
-        orders_df = (
-            tmp_orders.groupby("order_id", as_index=False, sort=False)
-            .agg(
-                order_date=("raw_date", "min"),
-                order_hour=("raw_hour", "first"),
-                any_bad=("row_bad", "any"),
-                order_revenue=("line_rev", "sum"),
-                channel=("channel", "first"),
-                payment_method=("payment_method", "first"),
-                customer_key=("customer_key", "first"),
-                customer_name=("customer_name", "first"),
-                customer_group=("customer_group", "first"),
-            )
+        orders_df = tmp_orders.groupby("order_id", as_index=False, sort=False).agg(
+            order_date=("raw_date", "min"),
+            order_hour=("raw_hour", "first"),
+            any_bad=("row_bad", "any"),
+            order_revenue=("line_rev", "sum"),
+            channel=("channel", "first"),
+            payment_method=("payment_method", "first"),
+            customer_key=("customer_key", "first"),
+            customer_name=("customer_name", "first"),
+            customer_group=("customer_group", "first"),
         )
         orders_df["is_valid_sale"] = ~orders_df["any_bad"]
         orders_df = orders_df.drop(columns=["any_bad"])
@@ -1371,18 +1899,26 @@ class BusinessSemanticContract:
         # Build canonical_order_lines (excluding adjustment rows like Voucher/Phí ship)
         order_meta = orders_df.set_index("order_id")
 
-        line_order_ids: List[str] = []
-        line_item_keys: List[str] = []
-        line_item_names: List[str] = []
-        line_cats: List[Optional[str]] = []
-        line_rx: List[bool] = []
-        line_svc: List[bool] = []
-        line_amounts: List[float] = []
-        line_qtys: List[float] = []
-        line_base_qtys: List[float] = []
+        line_order_ids: list[str] = []
+        line_item_keys: list[str] = []
+        line_item_names: list[str] = []
+        line_cats: list[str | None] = []
+        line_rx: list[bool] = []
+        line_svc: list[bool] = []
+        line_amounts: list[float] = []
+        line_qtys: list[float] = []
+        line_base_qtys: list[float] = []
 
         for oid, iid, iname, icat, irx, rev, rqty, bqty, is_adj in zip(
-            order_ids, raw_item_ids, raw_item_names, raw_inline_cats, raw_inline_rx, effective_line_revs, raw_qtys, base_qtys, is_adjustment_row
+            order_ids,
+            raw_item_ids,
+            raw_item_names,
+            raw_inline_cats,
+            raw_inline_rx,
+            effective_line_revs,
+            raw_qtys,
+            base_qtys,
+            is_adjustment_row,
         ):
             if is_adj:
                 continue
@@ -1403,7 +1939,9 @@ class BusinessSemanticContract:
                 base_norm = norm_vn(base_name)
                 base_cat = clean_spaces_lower(icat) if pd.notna(icat) else ""
                 if not base_cat:
-                    base_cat = name_to_cat.get(base_norm) or CAFE_CATEGORY_LOOKUP.get(base_norm)
+                    base_cat = name_to_cat.get(base_norm) or CAFE_CATEGORY_LOOKUP.get(
+                        base_norm
+                    )
                 base_key = name_to_id.get(base_norm, base_norm)
 
                 # Base drink line
@@ -1433,20 +1971,28 @@ class BusinessSemanticContract:
 
             inorm = norm_vn(iid)
             nnorm = norm_vn(iname)
-            ikey = name_to_id.get(nnorm) or (iid if inorm and inorm not in ("nan", "none") else nnorm)
+            ikey = name_to_id.get(nnorm) or (
+                iid if inorm and inorm not in ("nan", "none") else nnorm
+            )
 
             cat = clean_spaces_lower(icat) if pd.notna(icat) else ""
             if not cat:
                 cat = id_to_cat.get(inorm) or name_to_cat.get(nnorm)
             if not cat:
-                cat = CAFE_CATEGORY_LOOKUP.get(nnorm) or HARDWARE_CATEGORY_LOOKUP.get(nnorm)
+                cat = CAFE_CATEGORY_LOOKUP.get(nnorm) or HARDWARE_CATEGORY_LOOKUP.get(
+                    nnorm
+                )
 
             if pd.notna(irx):
                 rx_val = is_Prescription_True(irx)
             elif cat in ("thuốc kê đơn", "không kê đơn"):
-                rx_val = (cat == "thuốc kê đơn")
+                rx_val = cat == "thuốc kê đơn"
             else:
-                rx_val = id_to_rx.get(inorm, name_to_rx.get(nnorm, False)) if has_rx_table else False
+                rx_val = (
+                    id_to_rx.get(inorm, name_to_rx.get(nnorm, False))
+                    if has_rx_table
+                    else False
+                )
             is_svc = nnorm in ("phi phuc vu", "phi dich vu") or cat == "phí dịch vụ"
 
             line_order_ids.append(oid)
@@ -1465,7 +2011,9 @@ class BusinessSemanticContract:
                 "order_id": lo_series,
                 "order_date": lo_series.map(order_meta["order_date"]),
                 "order_hour": lo_series.map(order_meta["order_hour"]),
-                "is_valid_sale": lo_series.map(order_meta["is_valid_sale"]).fillna(False).astype(bool),
+                "is_valid_sale": lo_series.map(order_meta["is_valid_sale"])
+                .fillna(False)
+                .astype(bool),
                 "item_key": pd.Series(line_item_keys, dtype="object"),
                 "item_name": pd.Series(line_item_names, dtype="object"),
                 "category": pd.Series(line_cats, dtype="object"),
@@ -1485,7 +2033,7 @@ class BusinessSemanticContract:
 # =============================================================================
 
 
-def parse_enhanced_period(question: str, as_of_date: Optional[str]) -> ParsedPeriod:
+def parse_enhanced_period(question: str, as_of_date: str | None) -> ParsedPeriod:
     """Parse temporal expressions with full dialect & Rulebook §2 relative month support."""
     p = parse_time_expressions(question, as_of_date)
     t = question.lower()
@@ -1515,7 +2063,9 @@ def parse_enhanced_period(question: str, as_of_date: Optional[str]) -> ParsedPer
 
     # 3. Short month with 2/4-digit year: "T1/2026", "T5/2025", "th 5/25", "th6/2025"
     if not (p.month_str or p.exact_date or (p.start_date and p.end_date)):
-        m_short = re.search(r"\b(?:tháng|thang|th|t)\s*(\d{1,2})\s*[/.-]\s*(\d{2,4})\b", t)
+        m_short = re.search(
+            r"\b(?:tháng|thang|th|t)\s*(\d{1,2})\s*[/.-]\s*(\d{2,4})\b", t
+        )
         if m_short:
             m, y = int(m_short.group(1)), int(m_short.group(2))
             if y < 100:
@@ -1549,7 +2099,10 @@ def parse_enhanced_period(question: str, as_of_date: Optional[str]) -> ParsedPer
 
     # 5. Whole year: "năm 2025", "nam 2025", "cả năm 2025", "nam 2026", "trong 2025", "trong năm 2025"
     if not (p.month_str or p.exact_date or (p.start_date and p.end_date)):
-        m_yr = re.search(r"\b(?:năm|nam|ca nam|cả năm|trong\s+năm|trong\s+nam|trong)\s*(202[4-7])\b", t)
+        m_yr = re.search(
+            r"\b(?:năm|nam|ca nam|cả năm|trong\s+năm|trong\s+nam|trong)\s*(202[4-7])\b",
+            t,
+        )
         if m_yr:
             yr = int(m_yr.group(1))
             p.start_date = f"{yr:04d}-01-01"
@@ -1559,27 +2112,30 @@ def parse_enhanced_period(question: str, as_of_date: Optional[str]) -> ParsedPer
     return p
 
 
-def _extract_ordered_channels(q_norm: str) -> List[str]:
+def _extract_ordered_channels(q_norm: str) -> list[str]:
     """Extract channel mentions in order of appearance in normalized query."""
     patterns = [
         ("store", r"\b(?:tai quay|truc tiep)\b"),
         ("zalo_oa", r"\bzalo(?:\s*oa)?\b"),
         ("ecommerce", r"\b(?:san thuong mai dien tu|san tmdt|tmdt|shopee)\b"),
     ]
-    found: List[Tuple[int, str]] = []
+    found: list[tuple[int, str]] = []
     for ch_code, pat in patterns:
         m = re.search(pat, q_norm)
         if m:
             found.append((m.start(), ch_code))
     # For 'điện thoại', match when preceded by channel context OR not preceded by 'cửa hàng'/'tiệm'/'shop'
     m_phone = re.search(r"\b(?:dien thoai|ddieenj thoai|dien thoaij)\b", q_norm)
-    if m_phone and not re.search(r"\b(?:cua hang|tiem|shop|sop)\s+(?:dien thoai|ddieenj thoai|dien thoaij)\b", q_norm):
+    if m_phone and not re.search(
+        r"\b(?:cua hang|tiem|shop|sop)\s+(?:dien thoai|ddieenj thoai|dien thoaij)\b",
+        q_norm,
+    ):
         found.append((m_phone.start(), "phone"))
     found.sort(key=lambda x: x[0])
     return [c for _, c in found]
 
 
-def _extract_ordered_payments(q_norm: str) -> List[str]:
+def _extract_ordered_payments(q_norm: str) -> list[str]:
     """Extract payment method mentions in order of appearance in normalized query."""
     patterns = [
         ("cash", r"\b(?:tien mat|tm|tien tuoi)\b"),
@@ -1587,7 +2143,7 @@ def _extract_ordered_payments(q_norm: str) -> List[str]:
         ("ewallet", r"\b(?:vi dien tu)\b"),
         ("cod", r"\b(?:cod|thu ho|xi o di)\b"),
     ]
-    found: List[Tuple[int, str]] = []
+    found: list[tuple[int, str]] = []
     for pay_code, pat in patterns:
         m = re.search(pat, q_norm)
         if m:
@@ -1596,27 +2152,31 @@ def _extract_ordered_payments(q_norm: str) -> List[str]:
     return [p for _, p in found]
 
 
-def _extract_customer_group(q_norm: str) -> Optional[str]:
+def _extract_customer_group(q_norm: str) -> str | None:
     """Extract customer group filter ('thân thiết', 'sỉ', 'lẻ') when explicitly modifying customer/order."""
     if re.search(r"\b(?:khach|khachs|nhom|nhoms)\b.*?\bthan thiet\b", q_norm):
         return "thân thiết"
-    if re.search(r"\b(?:khach|khachs)\s+(?:thuoc\s+|thuoojc\s+)?(?:nhom|nhoms)\s+si\b", q_norm) or re.search(
-        r"\b(?:nhom|nhoms)\s+khach\s+si\b", q_norm
-    ):
+    if re.search(
+        r"\b(?:khach|khachs)\s+(?:thuoc\s+|thuoojc\s+)?(?:nhom|nhoms)\s+si\b", q_norm
+    ) or re.search(r"\b(?:nhom|nhoms)\s+khach\s+si\b", q_norm):
         return "sỉ"
-    if re.search(r"\b(?:khach|khachs)\s+(?:thuoc\s+)?(?:nhom|nhoms)\s+le\b", q_norm) or re.search(
-        r"\b(?:nhom|nhoms)\s+khach\s+le\b", q_norm
-    ):
+    if re.search(
+        r"\b(?:khach|khachs)\s+(?:thuoc\s+)?(?:nhom|nhoms)\s+le\b", q_norm
+    ) or re.search(r"\b(?:nhom|nhoms)\s+khach\s+le\b", q_norm):
         return "lẻ"
     return None
 
 
-def _extract_category_from_query(q_lower: str, q_norm: str, contract: BusinessSemanticContract) -> Optional[str]:
+def _extract_category_from_query(
+    q_lower: str, q_norm: str, contract: BusinessSemanticContract
+) -> str | None:
     """Match product category mentioned in query against contract's available categories."""
     if not contract.available_categories:
         return None
     # Sort available categories by normalized length descending so specific names ('trà sữa', 'cơm mì cháo') match before 'trà'
-    sorted_cats = sorted(contract.available_categories, key=lambda c: len(norm_vn(c)), reverse=True)
+    sorted_cats = sorted(
+        contract.available_categories, key=lambda c: len(norm_vn(c)), reverse=True
+    )
     for cat in sorted_cats:
         c_norm = norm_vn(cat)
         if not c_norm:
@@ -1631,7 +2191,7 @@ def _extract_category_from_query(q_lower: str, q_norm: str, contract: BusinessSe
 
 def _extract_item_from_query(
     q_norm: str, contract: BusinessSemanticContract
-) -> Optional[Tuple[str, str]]:
+) -> tuple[str, str] | None:
     """Match product mentioned in query against contract's available products.
     Returns (item_name, item_key).
     """
@@ -1645,7 +2205,7 @@ def _extract_item_from_query(
     return None
 
 
-def _parse_vnd_amount(num_str: str, unit_str: Optional[str]) -> Optional[float]:
+def _parse_vnd_amount(num_str: str, unit_str: str | None) -> float | None:
     """Parse Vietnamese currency threshold from number + unit in question text."""
     s = num_str.strip()
     u = norm_vn(unit_str) if unit_str else ""
@@ -1665,7 +2225,7 @@ def _parse_vnd_amount(num_str: str, unit_str: Optional[str]) -> Optional[float]:
     return val
 
 
-def _extract_currency_threshold(q_lower: str, q_norm: str) -> Optional[float]:
+def _extract_currency_threshold(q_lower: str, q_norm: str) -> float | None:
     """Extract currency threshold from phrases like 'từ 130.000 đồng trở lên', 'từ 3tr7 trở lên', 'từ 10 củ trở lên'."""
     # 1. Shorthand '3tr7', '1tr5'
     m_sh = re.search(r"\b(\d+)\s*(?:tr|trieu|cu)\s*(\d+)\b", q_norm)
@@ -1685,7 +2245,9 @@ def _extract_currency_threshold(q_lower: str, q_norm: str) -> Optional[float]:
     return None
 
 
-def _parse_growth_periods(q_norm: str, as_of_date: Optional[str]) -> Optional[Tuple[ParsedPeriod, ParsedPeriod]]:
+def _parse_growth_periods(
+    q_norm: str, as_of_date: str | None
+) -> tuple[ParsedPeriod, ParsedPeriod] | None:
     """Parse current and prior comparison periods for MoM, YoY, MTD, and WoW growth queries."""
     anchor = datetime.strptime(as_of_date, "%Y-%m-%d").date() if as_of_date else None
 
@@ -1699,12 +2261,33 @@ def _parse_growth_periods(q_norm: str, as_of_date: Optional[str]) -> Optional[Tu
     has_growth_kw = any(
         k in q_norm
         for k in (
-            "so voi", "so vs", "so thang", "tang truong", "tang hay giam",
-            "cao hay thap", "thay doi", "tang bao nhieu", "giam bao nhieu",
-            "chenh bao nhieu", "hon hay kem", "len hay xuong", "nhieu hon hay it hon",
-            "nhieu hon", "it hon", "cung ky", "thang lien truoc", "thang trc do",
-            "thang truoc do", "so thang truoc", "so thang trc", "tang giam", "len xuong",
-            "thang ngay truoc do", "thang ngay trc do", "thang lien ke truoc", "thang lien truoc do"
+            "so voi",
+            "so vs",
+            "so thang",
+            "tang truong",
+            "tang hay giam",
+            "cao hay thap",
+            "thay doi",
+            "tang bao nhieu",
+            "giam bao nhieu",
+            "chenh bao nhieu",
+            "hon hay kem",
+            "len hay xuong",
+            "nhieu hon hay it hon",
+            "nhieu hon",
+            "it hon",
+            "cung ky",
+            "thang lien truoc",
+            "thang trc do",
+            "thang truoc do",
+            "so thang truoc",
+            "so thang trc",
+            "tang giam",
+            "len xuong",
+            "thang ngay truoc do",
+            "thang ngay trc do",
+            "thang lien ke truoc",
+            "thang lien truoc do",
         )
     )
     if not has_growth_kw:
@@ -1719,33 +2302,80 @@ def _parse_growth_periods(q_norm: str, as_of_date: Optional[str]) -> Optional[Tu
             y1 += 2000
         if y2 < 100:
             y2 += 2000
-        if 1 <= m1 <= 12 and 1 <= m2 <= 12 and 2024 <= y1 <= 2027 and 2024 <= y2 <= 2027:
-            return ParsedPeriod(month_str=f"{y1:04d}-{m1:02d}"), ParsedPeriod(month_str=f"{y2:04d}-{m2:02d}")
+        if (
+            1 <= m1 <= 12
+            and 1 <= m2 <= 12
+            and 2024 <= y1 <= 2027
+            and 2024 <= y2 <= 2027
+        ):
+            return ParsedPeriod(month_str=f"{y1:04d}-{m1:02d}"), ParsedPeriod(
+                month_str=f"{y2:04d}-{m2:02d}"
+            )
 
     # Form 2: MTD (tháng này tới hôm nay vs cùng kỳ tháng trước)
-    if any(k in q_norm for k in ("tu dau thang", "thang nay toi", "thang nay den", "mung 1 thang nay", "thang nay", "thang ni")) and any(
-        k in q_norm for k in ("cung ky thang", "cung so ngay dau thang", "cung ky th", "thang truoc", "thang trc")
+    if any(
+        k in q_norm
+        for k in (
+            "tu dau thang",
+            "thang nay toi",
+            "thang nay den",
+            "mung 1 thang nay",
+            "thang nay",
+            "thang ni",
+        )
+    ) and any(
+        k in q_norm
+        for k in (
+            "cung ky thang",
+            "cung so ngay dau thang",
+            "cung ky th",
+            "thang truoc",
+            "thang trc",
+        )
     ):
         if anchor:
-            cur = ParsedPeriod(start_date=f"{anchor.year:04d}-{anchor.month:02d}-01", end_date=anchor.strftime("%Y-%m-%d"))
+            cur = ParsedPeriod(
+                start_date=f"{anchor.year:04d}-{anchor.month:02d}-01",
+                end_date=anchor.strftime("%Y-%m-%d"),
+            )
             py = anchor.year - 1 if anchor.month == 1 else anchor.year
             pm = 12 if anchor.month == 1 else anchor.month - 1
             max_d = calendar.monthrange(py, pm)[1]
             pd = min(anchor.day, max_d)
-            prior = ParsedPeriod(start_date=f"{py:04d}-{pm:02d}-01", end_date=f"{py:04d}-{pm:02d}-{pd:02d}")
+            prior = ParsedPeriod(
+                start_date=f"{py:04d}-{pm:02d}-01",
+                end_date=f"{py:04d}-{pm:02d}-{pd:02d}",
+            )
             return cur, prior
 
     # Form 3: Single month YoY (cùng kỳ năm ngoái / cùng kỳ năm trước / năm rồi)
     m_single = re.search(r"\b(?:thang|th|t)?\s*(\d{1,2})\s*[/.-]\s*(\d{2,4})\b", q_norm)
     if not m_single:
-        m_single = re.search(r"\b(?:thang|th|t)\s*(\d{1,2})\s*(?:nam\s*)?(\d{4})\b", q_norm)
-    is_yoy = any(k in q_norm for k in ("cung ky nam ngoai", "cung ky nam truoc", "cung ky nam roi", "nam ngoai", "nam truoc", "nam roi", "cung thang nam ngoai", "cung thang nam truoc", "cung thang nam roi"))
+        m_single = re.search(
+            r"\b(?:thang|th|t)\s*(\d{1,2})\s*(?:nam\s*)?(\d{4})\b", q_norm
+        )
+    is_yoy = any(
+        k in q_norm
+        for k in (
+            "cung ky nam ngoai",
+            "cung ky nam truoc",
+            "cung ky nam roi",
+            "nam ngoai",
+            "nam truoc",
+            "nam roi",
+            "cung thang nam ngoai",
+            "cung thang nam truoc",
+            "cung thang nam roi",
+        )
+    )
     if m_single and is_yoy:
         m1, y1 = int(m_single.group(1)), int(m_single.group(2))
         if y1 < 100:
             y1 += 2000
         if 1 <= m1 <= 12 and 2024 <= y1 <= 2027:
-            return ParsedPeriod(month_str=f"{y1:04d}-{m1:02d}"), ParsedPeriod(month_str=f"{y1-1:04d}-{m1:02d}")
+            return ParsedPeriod(month_str=f"{y1:04d}-{m1:02d}"), ParsedPeriod(
+                month_str=f"{y1 - 1:04d}-{m1:02d}"
+            )
 
     # Form 4: Single month MoM (so với tháng liền trước / tháng trước đó / tháng trước)
     is_mom = any(
@@ -1777,16 +2407,26 @@ def _parse_growth_periods(q_norm: str, as_of_date: Optional[str]) -> Optional[Tu
         if 1 <= m1 <= 12 and 2024 <= y1 <= 2027:
             py = y1 - 1 if m1 == 1 else y1
             pm = 12 if m1 == 1 else m1 - 1
-            return ParsedPeriod(month_str=f"{y1:04d}-{m1:02d}"), ParsedPeriod(month_str=f"{py:04d}-{pm:02d}")
+            return ParsedPeriod(month_str=f"{y1:04d}-{m1:02d}"), ParsedPeriod(
+                month_str=f"{py:04d}-{pm:02d}"
+            )
 
     # Form 5: WoW (tuần này so với tuần trước)
-    if any(k in q_norm for k in ("tuan nay", "tuan ni")) and any(k in q_norm for k in ("tuan truoc", "tuan trc", "tuan roi")):
+    if any(k in q_norm for k in ("tuan nay", "tuan ni")) and any(
+        k in q_norm for k in ("tuan truoc", "tuan trc", "tuan roi")
+    ):
         if anchor:
             this_monday = anchor - timedelta(days=anchor.weekday())
-            cur = ParsedPeriod(start_date=this_monday.strftime("%Y-%m-%d"), end_date=anchor.strftime("%Y-%m-%d"))
+            cur = ParsedPeriod(
+                start_date=this_monday.strftime("%Y-%m-%d"),
+                end_date=anchor.strftime("%Y-%m-%d"),
+            )
             prior_monday = this_monday - timedelta(days=7)
             prior_end = prior_monday + timedelta(days=anchor.weekday())
-            prior = ParsedPeriod(start_date=prior_monday.strftime("%Y-%m-%d"), end_date=prior_end.strftime("%Y-%m-%d"))
+            prior = ParsedPeriod(
+                start_date=prior_monday.strftime("%Y-%m-%d"),
+                end_date=prior_end.strftime("%Y-%m-%d"),
+            )
             return cur, prior
 
     return None
@@ -1795,15 +2435,26 @@ def _parse_growth_periods(q_norm: str, as_of_date: Optional[str]) -> Optional[Tu
 def build_query_plan(
     question: str,
     context: BusinessContext,
-    as_of_date: Optional[str],
+    as_of_date: str | None,
     contract: BusinessSemanticContract,
-) -> Optional[QueryPlan]:
+) -> QueryPlan | None:
     """Parse natural-language question into a verified QueryPlan, or None if not in Priority 2 scope."""
     q_lower = question.lower().strip()
     q_norm = norm_vn(question)
 
     # Gate 1 Unanswerable: Subjective questions without factual metrics in database
-    if any(k in q_norm for k in ("nhiet tinh nhat", "than thien nhat", "phuc vu tot nhat", "uy tin nhat", "dep nhat", "de thuong nhat", "hai long nhat")):
+    if any(
+        k in q_norm
+        for k in (
+            "nhiet tinh nhat",
+            "than thien nhat",
+            "phuc vu tot nhat",
+            "uy tin nhat",
+            "dep nhat",
+            "de thuong nhat",
+            "hai long nhat",
+        )
+    ):
         return QueryPlan(
             operation="unanswerable_gate",
             metric="unanswerable",
@@ -1814,7 +2465,17 @@ def build_query_plan(
     # Gate 1 Unanswerable: Profit / Cost questions when business has no cost/expense tables
     if any(k in q_norm for k in ("lai rong", "loi nhuan", "tien loi")):
         has_cost_table = any(
-            any(k in tname for k in ("chi_phi", "gia_von", "nhap_hang", "nhap", "so_quy", "chi_tiet_nhap"))
+            any(
+                k in tname
+                for k in (
+                    "chi_phi",
+                    "gia_von",
+                    "nhap_hang",
+                    "nhap",
+                    "so_quy",
+                    "chi_tiet_nhap",
+                )
+            )
             for tname in context.tables
         )
         if not has_cost_table:
@@ -1826,65 +2487,101 @@ def build_query_plan(
             )
 
     # Hard guard: never intercept boolean questions, reason/why questions, debt aging, profit/cost, inventory, or price-change windows
-    if any(k in q_lower for k in ("phải ko", "phai ko", "không?", "ko?", "tăng liên tục", "luôn cao hơn")) or re.search(
-        r"\b(?:không|khong|ko|hok)\s*(?:vậy|vay|vaayj|ta|nhỉ|nhi|ạ|a|z)?\s*\??$", q_lower
+    if any(
+        k in q_lower
+        for k in (
+            "phải ko",
+            "phai ko",
+            "không?",
+            "ko?",
+            "tăng liên tục",
+            "luôn cao hơn",
+        )
+    ) or re.search(
+        r"\b(?:không|khong|ko|hok)\s*(?:vậy|vay|vaayj|ta|nhỉ|nhi|ạ|a|z)?\s*\??$",
+        q_lower,
     ):
         return None
-    if any(
-        k in q_norm
-        for k in (
-            "tuoi no",
-            "gia von",
-            "ton kho",
-            "lai gop",
-            "tang gia",
-            "doi gia",
-            "len gia",
-            "nha cung cap",
-            "ncc",
-            "bao hanh",
-            "sua tu",
-            "dot tro len",
-            "giao tu",
-            "cho thanh",
-            "3 thang lien nhau",
-            "thu hoi",
-            "mua chiu",
-            "nhan vien",
-            "bi giao tre",
-            "giao tre",
-            "tre qua",
-            "lai suat",
-            "chi phi",
-            "tru chi phi",
-            "khau tru",
-            "giam tru",
-            # Multi-month range queries
-            "tu thang",
-            "từ tháng",
-            "toi thang",
-            "tới tháng",
-            "den thang",
-            "đến tháng",
-            "qua cac thang",
+    if (
+        any(
+            k in q_norm
+            for k in (
+                "tuoi no",
+                "gia von",
+                "ton kho",
+                "lai gop",
+                "tang gia",
+                "doi gia",
+                "len gia",
+                "nha cung cap",
+                "ncc",
+                "bao hanh",
+                "sua tu",
+                "dot tro len",
+                "giao tu",
+                "cho thanh",
+                "3 thang lien nhau",
+                "thu hoi",
+                "mua chiu",
+                "nhan vien",
+                "bi giao tre",
+                "giao tre",
+                "tre qua",
+                "lai suat",
+                "chi phi",
+                "tru chi phi",
+                "khau tru",
+                "giam tru",
+                # Multi-month range queries
+                "tu thang",
+                "từ tháng",
+                "toi thang",
+                "tới tháng",
+                "den thang",
+                "đến tháng",
+                "qua cac thang",
+            )
         )
-    ) or bool(re.search(r"\btra\s+gop\b", q_norm)) or bool(re.search(r"\btru\s+(?:chi\s+phi|tien|khoan)\b", q_norm)) or bool(re.search(r"\b(?:trong\s*kho|to+n[f]?\s*kho|cuoi\s*ngay)\b|\bcon\s+(?:lai\s+)?(?:may|bao\s+nhieu|bnhiu|bn)\b|\b(?:hop\s*chan|cai\s*le)\b", q_norm)):
+        or bool(re.search(r"\btra\s+gop\b", q_norm))
+        or bool(re.search(r"\btru\s+(?:chi\s+phi|tien|khoan)\b", q_norm))
+        or bool(
+            re.search(
+                r"\b(?:trong\s*kho|to+n[f]?\s*kho|cuoi\s*ngay)\b|\bcon\s+(?:lai\s+)?(?:may|bao\s+nhieu|bnhiu|bn)\b|\b(?:hop\s*chan|cai\s*le)\b",
+                q_norm,
+            )
+        )
+    ):
         return None
 
     # Guard: pharmacy pill / blister count queries without clear box specs
-    if bool(re.search(r"\b(?:so|may|bao\s+nhieu|bnhiu|bn)\s+(?:vien|viên|vi|vỉ|goi|gói|lieu|liều)\b|\b(?:vien|viên|vi|vỉ|goi|gói|lieu|liều)\s+(?:thuoc|thuốc)\b", q_norm)) and (contract.has_prescription or any("thuoc" in t for t in context.tables)):
+    if bool(
+        re.search(
+            r"\b(?:so|may|bao\s+nhieu|bnhiu|bn)\s+(?:vien|viên|vi|vỉ|goi|gói|lieu|liều)\b|\b(?:vien|viên|vi|vỉ|goi|gói|lieu|liều)\s+(?:thuoc|thuốc)\b",
+            q_norm,
+        )
+    ) and (contract.has_prescription or any("thuoc" in t for t in context.tables)):
         return None
 
     # Guard: raw weight kg queries
-    if bool(re.search(r"\bkg\b", q_norm)) and not bool(re.search(r"\b(?:ly|coc|lon|chai|hop|dia)\b", q_norm)):
+    if bool(re.search(r"\bkg\b", q_norm)) and not bool(
+        re.search(r"\b(?:ly|coc|lon|chai|hop|dia)\b", q_norm)
+    ):
         return None
 
     # Guard: multiple items ranking (Top 2+, K items) -> abstain to protect PA against list position variance
-    if bool(re.search(r"\b(?:top\s*[2-9]|top\s*1\d|[2-9]\s+(?:mat hang|hang|san pham|sp|mon)|1\d\s+(?:mat hang|hang|san pham|sp|mon))\b", q_norm)):
+    if bool(
+        re.search(
+            r"\b(?:top\s*[2-9]|top\s*1\d|[2-9]\s+(?:mat hang|hang|san pham|sp|mon)|1\d\s+(?:mat hang|hang|san pham|sp|mon))\b",
+            q_norm,
+        )
+    ):
         return None
 
     # Guard: stock/import calculations (số nhập trừ số bán)
-    if any(k in q_norm for k in ("so nhap", "nhap hang", "nhap vao", "tru so ban", "lay so nhap")):
+    if any(
+        k in q_norm
+        for k in ("so nhap", "nhap hang", "nhap vao", "tru so ban", "lay so nhap")
+    ):
         return None
 
     # Guard: discrete month lists ("trong ba tháng 1/2026, 2/2026, 3/2026")
@@ -1896,16 +2593,26 @@ def build_query_plan(
         return None
 
     period = parse_enhanced_period(question, as_of_date)
-    has_valid_period = bool(period.month_str or period.exact_date or (period.start_date and p_has_range(period)))
+    has_valid_period = bool(
+        period.month_str
+        or period.exact_date
+        or (period.start_date and p_has_range(period))
+    )
 
     # -------------------------------------------------------------------------
     # 0.1 RANKING TOP 1 / TOP K
     # -------------------------------------------------------------------------
-    is_peak_day = any(k in q_norm for k in (
-        "ngay nao doanh thu cao nhat", "doanh thu ngay nao cao nhat",
-        "ngay nao ban dc nhieu tien nhat", "ngay nao ban duoc nhieu tien nhat",
-        "ngay ban nhieu tien nhat", "hom nao ban nhieu tien nhat",
-    )) or bool(re.search(r"\bdoanh\s+thu\s+ngay\s+nao\s+cao\s+nhat\b", q_norm))
+    is_peak_day = any(
+        k in q_norm
+        for k in (
+            "ngay nao doanh thu cao nhat",
+            "doanh thu ngay nao cao nhat",
+            "ngay nao ban dc nhieu tien nhat",
+            "ngay nao ban duoc nhieu tien nhat",
+            "ngay ban nhieu tien nhat",
+            "hom nao ban nhieu tien nhat",
+        )
+    ) or bool(re.search(r"\bdoanh\s+thu\s+ngay\s+nao\s+cao\s+nhat\b", q_norm))
 
     if is_peak_day and has_valid_period:
         return QueryPlan(
@@ -1917,12 +2624,18 @@ def build_query_plan(
             output_type="date",
         )
 
-    is_peak_month = any(k in q_norm for k in (
-        "thang nao doanh thu cao nhat", "doanh thu thang nao cao nhat",
-        "thang nao ban dc nhieu tien nhat", "thang nao ban duoc nhieu tien nhat",
-        "thang ban nhieu tien nhat", "thang nao cua hang ban duoc nhieu tien nhat",
-        "thang nao cua hang ban dc nhieu tien nhat",
-    )) or bool(re.search(r"\bdoanh\s+thu\s+thang\s+nao\s+cao\s+nhat\b", q_norm))
+    is_peak_month = any(
+        k in q_norm
+        for k in (
+            "thang nao doanh thu cao nhat",
+            "doanh thu thang nao cao nhat",
+            "thang nao ban dc nhieu tien nhat",
+            "thang nao ban duoc nhieu tien nhat",
+            "thang ban nhieu tien nhat",
+            "thang nao cua hang ban duoc nhieu tien nhat",
+            "thang nao cua hang ban dc nhieu tien nhat",
+        )
+    ) or bool(re.search(r"\bdoanh\s+thu\s+thang\s+nao\s+cao\s+nhat\b", q_norm))
 
     if is_peak_month:
         return QueryPlan(
@@ -1935,15 +2648,32 @@ def build_query_plan(
         )
 
     # Bestselling item(s) Top 1 / Top K
-    is_bestseller = any(k in q_norm for k in (
-        "ban chay nhat", "ban nhieu nhat", "ban dc nhieu nhat", "ban duoc nhieu nhat",
-        "hot nhat", "sp ban nhieu nhat", "hang ban nhieu nhat"
-    )) or bool(re.search(r"\b(?:hang|mat hang|san pham|sp|mon)\s+nao\s+ban\s+(?:chay|nhieu)", q_norm))
+    is_bestseller = any(
+        k in q_norm
+        for k in (
+            "ban chay nhat",
+            "ban nhieu nhat",
+            "ban dc nhieu nhat",
+            "ban duoc nhieu nhat",
+            "hot nhat",
+            "sp ban nhieu nhat",
+            "hang ban nhieu nhat",
+        )
+    ) or bool(
+        re.search(
+            r"\b(?:hang|mat hang|san pham|sp|mon)\s+nao\s+ban\s+(?:chay|nhieu)", q_norm
+        )
+    )
 
     if is_bestseller and has_valid_period:
         m_top = re.search(r"\btop\s*(\d{1,2})\b", q_norm)
-        m_count = re.search(r"\b(\d{1,2})\s+(?:mat hang|hang hoa|san pham|sp|mon)\b", q_norm)
-        is_singular = any(k in q_norm for k in ("hang nao", "san pham nao", "sp nao", "mon nao", "mat hang nao"))
+        m_count = re.search(
+            r"\b(\d{1,2})\s+(?:mat hang|hang hoa|san pham|sp|mon)\b", q_norm
+        )
+        is_singular = any(
+            k in q_norm
+            for k in ("hang nao", "san pham nao", "sp nao", "mon nao", "mat hang nao")
+        )
         if m_top:
             limit_k = int(m_top.group(1))
         elif m_count and not is_singular:
@@ -1952,7 +2682,11 @@ def build_query_plan(
             limit_k = 1
 
         # Only allow Top 1 single item for non-pharmacy businesses; Top K lists have high tie-breaking variance
-        if limit_k > 1 or contract.has_prescription or any("thuoc" in t for t in context.tables):
+        if (
+            limit_k > 1
+            or contract.has_prescription
+            or any("thuoc" in t for t in context.tables)
+        ):
             return None
 
         # Block relative week periods on ranking to avoid calendar anchor boundary mismatch
@@ -1970,10 +2704,16 @@ def build_query_plan(
         )
 
     # Top revenue item(s)
-    is_top_rev_item = any(k in q_norm for k in (
-        "mat hang nao doanh thu cao nhat", "san pham nao doanh thu cao nhat",
-        "mon nao doanh thu cao nhat", "mang ve nhieu tien nhat", "hang nao doanh thu cao nhat"
-    ))
+    is_top_rev_item = any(
+        k in q_norm
+        for k in (
+            "mat hang nao doanh thu cao nhat",
+            "san pham nao doanh thu cao nhat",
+            "mon nao doanh thu cao nhat",
+            "mang ve nhieu tien nhat",
+            "hang nao doanh thu cao nhat",
+        )
+    )
     if is_top_rev_item and has_valid_period:
         return QueryPlan(
             operation="ranking_top_k",
@@ -1986,12 +2726,22 @@ def build_query_plan(
 
     # Busiest day (ngày đắt khách nhất / nhiều đơn nhất theo Rulebook Mục 9)
     is_busiest_day = not any(k in q_norm for k in ("khach", "ai")) and (
-        any(k in q_norm for k in (
-            "dat khach nhat", "dong don nhat",
-            "ngay nao nhieu don nhat", "ngay nao ban duoc nhieu don nhat", "ngay ban dc nhieu don nhat",
-            "ngay nao dong don nhat", "ngay nhieu don nhat", "hom nao nhieu don nhat"
-        ))
-        or bool(re.search(r"\b(?:ngay|hom)\s+(?:nao\s+)?(?:co\s+)?nhieu\s+don\b", q_norm))
+        any(
+            k in q_norm
+            for k in (
+                "dat khach nhat",
+                "dong don nhat",
+                "ngay nao nhieu don nhat",
+                "ngay nao ban duoc nhieu don nhat",
+                "ngay ban dc nhieu don nhat",
+                "ngay nao dong don nhat",
+                "ngay nhieu don nhat",
+                "hom nao nhieu don nhat",
+            )
+        )
+        or bool(
+            re.search(r"\b(?:ngay|hom)\s+(?:nao\s+)?(?:co\s+)?nhieu\s+don\b", q_norm)
+        )
     )
     if is_busiest_day and has_valid_period:
         return QueryPlan(
@@ -2004,10 +2754,17 @@ def build_query_plan(
         )
 
     # Peak hour (giờ cao điểm theo Rulebook Mục 9: khung 1 giờ tròn theo giờ tạo đơn có nhiều đơn nhất)
-    is_peak_hour = any(k in q_norm for k in (
-        "gio cao diem", "khung gio nao dong khach nhat", "khung gio dong khach nhat",
-        "dong khach nhat vao may gio", "dong khach nhat dao may gio", "gio nao dong khach nhat"
-    ))
+    is_peak_hour = any(
+        k in q_norm
+        for k in (
+            "gio cao diem",
+            "khung gio nao dong khach nhat",
+            "khung gio dong khach nhat",
+            "dong khach nhat vao may gio",
+            "dong khach nhat dao may gio",
+            "gio nao dong khach nhat",
+        )
+    )
     if is_peak_hour and has_valid_period:
         return QueryPlan(
             operation="ranking_top_k",
@@ -2019,7 +2776,9 @@ def build_query_plan(
         )
 
     # Customer ranking (Rulebook Mục 9: trung thành nhất = số ngày đặt hàng, sộp nhất = AOV với >= 3 đơn, hay đổi ý nhất = đơn huỷ)
-    is_loyal_customer = any(k in q_norm for k in ("khach hang trung thanh nhat", "khach trung thanh nhat"))
+    is_loyal_customer = any(
+        k in q_norm for k in ("khach hang trung thanh nhat", "khach trung thanh nhat")
+    )
     if is_loyal_customer and has_valid_period:
         return QueryPlan(
             operation="ranking_top_k",
@@ -2030,7 +2789,10 @@ def build_query_plan(
             output_type="string",
         )
 
-    is_big_spender = any(k in q_norm for k in ("khach sop nhat", "khach hang sop nhat", "khach chi dam nhat"))
+    is_big_spender = any(
+        k in q_norm
+        for k in ("khach sop nhat", "khach hang sop nhat", "khach chi dam nhat")
+    )
     if is_big_spender and has_valid_period:
         return QueryPlan(
             operation="ranking_top_k",
@@ -2041,7 +2803,10 @@ def build_query_plan(
             output_type="string",
         )
 
-    is_indecisive_customer = any(k in q_norm for k in ("khach hay doi y nhat", "hay doi y nhat", "huy nhieu don nhat"))
+    is_indecisive_customer = any(
+        k in q_norm
+        for k in ("khach hay doi y nhat", "hay doi y nhat", "huy nhieu don nhat")
+    )
     if is_indecisive_customer and has_valid_period:
         return QueryPlan(
             operation="ranking_top_k",
@@ -2052,11 +2817,18 @@ def build_query_plan(
             output_type="string",
         )
 
-    is_top_customer_orders = any(k in q_norm for k in (
-        "ai la khach co so don mua nhieu nhat", "khach co so don mua nhieu nhat",
-        "khach nao mua nhieu don nhat", "ai mua nhieu don nhat", "khach mua nhieu don nhat",
-        "khach nao co nhieu don nhat", "ai co nhieu don nhat"
-    ))
+    is_top_customer_orders = any(
+        k in q_norm
+        for k in (
+            "ai la khach co so don mua nhieu nhat",
+            "khach co so don mua nhieu nhat",
+            "khach nao mua nhieu don nhat",
+            "ai mua nhieu don nhat",
+            "khach mua nhieu don nhat",
+            "khach nao co nhieu don nhat",
+            "ai co nhieu don nhat",
+        )
+    ) or bool(re.search(r"\b(?:khach|ai)\b.*?\b(?:mua|co)\s*nhieu\s*don\b", q_norm))
     if is_top_customer_orders and has_valid_period:
         return QueryPlan(
             operation="ranking_top_k",
@@ -2068,7 +2840,14 @@ def build_query_plan(
         )
 
     # Popular item (Rulebook Mục 9: mặt hàng được ưa chuộng nhất = có mặt trong nhiều đơn nhất)
-    is_popular_item = any(k in q_norm for k in ("duoc ua chuong nhat", "ua chuong nhat", "mat hang duoc ua chuong nhat"))
+    is_popular_item = any(
+        k in q_norm
+        for k in (
+            "duoc ua chuong nhat",
+            "ua chuong nhat",
+            "mat hang duoc ua chuong nhat",
+        )
+    )
     if is_popular_item and has_valid_period:
         return QueryPlan(
             operation="ranking_top_k",
@@ -2081,10 +2860,25 @@ def build_query_plan(
 
     # Category top item: e.g. "nhóm trà có mặt hàng nào bán được nhiều ly nhất?"
     matched_cat = _extract_category_from_query(q_lower, q_norm, contract)
-    is_cat_top_item = matched_cat is not None and any(k in q_norm for k in (
-        "ban chay nhat", "ban nhieu nhat", "ban dc nhieu nhat", "ban duoc nhieu nhat",
-        "nhieu ly nhat", "nhieu cai nhat", "nhieu nhat"
-    )) and any(k in q_norm for k in ("mat hang nao", "mon nao", "san pham nao", "sp nao", "hang nao"))
+    is_cat_top_item = (
+        matched_cat is not None
+        and any(
+            k in q_norm
+            for k in (
+                "ban chay nhat",
+                "ban nhieu nhat",
+                "ban dc nhieu nhat",
+                "ban duoc nhieu nhat",
+                "nhieu ly nhat",
+                "nhieu cai nhat",
+                "nhieu nhat",
+            )
+        )
+        and any(
+            k in q_norm
+            for k in ("mat hang nao", "mon nao", "san pham nao", "sp nao", "hang nao")
+        )
+    )
     if is_cat_top_item and has_valid_period:
         return QueryPlan(
             operation="ranking_top_k",
@@ -2124,40 +2918,122 @@ def build_query_plan(
     has_pct_kw = any(
         k in q_norm
         for k in (
-            "%", "phan tram", "ti le", "ty le", "ti trong", "ty trong", "chiem", "dong gop",
-            "trawm", "ptram", "phan trawm", "chiem bao nhieu", "bao nhieu %", "bn %", "bnhiu %", "may %"
+            "%",
+            "phan tram",
+            "ti le",
+            "ty le",
+            "ti trong",
+            "ty trong",
+            "chiem",
+            "dong gop",
+            "trawm",
+            "ptram",
+            "phan trawm",
+            "chiem bao nhieu",
+            "bao nhieu %",
+            "bn %",
+            "bnhiu %",
+            "may %",
         )
     )
     has_explicit_rev_kw = any(
-        k in q_norm
-        for k in ("doanh thu", "dthu", "revenue", "tien ban", "tien hang")
-    ) or bool(re.search(r"\b(?:bao nhieu|bnhiu|bn|nhieu|mấy|may)\s+(?:tien|tieenf|dong)\b", q_norm))
+        k in q_norm for k in ("doanh thu", "dthu", "revenue", "tien ban", "tien hang")
+    ) or bool(
+        re.search(
+            r"\b(?:bao nhieu|bnhiu|bn|nhieu|mấy|may)\s+(?:tien|tieenf|dong)\b", q_norm
+        )
+    )
 
-    units_regex = r"(?:ly|coc|hộp|hop|lon|bịch|bich|chai|cái|cai|cuộn|cuon|viên|vien|kg|gói|goi|tô|to|bát|bat|chiếc|chiec|thùng|thung|vé|ve|đĩa|dia|suất|suat|nồi|noi|cây|cay|ống|ong|bộ|bo|can|thanh|tấm|tam|ram|tờ|to|mét|met|m)"
+    units_regex = r"(?:ly|coc|hộp|hop|lon|bịch|bich|chai|cái|cai|cuộn|cuon|viên|vien|kg|gói|goi|tô|to|bát|bat|chiếc|chiec|thùng|thung|vé|ve|đĩa|dia|suất|suat|nồi|noi|cây|cay|ống|ong|bộ|bo|can|thanh|tấm|tam|ram|tờ|to|mét|met|m|phần|phan|bình|binh|tuýp|tuyp|lọ|lo|vỉ|vi|lốc|loc|miếng|mieng)"
     has_qty_q = (
-        bool(re.search(
-            rf"\b(?:mấy|may|bao nhiêu|bao nhieu|bnhiu|bn|tong so|tổng số|đếm|dem)\s+{units_regex}\b",
-            q_norm,
-        ))
-        or bool(re.search(rf"\bso\s+{units_regex}\b.*?\b(?:la\s+bao\s+nhieu|bao\s+nhieu|bnhiu|bn)\b", q_norm))
-        or bool(re.search(rf"\bban\s+(?:duoc|dc|ra)\s+(?:tong\s+cong\s+)?(?:bao\s+nhieu|may)\s+{units_regex}\b", q_norm))
-        or bool(re.search(r"\b(?:mấy|may|bao nhiêu|bao nhieu|bnhiu|bn)\s+ly\b", q_norm))
-        or bool(re.search(r"\b(?:quan|cua hang)\s+ban\s+(?:duoc|dc|ra)\s+(?:bao nhieu|may)\s+ly\b", q_norm))
+        bool(
+            re.search(
+                rf"\b(?:mấy|may|bao nhiêu|bao nhieu|bnhiu|bn|nhiêu|nhieu|tong so|tổng số|đếm|dem)\s+{units_regex}\b",
+                q_norm,
+            )
+        )
+        or bool(
+            re.search(
+                rf"\bso\s+{units_regex}\b.*?\b(?:la\s+(?:bao\s+)?(?:nhieu|nhiu)|(?:bao\s+)?(?:nhieu|nhiu)|bnhiu|bn)\b",
+                q_norm,
+            )
+        )
+        or bool(
+            re.search(
+                rf"\bban\s+(?:duoc|dc|ra)\s+(?:tong\s+cong\s+)?(?:bao\s+nhieu|may|nhiêu|nhieu|bnhiu|bn)\s+{units_regex}\b",
+                q_norm,
+            )
+        )
+        or bool(
+            re.search(
+                rf"\bban\s+(?:duoc|dc|ra).*?\b(?:bao\s+nhieu|may|nhiêu|nhieu|bnhiu|bn)\s+{units_regex}\b",
+                q_norm,
+            )
+        )
+        or bool(
+            re.search(
+                r"\b(?:mấy|may|bao nhiêu|bao nhieu|bnhiu|bn|nhiêu|nhieu)\s+ly\b", q_norm
+            )
+        )
+        or bool(
+            re.search(
+                r"\b(?:quan|cua hang)\s+ban\s+(?:duoc|dc|ra)\s+(?:bao nhieu|may|nhiêu|nhieu|bnhiu|bn)\s+ly\b",
+                q_norm,
+            )
+        )
     )
     # Price inquiry guard (e.g. 'đơn giá bao nhiêu một lốc', 'giá bán bao nhiêu') -> never interpret as quantity sold
-    if bool(re.search(r"\b(?:don\s+gia|gia\s+ban|gia\s+bao\s+nhieu|bao\s+nhieu\s+(?:mot|1)\s+(?:loc|hop|chai|lon|cai|goi|cuon))\b", q_norm)):
+    if bool(
+        re.search(
+            r"\b(?:don\s+gia|gia\s+ban|gia\s+bao\s+nhieu|bao\s+nhieu\s+(?:mot|1)\s+(?:loc|hop|chai|lon|cai|goi|cuon))\b",
+            q_norm,
+        )
+    ):
         has_qty_q = False
+
+    has_purchase_kw = bool(
+        re.search(
+            r"\b(?:nhap|nhap\s+hang|nhap\s+ve|gia\s+nhap|phieu\s+nhap|danh\s+hang\s+ve)\b",
+            q_norm,
+        )
+    )
 
     if has_qty_q:
         has_rev_kw = has_explicit_rev_kw
     else:
         has_rev_kw = has_explicit_rev_kw or any(
             k in q_norm
-            for k in ("ban duoc", "ban dc", "ban duco", "thu duoc", "thu dc", "thu ve", "mang ve", "dem ve", "mua tong", "mua total")
+            for k in (
+                "ban duoc",
+                "ban dc",
+                "ban duco",
+                "thu duoc",
+                "thu dc",
+                "thu ve",
+                "mang ve",
+                "dem ve",
+                "mua tong",
+                "mua total",
+            )
         )
 
-    has_order_kw = bool(re.search(r"\b(?:don(?!\s+gia)|ddown|dh|bill|hoa\s+don|phieu\s+sua\s+xe|phieu\s+sua|luot\s+xe)\b", q_norm))
-    has_avg_kw = any(k in q_norm for k in ("trung binh", "binh quan", "binh wan", "bin quan", "da tri trung binh", "gia tri trung binh"))
+    has_order_kw = bool(
+        re.search(
+            r"\b(?:don(?!\s+gia)|ddown|dh|bill|hoa\s+don|phieu\s+sua\s+xe|phieu\s+sua|luot\s+xe)\b",
+            q_norm,
+        )
+    )
+    has_avg_kw = any(
+        k in q_norm
+        for k in (
+            "trung binh",
+            "binh quan",
+            "binh wan",
+            "bin quan",
+            "da tri trung binh",
+            "gia tri trung binh",
+        )
+    )
 
     # -------------------------------------------------------------------------
     # 0. PERIOD GROWTH & COMPARISON (% or number)
@@ -2168,24 +3044,38 @@ def build_query_plan(
         matched_cat = _extract_category_from_query(q_lower, q_norm, contract)
         chan_codes = _extract_ordered_channels(q_norm)
         matched_chan = chan_codes[0] if chan_codes else None
-        metric = "order_count" if (has_order_kw and not has_explicit_rev_kw) else "revenue"
+        metric = (
+            "order_count" if (has_order_kw and not has_explicit_rev_kw) else "revenue"
+        )
         output_type = "percent" if has_pct_kw else "number"
         return QueryPlan(
             operation="period_growth_pct",
             metric=metric,
             period=cur_p,
             prior_period=prior_p,
-            numerator_filter=DimensionFilter(category=matched_cat, channel=matched_chan),
+            numerator_filter=DimensionFilter(
+                category=matched_cat, channel=matched_chan
+            ),
             output_type=output_type,
         )
 
     # -------------------------------------------------------------------------
     # 0.2 ITEM / CATEGORY / STORE QUANTITY SOLD (number)
     # -------------------------------------------------------------------------
-    if has_qty_q and has_valid_period and not has_pct_kw and not has_explicit_rev_kw:
+    if (
+        has_qty_q
+        and has_valid_period
+        and not has_pct_kw
+        and not has_explicit_rev_kw
+        and not has_purchase_kw
+    ):
         matched_item = _extract_item_from_query(q_norm, contract)
         matched_cat = _extract_category_from_query(q_lower, q_norm, contract)
-        size_filter = "M" if bool(re.search(r"\bsize\s*m\b", q_norm)) else ("L" if bool(re.search(r"\bsize\s*l\b", q_norm)) else None)
+        size_filter = (
+            "M"
+            if bool(re.search(r"\bsize\s*m\b", q_norm))
+            else ("L" if bool(re.search(r"\bsize\s*l\b", q_norm)) else None)
+        )
         is_ly = bool(re.search(r"\b(?:ly|coc)\b", q_norm))
 
         if matched_item is not None:
@@ -2202,7 +3092,9 @@ def build_query_plan(
                 operation="filtered_quantity",
                 metric="quantity",
                 period=period,
-                numerator_filter=DimensionFilter(category=matched_cat, size=size_filter),
+                numerator_filter=DimensionFilter(
+                    category=matched_cat, size=size_filter
+                ),
                 output_type="number",
             )
         elif size_filter is not None:
@@ -2213,7 +3105,15 @@ def build_query_plan(
                 numerator_filter=DimensionFilter(size=size_filter),
                 output_type="number",
             )
-        elif is_ly or any(k in q_norm for k in ("ban duoc bao nhieu ly", "ban dc bao nhieu ly", "ban duoc may ly", "ban dc may ly")):
+        elif is_ly or any(
+            k in q_norm
+            for k in (
+                "ban duoc bao nhieu ly",
+                "ban dc bao nhieu ly",
+                "ban duoc may ly",
+                "ban dc may ly",
+            )
+        ):
             return QueryPlan(
                 operation="filtered_quantity",
                 metric="quantity",
@@ -2225,7 +3125,7 @@ def build_query_plan(
     # -------------------------------------------------------------------------
     # 0.3 SPECIFIC ITEM REVENUE OR ORDER COUNT
     # -------------------------------------------------------------------------
-    if has_valid_period and not has_pct_kw:
+    if has_valid_period and not has_pct_kw and not has_purchase_kw:
         matched_item = _extract_item_from_query(q_norm, contract)
         if matched_item is not None:
             iname, ikey = matched_item
@@ -2253,8 +3153,12 @@ def build_query_plan(
             operation="share_pct" if has_pct_kw else "filtered_revenue",
             metric="revenue",
             period=period,
-            numerator_filter=DimensionFilter(gender="female" if "khach nu" in q_norm else "male"),
-            output_type="unanswerable" if not contract.has_gender else ("percent" if has_pct_kw else "number"),
+            numerator_filter=DimensionFilter(
+                gender="female" if "khach nu" in q_norm else "male"
+            ),
+            output_type="unanswerable"
+            if not contract.has_gender
+            else ("percent" if has_pct_kw else "number"),
         )
 
     # -------------------------------------------------------------------------
@@ -2312,7 +3216,11 @@ def build_query_plan(
             return None
         # 2A: Shift comparison percentage (ca chiều so với ca sáng chênh/tăng/giảm bao nhiêu %)
         if has_morning and has_afternoon and has_pct_kw:
-            metric = "order_count" if (has_order_kw and not has_explicit_rev_kw) else "revenue"
+            metric = (
+                "order_count"
+                if (has_order_kw and not has_explicit_rev_kw)
+                else "revenue"
+            )
             return QueryPlan(
                 operation="shift_diff_pct",
                 metric=metric,
@@ -2424,7 +3332,11 @@ def build_query_plan(
                 numerator_filter=DimensionFilter(channel=ordered_channels[0]),
                 output_type="number",
             )
-        if len(ordered_channels) == 2 and not has_pct_kw and ordered_channels[0] != ordered_channels[1]:
+        if (
+            len(ordered_channels) == 2
+            and not has_pct_kw
+            and ordered_channels[0] != ordered_channels[1]
+        ):
             return QueryPlan(
                 operation="dual_channel_revenue_list",
                 metric="revenue",
@@ -2462,7 +3374,11 @@ def build_query_plan(
                 numerator_filter=DimensionFilter(payment_method=ordered_payments[0]),
                 output_type="number",
             )
-        if len(ordered_payments) == 2 and not has_pct_kw and ordered_payments[0] != ordered_payments[1]:
+        if (
+            len(ordered_payments) == 2
+            and not has_pct_kw
+            and ordered_payments[0] != ordered_payments[1]
+        ):
             return QueryPlan(
                 operation="dual_payment_revenue_list",
                 metric="revenue",
@@ -2501,8 +3417,20 @@ def build_query_plan(
     # -------------------------------------------------------------------------
     # 9. ITEM IN >= K DISTINCT ORDERS (mặt hàng xuất hiện trong ít nhất K đơn)
     # -------------------------------------------------------------------------
-    if any(k in q_norm for k in ("mat hang", "mat hangf", "san pham", "sp", "mon")) and any(
-        k in q_norm for k in ("xuat hien", "co mat", "gop mat", "duoc mua o", "dc mua o", "duoc goi chong", "duoc goi trong", "nam trong")
+    if any(
+        k in q_norm for k in ("mat hang", "mat hangf", "san pham", "sp", "mon")
+    ) and any(
+        k in q_norm
+        for k in (
+            "xuat hien",
+            "co mat",
+            "gop mat",
+            "duoc mua o",
+            "dc mua o",
+            "duoc goi chong",
+            "duoc goi trong",
+            "nam trong",
+        )
     ):
         m_itm = re.search(r"(\d+)\s*(?:don|dh|bill)", q_norm)
         if m_itm and has_valid_period:
@@ -2510,15 +3438,31 @@ def build_query_plan(
                 operation="item_order_threshold_count",
                 metric="item_count",
                 period=period,
-                numerator_filter=DimensionFilter(min_orders_per_item=int(m_itm.group(1))),
+                numerator_filter=DimensionFilter(
+                    min_orders_per_item=int(m_itm.group(1))
+                ),
                 output_type="number",
             )
 
     # -------------------------------------------------------------------------
     # 10. DAILY REVENUE THRESHOLD COUNT (mấy ngày doanh thu đạt từ X trở lên)
     # -------------------------------------------------------------------------
-    if any(k in q_norm for k in ("may ngay", "bao nhieu ngay", "bnhiu ngay", "bn ngay", "so ngay", "may bua", "bao nhieu bua")):
-        if any(k in q_norm for k in ("tro len", "tro lne", "tro leen", "it nhat", ">=", "≥")):
+    if any(
+        k in q_norm
+        for k in (
+            "may ngay",
+            "bao nhieu ngay",
+            "bnhiu ngay",
+            "bn ngay",
+            "so ngay",
+            "may bua",
+            "bao nhieu bua",
+        )
+    ):
+        if any(
+            k in q_norm
+            for k in ("tro len", "tro lne", "tro leen", "it nhat", ">=", "≥")
+        ):
             thresh = _extract_currency_threshold(q_lower, q_norm)
             if thresh is not None and has_valid_period:
                 return QueryPlan(
@@ -2532,8 +3476,26 @@ def build_query_plan(
     # -------------------------------------------------------------------------
     # 11. ORDER REVENUE THRESHOLD COUNT (mấy đơn có doanh thu/tiền hàng từ X trở lên)
     # -------------------------------------------------------------------------
-    if has_order_kw and has_rev_kw and any(k in q_norm for k in ("tro len", "tro lne", "tro leen", "it nhat", ">=", "≥")):
-        if not any(k in q_norm for k in ("may ngay", "bao nhieu ngay", "bnhiu ngay", "bn ngay", "so ngay", "may bua", "bao nhieu bua")):
+    if (
+        has_order_kw
+        and has_rev_kw
+        and any(
+            k in q_norm
+            for k in ("tro len", "tro lne", "tro leen", "it nhat", ">=", "≥")
+        )
+    ):
+        if not any(
+            k in q_norm
+            for k in (
+                "may ngay",
+                "bao nhieu ngay",
+                "bnhiu ngay",
+                "bn ngay",
+                "so ngay",
+                "may bua",
+                "bao nhieu bua",
+            )
+        ):
             thresh = _extract_currency_threshold(q_lower, q_norm)
             if thresh is not None and has_valid_period:
                 return QueryPlan(
@@ -2569,7 +3531,7 @@ def _build_canonical_date_where(col_name: str, period: ParsedPeriod) -> str:
 
 def _build_dimension_where(dfilter: DimensionFilter) -> str:
     """Build SQL filter clauses for DimensionFilter."""
-    clauses: List[str] = ["is_valid_sale = TRUE"]
+    clauses: list[str] = ["is_valid_sale = TRUE"]
     if dfilter.channel is not None:
         clauses.append(f"channel = '{dfilter.channel}'")
     if dfilter.payment_method is not None:
@@ -2588,7 +3550,9 @@ def _build_dimension_where(dfilter: DimensionFilter) -> str:
         clauses.append("order_hour >= 14 AND order_hour < 22")
     if dfilter.item_key is not None:
         clean_key = dfilter.item_key.replace("'", "''")
-        item_cond = f"(item_key = '{clean_key}' OR LOWER(item_key) = '{clean_key.lower()}'"
+        item_cond = (
+            f"(item_key = '{clean_key}' OR LOWER(item_key) = '{clean_key.lower()}'"
+        )
         if dfilter.item_name is not None:
             clean_in = dfilter.item_name.replace("'", "''")
             item_cond += f" OR item_name = '{clean_in}'"
@@ -2604,11 +3568,15 @@ def _build_dimension_where(dfilter: DimensionFilter) -> str:
     elif dfilter.size == "L":
         clauses.append("(item_name LIKE '%(L)%' OR item_name LIKE '%(l)%')")
     if dfilter.drink_only:
-        clauses.append("(category IS NULL OR category NOT IN ('topping', 'bánh', 'do an'))")
+        clauses.append(
+            "(category IS NULL OR category NOT IN ('topping', 'bánh', 'do an'))"
+        )
     return " AND ".join(clauses)
 
 
-def _check_missing_capability(plan: QueryPlan, contract: BusinessSemanticContract) -> Optional[str]:
+def _check_missing_capability(
+    plan: QueryPlan, contract: BusinessSemanticContract
+) -> str | None:
     """Return unanswerable reason if plan requires a dimension that does not exist in this business's schema."""
     if plan.target_dimension == "customer" and not contract.has_customer_key:
         return "Doanh nghiệp không ghi nhận thông tin khách hàng"
@@ -2637,11 +3605,15 @@ def execute_query_plan(
     plan: QueryPlan,
     context: BusinessContext,
     contract: BusinessSemanticContract,
-) -> Tuple[str, Any, Optional[str]]:
+) -> tuple[str, Any, str | None]:
     """Compile and execute QueryPlan deterministically against DuckDB canonical views."""
     # 0. Gate 1: Unanswerable gate (subjective queries or profit/cost without cost tables)
     if plan.operation == "unanswerable_gate" or plan.output_type == "unanswerable":
-        return "unanswerable", None, "Câu hỏi không có dữ liệu đo lường theo Rulebook Mục 7"
+        return (
+            "unanswerable",
+            None,
+            "Câu hỏi không có dữ liệu đo lường theo Rulebook Mục 7",
+        )
 
     # 1. Check schema capability (Gate 1 -> unanswerable)
     missing_reason = _check_missing_capability(plan, contract)
@@ -2650,9 +3622,19 @@ def execute_query_plan(
 
     # 2. Check date out of domain (Gate 1 -> unanswerable)
     if check_date_out_of_domain(context, plan.period, "order_date", "canonical_orders"):
-        return "unanswerable", None, "Khoảng thời gian nằm hoàn toàn ngoài dữ liệu của doanh nghiệp"
-    if plan.prior_period and check_date_out_of_domain(context, plan.prior_period, "order_date", "canonical_orders"):
-        return "unanswerable", None, "Khoảng thời gian so sánh nằm ngoài dữ liệu của doanh nghiệp"
+        return (
+            "unanswerable",
+            None,
+            "Khoảng thời gian nằm hoàn toàn ngoài dữ liệu của doanh nghiệp",
+        )
+    if plan.prior_period and check_date_out_of_domain(
+        context, plan.prior_period, "order_date", "canonical_orders"
+    ):
+        return (
+            "unanswerable",
+            None,
+            "Khoảng thời gian so sánh nằm ngoài dữ liệu của doanh nghiệp",
+        )
 
     date_where = _build_canonical_date_where("order_date", plan.period)
     conn = context.duckdb_conn
@@ -2700,7 +3682,11 @@ def execute_query_plan(
             prior_val = float(row[1] or 0.0)
 
             if prior_val == 0.0:
-                return "abstain", None, "Kỳ trước không có dữ liệu hoặc bằng 0, không thể tính % tăng trưởng"
+                return (
+                    "abstain",
+                    None,
+                    "Kỳ trước không có dữ liệu hoặc bằng 0, không thể tính % tăng trưởng",
+                )
 
             if plan.output_type == "percent":
                 pct = round((cur_val - prior_val) * 100.0 / prior_val, 2)
@@ -2727,34 +3713,63 @@ def execute_query_plan(
         # Operation: Ranking Top K (string | list | date | number)
         if plan.operation == "ranking_top_k":
             if plan.target_dimension == "date":
-                order_expr = "COUNT(DISTINCT order_id) DESC, d ASC" if plan.metric == "order_count" else "SUM(order_revenue) DESC, d ASC"
+                order_expr = (
+                    "COUNT(DISTINCT order_id) DESC, d ASC"
+                    if plan.metric == "order_count"
+                    else "SUM(order_revenue) DESC, d ASC"
+                )
+                metric_col = (
+                    "COUNT(DISTINCT order_id)"
+                    if plan.metric == "order_count"
+                    else "SUM(order_revenue)"
+                )
                 sql = f"""
-                    SELECT CAST(order_date AS DATE) AS d
+                    SELECT CAST(order_date AS DATE) AS d, {metric_col} AS metric_val
                     FROM canonical_orders
                     WHERE {date_where} AND is_valid_sale = TRUE
                     GROUP BY CAST(order_date AS DATE)
                     ORDER BY {order_expr}
-                    LIMIT 1
+                    LIMIT 2
                 """
                 context.last_sql = sql
                 rows = conn.execute(sql).fetchall()
                 if not rows or rows[0][0] is None:
                     return "abstain", None, "Không tìm thấy ngày cao nhất"
+                if (
+                    len(rows) >= 2
+                    and rows[0][1] is not None
+                    and rows[0][1] == rows[1][1]
+                ):
+                    return (
+                        "abstain",
+                        None,
+                        "Đồng hạng ngày cao nhất (TIE) không thể xác định duy nhất",
+                    )
                 return "date", str(rows[0][0]), None
 
             if plan.target_dimension == "peak_hour":
                 sql = f"""
-                    SELECT CAST(order_hour AS INTEGER) AS h
+                    SELECT CAST(order_hour AS INTEGER) AS h, COUNT(DISTINCT order_id) AS cnt
                     FROM canonical_orders
                     WHERE {date_where} AND is_valid_sale = TRUE AND order_hour IS NOT NULL
                     GROUP BY h
-                    ORDER BY COUNT(DISTINCT order_id) DESC, h ASC
-                    LIMIT 1
+                    ORDER BY cnt DESC, h ASC
+                    LIMIT 2
                 """
                 context.last_sql = sql
                 rows = conn.execute(sql).fetchall()
                 if not rows or rows[0][0] is None:
                     return "abstain", None, "Không tìm thấy giờ cao điểm"
+                if (
+                    len(rows) >= 2
+                    and rows[0][1] is not None
+                    and rows[0][1] == rows[1][1]
+                ):
+                    return (
+                        "abstain",
+                        None,
+                        "Đồng hạng giờ cao điểm (TIE) không thể xác định duy nhất",
+                    )
                 return "number", int(rows[0][0]), None
 
             if plan.target_dimension == "month":
@@ -2782,6 +3797,9 @@ def execute_query_plan(
                 else:
                     metric_expr = "SUM(base_quantity)"
 
+                fetch_limit = (
+                    max(plan.limit_k, 2) if plan.limit_k == 1 else plan.limit_k
+                )
                 sql = f"""
                     SELECT item_name, item_key, {metric_expr} AS metric_val
                     FROM canonical_order_lines
@@ -2789,13 +3807,23 @@ def execute_query_plan(
                       AND item_name IS NOT NULL AND item_name != ''
                     GROUP BY item_name, item_key
                     ORDER BY metric_val DESC, item_key ASC
-                    LIMIT {plan.limit_k}
+                    LIMIT {fetch_limit}
                 """
                 context.last_sql = sql
                 rows = conn.execute(sql).fetchall()
                 if not rows:
                     return "abstain", None, "Không có mặt hàng nào trong kỳ"
                 if plan.limit_k == 1:
+                    if (
+                        len(rows) >= 2
+                        and rows[0][2] is not None
+                        and rows[0][2] == rows[1][2]
+                    ):
+                        return (
+                            "abstain",
+                            None,
+                            "Đồng hạng mặt hàng top 1 (TIE) không thể xác định duy nhất",
+                        )
                     return "string", str(rows[0][0]), None
                 else:
                     return "list", [str(r[0]) for r in rows], None
@@ -2817,9 +3845,20 @@ def execute_query_plan(
                     order_clause = "SUM(order_revenue) DESC, customer_name ASC"
                     metric_expr = "SUM(order_revenue)"
 
-                having_clause = "HAVING COUNT(DISTINCT order_id) >= 3" if plan.metric == "aov" else ""
-                val_filter = "is_valid_sale = FALSE" if plan.metric == "canceled_orders" else "is_valid_sale = TRUE"
+                having_clause = (
+                    "HAVING COUNT(DISTINCT order_id) >= 3"
+                    if plan.metric == "aov"
+                    else ""
+                )
+                val_filter = (
+                    "is_valid_sale = FALSE"
+                    if plan.metric == "canceled_orders"
+                    else "is_valid_sale = TRUE"
+                )
 
+                fetch_limit = (
+                    max(plan.limit_k, 2) if plan.limit_k == 1 else plan.limit_k
+                )
                 sql = f"""
                     SELECT customer_name, {metric_expr} AS metric_val
                     FROM canonical_orders
@@ -2829,13 +3868,23 @@ def execute_query_plan(
                     GROUP BY customer_key, customer_name
                     {having_clause}
                     ORDER BY {order_clause}
-                    LIMIT {plan.limit_k}
+                    LIMIT {fetch_limit}
                 """
                 context.last_sql = sql
                 rows = conn.execute(sql).fetchall()
                 if not rows:
                     return "abstain", None, "Không có khách hàng nào trong kỳ"
                 if plan.limit_k == 1:
+                    if (
+                        len(rows) >= 2
+                        and rows[0][1] is not None
+                        and rows[0][1] == rows[1][1]
+                    ):
+                        return (
+                            "abstain",
+                            None,
+                            "Đồng hạng khách hàng top 1 (TIE) không thể xác định duy nhất",
+                        )
                     return "string", str(rows[0][0]), None
                 else:
                     return "list", [str(r[0]) for r in rows], None
@@ -2905,7 +3954,13 @@ def execute_query_plan(
             """
             context.last_sql = sql
             row = conn.execute(sql).fetchall()[0]
-            if row is None or row[0] is None or row[1] is None or math.isnan(float(row[0])) or math.isnan(float(row[1])):
+            if (
+                row is None
+                or row[0] is None
+                or row[1] is None
+                or math.isnan(float(row[0]))
+                or math.isnan(float(row[1]))
+            ):
                 return "abstain", None, "Danh sách doanh thu rỗng"
             v1, v2 = int(row[0]), int(row[1])
             if v1 <= 0 and v2 <= 0:
@@ -3065,7 +4120,11 @@ def execute_query_plan(
             context.last_sql = sql
             val = conn.execute(sql).fetchall()[0][0]
             if val is None or int(val) <= 0:
-                return "abstain", None, "Số mặt hàng xuất hiện từ K đơn trở lên bằng 0 hoặc NULL"
+                return (
+                    "abstain",
+                    None,
+                    "Số mặt hàng xuất hiện từ K đơn trở lên bằng 0 hoặc NULL",
+                )
             return "number", int(val), None
 
     except Exception as e:
@@ -3078,8 +4137,8 @@ def execute_query_plan(
 def resolve_semantic_plan(
     question: str,
     context: BusinessContext,
-    as_of_date: Optional[str] = None,
-) -> Tuple[str, Any, Optional[str]]:
+    as_of_date: str | None = None,
+) -> tuple[str, Any, str | None]:
     """Entrypoint to resolve a question using BusinessSemanticContract + QueryPlan."""
     contract = BusinessSemanticContract.from_context(context)
     plan = build_query_plan(question, context, as_of_date, contract)

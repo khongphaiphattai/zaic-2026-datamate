@@ -9,20 +9,23 @@ Enforces 'Silence is Free' by refusing to guess when SQL fails, returns NULL, or
 from __future__ import annotations
 
 import json
-import math
 import logging
+import math
 import re
 import unicodedata
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import duckdb
 import pandas as pd
 
 from zaic_2026_datamate.data_loader import BusinessContext
 from zaic_2026_datamate.engine import DuckDBAgentEngine
-from zaic_2026_datamate.revenue_metric import MetricCheck, verify_revenue_metric
 from zaic_2026_datamate.llm_client import LLMClient
-from zaic_2026_datamate.prompt_generator import SYSTEM_PROMPT, generate_text_to_sql_prompt
+from zaic_2026_datamate.prompt_generator import (
+    SYSTEM_PROMPT,
+    generate_text_to_sql_prompt,
+)
+from zaic_2026_datamate.revenue_metric import MetricCheck, verify_revenue_metric
 
 logger = logging.getLogger(__name__)
 
@@ -47,8 +50,8 @@ class SlowPathEngine:
         self.reset_audit()
 
     def reset_audit(self) -> None:
-        self.last_metric_check: Optional[MetricCheck] = None
-        self.last_sql_attempt: Optional[str] = None
+        self.last_metric_check: MetricCheck | None = None
+        self.last_sql_attempt: str | None = None
         self.last_execution_succeeded = False
         self.last_policy_rejection = False
 
@@ -56,8 +59,8 @@ class SlowPathEngine:
         self,
         question: str,
         context: BusinessContext,
-        as_of_date: Optional[str] = None,
-    ) -> Tuple[str, Any, Optional[str]]:
+        as_of_date: str | None = None,
+    ) -> tuple[str, Any, str | None]:
         """Attempt to resolve a query via Slow Path Text-to-SQL.
 
         Returns:
@@ -75,7 +78,9 @@ class SlowPathEngine:
 
         # 2. Call LLM
         try:
-            raw_response = self.client.generate(prompt=prompt, system_prompt=SYSTEM_PROMPT)
+            raw_response = self.client.generate(
+                prompt=prompt, system_prompt=SYSTEM_PROMPT
+            )
         except Exception as e:
             logger.warning("LLM client generation failed: %s", e)
             return "abstain", None, f"LLM generation failed: {e}"
@@ -83,14 +88,16 @@ class SlowPathEngine:
         # 3. Parse JSON response
         parsed = self._extract_json(raw_response)
         if not isinstance(parsed, dict) or not parsed:
-            logger.warning("LLM response did not contain valid JSON: %s", raw_response[:100])
+            logger.warning(
+                "LLM response did not contain valid JSON: %s", raw_response[:100]
+            )
             return "abstain", None, "LLM returned invalid JSON"
 
         ans_type = parsed.get("type", "abstain")
         sql = parsed.get("sql")
         try:
             confidence = float(parsed.get("confidence", 0.0))
-        except (TypeError, ValueError):
+        except TypeError, ValueError:
             return "abstain", None, "Invalid confidence"
         if not math.isfinite(confidence) or not 0 <= confidence <= 1:
             return "abstain", None, "Invalid confidence"
@@ -98,13 +105,21 @@ class SlowPathEngine:
 
         # 4. Silence is Free: Gate 1 - Confidence and Refusal Check
         if confidence < self.confidence_threshold:
-            return "abstain", None, f"Confidence {confidence:.2f} < threshold {self.confidence_threshold}"
+            return (
+                "abstain",
+                None,
+                f"Confidence {confidence:.2f} < threshold {self.confidence_threshold}",
+            )
 
         if ans_type == "abstain":
             return "abstain", None, reason or "Model opted to abstain"
 
         if ans_type == "unanswerable":
-            return "unanswerable", None, reason or "Model determined query is unanswerable from data"
+            return (
+                "unanswerable",
+                None,
+                reason or "Model determined query is unanswerable from data",
+            )
 
         if not sql or not isinstance(sql, str) or not sql.strip():
             return "abstain", None, "No valid SQL query provided"
@@ -117,20 +132,31 @@ class SlowPathEngine:
         success, res_df, err = self._execute_read_only(context, engine, cleaned_sql)
 
         # Optional self-correction loop (1 retry)
-        if (not success and self.enable_self_correction and err
-                and not self.last_policy_rejection
-                and not (self.last_metric_check and not self.last_metric_check.allowed)):
+        if (
+            not success
+            and self.enable_self_correction
+            and err
+            and not self.last_policy_rejection
+            and not (self.last_metric_check and not self.last_metric_check.allowed)
+        ):
             logger.info("Retrying SQL with self-correction feedback: %s", err)
             correction_prompt = f"{prompt}\n\nLệnh SQL sau bị lỗi: `{cleaned_sql}`\nThông báo lỗi DuckDB: `{err}`\nHãy sửa lại câu lệnh SQL để khắc phục lỗi trên."
             try:
-                corr_resp = self.client.generate(prompt=correction_prompt, system_prompt=SYSTEM_PROMPT)
+                corr_resp = self.client.generate(
+                    prompt=correction_prompt, system_prompt=SYSTEM_PROMPT
+                )
                 corr_parsed = self._extract_json(corr_resp)
-                if (isinstance(corr_parsed, dict) and isinstance(corr_parsed.get("sql"), str)
-                        and corr_parsed.get("type") == ans_type
-                        and isinstance(corr_parsed.get("confidence"), (int, float))
-                        and self.confidence_threshold <= corr_parsed["confidence"] <= 1):
+                if (
+                    isinstance(corr_parsed, dict)
+                    and isinstance(corr_parsed.get("sql"), str)
+                    and corr_parsed.get("type") == ans_type
+                    and isinstance(corr_parsed.get("confidence"), (int, float))
+                    and self.confidence_threshold <= corr_parsed["confidence"] <= 1
+                ):
                     cleaned_sql = self._clean_sql(corr_parsed["sql"])
-                    success, res_df, err = self._execute_read_only(context, engine, cleaned_sql)
+                    success, res_df, err = self._execute_read_only(
+                        context, engine, cleaned_sql
+                    )
             except Exception as e:
                 logger.warning("Self-correction attempt failed: %s", e)
 
@@ -151,23 +177,36 @@ class SlowPathEngine:
         self.last_policy_rejection = False
         try:
             statements = context.duckdb_conn.extract_statements(sql)
-            if len(statements) != 1 or statements[0].type != duckdb.StatementType.SELECT:
+            if (
+                len(statements) != 1
+                or statements[0].type != duckdb.StatementType.SELECT
+            ):
                 self.last_policy_rejection = True
                 return False, None, "Only a single SELECT is permitted"
             # A fresh catalog is required: DuckDB expands registered DataFrame views
             # in get_table_names, hiding their original names on the live connection.
-            parser = duckdb.connect(":memory:", config={"enable_external_access": "false"})
+            parser = duckdb.connect(
+                ":memory:", config={"enable_external_access": "false"}
+            )
             try:
                 tables = set(parser.get_table_names(sql))
             finally:
                 parser.close()
             if len(tables) != 1 or not tables.issubset(context.tables):
                 self.last_policy_rejection = True
-                return False, None, "Selective execution requires one registered business table"
+                return (
+                    False,
+                    None,
+                    "Selective execution requires one registered business table",
+                )
             if self.verify_daily_revenue:
                 self.last_metric_check = verify_revenue_metric(context, sql)
                 if not self.last_metric_check.allowed:
-                    return False, None, f"Revenue metric rejected: {self.last_metric_check.reason}"
+                    return (
+                        False,
+                        None,
+                        f"Revenue metric rejected: {self.last_metric_check.reason}",
+                    )
             context.duckdb_conn.execute("SET enable_external_access = false")
             context.last_sql = sql
             result = engine.execute_query(sql)
@@ -179,7 +218,7 @@ class SlowPathEngine:
         except Exception as exc:
             return False, None, str(exc)
 
-    def _extract_json(self, text: str) -> Optional[Dict[str, Any]]:
+    def _extract_json(self, text: str) -> dict[str, Any] | None:
         """Safely extract JSON object from LLM response text."""
         text = text.strip()
         # Direct parse
@@ -213,10 +252,22 @@ class SlowPathEngine:
         s = re.sub(r"\s*```$", "", s)
         return s.strip()
 
-    def _format_result(self, df: pd.DataFrame, target_type: str) -> Tuple[str, Any, Optional[str]]:
+    def _format_result(
+        self, df: pd.DataFrame, target_type: str
+    ) -> tuple[str, Any, str | None]:
         """Format DuckDB DataFrame result into exact ZAIC Rulebook output types."""
-        if target_type in ("number", "percent", "string", "date", "boolean") and df.shape != (1, 1):
-            return "abstain", None, "Scalar response requires exactly one row and one column"
+        if target_type in (
+            "number",
+            "percent",
+            "string",
+            "date",
+            "boolean",
+        ) and df.shape != (1, 1):
+            return (
+                "abstain",
+                None,
+                "Scalar response requires exactly one row and one column",
+            )
         # Check all-null
         if df.isna().all().all():
             return "abstain", None, "Result values are all NULL"
@@ -234,7 +285,11 @@ class SlowPathEngine:
                     return "abstain", None, "Non-finite result"
                 # Revenue / count sanity: negative revenue or negative order count -> refuse
                 if num < 0:
-                    return "abstain", None, f"Negative numeric result {num} is invalid for positive business metric"
+                    return (
+                        "abstain",
+                        None,
+                        f"Negative numeric result {num} is invalid for positive business metric",
+                    )
                 if num.is_integer() or abs(num - round(num)) < 1e-4:
                     return "number", int(round(num)), None
                 return "number", round(num, 2), None

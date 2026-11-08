@@ -6,13 +6,15 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import openpyxl
 import pandas as pd
 
 
-def physical_unmerge_and_broadcast(wb_path: str | Path, sheet_name: Optional[str] = None) -> openpyxl.Workbook:
+def physical_unmerge_and_broadcast(
+    wb_path: str | Path, sheet_name: str | None = None
+) -> openpyxl.Workbook:
     """Load an Excel workbook, physically unmerge all merged ranges and broadcast
 
     the top-left value across all constituent cells.
@@ -32,7 +34,7 @@ def physical_unmerge_and_broadcast(wb_path: str | Path, sheet_name: Optional[str
     return wb
 
 
-def clean_vietnamese_currency(val: Any) -> Optional[float]:
+def clean_vietnamese_currency(val: Any) -> float | None:
     """Parse Vietnamese currency strings, shorthand notation, and accounting negatives.
 
     Examples:
@@ -87,7 +89,11 @@ def clean_vietnamese_currency(val: Any) -> Optional[float]:
             if len(parts[1]) == 3:  # 150.000 -> 150000
                 cleaned = parts[0] + parts[1]
         try:
-            res = float(cleaned) if cleaned and any(c.isdigit() for c in cleaned) else None
+            res = (
+                float(cleaned)
+                if cleaned and any(c.isdigit() for c in cleaned)
+                else None
+            )
         except ValueError:
             res = None
 
@@ -96,7 +102,9 @@ def clean_vietnamese_currency(val: Any) -> Optional[float]:
     return res
 
 
-def sniff_and_clean_dataframe(raw_df: pd.DataFrame, non_null_ratio: float = 0.5) -> pd.DataFrame:
+def sniff_and_clean_dataframe(
+    raw_df: pd.DataFrame, non_null_ratio: float = 0.5
+) -> pd.DataFrame:
     """Identify the true header row among decorative metadata and clean columns."""
     if raw_df.empty:
         return raw_df
@@ -108,7 +116,7 @@ def sniff_and_clean_dataframe(raw_df: pd.DataFrame, non_null_ratio: float = 0.5)
 
     header_idx = header_candidates.index[0] if not header_candidates.empty else 0
 
-    df = raw_df.iloc[header_idx + 1:].copy()
+    df = raw_df.iloc[header_idx + 1 :].copy()
     raw_headers = raw_df.iloc[header_idx].tolist()
 
     # Clean headers
@@ -126,6 +134,15 @@ def sniff_and_clean_dataframe(raw_df: pd.DataFrame, non_null_ratio: float = 0.5)
     # Drop completely empty rows or footer noise (e.g. 'Tổng cộng', 'Tổng tháng', 'Ký tên')
     df = df.dropna(how="all")
     first_col = df.columns[0]
-    df = df[~df[first_col].astype(str).str.lower().str.contains(r"tổng cộng|tổng tháng|^tổng\b|^cộng\b|ký tên|người lập", regex=True, na=False)]
+    df = df[
+        ~df[first_col]
+        .astype(str)
+        .str.lower()
+        .str.contains(
+            r"tổng cộng|tổng tháng|^tổng\b|^cộng\b|ký tên|người lập",
+            regex=True,
+            na=False,
+        )
+    ]
 
     return df.reset_index(drop=True)
