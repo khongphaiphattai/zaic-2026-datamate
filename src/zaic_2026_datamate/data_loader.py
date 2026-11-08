@@ -272,7 +272,7 @@ def clean_dataframe(df: pd.DataFrame) -> tuple[pd.DataFrame, dict[str, str]]:
             )
             or bool(re.search(r"\bhan\b", clean_col))
             or pd.api.types.is_datetime64_any_dtype(s)
-        )
+        ) and not ("han_gop" in clean_col)
 
         if is_date_col:
             if not pd.api.types.is_datetime64_any_dtype(s):

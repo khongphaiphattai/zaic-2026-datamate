@@ -818,6 +818,22 @@ def resolve_query(
         if ans_type != "abstain":
             return ans_type, ans_val, reason
 
+    # Specialized engine for purchase and supplier analytics
+    if any(
+        t in context.tables
+        for t in ["so_tay_nhap_hang", "so_nhap_hang", "phieu_nhap", "chi_tiet_nhap_hang"]
+    ) or any(
+        k in question.lower()
+        for k in ["dang tin cay", "đáng tin cậy", "uy tin", "uy tín", "nha cung cap tot nhat", "nhà cung cấp tốt nhất"]
+    ):
+        from zaic_2026_datamate.purchase_analytics import resolve_purchase_query
+
+        ans_type, ans_val, reason = resolve_purchase_query(
+            question, context, as_of_date
+        )
+        if ans_type != "abstain":
+            return ans_type, ans_val, reason
+
     q = question.lower()
     period = parse_time_expressions(question, as_of_date)
     table, order_col, date_col, status_col = find_primary_sales_table(context)
