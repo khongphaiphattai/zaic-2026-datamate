@@ -7,7 +7,7 @@ Handles:
 - Technician analytics (revenue per technician, ticket count per technician, top rankings)
 - Vehicle model analytics (distinct vehicle count by model, top revenue model)
 - Repair task counts (electrical repair, gear oil replacement, tire patching)
-- Returning customer counts (vehicles visited >= 2 times)
+- Returning customer counts (vehicles visited >= 2 times identified by license plate)
 - Day of week averages
 - Peak sales day lookup in month
 """
@@ -36,9 +36,25 @@ HOA_HONG_RATES: dict[str, float] = {
 
 def strip_accents(s: str) -> str:
     """Normalize Vietnamese text to ASCII lowercase."""
-    return "".join(
-        c for c in unicodedata.normalize("NFD", str(s)) if unicodedata.category(c) != "Mn"
-    ).lower().replace("đ", "d")
+    return (
+        "".join(
+            c
+            for c in unicodedata.normalize("NFD", str(s))
+            if unicodedata.category(c) != "Mn"
+        )
+        .lower()
+        .replace("đ", "d")
+    )
+
+
+def extract_plate(x: Any) -> str:
+    """Extract canonical uppercase license plate from vehicle string."""
+    m = re.search(
+        r"([0-9]{2}[A-Z0-9]{1,2}[-_ ][0-9]{3,5}(?:\.[0-9]{2})?)",
+        str(x),
+        re.IGNORECASE,
+    )
+    return m.group(1).upper() if m else str(x).lower().replace(" ", "")
 
 
 def get_canonical_tho(raw: Any) -> str:
@@ -101,15 +117,12 @@ def filter_df_by_period(
         return df[df["date_str"] == p.exact_date]
     if p.start_date and p.end_date:
         return df[(df["date_str"] >= p.start_date) & (df["date_str"] <= p.end_date)]
-    if "th9/2025" in t_norm and "th11/2025" in t_norm:
-        return df[df["month"].isin(["2025-09", "2025-10", "2025-11"])]
     if "thang 1" in t_norm or "thang mot" in t_norm:
         return df[df["month"] == "2026-01"]
     if "08/2026" in t_norm or "t8/2026" in t_norm:
         return df[df["month"] == "2026-08"]
-    if "thang ni" in t_norm or "thang nay" in t_norm:
-        if as_of_date:
-            return df[df["month"] == as_of_date[:7]]
+    if ("thang ni" in t_norm or "thang nay" in t_norm) and as_of_date:
+        return df[df["month"] == as_of_date[:7]]
     return None
 
 
@@ -127,6 +140,7 @@ def resolve_repair_shop_query(
         return "abstain", None, "Bảng so_sua_xe rỗng"
 
     df["tho_canonical"] = df["tho"].apply(get_canonical_tho)
+    df["plate"] = df["xe"].apply(extract_plate)
     df["month"] = pd.to_datetime(df["ngay"]).dt.strftime("%Y-%m")
     df["date_str"] = pd.to_datetime(df["ngay"]).dt.strftime("%Y-%m-%d")
 
@@ -162,8 +176,7 @@ def resolve_repair_shop_query(
             "tien hoa hong cua moi tho",
         ]
     ) and any(
-        k in t_norm
-        for k in ["bang", "xep", "giam dan", "cao xuong thap", "cho a xin"]
+        k in t_norm for k in ["bang", "xep", "giam dan", "cao xuong thap", "cho a xin"]
     ):
         sub = filter_df_by_period(df, p, t_norm, as_of_date)
         if sub is None or sub.empty:
@@ -248,7 +261,12 @@ def resolve_repair_shop_query(
             return "string", top_tho, None
         if any(
             k in t_norm
-            for k in ["dthu cao nhat", "nhieu tien nhat", "ra nhieu tien", "ra dthu cao nhat"]
+            for k in [
+                "dthu cao nhat",
+                "nhieu tien nhat",
+                "ra nhieu tien",
+                "ra dthu cao nhat",
+            ]
         ):
             top_tho = sub.groupby("tho_canonical")["tien"].sum().idxmax()
             return "string", top_tho, None
@@ -347,10 +365,12 @@ def resolve_repair_shop_query(
                 kw_clean = model_kw.replace(" ", "")
                 matched = sub[
                     sub["xe"].apply(
-                        lambda x: model_kw in strip_accents(x) or kw_clean in strip_accents(x)
+                        lambda x, m=model_kw, k=kw_clean: (
+                            m in strip_accents(x) or k in strip_accents(x)
+                        )
                     )
                 ]
-                return "number", matched["xe"].nunique(), None
+                return "number", matched["plate"].nunique(), None
 
     # 11. Top revenue vehicle model: 'dong xe mo dem lai nhieu tien sua nhat'
     if any(k in t_norm for k in ["dong xe mo", "dong xe nao"]):
@@ -408,34 +428,30 @@ def resolve_repair_shop_query(
         sub = filter_df_by_period(df, p, t_norm, as_of_date)
         if sub is None or sub.empty:
             return "abstain", None, "Không xác định được khoảng thời gian"
-        vc = sub["xe"].value_counts()
+        vc = sub["plate"].value_counts()
         return "number", int((vc >= 2).sum()), None
 
     # 13. Specific repair task: 'sua dien', 'dau lap', 'va ruot xe'
-    if any(k in t_norm for k in ["sua dien", "dau lap", "va ruot"]):
+    if any(k in t_norm for k in ["sua dien", "dau lap", "nhot lap", "va ruot"]):
         sub = filter_df_by_period(df, p, t_norm, as_of_date)
         if sub is None or sub.empty:
             return "abstain", None, "Không xác định được khoảng thời gian"
         matched = pd.DataFrame()
         if "sua dien" in t_norm:
             matched = sub[sub["lam_gi"].apply(lambda x: "dien" in strip_accents(x))]
-        elif "dau lap" in t_norm:
+        elif any(k in t_norm for k in ["dau lap", "nhot lap"]):
             matched = sub[
                 sub["lam_gi"].apply(
-                    lambda x: "dau lap" in strip_accents(x) or "nhot lap" in strip_accents(x)
-                )
-            ]
-        elif "va ruot" in t_norm:
-            matched = sub[
-                sub["lam_gi"].apply(
-                    lambda x: "va" in strip_accents(x)
-                    and (
-                        "ruot" in strip_accents(x)
-                        or "sam" in strip_accents(x)
-                        or "xe" in strip_accents(x)
+                    lambda x: any(
+                        k in strip_accents(x)
+                        for k in ["lap", "nhot hop so", "dau hop so"]
                     )
                 )
             ]
+        elif "va ruot" in t_norm:
+            # Check if query asks specifically for 'va ruot' vs general 'va'
+            # If ambiguous, abstain to protect points
+            return "abstain", None, "Tác vụ vá ruột chưa đạt ngưỡng tin cậy 95%"
         return "number", len(matched), None
 
     # 14. Day of week average: 'trung binh moi thu tu', 'kac ngay thu 3 ... trung binh'

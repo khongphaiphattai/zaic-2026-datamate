@@ -72,3 +72,25 @@ và order-fill-final-replay là thí nghiệm bị loại, không candidate rele
 Bản cuối tạiorder-scoped-header-replay, hashsource ghi trongmanifest.
 Fullsuite **321passed/1knownwarning**, thêm4regressiontests so baseline317.
 Chưa fullpipelineTrain/Public, chưa đo PA mới hoặc thay submission.
+
+## Giải mã 100% 6/6 lỗi Train và phát hiện lỗi Grain `dev_003` / Table Selection `biz_109` (07/11/2026)
+
+1. **5/6 lỗi Train (`biz_105`: `q_f4966c224caa`, `q_f72b8741ddf4`; `biz_117`: `q_008f69128180`, `q_a05aeaae5493`, `q_a954a482d4bf`) — Tỷ lệ hủy/hoàn trả lệch 0.01%:**
+   - **Root cause:** Bảng `so_ban_hang` ở `biz_105` và `biz_117` có grain dòng hàng, khi khách trả hàng sau (khác ngày/khác tháng) hệ thống append thêm dòng mới mang cùng `ma_hoa_don`/`ma_phieu`, cột `gio` ghi **thời điểm trả hàng**, còn cột `ngay_giao_dich`/`ngay_lap` trên dòng trả bị trống trong Excel gốc và bị `ffill()` xuyên đơn ghi đè. Khi lọc `WHERE strftime(TRY_CAST(gio AS DATE), '%Y-%m') = ...` ở mức dòng (row grain), các đơn đặt ở tháng $M-1$ nhưng có dòng trả ở tháng $M$ bị lọt vào mẫu số `COUNT(DISTINCT order_id)` của tháng $M$.
+   - **Đối chứng:** Chuẩn hóa ngày đặt theo đơn (`MIN(TRY_CAST(gio AS DATE))` cho mỗi `order_id`) khớp **5/5** đáp án chuẩn của BTC:
+     - `biz_105` 2026-03: `124 / 5647 = 2.20%` (target `2.2`, cũ `124 / 5650 = 2.19%`)
+     - `biz_105` 2026-06 MTD (`<= 2026-06-24`): `83 / 4425 = 1.88%` (target `1.88`, cũ `83 / 4431 = 1.87%`)
+     - `biz_117` 2025-10: `11 / 911 = 1.21%` (target `1.21`, cũ `11 / 913 = 1.20%`)
+     - `biz_117` 2026-02: `18 / 664 = 2.71%` (target `2.71`, cũ `18 / 666 = 2.70%`)
+     - `biz_117` 2026-04: `20 / 1023 = 1.96%` (target `1.96`, cũ `20 / 1024 = 1.95%`)
+
+2. **1/6 lỗi Train (`biz_101`: `q_91eac74caf39`) — Doanh thu tháng 08/2025 lệch 30.000đ (`204.534.500` vs `204.564.500`):**
+   - **Root cause:** Trong `src/zaic_2026_datamate/data_loader.py`, điều kiện `is_num_col` và `is_money_col` kiểm tra chuỗi con `"no"` (dự định bắt `cong_no`, `du_no`). Tên cột sản phẩm `Nội dung` (`noi_dung`) ở `biz_101` chứa `"no"`, bị ép qua `clean_vietnamese_currency()` biến `"Pepsi 330ml"` và `"Coca Cola 330ml"` thành cùng số `330.0` (và món không có số thành `NaN`). Bước `cleaned_df.drop_duplicates()` sau đó xóa nhầm 10 dòng hợp lệ trên toàn `biz_101` (gồm 3 dòng `10.000đ` trong tháng 08/2025 thuộc `ORD002717`, `ORD003090`, `ORD003395`).
+
+3. **Lỗi Grain nhân bản tiền hàng ở Public Test `dev_003` (`BanHang_TongHop` — ảnh hưởng 8/205 câu đang trả lời):**
+   - Bảng `ban_hang_tong_hop` của `dev_003` có grain dòng sản phẩm (`dong`, `thanh_tien_d`), nhưng lặp lại các cột tổng mức đơn (`tien_hang_truoc_giam`, `tien_giam`, `tong_thanh_toan`) trên mọi dòng của cùng `ma_don`.
+   - `find_revenue_column()` chọn `tien_hang_truoc_giam` trước `thanh_tien_d`, làm `SUM(tien_hang_truoc_giam)` nhân bội giá trị đơn hàng theo số dòng món trong đơn trên 8 câu Public Test (`q_01ac0fc9f2a2`, `q_09542f67d04a`, `q_4b260819febf`, `q_51ba2dc4fd49`, `q_77ce65543f25`, `q_900c545f4ed7`, `q_b0ce2336c79b`, `q_de25e5a7e1c6`).
+
+4. **Lỗi chọn bảng thiếu ngày ở Train `biz_109` và cột ngày ở `dev_004`:**
+   - Ở `biz_109`, `find_primary_sales_table()` chọn bảng chi tiết `danh_sach_hoa_don_chi_tiet` (không có cột ngày, không có trạng thái) thay vì bảng hóa đơn `du_lieu_ban_hang_danh_sach_hoa_don` (có `thoi_gian`, `trang_thai`, `tong_tien_hang`), làm 99/100 câu của `biz_109` bị abstain.
+   - Ở `dev_004`, bảng `so_ban_hang` có cả `gio` (dòng trả ghi lúc trả) và `thoi_gian` (ngày bán); cần ưu tiên ngày đặt/bán của đơn thay vì timestamp dòng trả.
