@@ -1186,6 +1186,8 @@ def resolve_query(
                 "so don",
                 "mấy đơn",
                 "may don",
+                "mấy đơng",
+                "may dong",
                 "mấy đh",
                 "may dh",
                 "bao nhiêu đơn",
@@ -1780,6 +1782,8 @@ def resolve_query(
             "bao nhieu don",
             "mấy đơn",
             "may don",
+            "mấy đơng",
+            "may dong",
             "bnhiu đơn",
             "bnhiu don",
             "bao nhiêu đh",
@@ -2271,6 +2275,18 @@ def resolve_query(
                 "ngay",
                 "ngày",
                 "ngayf",
+                "từ",
+                "tu",
+                "tới",
+                "toi",
+                "đến",
+                "den",
+                "tính",
+                "tinh",
+                "bây",
+                "bay",
+                "giờ",
+                "gio",
             }
             if not words.issubset(STORE_STOP_WORDS) and not matched_product:
                 has_unrecognized_product_subject = True
@@ -2295,6 +2311,13 @@ def resolve_query(
 
     if is_overall_rev_query:
         if not has_valid_period:
+            from zaic_2026_datamate.semantic_contract import resolve_semantic_plan
+
+            sem_type, sem_val, sem_reason = resolve_semantic_plan(
+                question, context, as_of_date
+            )
+            if sem_type != "abstain":
+                return sem_type, sem_val, sem_reason
             return (
                 "abstain",
                 None,
