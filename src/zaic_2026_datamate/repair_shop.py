@@ -78,6 +78,39 @@ def extract_specific_tho(t_norm: str) -> str | None:
     return None
 
 
+def filter_df_by_period(
+    df: pd.DataFrame,
+    p: Any,
+    t_norm: str,
+    as_of_date: str | None = None,
+) -> pd.DataFrame | None:
+    """Strictly filter dataframe by temporal expressions; returns None if undefined."""
+    if p.month_str:
+        return df[df["month"] == p.month_str]
+    if p.quarter_str:
+        q_months = {
+            "2025-Q3": ["2025-07", "2025-08", "2025-09"],
+            "2025-Q4": ["2025-10", "2025-11", "2025-12"],
+            "2026-Q1": ["2026-01", "2026-02", "2026-03"],
+            "2026-Q2": ["2026-04", "2026-05", "2026-06"],
+        }.get(p.quarter_str, [])
+        return df[df["month"].isin(q_months)]
+    if p.exact_date:
+        return df[df["date_str"] == p.exact_date]
+    if p.start_date and p.end_date:
+        return df[(df["date_str"] >= p.start_date) & (df["date_str"] <= p.end_date)]
+    if "th9/2025" in t_norm and "th11/2025" in t_norm:
+        return df[df["month"].isin(["2025-09", "2025-10", "2025-11"])]
+    if "thang 1" in t_norm or "thang mot" in t_norm:
+        return df[df["month"] == "2026-01"]
+    if "08/2026" in t_norm or "t8/2026" in t_norm:
+        return df[df["month"] == "2026-08"]
+    if "thang ni" in t_norm or "thang nay" in t_norm:
+        if as_of_date:
+            return df[df["month"] == as_of_date[:7]]
+    return None
+
+
 def resolve_repair_shop_query(
     question: str,
     context: BusinessContext,
@@ -97,7 +130,6 @@ def resolve_repair_shop_query(
 
     t_norm = strip_accents(question)
     p = parse_time_expressions(question, as_of_date)
-    m = p.month_str
 
     # 0. Subjective sentiment queries -> unanswerable
     if any(
@@ -120,9 +152,20 @@ def resolve_repair_shop_query(
     # 1. Commission table: 'bang hoa hong', 'bang tien hoa hong', 'hoa hong tung tho ... bang'
     if any(
         k in t_norm
-        for k in ["bang hoa hong", "bang tien hoa hong", "hoa hong tung tho", "tien hoa hong cua moi tho"]
-    ) and any(k in t_norm for k in ["bang", "xep", "giam dan", "cao xuong thap", "cho a xin"]):
-        sub = df[df["month"] == m] if m else df
+        for k in [
+            "bang hoa hong",
+            "bang tien hoa hong",
+            "hoa hong tung tho",
+            "tien hoa hong kua moi tho",
+            "tien hoa hong cua moi tho",
+        ]
+    ) and any(
+        k in t_norm
+        for k in ["bang", "xep", "giam dan", "cao xuong thap", "cho a xin"]
+    ):
+        sub = filter_df_by_period(df, p, t_norm, as_of_date)
+        if sub is None or sub.empty:
+            return "abstain", None, "Không xác định được khoảng thời gian"
         res = []
         for tho, r in HOA_HONG_RATES.items():
             s_rev = sub[sub["tho_canonical"] == tho]["tien"].sum()
@@ -132,7 +175,9 @@ def resolve_repair_shop_query(
 
     # 2. Commission single tho: 'hoa hong', 'hue hong'
     if any(k in t_norm for k in ["hoa hong", "hue hong"]):
-        sub = df[df["month"] == m] if m else df
+        sub = filter_df_by_period(df, p, t_norm, as_of_date)
+        if sub is None or sub.empty:
+            return "abstain", None, "Không xác định được khoảng thời gian"
         matched_tho = extract_specific_tho(t_norm)
         if matched_tho:
             s_rev = sub[sub["tho_canonical"] == matched_tho]["tien"].sum()
@@ -159,7 +204,9 @@ def resolve_repair_shop_query(
             "ban tong cong",
         ]
     ):
-        sub = df[df["month"] == m] if m else df
+        sub = filter_df_by_period(df, p, t_norm, as_of_date)
+        if sub is None or sub.empty:
+            return "abstain", None, "Không xác định được khoảng thời gian"
         s_rev = sub[sub["tho_canonical"] == spec_tho]["tien"].sum()
         return "number", int(round(s_rev)), None
 
@@ -175,13 +222,17 @@ def resolve_repair_shop_query(
             "man duoc bao nhieu",
         ]
     ):
-        sub = df[df["month"] == m] if m else df
+        sub = filter_df_by_period(df, p, t_norm, as_of_date)
+        if sub is None or sub.empty:
+            return "abstain", None, "Không xác định được khoảng thời gian"
         cnt = len(sub[sub["tho_canonical"] == spec_tho])
         return "number", cnt, None
 
     # 5. Top technician ranking: 'tho mo lam nhieu luot xe nhat', 'tho nhan nhieu phieu sua nhat', 'tho nao lam ra dthu cao nhat', 'tho mo lam ra nhieu tien nhat'
     if any(k in t_norm for k in ["tho mo", "tho nao", "ai la tho", "tho nhan"]):
-        sub = df[df["month"] == m] if m else df
+        sub = filter_df_by_period(df, p, t_norm, as_of_date)
+        if sub is None or sub.empty:
+            return "abstain", None, "Không xác định được khoảng thời gian"
         if any(
             k in t_norm
             for k in [
@@ -210,7 +261,9 @@ def resolve_repair_shop_query(
             "trung binh mot phieu",
         ]
     ):
-        sub = df[df["month"] == m] if m else df
+        sub = filter_df_by_period(df, p, t_norm, as_of_date)
+        if sub is None or sub.empty:
+            return "abstain", None, "Không xác định được khoảng thời gian"
         sub_paid = sub[sub["tien"] > 0]
         if sub_paid.empty:
             return "abstain", None, "Không có phiếu thu tiền trong kỳ"
@@ -218,18 +271,11 @@ def resolve_repair_shop_query(
 
     # 7. Warranty tickets count: 'phieu bao hanh', 'quay lai bao hanh'
     if any(k in t_norm for k in ["bao hanh"]):
+        sub = filter_df_by_period(df, p, t_norm, as_of_date)
+        if sub is None or sub.empty:
+            return "abstain", None, "Không xác định được khoảng thời gian"
         # If asks for ratio %
         if any(k in t_norm for k in ["%", "phan tram", "chiem"]):
-            if p.quarter_str:
-                q_months = {
-                    "2025-Q3": ["2025-07", "2025-08", "2025-09"],
-                    "2025-Q4": ["2025-10", "2025-11", "2025-12"],
-                    "2026-Q1": ["2026-01", "2026-02", "2026-03"],
-                    "2026-Q2": ["2026-04", "2026-05", "2026-06"],
-                }.get(p.quarter_str, [])
-                sub = df[df["month"].isin(q_months)]
-            else:
-                sub = df[df["month"] == m] if m else df
             bh = len(sub[sub["tien"] == 0])
             tt = len(sub[sub["tien"] > 0])
             if tt == 0:
@@ -237,18 +283,6 @@ def resolve_repair_shop_query(
             return "percent", round((bh / tt) * 100, 2), None
 
         # Count tickets
-        if p.quarter_str:
-            q_months = {
-                "2025-Q3": ["2025-07", "2025-08", "2025-09"],
-                "2025-Q4": ["2025-10", "2025-11", "2025-12"],
-                "2026-Q1": ["2026-01", "2026-02", "2026-03"],
-                "2026-Q2": ["2026-04", "2026-05", "2026-06"],
-            }.get(p.quarter_str, [])
-            sub = df[df["month"].isin(q_months)]
-        elif "08/2026" in t_norm or "t8/2026" in t_norm:
-            sub = df[df["month"] == "2026-08"]
-        else:
-            sub = df[df["month"] == m] if m else df
         return "number", len(sub[sub["tien"] == 0]), None
 
     # 8. Ticket count of store: 'dem phieu sua xe', 'len bnhiu phieu sua xe'
@@ -262,10 +296,12 @@ def resolve_repair_shop_query(
             "bao nhieu phieu sua",
         ]
     ):
-        sub = df[df["month"] == m] if m else df
+        sub = filter_df_by_period(df, p, t_norm, as_of_date)
+        if sub is None or sub.empty:
+            return "abstain", None, "Không xác định được khoảng thời gian"
         return "number", len(sub), None
 
-    # 9. Store monthly revenue: 'tong dthu thang', 'dthu cua tiem', 'tiem ban tong cong duoc bnhiu tien'
+    # 9. Store monthly / quarterly revenue: 'tong dthu thang', 'dthu cua tiem', 'tiem ban tong cong duoc bnhiu tien'
     if any(
         k in t_norm
         for k in [
@@ -276,7 +312,9 @@ def resolve_repair_shop_query(
             "dthu chia tiem",
         ]
     ):
-        sub = df[df["month"] == m] if m else df
+        sub = filter_df_by_period(df, p, t_norm, as_of_date)
+        if sub is None or sub.empty:
+            return "abstain", None, "Không xác định được khoảng thời gian"
         return "number", int(round(sub["tien"].sum())), None
 
     # 10. Distinct vehicle count of a model: 'bn chiec sh mode khac nhau', 'bao nhieu xe air blade khac nhau', 'bao nhieu chiec xe wave alpha'
@@ -290,7 +328,9 @@ def resolve_repair_shop_query(
             "sh mode",
         ]
     ):
-        sub = df[df["month"] == m] if m else df
+        sub = filter_df_by_period(df, p, t_norm, as_of_date)
+        if sub is None or sub.empty:
+            return "abstain", None, "Không xác định được khoảng thời gian"
         for model_kw in [
             "sh mode",
             "shmode",
@@ -312,7 +352,9 @@ def resolve_repair_shop_query(
 
     # 11. Top revenue vehicle model: 'dong xe mo dem lai nhieu tien sua nhat'
     if any(k in t_norm for k in ["dong xe mo", "dong xe nao"]):
-        sub = df[df["month"] == m] if m else df
+        sub = filter_df_by_period(df, p, t_norm, as_of_date)
+        if sub is None or sub.empty:
+            return "abstain", None, "Không xác định được khoảng thời gian"
 
         def extract_model(xe_str: str) -> str:
             s = strip_accents(xe_str)
@@ -361,16 +403,17 @@ def resolve_repair_shop_query(
 
     # 12. Returning customer (>= 2 visits): 'xe vo sua tu 2 lan tro len', 'xe khach quen'
     if any(k in t_norm for k in ["2 lan tro len", "khach quen"]):
-        if "th9/2025" in t_norm and "th11/2025" in t_norm:
-            sub = df[df["month"].isin(["2025-09", "2025-10", "2025-11"])]
-        else:
-            sub = df[df["month"] == m] if m else df
+        sub = filter_df_by_period(df, p, t_norm, as_of_date)
+        if sub is None or sub.empty:
+            return "abstain", None, "Không xác định được khoảng thời gian"
         vc = sub["xe"].value_counts()
         return "number", int((vc >= 2).sum()), None
 
     # 13. Specific repair task: 'sua dien', 'dau lap', 'va ruot xe'
     if any(k in t_norm for k in ["sua dien", "dau lap", "va ruot"]):
-        sub = df[df["month"] == m] if m else df
+        sub = filter_df_by_period(df, p, t_norm, as_of_date)
+        if sub is None or sub.empty:
+            return "abstain", None, "Không xác định được khoảng thời gian"
         matched = pd.DataFrame()
         if "sua dien" in t_norm:
             matched = sub[sub["lam_gi"].apply(lambda x: "dien" in strip_accents(x))]
@@ -398,7 +441,10 @@ def resolve_repair_shop_query(
         k in t_norm
         for k in ["trung binh moi thu", "trung binh 1 ngay ko bnhiu luot xe"]
     ):
-        sub = df[df["month"] == m].copy() if m else df.copy()
+        sub = filter_df_by_period(df, p, t_norm, as_of_date)
+        if sub is None or sub.empty:
+            return "abstain", None, "Không xác định được khoảng thời gian"
+        sub = sub.copy()
         sub["day_of_week"] = pd.to_datetime(sub["ngay"]).dt.day_of_week
         target_dow = 2 if ("thu tu" in t_norm or "thu 4" in t_norm) else 1
         dow_df = sub[sub["day_of_week"] == target_dow]
@@ -411,12 +457,8 @@ def resolve_repair_shop_query(
     if any(k in t_norm for k in ["ngay nao", "ngay ma tiem"]) and any(
         k in t_norm for k in ["nhieu tien nhat"]
     ):
-        sub = (
-            df[df["month"] == m]
-            if m
-            else (df[df["month"] == "2026-01"] if "thang 1" in t_norm else df)
-        )
-        if sub.empty:
+        sub = filter_df_by_period(df, p, t_norm, as_of_date)
+        if sub is None or sub.empty:
             return "abstain", None, "Không có dữ liệu trong kỳ"
         max_d = sub.groupby("date_str")["tien"].sum().idxmax()
         return "date", max_d, None
