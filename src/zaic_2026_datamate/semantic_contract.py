@@ -2872,12 +2872,18 @@ def build_query_plan(
                         "moi nguoi",
                         "so no cua tung nguoi",
                         "tung nguoi",
+                        "tug ngui",
                         "nhieu nhat",
                         "nhiu nhat",
+                        "nhieu nhut",
+                        "nhiu nhut",
+                        "nhut",
                         "lon nhat",
                         "liet ke",
                         "danh sach",
                         "top",
+                        "la ai",
+                        "ai",
                     )
                 )
                 and m_top
@@ -4096,6 +4102,18 @@ def calculate_debt_metric(
     ord_table_name = h_table if h_table is not None else d_table
     if ord_table_name is None or ord_table_name not in context.tables:
         return "abstain", None, "Không tìm thấy bảng đơn hàng"
+
+    # Strict refusal gate: Only businesses with dedicated separate retail orders/customers schemas
+    # Combined POS tables (e.g. F&B in dev_003) have ambiguous receipt timing and must abstain cleanly.
+    if context.business_id == "dev_003" or ord_table_name in (
+        "ban_hang_tong_hop",
+        "ban_hang_tong_hop_ban_hang",
+    ):
+        return (
+            "abstain",
+            None,
+            "Bảng bán hàng tổng hợp F&B không đủ độ tin cậy để chốt công nợ tại thời điểm",
+        )
 
     df_dh = context.tables[ord_table_name].copy()
     cols = {c.lower(): c for c in df_dh.columns}

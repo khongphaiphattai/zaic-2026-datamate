@@ -229,7 +229,7 @@
 {"id": "q_3da612131082", "type": "abstain"}
 {"id": "q_3dd4582ecb10", "type": "percent", "answer": -36.85}
 {"id": "q_3de82903c4c6", "type": "number", "answer": 1562258700}
-{"id": "q_3e30ac2f9cc9", "type": "number", "answer": 155}
+{"id": "q_3e30ac2f9cc9", "type": "abstain"}
 {"id": "q_3e36677e62a9", "type": "percent", "answer": 44.07}
 {"id": "q_3e6a7564332d", "type": "abstain"}
 {"id": "q_3e9418af3a85", "type": "abstain"}
@@ -239,7 +239,7 @@
 {"id": "q_3f61cde37841", "type": "abstain"}
 {"id": "q_3f807c338eb9", "type": "number", "answer": 80336000}
 {"id": "q_3fb7bbc8ec8a", "type": "abstain"}
-{"id": "q_403bdc83bc9c", "type": "table", "answer": {"columns": ["khach_hang", "so_tien_no"], "rows": [["Lâm Hiếu Nam", 292000], ["Mai Loan Đạt", 229999], ["Châu Thanh Long", 220500], ["Tăng Thu Hà", 202667], ["Tô Linh Hồng", 172000]]}}
+{"id": "q_403bdc83bc9c", "type": "abstain"}
 {"id": "q_4067c5f50ef7", "type": "abstain"}
 {"id": "q_408c2137f088", "type": "abstain"}
 {"id": "q_409bb74c67b4", "type": "percent", "answer": 26.52}
@@ -511,7 +511,7 @@
 {"id": "q_7d043dbd4908", "type": "abstain"}
 {"id": "q_7d236c308111", "type": "abstain"}
 {"id": "q_7d4d7cb3aa73", "type": "abstain"}
-{"id": "q_7d7ea7cccf26", "type": "table", "answer": {"columns": ["khach_hang", "so_tien_no"], "rows": [["Lâm Hiếu Nam", 265500], ["Lê Hải Minh", 259667], ["Đoàn Hùng Minh", 229834]]}}
+{"id": "q_7d7ea7cccf26", "type": "abstain"}
 {"id": "q_7dbd343490cd", "type": "number", "answer": 4205}
 {"id": "q_7de8d58e315c", "type": "abstain"}
 {"id": "q_7dff48b107f0", "type": "number", "answer": 9763000}
@@ -586,7 +586,7 @@
 {"id": "q_928423a8bbc6", "type": "percent", "answer": 8.54}
 {"id": "q_929a9dcb0a38", "type": "number", "answer": 1101}
 {"id": "q_92c6660df209", "type": "number", "answer": 48}
-{"id": "q_935d887c9cd9", "type": "number", "answer": 64}
+{"id": "q_935d887c9cd9", "type": "abstain"}
 {"id": "q_936c6ef612b2", "type": "abstain"}
 {"id": "q_93ff6d28c50b", "type": "abstain"}
 {"id": "q_9498d6b37278", "type": "percent", "answer": 2.65}
@@ -718,7 +718,7 @@
 {"id": "q_b70a59e2e970", "type": "percent", "answer": 2.25}
 {"id": "q_b723bbe29e20", "type": "number", "answer": 181}
 {"id": "q_b7ad6a55cf62", "type": "number", "answer": 263}
-{"id": "q_b7bc96270d9f", "type": "number", "answer": 68}
+{"id": "q_b7bc96270d9f", "type": "abstain"}
 {"id": "q_b82c713cb7b5", "type": "number", "answer": 430}
 {"id": "q_b88ec465ade3", "type": "number", "answer": 12}
 {"id": "q_b963dcade0d3", "type": "number", "answer": 56}
@@ -920,7 +920,7 @@
 {"id": "q_edce3c50d4f7", "type": "abstain"}
 {"id": "q_ede70b7f6c13", "type": "abstain"}
 {"id": "q_edf890b68dfd", "type": "number", "answer": 46}
-{"id": "q_ee2df6a3e957", "type": "number", "answer": 2758868}
+{"id": "q_ee2df6a3e957", "type": "table", "answer": {"columns": ["khach_hang", "so_tien_no"], "rows": [["Tống Thu Hương", 759000], ["Tô Bình Đức", 728400], ["La Hiếu Long", 375000]]}}
 {"id": "q_ee58dba4a73e", "type": "number", "answer": 557246}
 {"id": "q_ee860111a8df", "type": "number", "answer": 7000000}
 {"id": "q_ef0073de2935", "type": "number", "answer": 674966000}
@@ -979,7 +979,7 @@
 {"id": "q_fb409424a396", "type": "abstain"}
 {"id": "q_fb4bf09137a7", "type": "abstain"}
 {"id": "q_fbaf2023cfb6", "type": "abstain"}
-{"id": "q_fbb0ba502475", "type": "table", "answer": {"columns": ["khach_hang", "so_tien_no"], "rows": [["Đào Châu Tâm", 195500], ["Tống Quang Hằng", 138000], ["Đàm Hà Phúc", 102001], ["Đặng Trung Thanh", 98000], ["Chung Khoa Thảo", 86000]]}}
+{"id": "q_fbb0ba502475", "type": "abstain"}
 {"id": "q_fbc812dde384", "type": "string", "answer": "Sữa pha sẵn GrowPLUS+ đỏ 110ml lốc 4"}
 {"id": "q_fbe115817066", "type": "abstain"}
 {"id": "q_fbf739189e42", "type": "abstain"}
