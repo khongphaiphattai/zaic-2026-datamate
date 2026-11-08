@@ -809,6 +809,15 @@ def resolve_query(
     Resolve a business question into (answer_type, value, reason).
     Types: 'number', 'percent', 'string', 'list', 'unanswerable', 'abstain'.
     """
+    if "so_sua_xe" in context.tables:
+        from zaic_2026_datamate.repair_shop import resolve_repair_shop_query
+
+        ans_type, ans_val, reason = resolve_repair_shop_query(
+            question, context, as_of_date
+        )
+        if ans_type != "abstain":
+            return ans_type, ans_val, reason
+
     q = question.lower()
     period = parse_time_expressions(question, as_of_date)
     table, order_col, date_col, status_col = find_primary_sales_table(context)
@@ -1003,6 +1012,12 @@ def resolve_query(
             "de thuong nhat",
             "hài lòng nhất",
             "hai long nhat",
+            "chăm chỉ nhất",
+            "cham chi nhat",
+            "chu đáo nhất",
+            "chu dao nhat",
+            "vui vẻ nhất",
+            "vui ve nhat",
         ]
     ):
         return (
@@ -2202,7 +2217,7 @@ def resolve_query(
         if not re.match(
             r"^(?:t\d{1,2}[/.-]\d{2,4}|\d{1,2}[/.-]\d{2,4}|\d{4}|q\d)$", subj
         ):
-            words = set(re.findall(r"\w+", subj))
+            words = set(re.findall(r"[a-zA-Z_À-ỹ]+", subj.lower()))
             STORE_STOP_WORDS = {
                 "cua",
                 "hang",
