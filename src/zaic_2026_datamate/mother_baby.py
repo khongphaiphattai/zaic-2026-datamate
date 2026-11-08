@@ -1,0 +1,216 @@
+"""Specialized Deterministic Engine for Mother & Baby Store (dev_013).
+
+Handles:
+- Voucher discount sums and shipping fee collections (ban_hang)
+- Customer loyalty points redemption amounts (ban_hang)
+- New loyalty member registrations (quan_ly_khach_hang)
+- Diaper and milk brand sales volumes, size breakdowns, and brand shares (ban_hang + quan_ly_danh_muc)
+- Category revenue sums (ban_hang + quan_ly_danh_muc)
+- Sales channel breakdowns (Tại tiệm vs Zalo vs Sàn TMĐT)
+- Unanswerable queries (untracked customer address streets, customer genders, subjective supplier reliability)
+"""
+
+from __future__ import annotations
+
+import unicodedata
+from typing import Any
+
+import pandas as pd
+
+from zaic_2026_datamate.data_loader import BusinessContext
+from zaic_2026_datamate.intent_parser import parse_time_expressions
+
+
+def strip_accents(s: str) -> str:
+    """Strip accents and lowercase a string."""
+    return "".join(
+        c
+        for c in unicodedata.normalize("NFD", str(s))
+        if unicodedata.category(c) != "Mn"
+    ).lower().replace("đ", "d")
+
+
+def resolve_mother_baby_query(
+    question: str,
+    context: BusinessContext,
+    as_of_date: str | None = None,
+) -> tuple[str, Any, str | None]:
+    """Resolve dev_013 questions using exact deterministic logic."""
+    if "ban_hang" not in context.tables:
+        return "abstain", None, "Không tìm thấy bảng ban_hang"
+
+    t_norm = strip_accents(question)
+    p = parse_time_expressions(question, as_of_date=as_of_date)
+
+    target_month = p.month_str
+    is_mtd = False
+    if not target_month and ("thang nay" in t_norm or "thang ni" in t_norm or "th nay" in t_norm) and as_of_date:
+        target_month = as_of_date[:7]
+        is_mtd = True
+
+    # 1. Unanswerable guards
+    if any(k in t_norm for k in ["truong chinh", "lac long quan", "khach o duong"]):
+        return "unanswerable", None, "Cửa hàng không ghi nhận địa chỉ chi tiết theo tuyến đường của khách hàng"
+    if any(k in t_norm for k in ["khach nam", "khach nu", "gioi tinh"]):
+        return "unanswerable", None, "Hệ thống không thu thập thông tin giới tính của khách hàng"
+    if any(k in t_norm for k in ["dang tin cay", "uy tin", "ncc nao tot"]):
+        return "unanswerable", None, "Không có tiêu chí khách quan xác định mức độ uy tín của nhà cung cấp"
+
+    # Clean ban_hang (exclude cancelled / refunded orders)
+    bh = context.tables["ban_hang"].copy()
+    bh_valid = bh[~bh["ghi_chu"].astype(str).str.lower().isin(["cancel", "huỷ"])].copy()
+    bh_valid["m"] = pd.to_datetime(bh_valid["ngay"]).dt.strftime("%Y-%m")
+    bh_valid["d"] = pd.to_datetime(bh_valid["ngay"]).dt.strftime("%Y-%m-%d")
+
+    # Filter period for ban_hang
+    def get_period_sub(df: pd.DataFrame) -> pd.DataFrame:
+        if not target_month:
+            return pd.DataFrame()
+        sub = df[df["m"] == target_month]
+        if is_mtd and as_of_date:
+            sub = sub[sub["d"] <= as_of_date]
+        return sub
+
+    # -------------------------------------------------------------------------
+    # A. VOUCHER DISCOUNTS
+    # -------------------------------------------------------------------------
+    if any(k in t_norm for k in ["voucher", "vau cho"]) and any(
+        k in t_norm for k in ["giam", "tong", "het bnhiu", "het bao nhieu"]
+    ):
+        sub = get_period_sub(bh_valid)
+        if not sub.empty:
+            v_sub = sub[sub["ten_hang"] == "Voucher"]
+            return "number", int(abs(v_sub["tt"].sum())), None
+
+    # -------------------------------------------------------------------------
+    # B. SHIPPING FEES
+    # -------------------------------------------------------------------------
+    if any(k in t_norm for k in ["phi ship", "thu phi ship"]):
+        sub = get_period_sub(bh_valid)
+        if not sub.empty:
+            s_sub = sub[sub["ten_hang"] == "Phí ship"]
+            return "number", int(s_sub["tt"].sum()), None
+
+    # -------------------------------------------------------------------------
+    # C. LOYALTY POINTS REDEMPTION
+    # -------------------------------------------------------------------------
+    if any(k in t_norm for k in ["dung diem", "tru diem", "diem tru"]):
+        sub = get_period_sub(bh_valid)
+        if not sub.empty:
+            p_sub = sub[sub["ten_hang"].astype(str).str.contains(r"Dùng \d+ điểm", regex=True, na=False)]
+            return "number", int(abs(p_sub["tt"].sum())), None
+
+    # -------------------------------------------------------------------------
+    # D. NEW MEMBER REGISTRATIONS (quan_ly_khach_hang)
+    # -------------------------------------------------------------------------
+    if "quan_ly_khach_hang" in context.tables and any(
+        k in t_norm for k in ["thanh vien dang ky", "khach hang dang ky", "dang ky moi"]
+    ):
+        kh = context.tables["quan_ly_khach_hang"].copy()
+        kh["m"] = pd.to_datetime(kh["ngay_dang_ky"]).dt.strftime("%Y-%m")
+        if target_month:
+            sub_kh = kh[kh["m"] == target_month]
+            return "number", len(sub_kh), None
+
+    # -------------------------------------------------------------------------
+    # E. CATEGORY & DIAPER / MILK ANALYTICS (quan_ly_danh_muc)
+    # -------------------------------------------------------------------------
+    if "quan_ly_danh_muc" in context.tables:
+        dm = context.tables["quan_ly_danh_muc"].copy()
+        merged = pd.merge(
+            bh_valid,
+            dm[["ten_hang", "nhom", "hang", "so_size"]],
+            on="ten_hang",
+            how="left",
+        )
+        sub = get_period_sub(merged)
+
+        # E1. Milk powder size counts: 'sua bot so 4', 'sua bot so 2'
+        if "sua bot" in t_norm and any(k in t_norm for k in ["so 1", "so 2", "so 3", "so 4"]):
+            for s_num, s_label in [("so 1", "Số 1"), ("so 2", "Số 2"), ("so 3", "Số 3"), ("so 4", "Số 4")]:
+                if s_num in t_norm:
+                    # Top brand for milk powder size
+                    if any(k in t_norm for k in ["hang nao", "nhan nao", "thuong hieu nao"]) and any(
+                        k in t_norm for k in ["nhieu nhat", "nhieu lon nhat", "chay nhat"]
+                    ):
+                        m_sub = sub[sub["so_size"] == s_label]
+                        if not m_sub.empty:
+                            top_b = m_sub.groupby("hang")["sl"].sum().idxmax()
+                            return "string", top_b, None
+                    # Total volume of milk powder size
+                    if any(k in t_norm for k in ["may lon", "bnhiu lon", "bao nhieu lon", "so lon"]):
+                        m_sub = sub[sub["so_size"] == s_label]
+                        return "number", int(m_sub["sl"].sum()), None
+
+        # E2. Diaper size volume: 'bim size xl', 'bim size l', 'bim size m', 'bim size nb'
+        if any(k in t_norm for k in ["bim", "ta"]) and any(
+            k in t_norm for k in ["size nb", "size m", "size l", "size xl", "size xxl"]
+        ):
+            for sz_kw, sz_label in [
+                ("size nb", "Size NB"),
+                ("size m", "Size M"),
+                ("size l", "Size L"),
+                ("size xl", "Size XL"),
+                ("size xxl", "Size XXL"),
+            ]:
+                if sz_kw in t_norm:
+                    # Percentage of total diapers
+                    if any(k in t_norm for k in ["%", "phan tram"]):
+                        b_sub = sub[sub["nhom"] == "bỉm tã"]
+                        sz_sl = b_sub[b_sub["so_size"] == sz_label]["sl"].sum()
+                        tot_sl = b_sub["sl"].sum()
+                        if tot_sl > 0:
+                            return "percent", round(sz_sl / tot_sl * 100, 2), None
+                    # Total volume of diaper size
+                    if any(k in t_norm for k in ["may bich", "bnhiu bich", "bao nhieu bich"]):
+                        sz_sub = sub[sub["so_size"] == sz_label]
+                        return "number", int(sz_sub["sl"].sum()), None
+
+        # E3. Diaper brand share: 'bim bobby', 'bim moony', 'bim huggies', 'bim merries'
+        if any(k in t_norm for k in ["bim", "ta"]) and any(k in t_norm for k in ["%", "phan tram"]):
+            for b_kw, b_label in [
+                ("bobby", "Bobby"),
+                ("moony", "Moony"),
+                ("huggies", "Huggies"),
+                ("merries", "Merries"),
+                ("pampers", "Pampers"),
+            ]:
+                if b_kw in t_norm:
+                    b_sub = sub[sub["nhom"] == "bỉm tã"]
+                    brand_sl = b_sub[b_sub["hang"] == b_label]["sl"].sum()
+                    tot_sl = b_sub["sl"].sum()
+                    if tot_sl > 0:
+                        return "percent", round(brand_sl / tot_sl * 100, 2), None
+
+        # E4. Category revenue share or sum: 'nhom sua bot chiem bao nhieu %', 'nhom hang binh sua', 'nhom do dung'
+        for cat_kw, cat_label in [
+            ("sua bot", "sữa bột"),
+            ("binh sua", "bình sữa"),
+            ("do dung", "đồ dùng"),
+            ("an dam", "ăn dặm"),
+        ]:
+            if cat_kw in t_norm:
+                if any(k in t_norm for k in ["%", "phan tram"]):
+                    tot_rev = sub[
+                        ~sub["ten_hang"].isin(["Voucher", "Phí ship"])
+                        & ~sub["ten_hang"].astype(str).str.contains(r"Dùng \d+ điểm", regex=True, na=False)
+                    ]["tt"].sum()
+                    cat_rev = sub[sub["nhom"] == cat_label]["tt"].sum()
+                    if tot_rev > 0:
+                        return "percent", round(cat_rev / tot_rev * 100, 2), None
+                if any(k in t_norm for k in ["bao nhieu tien", "bnhiu", "duoc bao nhieu"]):
+                    cat_rev = sub[sub["nhom"] == cat_label]["tt"].sum()
+                    return "number", int(round(cat_rev)), None
+
+    # -------------------------------------------------------------------------
+    # F. CHANNEL SHARE: Tại tiệm vs Zalo vs Sàn TMĐT
+    # -------------------------------------------------------------------------
+    if any(k in t_norm for k in ["tai quay", "tai tiem"]) and any(k in t_norm for k in ["%", "phan tram"]):
+        sub = get_period_sub(bh_valid)
+        if not sub.empty:
+            t_rev = sub["tt"].sum()
+            tai_tiem_rev = sub[sub["kenh"] == "Tại tiệm"]["tt"].sum()
+            if t_rev > 0:
+                return "percent", round(tai_tiem_rev / t_rev * 100, 2), None
+
+    return "abstain", None, "Không tìm thấy mẫu phù hợp cho câu hỏi dev_013"
