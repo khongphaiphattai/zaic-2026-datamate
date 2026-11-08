@@ -353,7 +353,7 @@ def resolve_mobile_installment_query(
                         & (sbh["loai"].isin(["máy mới", "máy cũ"]))
                     ]["sl"].sum()
                     if num_phones > 0:
-                        return "percent", round(len(sub) / num_phones * 100, 2), None
+                        return "percent", float(round(len(sub) / num_phones * 100, 2)), None
             return "number", len(sub), None
 
     # -------------------------------------------------------------------------

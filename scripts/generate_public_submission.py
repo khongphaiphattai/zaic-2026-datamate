@@ -136,6 +136,10 @@ def generate_submission(
                     stats["answered"] += 1
                     stats[route] += 1
                     stats[ans_type] = stats.get(ans_type, 0) + 1
+                    if ans_type == "number" and ans_val is not None:
+                        ans_val = int(round(ans_val))
+                    elif ans_type == "percent" and ans_val is not None:
+                        ans_val = float(round(ans_val, 2))
                     row = {
                         "id": qid,
                         "type": ans_type,

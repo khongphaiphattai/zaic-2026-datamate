@@ -4,6 +4,7 @@ Shop-specific accepted aliases require upstream canonicalization from shop data.
 """
 
 import math
+import numbers
 import re
 import unicodedata
 from datetime import date
@@ -19,7 +20,11 @@ def _text(value):
 
 
 def _numeric(value):
-    return type(value) in (int, float) and math.isfinite(value)
+    return (
+        isinstance(value, (int, float, numbers.Number))
+        and not isinstance(value, bool)
+        and math.isfinite(float(value))
+    )
 
 
 def _cell(value):
