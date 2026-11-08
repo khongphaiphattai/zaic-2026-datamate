@@ -1,5 +1,5 @@
 {"id": "q_008fdebb6ec9", "type": "string", "answer": "Trà đào cam sả (M)"}
-{"id": "q_009187cd2960", "type": "abstain"}
+{"id": "q_009187cd2960", "type": "number", "answer": 41}
 {"id": "q_00bf8df3ea0b", "type": "number", "answer": 4533000}
 {"id": "q_00c4e24fa228", "type": "number", "answer": 16226000}
 {"id": "q_013b4ff35811", "type": "number", "answer": 230034300}
@@ -7,14 +7,14 @@
 {"id": "q_01ac0fc9f2a2", "type": "number", "answer": 71724}
 {"id": "q_01ba91ff94c6", "type": "abstain"}
 {"id": "q_01d1099489a0", "type": "percent", "answer": -2.94}
-{"id": "q_01d1fc600b26", "type": "abstain"}
+{"id": "q_01d1fc600b26", "type": "number", "answer": 3142000}
 {"id": "q_027f5441831d", "type": "abstain"}
-{"id": "q_02feb595d6b7", "type": "abstain"}
+{"id": "q_02feb595d6b7", "type": "number", "answer": 69}
 {"id": "q_0329c9711c55", "type": "number", "answer": 108}
 {"id": "q_033e37dde4d5", "type": "abstain"}
 {"id": "q_03622bae312b", "type": "percent", "answer": 25.71}
 {"id": "q_037178b58fcc", "type": "number", "answer": 6134}
-{"id": "q_0389b0c41da6", "type": "abstain"}
+{"id": "q_0389b0c41da6", "type": "percent", "answer": -16.02}
 {"id": "q_03bbdfa6e0d5", "type": "number", "answer": 68}
 {"id": "q_03bee605bf7f", "type": "number", "answer": 281304400}
 {"id": "q_040d437fdf09", "type": "number", "answer": 70324}
@@ -46,23 +46,23 @@
 {"id": "q_0acdf488056e", "type": "percent", "answer": -6.28}
 {"id": "q_0ae9b7cf7003", "type": "number", "answer": 41959500}
 {"id": "q_0b0081426a17", "type": "number", "answer": 12823000}
-{"id": "q_0b78b53675c1", "type": "abstain"}
+{"id": "q_0b78b53675c1", "type": "string", "answer": "Berberin 100mg Mekophar chai 100 viên"}
 {"id": "q_0b854610073b", "type": "abstain"}
 {"id": "q_0bac8c88238d", "type": "number", "answer": 15535000}
 {"id": "q_0bee4ad8f965", "type": "number", "answer": 496753}
-{"id": "q_0c0a1a780164", "type": "abstain"}
+{"id": "q_0c0a1a780164", "type": "number", "answer": 101066500}
 {"id": "q_0c62d2078959", "type": "number", "answer": 76}
 {"id": "q_0ca19cd317cb", "type": "abstain"}
-{"id": "q_0cb6a1a6f1ef", "type": "abstain"}
+{"id": "q_0cb6a1a6f1ef", "type": "string", "answer": "Hứa Bảo Trung"}
 {"id": "q_0d23cc65cc7a", "type": "percent", "answer": -12.82}
 {"id": "q_0da15db21978", "type": "percent", "answer": 3.28}
 {"id": "q_0dff1966b7c3", "type": "number", "answer": 106712}
-{"id": "q_0e1eff36bbc5", "type": "abstain"}
+{"id": "q_0e1eff36bbc5", "type": "percent", "answer": 61.54}
 {"id": "q_0e72ff8aa98e", "type": "number", "answer": 216}
 {"id": "q_0ea6fdb19b86", "type": "abstain"}
 {"id": "q_0ed1ebc4fe4d", "type": "number", "answer": 153}
 {"id": "q_0ef1608808dd", "type": "number", "answer": 530899800}
-{"id": "q_0ef28ee17f12", "type": "abstain"}
+{"id": "q_0ef28ee17f12", "type": "number", "answer": 151}
 {"id": "q_0f59f61affd1", "type": "number", "answer": 4947}
 {"id": "q_0f7d15097a8c", "type": "number", "answer": 4917}
 {"id": "q_1019063a351e", "type": "abstain"}
@@ -140,7 +140,7 @@
 {"id": "q_25af2ef67065", "type": "abstain"}
 {"id": "q_26212108a6e6", "type": "number", "answer": 560377}
 {"id": "q_262952036572", "type": "abstain"}
-{"id": "q_2710e38fa0d6", "type": "abstain"}
+{"id": "q_2710e38fa0d6", "type": "number", "answer": 10440000}
 {"id": "q_2767f0fad8f7", "type": "number", "answer": 432382000}
 {"id": "q_278b0742d740", "type": "number", "answer": 27}
 {"id": "q_279180641d59", "type": "number", "answer": 29}
@@ -153,15 +153,15 @@
 {"id": "q_29f0281751c0", "type": "percent", "answer": 6.08}
 {"id": "q_2ac539902fe6", "type": "percent", "answer": -19.98}
 {"id": "q_2bd15109007c", "type": "abstain"}
-{"id": "q_2c8d4481ca57", "type": "abstain"}
+{"id": "q_2c8d4481ca57", "type": "percent", "answer": -43.65}
 {"id": "q_2d5eb3a196b7", "type": "abstain"}
-{"id": "q_2db4f43d56bd", "type": "abstain"}
+{"id": "q_2db4f43d56bd", "type": "percent", "answer": 23.85}
 {"id": "q_2dc771b39303", "type": "number", "answer": 12}
 {"id": "q_2e00e336cad2", "type": "abstain"}
 {"id": "q_2e131da8a651", "type": "percent", "answer": 2.15}
 {"id": "q_2ed4740ec705", "type": "percent", "answer": -8.88}
 {"id": "q_2edd77d63f85", "type": "percent", "answer": 2.86}
-{"id": "q_2f1be262f623", "type": "abstain"}
+{"id": "q_2f1be262f623", "type": "number", "answer": 3101000}
 {"id": "q_2f8852d2a6bc", "type": "number", "answer": 4959714000}
 {"id": "q_2fba3cf485d7", "type": "percent", "answer": 20.38}
 {"id": "q_30934dcc3831", "type": "abstain"}
@@ -253,7 +253,7 @@
 {"id": "q_4217e6c4305e", "type": "number", "answer": 84}
 {"id": "q_4263ec258265", "type": "number", "answer": 553626}
 {"id": "q_427b79554ed7", "type": "abstain"}
-{"id": "q_429155557e11", "type": "abstain"}
+{"id": "q_429155557e11", "type": "percent", "answer": -4.77}
 {"id": "q_42f82d1abde5", "type": "percent", "answer": -19.87}
 {"id": "q_435a38fb843b", "type": "abstain"}
 {"id": "q_4375c623b7c7", "type": "abstain"}
@@ -268,7 +268,7 @@
 {"id": "q_468d8ef6f198", "type": "number", "answer": 9794300}
 {"id": "q_473593cb045c", "type": "abstain"}
 {"id": "q_47d9c87fa49d", "type": "abstain"}
-{"id": "q_4807f35b3b8c", "type": "abstain"}
+{"id": "q_4807f35b3b8c", "type": "number", "answer": 777}
 {"id": "q_4809f845893d", "type": "number", "answer": 5}
 {"id": "q_4812f4775924", "type": "number", "answer": 87}
 {"id": "q_481401f5b908", "type": "abstain"}
@@ -303,7 +303,7 @@
 {"id": "q_4df5a9b089cd", "type": "number", "answer": 7146}
 {"id": "q_4df64734eb4d", "type": "number", "answer": 846}
 {"id": "q_4dff582efe40", "type": "abstain"}
-{"id": "q_4e1c4ca89508", "type": "abstain"}
+{"id": "q_4e1c4ca89508", "type": "string", "answer": "CL 9D"}
 {"id": "q_4e280a1755de", "type": "abstain"}
 {"id": "q_4e331ce1a042", "type": "number", "answer": 72476500}
 {"id": "q_4e3c77d294d3", "type": "percent", "answer": 89.26}
@@ -361,7 +361,7 @@
 {"id": "q_599716cf226a", "type": "abstain"}
 {"id": "q_599dbed4790f", "type": "number", "answer": 39}
 {"id": "q_59b28582f30e", "type": "abstain"}
-{"id": "q_59f27903845e", "type": "abstain"}
+{"id": "q_59f27903845e", "type": "number", "answer": 3}
 {"id": "q_5a5a452f87d4", "type": "percent", "answer": 48.14}
 {"id": "q_5a9e0b8dce13", "type": "abstain"}
 {"id": "q_5aad27b686f6", "type": "number", "answer": 125072}
@@ -369,7 +369,7 @@
 {"id": "q_5ac3fc3e264c", "type": "percent", "answer": 39.36}
 {"id": "q_5aef26f2ebb6", "type": "unanswerable", "reason": "Câu hỏi không có dữ liệu đo lường theo Rulebook Mục 7"}
 {"id": "q_5b4680c1ccf2", "type": "abstain"}
-{"id": "q_5b50ea8b0bae", "type": "abstain"}
+{"id": "q_5b50ea8b0bae", "type": "number", "answer": 741400}
 {"id": "q_5bfa542cd172", "type": "abstain"}
 {"id": "q_5c0acaa8786b", "type": "abstain"}
 {"id": "q_5c5d114695ca", "type": "percent", "answer": 2.46}
@@ -393,7 +393,7 @@
 {"id": "q_6019a30cd4fe", "type": "number", "answer": 7707}
 {"id": "q_6022f2c64913", "type": "abstain"}
 {"id": "q_603c21ebef86", "type": "abstain"}
-{"id": "q_605c59254c52", "type": "abstain"}
+{"id": "q_605c59254c52", "type": "list", "answer": [62390000, 7123000]}
 {"id": "q_6066d5e1f466", "type": "number", "answer": 92}
 {"id": "q_60f97553a06e", "type": "number", "answer": 1117431900}
 {"id": "q_611bf24dd2f9", "type": "abstain"}
@@ -411,7 +411,7 @@
 {"id": "q_632bc2910cb3", "type": "abstain"}
 {"id": "q_6396e1b202a6", "type": "abstain"}
 {"id": "q_63cf15f33b1c", "type": "string", "answer": "Sinh tố xoài (M)"}
-{"id": "q_64045044c253", "type": "abstain"}
+{"id": "q_64045044c253", "type": "number", "answer": 112}
 {"id": "q_647711394825", "type": "abstain"}
 {"id": "q_64e62d4bea7d", "type": "abstain"}
 {"id": "q_650a53225054", "type": "abstain"}
@@ -449,7 +449,7 @@
 {"id": "q_6c89c24d2349", "type": "number", "answer": 207}
 {"id": "q_6c9f50b55906", "type": "percent", "answer": 25.26}
 {"id": "q_6cb10c20f215", "type": "abstain"}
-{"id": "q_6cb40ee1f329", "type": "abstain"}
+{"id": "q_6cb40ee1f329", "type": "number", "answer": 33}
 {"id": "q_6cd986ac9717", "type": "number", "answer": 20}
 {"id": "q_6d42e3d7b79b", "type": "abstain"}
 {"id": "q_6d9ad1c46242", "type": "number", "answer": 122462500}
@@ -532,7 +532,7 @@
 {"id": "q_82bbd52c42dc", "type": "abstain"}
 {"id": "q_83107c3303b5", "type": "number", "answer": 57891900}
 {"id": "q_837cd5892764", "type": "percent", "answer": 0.49}
-{"id": "q_83e204622a9f", "type": "abstain"}
+{"id": "q_83e204622a9f", "type": "number", "answer": 6825000}
 {"id": "q_84201f553dff", "type": "number", "answer": 51}
 {"id": "q_8426163ea7bd", "type": "number", "answer": 67776600}
 {"id": "q_848a1bcdb5f9", "type": "number", "answer": 938}
@@ -615,7 +615,7 @@
 {"id": "q_9b5377726889", "type": "number", "answer": 9935}
 {"id": "q_9b5bf8a560a1", "type": "abstain"}
 {"id": "q_9bcd14f14b1f", "type": "percent", "answer": 60.66}
-{"id": "q_9c2c85d9330d", "type": "abstain"}
+{"id": "q_9c2c85d9330d", "type": "percent", "answer": 46.33}
 {"id": "q_9d4a0d4b4bcd", "type": "abstain"}
 {"id": "q_9d8949165b5e", "type": "string", "answer": "Hồ Cường Hùng"}
 {"id": "q_9e28638a40cb", "type": "number", "answer": 1123614700}
@@ -696,7 +696,7 @@
 {"id": "q_b342fe1e1211", "type": "abstain"}
 {"id": "q_b362a46fa102", "type": "abstain"}
 {"id": "q_b36cb72072f1", "type": "number", "answer": 50}
-{"id": "q_b38db1ef2bcc", "type": "string", "answer": "Dương Hồng Mai"}
+{"id": "q_b38db1ef2bcc", "type": "abstain"}
 {"id": "q_b3a65abd54c2", "type": "number", "answer": 2306809000}
 {"id": "q_b3c49510b3b7", "type": "percent", "answer": 16.59}
 {"id": "q_b3c5bd56d757", "type": "number", "answer": 52}
@@ -704,7 +704,7 @@
 {"id": "q_b40a1380b99c", "type": "percent", "answer": 27.73}
 {"id": "q_b4171cc74531", "type": "abstain"}
 {"id": "q_b47894fc33f6", "type": "abstain"}
-{"id": "q_b4ad3b8d023f", "type": "abstain"}
+{"id": "q_b4ad3b8d023f", "type": "number", "answer": 114}
 {"id": "q_b5034a203b3b", "type": "percent", "answer": 4.39}
 {"id": "q_b53e7cf12ac2", "type": "abstain"}
 {"id": "q_b5e65648c9dc", "type": "abstain"}
@@ -766,7 +766,7 @@
 {"id": "q_c3158f13ca1c", "type": "abstain"}
 {"id": "q_c33e026f59e7", "type": "abstain"}
 {"id": "q_c3439f11c9b0", "type": "abstain"}
-{"id": "q_c34ede239480", "type": "abstain"}
+{"id": "q_c34ede239480", "type": "number", "answer": 56}
 {"id": "q_c3652d93727e", "type": "number", "answer": 282622500}
 {"id": "q_c38425d8aec8", "type": "abstain"}
 {"id": "q_c4b294bc0479", "type": "number", "answer": 1480662000}
@@ -808,7 +808,7 @@
 {"id": "q_cdf9857d8c64", "type": "abstain"}
 {"id": "q_ce16270f4c20", "type": "abstain"}
 {"id": "q_ce3bd6c20b25", "type": "abstain"}
-{"id": "q_ce8675d1ef06", "type": "number", "answer": 88}
+{"id": "q_ce8675d1ef06", "type": "abstain"}
 {"id": "q_cf2c969d8471", "type": "number", "answer": 1}
 {"id": "q_cf5c5dac1b20", "type": "number", "answer": 1295000}
 {"id": "q_cfa36137a14a", "type": "percent", "answer": 16.57}
@@ -848,11 +848,11 @@
 {"id": "q_d857fdab9c0a", "type": "percent", "answer": -5.94}
 {"id": "q_d8706faef72f", "type": "number", "answer": 11584500}
 {"id": "q_d8da698d3e5d", "type": "number", "answer": 4267}
-{"id": "q_d95266d008e5", "type": "abstain"}
+{"id": "q_d95266d008e5", "type": "number", "answer": 6565000}
 {"id": "q_d965d0bc2205", "type": "percent", "answer": 24.59}
 {"id": "q_d99e832f3190", "type": "abstain"}
 {"id": "q_d9f743469198", "type": "abstain"}
-{"id": "q_da623a004480", "type": "abstain"}
+{"id": "q_da623a004480", "type": "number", "answer": 55000}
 {"id": "q_dad922a3924a", "type": "number", "answer": 52408300}
 {"id": "q_dae1955698d3", "type": "abstain"}
 {"id": "q_db00aee1a23d", "type": "abstain"}
@@ -867,7 +867,7 @@
 {"id": "q_de25e5a7e1c6", "type": "number", "answer": 44290000}
 {"id": "q_de45f4311dbe", "type": "number", "answer": 85}
 {"id": "q_de54a69c7dce", "type": "number", "answer": 54}
-{"id": "q_de76013dcb99", "type": "abstain"}
+{"id": "q_de76013dcb99", "type": "number", "answer": 1246188000}
 {"id": "q_dec759a2f085", "type": "number", "answer": 121}
 {"id": "q_df258c67efec", "type": "abstain"}
 {"id": "q_dfe6c970b819", "type": "date", "answer": "2025-01-29"}
@@ -887,7 +887,7 @@
 {"id": "q_e3f5a85b72b4", "type": "abstain"}
 {"id": "q_e4641e459f38", "type": "abstain"}
 {"id": "q_e47610290a38", "type": "abstain"}
-{"id": "q_e4f0a9bdf74b", "type": "abstain"}
+{"id": "q_e4f0a9bdf74b", "type": "string", "answer": "Cà phê sữa (M)"}
 {"id": "q_e4fc0d18d409", "type": "abstain"}
 {"id": "q_e4fd11ebbadf", "type": "abstain"}
 {"id": "q_e53ff8441ef1", "type": "abstain"}
@@ -905,7 +905,7 @@
 {"id": "q_e97f2c304dc0", "type": "percent", "answer": 9.44}
 {"id": "q_e9bb51886662", "type": "number", "answer": 1024950500}
 {"id": "q_e9eeeaa6cb03", "type": "number", "answer": 171}
-{"id": "q_ea97617772d0", "type": "abstain"}
+{"id": "q_ea97617772d0", "type": "percent", "answer": -6.85}
 {"id": "q_eb606434a18e", "type": "abstain"}
 {"id": "q_eb7f3881e7e9", "type": "abstain"}
 {"id": "q_ec17ef854d8a", "type": "number", "answer": 232737700}

@@ -2202,6 +2202,17 @@ def _extract_item_from_query(
             continue
         if p_norm in q_norm:
             return p_orig, p_key
+
+    # North-South regional synonyms fallback
+    q_norm_syn = re.sub(r"\bcoc\s+sac\b", "cu sac", q_norm)
+    q_norm_syn = re.sub(r"\bgang\s+tay\s+tat\s+chan\b", "bao tay bao chan", q_norm_syn)
+    q_norm_syn = re.sub(r"\blavie\b", "la vie", q_norm_syn)
+    if q_norm_syn != q_norm:
+        for p_norm, p_orig, p_key in contract.available_products:
+            if not p_norm or len(p_norm) < 3:
+                continue
+            if p_norm in q_norm_syn:
+                return p_orig, p_key
     return None
 
 
@@ -2432,6 +2443,110 @@ def _parse_growth_periods(
     return None
 
 
+def _resolve_tet_plan(
+    q_norm: str,
+    q_lower: str,
+    context: BusinessContext,
+    as_of_date: str | None,
+    contract: BusinessSemanticContract,
+) -> QueryPlan | None:
+    """Resolve queries about Lunar New Year (Dịp Tết) strictly according to Rulebook §2."""
+    if not (
+        bool(re.search(r"\b(?:tết|tet)\b", q_lower))
+        or "nguyen dan" in q_norm
+        or "am lich" in q_norm
+    ):
+        return None
+
+    conn = context.duckdb_conn
+    m_yr = re.search(r"\b(202[4-6])\b", q_norm)
+    anchor_yr = int(as_of_date[:4]) if as_of_date else 2026
+    year = int(m_yr.group(1)) if m_yr else anchor_yr
+
+    # Query calendar in DuckDB for 23 Chạp (year-1) to mùng 10 (year)
+    try:
+        rows = conn.execute(f"""
+            SELECT date FROM calendar
+            WHERE (lunar_day = 23 AND lunar_month = 12 AND lunar_year = {year - 1})
+               OR (lunar_day = 10 AND lunar_month = 1 AND lunar_year = {year})
+            ORDER BY date ASC
+        """).fetchall()
+        if len(rows) != 2:
+            return None
+        s_date, e_date = str(rows[0][0]), str(rows[1][0])
+        cnt = conn.execute(
+            f"SELECT COUNT(*) FROM calendar WHERE date BETWEEN '{s_date}' AND '{e_date}'"
+        ).fetchall()[0][0]
+    except Exception:
+        return None
+
+    # 1. Growth vs before Tet (e.g. 17 ngày trước Tết)
+    if re.search(r"\b(?:truoc\s+tet|ngay\s+truoc\s+tet)\b", q_norm):
+        p_rows = conn.execute(f"""
+            SELECT MIN(date), MAX(date) FROM (
+                SELECT date FROM calendar WHERE date < '{s_date}' ORDER BY date DESC LIMIT {cnt}
+            )
+        """).fetchall()
+        if not p_rows or p_rows[0][0] is None:
+            return None
+        s_prior, e_prior = str(p_rows[0][0]), str(p_rows[0][1])
+        return QueryPlan(
+            operation="period_growth_pct",
+            metric="revenue",
+            period=ParsedPeriod(start_date=s_date, end_date=e_date),
+            prior_period=ParsedPeriod(start_date=s_prior, end_date=e_prior),
+            output_type="percent",
+        )
+
+    # 2. Growth vs prior year Tet (YoY Tết)
+    if re.search(r"\b(?:tet\s+nam\s+(?:ngoai|truoc|trc)|tet\s+truoc)\b", q_norm):
+        rows_p = conn.execute(f"""
+            SELECT date FROM calendar
+            WHERE (lunar_day = 23 AND lunar_month = 12 AND lunar_year = {year - 2})
+               OR (lunar_day = 10 AND lunar_month = 1 AND lunar_year = {year - 1})
+            ORDER BY date ASC
+        """).fetchall()
+        if len(rows_p) != 2:
+            return None
+        s_p, e_p = str(rows_p[0][0]), str(rows_p[1][0])
+        return QueryPlan(
+            operation="period_growth_pct",
+            metric="revenue",
+            period=ParsedPeriod(start_date=s_date, end_date=e_date),
+            prior_period=ParsedPeriod(start_date=s_p, end_date=e_p),
+            output_type="percent",
+        )
+
+    # 3. Top selling item in Tet
+    if re.search(
+        r"\b(?:ban\s+chay\s+nhat|ban\s+nhieu\s+nhat|hang\s+chi|sp\s+nao|mat\s+hang\s+nao)\b",
+        q_norm,
+    ):
+        return QueryPlan(
+            operation="ranking_top_k",
+            metric="base_quantity",
+            target_dimension="item",
+            limit_k=1,
+            period=ParsedPeriod(start_date=s_date, end_date=e_date),
+            output_type="string",
+        )
+
+    # 4. Total revenue in Tet
+    if (
+        re.search(r"\b(?:doanh\s+thu|dthu|thu\s+ve|ban\s+duoc)\b", q_norm)
+        or "bnhiu" in q_norm
+        or "bao nhieu" in q_norm
+    ):
+        return QueryPlan(
+            operation="filtered_revenue",
+            metric="revenue",
+            period=ParsedPeriod(start_date=s_date, end_date=e_date),
+            output_type="number",
+        )
+
+    return None
+
+
 def build_query_plan(
     question: str,
     context: BusinessContext,
@@ -2441,6 +2556,10 @@ def build_query_plan(
     """Parse natural-language question into a verified QueryPlan, or None if not in Priority 2 scope."""
     q_lower = question.lower().strip()
     q_norm = norm_vn(question)
+
+    tet_plan = _resolve_tet_plan(q_norm, q_lower, context, as_of_date, contract)
+    if tet_plan is not None:
+        return tet_plan
 
     # Gate 1 Unanswerable: Subjective questions without factual metrics in database
     if any(
@@ -2510,9 +2629,6 @@ def build_query_plan(
                 "gia von",
                 "ton kho",
                 "lai gop",
-                "tang gia",
-                "doi gia",
-                "len gia",
                 "nha cung cap",
                 "ncc",
                 "bao hanh",
@@ -2543,6 +2659,7 @@ def build_query_plan(
             )
         )
         or bool(re.search(r"\btra\s+gop\b", q_norm))
+        or bool(re.search(r"\b(?:tang\s+gia|doi\s+gia|len\s+gia)\b", q_norm))
         or bool(re.search(r"\btru\s+(?:chi\s+phi|tien|khoan)\b", q_norm))
         or bool(
             re.search(
@@ -2948,7 +3065,7 @@ def build_query_plan(
     has_qty_q = (
         bool(
             re.search(
-                rf"\b(?:mấy|may|bao nhiêu|bao nhieu|bnhiu|bn|nhiêu|nhieu|tong so|tổng số|đếm|dem)\s+{units_regex}\b",
+                rf"\b(?:mấy|may|maays|mays|bao nhiêu|bao nhieu|baonhieu|bnhiu|bn|nhiêu|nhieu|tong so|tổng số|đếm|dem)\s+{units_regex}\b",
                 q_norm,
             )
         )
@@ -2960,35 +3077,41 @@ def build_query_plan(
         )
         or bool(
             re.search(
-                rf"\bban\s+(?:duoc|dc|ra)\s+(?:tong\s+cong\s+)?(?:bao\s+nhieu|may|nhiêu|nhieu|bnhiu|bn)\s+{units_regex}\b",
+                rf"\bban\s+(?:duoc|dc|ra)\s+(?:tong\s+cong\s+)?(?:bao\s+nhieu|may|maays|mays|nhiêu|nhieu|bnhiu|bn)\s+{units_regex}\b",
                 q_norm,
             )
         )
         or bool(
             re.search(
-                rf"\bban\s+(?:duoc|dc|ra).*?\b(?:bao\s+nhieu|may|nhiêu|nhieu|bnhiu|bn)\s+{units_regex}\b",
+                rf"\bban\s+(?:duoc|dc|ra).*?\b(?:bao\s+nhieu|may|maays|mays|nhiêu|nhieu|bnhiu|bn)\s+{units_regex}\b",
                 q_norm,
             )
         )
         or bool(
             re.search(
-                r"\b(?:mấy|may|bao nhiêu|bao nhieu|bnhiu|bn|nhiêu|nhieu)\s+ly\b", q_norm
+                r"\b(?:mấy|may|maays|mays|bao nhiêu|bao nhieu|baonhieu|bnhiu|bn|nhiêu|nhieu)\s+ly\b",
+                q_norm,
             )
         )
         or bool(
             re.search(
-                r"\b(?:quan|cua hang)\s+ban\s+(?:duoc|dc|ra)\s+(?:bao nhieu|may|nhiêu|nhieu|bnhiu|bn)\s+ly\b",
+                r"\b(?:quan|cua hang)\s+ban\s+(?:duoc|dc|ra)\s+(?:bao nhieu|may|maays|mays|nhiêu|nhieu|bnhiu|bn)\s+ly\b",
                 q_norm,
             )
         )
     )
-    # Price inquiry guard (e.g. 'đơn giá bao nhiêu một lốc', 'giá bán bao nhiêu') -> never interpret as quantity sold
-    if bool(
+    # Price inquiry guard (e.g. 'đơn giá bao nhiêu một lốc', 'giá bán bao nhiêu') -> never interpret as quantity sold or total revenue
+    is_price_inquiry = bool(
         re.search(
-            r"\b(?:don\s+gia|gia\s+ban|gia\s+bao\s+nhieu|bao\s+nhieu\s+(?:mot|1)\s+(?:loc|hop|chai|lon|cai|goi|cuon))\b",
+            r"\b(?:don\s+gia|gia\s+ban|gia\s+nhap|gia\s+bao\s+nhieu)\b",
             q_norm,
         )
-    ):
+        or re.search(
+            rf"\b(?:bao\s+nhieu\s+tien|bnhiu\s+tien|bn\s+tien|bao\s+nhieu|bnhiu|bn)\s+(?:mot|1)\s+{units_regex}\b",
+            q_norm,
+        )
+    )
+    if is_price_inquiry:
         has_qty_q = False
 
     has_purchase_kw = bool(
@@ -3129,7 +3252,11 @@ def build_query_plan(
         matched_item = _extract_item_from_query(q_norm, contract)
         if matched_item is not None:
             iname, ikey = matched_item
-            if (has_rev_kw or has_explicit_rev_kw) and not has_qty_q:
+            if (
+                (has_rev_kw or has_explicit_rev_kw)
+                and not has_qty_q
+                and not is_price_inquiry
+            ):
                 return QueryPlan(
                     operation="filtered_revenue",
                     metric="revenue",

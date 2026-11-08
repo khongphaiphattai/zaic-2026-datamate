@@ -886,8 +886,29 @@ def resolve_query(
             return sem_type, sem_val, sem_reason
         return "abstain", None, "Rolling N-day query abstained to protect PA score"
 
-    # 3. Block conditions / reasons (late delivery, out of stock, etc.)
-    if any(k in q for k in ["vì ", "vi ", "lý do", "ly do", "trễ", "chậm"]):
+    # 3. Block conditions / reasons (late delivery, reasons for cancellation/return, etc.)
+    q_no_ewallet = re.sub(r"\b(?:vi\s+dien\s+tu|ví\s+điện\s+tử|cadivi)\b", "", q)
+    q_no_blister = re.sub(
+        r"\b\d+\s*(?:vỉ|vi)\b|\b(?:vỉ|vi)\s*(?:x|\*)\s*\d+\b|\b(?:hộp|hop)\s+\d+\s*(?:vỉ|vi)\b",
+        "",
+        q_no_ewallet,
+    )
+    is_reason_q = bool(
+        re.search(
+            r"\b(?:vì\s+sao|vi\s+sao|lý\s+do|ly\s+do|tại\s+sao|tai\s+sao|nguyên\s+nhân|nguyen\s+nhan)\b",
+            q_no_blister,
+        )
+        or re.search(
+            r"\b(?:huỷ|huy|trả\s+món|tra\s+mon|trả\s+hàng|tra\s+hang|trả\s+lại|tra\s+lai|bị|bi)\s+.*?\b(?:vì|vi)\b",
+            q_no_blister,
+        )
+        or re.search(r"\b(?:trễ|chậm|tre|cham)\b", q_no_blister)
+        or re.search(
+            r"\b(?:vì|vi)\s+(?:món|mon|lỗi|loi|sao|lý|ly|kẹt|giao)\b",
+            q_no_blister,
+        )
+    )
+    if is_reason_q:
         return "abstain", None, "Conditional / reason query abstained"
 
     # 4. Block inventory queries ("còn", "trong kho", "tồn kho", "cuối ngày")
