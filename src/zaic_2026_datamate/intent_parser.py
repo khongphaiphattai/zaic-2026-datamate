@@ -252,7 +252,7 @@ def parse_time_expressions(text: str, as_of_date: str | None = None) -> ParsedPe
             p.month_str = f"{y:04d}-{m:02d}"
             return p
 
-    # 8. "Tháng này", "tháng ni"
+    # 8. "Tháng này", "tháng ni", "th này", "th nay"
     if any(
         k in t
         for k in [
@@ -262,6 +262,9 @@ def parse_time_expressions(text: str, as_of_date: str | None = None) -> ParsedPe
             "thang ni",
             "tháng nì",
             "thang nì",
+            "th này",
+            "th nay",
+            "th ni",
         ]
     ):
         p.is_this_month = True
@@ -270,6 +273,34 @@ def parse_time_expressions(text: str, as_of_date: str | None = None) -> ParsedPe
             p.start_date = anchor.strftime("%Y-%m-01")
             p.end_date = anchor.strftime("%Y-%m-%d")
         return p
+
+    # 8.1 "Tháng trước", "tháng trc", "th trước", "th trc"
+    if any(
+        k in t
+        for k in [
+            "tháng trước",
+            "thang truoc",
+            "tháng trc",
+            "thang trc",
+            "th trước",
+            "th trc",
+            "tháng rồi",
+            "thang roi",
+            "th rồi",
+            "th roi",
+        ]
+    ) and not any(
+        k in t
+        for k in ["cùng kỳ", "cung ky", "so với", "so vs", "hơn hay kém", "hon hay kem"]
+    ):
+        if anchor:
+            first_of_this_month = anchor.replace(day=1)
+            last_of_prev_month = first_of_this_month - timedelta(days=1)
+            first_of_prev_month = last_of_prev_month.replace(day=1)
+            p.month_str = first_of_prev_month.strftime("%Y-%m")
+            p.start_date = first_of_prev_month.strftime("%Y-%m-01")
+            p.end_date = last_of_prev_month.strftime("%Y-%m-%d")
+            return p
 
     # 9. "Tuần này", "tuần trước", "tuần rồi"
     if any(
@@ -821,10 +852,22 @@ def resolve_query(
     # Specialized engine for purchase and supplier analytics
     if any(
         t in context.tables
-        for t in ["so_tay_nhap_hang", "so_nhap_hang", "phieu_nhap", "chi_tiet_nhap_hang"]
+        for t in [
+            "so_tay_nhap_hang",
+            "so_nhap_hang",
+            "phieu_nhap",
+            "chi_tiet_nhap_hang",
+        ]
     ) or any(
         k in question.lower()
-        for k in ["dang tin cay", "đáng tin cậy", "uy tin", "uy tín", "nha cung cap tot nhat", "nhà cung cấp tốt nhất"]
+        for k in [
+            "dang tin cay",
+            "đáng tin cậy",
+            "uy tin",
+            "uy tín",
+            "nha cung cap tot nhat",
+            "nhà cung cấp tốt nhất",
+        ]
     ):
         from zaic_2026_datamate.purchase_analytics import resolve_purchase_query
 
@@ -836,7 +879,9 @@ def resolve_query(
 
     # Specialized engine for mobile store & installments (dev_014)
     if "so_no_tra_gop" in context.tables:
-        from zaic_2026_datamate.mobile_installment import resolve_mobile_installment_query
+        from zaic_2026_datamate.mobile_installment import (
+            resolve_mobile_installment_query,
+        )
 
         ans_type, ans_val, reason = resolve_mobile_installment_query(
             question, context, as_of_date
@@ -871,6 +916,15 @@ def resolve_query(
         rw_type, rw_val, rw_reason = rw_res
         if rw_type != "abstain":
             return rw_type, rw_val, rw_reason
+
+    # Specialized engine for price change impact comparisons
+    from zaic_2026_datamate.price_change import resolve_price_change_query
+
+    pc_res = resolve_price_change_query(question, context, as_of_date)
+    if pc_res is not None:
+        pc_type, pc_val, pc_reason = pc_res
+        if pc_type != "abstain":
+            return pc_type, pc_val, pc_reason
 
     q = question.lower()
     period = parse_time_expressions(question, as_of_date)
@@ -1079,6 +1133,57 @@ def resolve_query(
             None,
             "Doanh nghiệp không có dữ liệu đánh giá cảm tính theo Rulebook Mục 7",
         )
+
+    # Gate 1: Cancellation reason when business does not record specific cancel reasons
+    if any(
+        k in q
+        for k in [
+            "giao trễ",
+            "giao tre",
+            "vì giao trễ",
+            "vi giao tre",
+            "do giao trễ",
+            "do giao tre",
+        ]
+    ):
+        has_cancel_reason = any(
+            any(k in c.lower() for k in ["ly_do", "nguyen_nhan", "ghi_chu_huy"])
+            for tname in context.tables
+            for c in context.tables[tname].columns
+        )
+        if not has_cancel_reason:
+            return (
+                "unanswerable",
+                None,
+                "Doanh nghiệp không ghi nhận lý do huỷ đơn hàng cụ thể theo Rulebook Mục 7",
+            )
+
+    # Gate 1: Hour/peak traffic when business has no hour/time tracking
+    if any(
+        k in q
+        for k in [
+            "mấy giờ",
+            "may gio",
+            "giờ nào",
+            "gio nao",
+            "khung giờ",
+            "khung gio",
+            "vào giờ nào",
+            "vao gio nao",
+        ]
+    ):
+        has_hour = any(
+            any(k in c.lower() for k in ["gio", "hour", "time", "thoi_gian"])
+            for tname in context.tables
+            for c in context.tables[tname].columns
+            if "ngay" not in c.lower()
+        )
+        if not has_hour:
+            return (
+                "unanswerable",
+                None,
+                "Dữ liệu doanh nghiệp không lưu vết thời gian chi tiết theo giờ giao dịch theo Rulebook Mục 7",
+            )
 
     # Gate 1: Profit / cost queries when business lacks cost/expense tables
     if any(
@@ -1660,7 +1765,11 @@ def resolve_query(
             "trung binh",
             "binh wan",
             "bình wan",
+            "bìn quân",
+            "bin quan",
+            "bìn wan",
             "bq",
+            "tb",
         ]
     )
     has_aov_order = any(
@@ -1670,6 +1779,10 @@ def resolve_query(
             "moi don",
             "mổi đơn",
             "mổi don",
+            "mội đơn",
+            "moi don hang",
+            "mỗi đơn hàng",
+            "mội đơn hàng",
             "1 đơn",
             "1 don",
             "một đơn",
@@ -1680,6 +1793,7 @@ def resolve_query(
             "trên một đơn",
             "mỗi đh",
             "mổi đh",
+            "mội đh",
             "1 đh",
             "một đh",
             "mot dh",
@@ -2475,6 +2589,10 @@ def resolve_query(
             "nhap vo",
             "nhập về",
             "nhap ve",
+            "đánh hàng về",
+            "danh hang ve",
+            "đánh hàng",
+            "danh hang",
         ]
     )
     has_import_val_kw = any(
@@ -2499,6 +2617,10 @@ def resolve_query(
             "tổng bn",
             "tổng bao nhiêu",
             "tong bao nhieu",
+            "tổng bnhiu",
+            "tong bnhiu",
+            "tổng bn",
+            "tong bn",
             "chi nhap hang bao nhieu tien",
             "nhập hàng bao nhiêu tiền",
             "nhap hang bao nhieu tien",

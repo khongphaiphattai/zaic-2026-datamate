@@ -36,12 +36,13 @@ _SUFFIX = r"(?:\s+(?:a|nhi|ta|z|vay|ha))?"
 _MONTH = r"thang (?P<m>\d{1,2})(?:/| nam )(?P<y>\d{4})"
 _METRIC = r"(?:doanh thu|dthu)"
 _AMOUNT = r"(?:bao nhieu|bao nhiu|bnhiu|bn|may)"
-_CHANGE = rf"(?:tang hay giam|thay doi) {_AMOUNT} (?:%|phan tram)"
+_CHANGE = rf"(?:tang hay giam|tang giam|thay doi) {_AMOUNT} (?:%|phan tram)"
 _COMPARE = r"so (?:voi|vs) thang (?:lien )?(?:truoc|trc)(?: do)?"
 _PATTERNS = tuple(
     re.compile(_PREFIX + p + _SUFFIX)
     for p in [
         rf"{_METRIC} {_MONTH} {_CHANGE} {_COMPARE}",
+        rf"{_METRIC} {_MONTH} {_COMPARE} {_CHANGE}",
         rf"{_COMPARE},? {_METRIC} {_MONTH} {_CHANGE}",
         rf"{_MONTH} {_METRIC} {_CHANGE} {_COMPARE}",
         rf"{_METRIC} {_MONTH} hon hay kem thang (?:truoc|trc) {_AMOUNT} (?:%|phan tram)",

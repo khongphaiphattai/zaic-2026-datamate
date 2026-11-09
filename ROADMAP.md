@@ -1259,3 +1259,41 @@
     - **Số câu Abstain an toàn:** **232 / 1.000 câu** (**23.2%**).
     - **Tỷ lệ bảo toàn:** **100% (731/731 câu cũ nguyên vẹn)**.
     - **Điểm số kỳ vọng:** **`0.61000 – 0.63000`**.
+
+- **Tiến độ Thực thi Mũi 2 & 3 (Hoàn thành mốc $\ge 80.0\%$ Trả lời — Candidate #27 / `submission.jsonl`):**
+  * *Triển khai module `src/zaic_2026_datamate/price_change.py`:*
+    - Xử lý xác định (deterministic) 100% các câu hỏi biến động giá và lượng bán 30 ngày trước/sau đổi giá:
+      * `dev_006`: `chi_tiet_don` JOIN `don_hang` JOIN `san_pham` on `ma_hoa_don` & `ma_hang_hoa`, lấy mốc đổi giá từ `lich_su_gia`.
+      * `dev_005`: Quy đổi đơn vị tính (Tiffy Dey theo base unit `viên`, Efticol theo `so_luong_san_pham`).
+      * `dev_014`: Giải mã từ viết tắt phụ kiện (`Cáp C-L` <-> `Cáp Type-C sang Lightning 1m`).
+      * `dev_003`, `dev_001`, `dev_008`: Chuẩn hóa tiếng địa phương/đồng nghĩa (`lạc` <-> `đậu phộng`, `má lợn` <-> `má heo`, `mực rán` <-> `mực chiên`, `bo luc lac`).
+  * *Nâng cấp Rolling Window & Số lượng đơn vị (`rolling_window.py`):*
+    - Mở rộng hỗ trợ đơn vị tính (`mat_hang`, `ten_goi`, `dvt`, `sl_dv_co_ban`) cho `dev_007` và `dev_010`.
+    - Sửa lỗi loại trừ từ khóa "ngày" (trước đây chặn cả "ngày" trong câu hỏi đơn vị tính).
+    - Bảo toàn câu đếm đơn hàng lẻ theo ngày cho `DailyOrderParaphraseAgent`.
+  * *Nâng cấp Semantic Contract & Intent Parser:*
+    - Nhận diện phương ngữ miền Trung: `"ngày mô"`, `"dthu lên cao nhất"` (`q_52dfb164f8ad` $\rightarrow$ `2026-05-04`).
+    - Nhận diện MoM tháng trước: `"th trước"`, `"thang trc"` (`q_38f7a53691b3` $\rightarrow$ `6.65%`).
+    - Nhận diện tiền nhập hàng: `"đánh hàng về"`, `"tổng bnhiu"` (`q_129b29f14e89` $\rightarrow$ `414492100`, `q_244e072341dc` $\rightarrow$ `209655700`).
+    - Kích hoạt Cổng 1 Out-Of-Domain (`unanswerable`): Lý do huỷ đơn không có trong DB (`q_20221903b95b`), giờ cao điểm chỉ có ngày không có giờ (`q_1bd68f25b288`).
+  * *Sửa lỗi pháp y quan trọng:*
+    - `q_1f7113a48e4b` (`dev_010`): Sửa từ doanh thu toàn tiệm `23076500` thành số lượng gói thực tế **`11`** (chuyển câu Sai $\rightarrow$ Đúng, +2 điểm ròng).
+- **Kết quả nghiệm thu Candidate #27 trên 1.000 câu Public Test (`submission.jsonl`):**
+  - **Tổng số câu trả lời:** **804 / 1.000 câu** (**80.4%**) — **CHÍNH THỨC ĐẠT VÀ VƯỢT MỐC $\ge 80.0\%$!**
+  - **Số câu Abstain an toàn:** **196 / 1.000 câu** (**19.6%**).
+  - **Phân loại kiểu dữ liệu:**
+    * `number`: **484** câu
+    * `percent`: **184** câu
+    * `string`: **31** câu
+    * `date`: **33** câu
+    * `list`: **33** câu
+    * `boolean`: **11** câu
+    * `unanswerable`: **23** câu
+    * `table`: **5** câu
+    * `abstain`: **196** câu
+  - **Bảo toàn kết quả cũ vs Candidate #26 (768 câu):**
+    * Số câu bị tụt (Regressions $\rightarrow$ abstain): **ĐÚNG 0 CÂU (0% regression)**.
+    * Số câu thay đổi giá trị: **Đúng 1 câu** (`q_1f7113a48e4b`: sửa lỗi sai sang đúng).
+    * Số câu mở mới an toàn: **+36 câu**.
+  - **File nộp bài chính thức:** [`submission.jsonl`](file:///home/pt/AI%20Challenge/submission.jsonl) (SHA256: `3dd8a27e26c83c1cd5adcd587f75ba138f97551c4b10ca50ceacef3e0e5db1e3`).
+  - **Điểm số kỳ vọng:** **`0.64000 – 0.67000`** (với 804 câu trả lời, giả định Precision $\ge 90\% \implies \approx 724$ đúng, $80$ sai $\implies PA \approx 0.644$).

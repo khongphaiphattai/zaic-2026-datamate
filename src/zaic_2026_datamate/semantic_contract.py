@@ -2490,6 +2490,10 @@ def _parse_growth_periods(
             "cung ky th",
             "thang truoc",
             "thang trc",
+            "th truoc",
+            "th trc",
+            "thang roi",
+            "th roi",
         )
     ):
         if anchor:
@@ -2557,6 +2561,10 @@ def _parse_growth_periods(
             "thang lien trc",
             "thang truoc",
             "thang trc",
+            "th truoc",
+            "th trc",
+            "thang roi",
+            "th roi",
         )
     )
     if m_single and is_mom:
@@ -2830,24 +2838,28 @@ def build_query_plan(
     # -------------------------------------------------------------------------
     # SNAPSHOT DEBT QUERIES (Công nợ chốt tại ngày X)
     # -------------------------------------------------------------------------
-    if any(k in q_norm for k in ("no", "cong no")) and not any(
-        k in q_norm
-        for k in (
-            "tuoi no",
-            "qua 7 ngay",
-            "hon 7 ngay",
-            "tra gop",
-            "lai suat",
-            "tang no",
-            "tra no",
-            "thu no",
-            "cach do",
-            "qua han",
-            "tre han",
-            "nợ thêm",
-            "no them",
+    if (
+        any(k in q_norm for k in ("no", "cong no"))
+        and not any(
+            k in q_norm
+            for k in (
+                "tuoi no",
+                "qua 7 ngay",
+                "hon 7 ngay",
+                "tra gop",
+                "lai suat",
+                "tang no",
+                "tra no",
+                "thu no",
+                "cach do",
+                "qua han",
+                "tre han",
+                "nợ thêm",
+                "no them",
+            )
         )
-    ) and not re.search(r"\b(?:qua|hon|tren|it nhat|sau)\s*\d+\s*ngay\b", q_norm):
+        and not re.search(r"\b(?:qua|hon|tren|it nhat|sau)\s*\d+\s*ngay\b", q_norm)
+    ):
         m_cutoff = re.search(
             r"\b(?:ngày|ngay|tới|toi|đến|den|tại|tai)\s*(\d{1,2})[/-](\d{1,2})[/-](\d{4})\b",
             question,
@@ -2897,23 +2909,20 @@ def build_query_plan(
                     output_type="table",
                 )
             # Check customer count
-            if (
-                any(
-                    k in q_norm
-                    for k in (
-                        "bao nhieu khach",
-                        "bao nhiu khach",
-                        "bnhiu khach",
-                        "bn khach",
-                        "may khach",
-                        "so khach",
-                        "con bao nhieu khach",
-                        "con bao nhiu khach",
-                        "chua tra het no",
-                    )
+            if any(
+                k in q_norm
+                for k in (
+                    "bao nhieu khach",
+                    "bao nhiu khach",
+                    "bnhiu khach",
+                    "bn khach",
+                    "may khach",
+                    "so khach",
+                    "con bao nhieu khach",
+                    "con bao nhiu khach",
+                    "chua tra het no",
                 )
-                or re.search(r"\b(?:bao nhieu|bao nhiu|bnhiu|bn|may)\s+khach\b", q_norm)
-            ):
+            ) or re.search(r"\b(?:bao nhieu|bao nhiu|bnhiu|bn|may)\s+khach\b", q_norm):
                 return QueryPlan(
                     operation="debt_snapshot",
                     metric="customer_count",
@@ -3062,8 +3071,17 @@ def build_query_plan(
             "ngay nao ban duoc nhieu tien nhat",
             "ngay ban nhieu tien nhat",
             "hom nao ban nhieu tien nhat",
+            "ngay mo dthu len cao nhat",
+            "ngay mo doanh thu cao nhat",
+            "ngay mo ban nhieu tien nhat",
+            "doanh thu ngay mo cao nhat",
         )
-    ) or bool(re.search(r"\bdoanh\s+thu\s+ngay\s+nao\s+cao\s+nhat\b", q_norm))
+    ) or bool(
+        re.search(
+            r"\b(?:ngay\s+nao|ngay\s+mo|hom\s+nao)\b.*?\b(?:dthu|doanh\s+thu|ban)\b.*?\b(?:cao\s+nhat|len\s+cao\s+nhat|nhieu\s+tien\s+nhat)\b",
+            q_norm,
+        )
+    )
 
     if is_peak_day and has_valid_period:
         return QueryPlan(
@@ -3176,7 +3194,9 @@ def build_query_plan(
         )
 
     # Busiest day (ngày đắt khách nhất / nhiều đơn nhất theo Rulebook Mục 9)
-    is_busiest_day = not any(k in q_norm for k in ("khach nao", "ai", "khach hang nao")) and (
+    is_busiest_day = not any(
+        k in q_norm for k in ("khach nao", "ai", "khach hang nao")
+    ) and (
         any(
             k in q_norm
             for k in (
@@ -3205,7 +3225,9 @@ def build_query_plan(
         )
 
     # Peak revenue day (ngày bán được nhiều tiền nhất / thu về nhiều doanh thu nhất)
-    is_peak_rev_day = not any(k in q_norm for k in ("khach nao", "ai", "khach hang nao")) and (
+    is_peak_rev_day = not any(
+        k in q_norm for k in ("khach nao", "ai", "khach hang nao")
+    ) and (
         any(
             k in q_norm
             for k in (
@@ -3526,6 +3548,20 @@ def build_query_plan(
         matched_cat = _extract_category_from_query(q_lower, q_norm, contract)
         chan_codes = _extract_ordered_channels(q_norm)
         matched_chan = chan_codes[0] if chan_codes else None
+        # Relative bare single-month / MTD store growth is handled by MonthlyGrowthAgent / MTDGrowthAgent
+        has_two_explicit_months = (
+            len(re.findall(r"\b(?:thang|th|t)?\s*\d{1,2}\s*[/.-]\s*\d{2,4}\b", q_norm))
+            >= 2
+        )
+        has_lien = "lien" in q_norm
+        if (
+            not has_two_explicit_months
+            and not has_lien
+            and matched_cat is None
+            and matched_chan is None
+            and not has_order_kw
+        ):
+            return None
         metric = (
             "order_count" if (has_order_kw and not has_explicit_rev_kw) else "revenue"
         )
@@ -4295,7 +4331,14 @@ def calculate_debt_metric(
         p_val_col = next(
             (
                 pcols[c]
-                for c in ["gia_tri", "so_tien_thu", "tien_thu", "so_tien", "tien", "amount"]
+                for c in [
+                    "gia_tri",
+                    "so_tien_thu",
+                    "tien_thu",
+                    "so_tien",
+                    "tien",
+                    "amount",
+                ]
                 if c in pcols
             ),
             None,
@@ -4323,7 +4366,9 @@ def calculate_debt_metric(
         if p_ts_col and p_val_col and p_id_col:
             pay_table["pay_ts"] = pd.to_datetime(pay_table[p_ts_col], errors="coerce")
             pays = pay_table[pay_table["pay_ts"] <= as_of]
-            pays[p_val_col] = pd.to_numeric(pays[p_val_col], errors="coerce").fillna(0.0)
+            pays[p_val_col] = pd.to_numeric(pays[p_val_col], errors="coerce").fillna(
+                0.0
+            )
             paid_per_order = pays.groupby(pays[p_id_col].astype(str))[p_val_col].sum()
             orders["paid"] = orders[id_col].astype(str).map(paid_per_order).fillna(0.0)
         else:
@@ -4346,7 +4391,15 @@ def calculate_debt_metric(
     cust_id_col = next(
         (
             cols[c]
-            for c in ["ma_khach_hang", "ma_kh", "customer_id", "kh", "ma_khach", "ma_kh_mua", "makh"]
+            for c in [
+                "ma_khach_hang",
+                "ma_kh",
+                "customer_id",
+                "kh",
+                "ma_khach",
+                "ma_kh_mua",
+                "makh",
+            ]
             if c in cols
         ),
         None,
@@ -4369,15 +4422,30 @@ def calculate_debt_metric(
 
     cust_name_map = {}
     for tname, df in context.tables.items():
-        if (
-            any(k in tname.lower() for k in ["khach", "customer"])
-            and not any(k in tname.lower() for k in ["hoa_don", "don_hang", "chi_tiet", "phieu_nhap", "tra_hang", "so_quy", "the_kho"])
+        if any(k in tname.lower() for k in ["khach", "customer"]) and not any(
+            k in tname.lower()
+            for k in [
+                "hoa_don",
+                "don_hang",
+                "chi_tiet",
+                "phieu_nhap",
+                "tra_hang",
+                "so_quy",
+                "the_kho",
+            ]
         ):
             kh_cols = {c.lower(): c for c in df.columns}
             k_id = next(
                 (
                     kh_cols[c]
-                    for c in ["ma_khach_hang", "ma_kh", "customer_id", "kh", "ma_khach", "makh"]
+                    for c in [
+                        "ma_khach_hang",
+                        "ma_kh",
+                        "customer_id",
+                        "kh",
+                        "ma_khach",
+                        "makh",
+                    ]
                     if c in kh_cols
                 ),
                 None,
@@ -4385,7 +4453,16 @@ def calculate_debt_metric(
             k_nm = next(
                 (
                     kh_cols[c]
-                    for c in ["ten_khach_hang", "ten_kh", "ten_goi", "ho_ten", "ten_khach", "khach_hang", "khach_hang_ten", "ten"]
+                    for c in [
+                        "ten_khach_hang",
+                        "ten_kh",
+                        "ten_goi",
+                        "ho_ten",
+                        "ten_khach",
+                        "khach_hang",
+                        "khach_hang_ten",
+                        "ten",
+                    ]
                     if c in kh_cols
                 ),
                 None,
@@ -4418,9 +4495,13 @@ def calculate_debt_metric(
         if cust_id_col and cust_name_map:
             active["resolved_name"] = active[cust_id_col].astype(str).map(cust_name_map)
             if cust_name_col:
-                active["resolved_name"] = active["resolved_name"].fillna(active[cust_name_col])
+                active["resolved_name"] = active["resolved_name"].fillna(
+                    active[cust_name_col]
+                )
             else:
-                active["resolved_name"] = active["resolved_name"].fillna(active[cust_id_col])
+                active["resolved_name"] = active["resolved_name"].fillna(
+                    active[cust_id_col]
+                )
         elif cust_name_col:
             active["resolved_name"] = active[cust_name_col]
         else:
