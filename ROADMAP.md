@@ -1189,3 +1189,61 @@
     - Chính thức phá vỡ mốc **`0.40000`**, xác lập vị thế vững chắc tại đỉnh bảng xếp hạng.
     - Còn đúng **2 lượt nộp bài dự trữ** (#18 và #19).
     - Vẫn còn **485 câu abstain an toàn** chưa bị phạt điểm để khai thác tiếp.
+
+
+### 08/11/2026 — 09/11/2026 — Chuỗi Nộp bài Nâng điểm Đột phá (#20 $\rightarrow$ #24, Phá vỡ mốc `0.50000`)
+- **Lịch sử các lần nộp bài xác minh trên Portal:**
+  * **Lần 20 (`08/11/2026 14:12:43`):** Public Score **`0.45300`** (File: `32cb7723-abc3-4f3d-8f19-009bb1d99aed.jsonl`).
+  * **Lần 21 (`08/11/2026 16:50:01`):** Public Score **`0.46100`** (File: `f8640cdd-07d5-4e67-bf1d-55e445d99d55.jsonl`).
+  * **Lần 22 (`08/11/2026 17:48:53`):** Public Score **`0.48500`** (File: `8da6cebc-a91d-4a60-9529-ed3c4cfe51a2.jsonl`).
+  * **Lần 23 (`09/11/2026 10:11:55`):** Public Score **`0.49100`** (File: `11c28ff1-a329-4941-8650-549aab376531.jsonl`).
+  * **Lần 24 (`09/11/2026 11:22:40`):** Public Score **`0.51800`** (File: `54b32d04-af09-4075-b6c8-e3d2b1e2002a.jsonl`).
+- **Giải phẫu Toán học Mốc Kỷ Lục Submission #24 (`0.51800`):**
+  - Tổng số câu trả lời: **662 câu** (66.2%).
+  - Số câu Abstain an toàn: **338 câu** (33.8% giữ an toàn 0 điểm phạt).
+  - Phân tích Đúng/Sai:
+    $$\begin{cases} C + W = 662 \\ C - W = 518 \end{cases} \implies 2C = 1180 \implies C = \mathbf{590\text{ câu ĐÚNG (+590đ)}}, \quad W = \mathbf{72\text{ câu SAI (-72đ)}}$$
+  - **Precision:** Đạt **`89.12%`** (`590/662`) trên toàn bộ 1.000 câu Public Test.
+
+---
+
+### 09/11/2026 — Hoàn thành Ứng viên Submission #25 (Đạt 73.1% Trả lời — Kỳ vọng: `0.57500 – 0.59000`)
+- **Các cải tiến kỹ thuật trọng điểm:**
+  1. *Khởi tạo engine doanh thu 3 tháng liên tiếp (`src/zaic_2026_datamate/multi_month_revenue.py`):*
+     - Hỗ trợ các mẫu câu chuỗi 3 tháng (`từ T4/2025 tới T6/2025`, `th7, th8, th9/2025`, `các tháng 10, 11, 12 năm 2025`, `th4, th5, th6`).
+     - Trả về đúng định dạng chuẩn: `list` `[r1, r2, r3]`, `date` (tháng đỉnh cao doanh thu), hoặc `boolean` (tăng trưởng liên tục).
+     - Chặn các câu hỏi đổi giá/tăng giá để tránh nhận nhầm.
+  2. *Sửa dứt điểm 3 Bug Pháp Y so sánh tháng (Bug truncation):*
+     - `q_0537f6e4f5ab` (`dev_001`): Sub #24 bị cắt lấy tháng đầu `2025-03`. Sub #25 đối sánh DuckDB chuẩn xác ra tháng doanh thu cao nhất là **`2025-05`** (300.4M vs 282.8M vs 262.3M).
+     - `q_ba1f08439ec8` (`dev_004`): Sửa từ `2026-01` thành **`2026-03`** (1.202 tỷ vs 1.092 tỷ).
+     - `q_d62edb3b5bc6` (`dev_004`): Sửa từ `2025-06` thành **`2025-07`** (1.301 tỷ vs 1.093 tỷ).
+     - *(Chuyển 3 câu từ Sai $\rightarrow$ Đúng, đem lại ngay **+6 điểm ròng**).*
+  3. *Khôi phục 60 mặt hàng bị mất tại `dev_007`:* Ưu tiên cột `mat_hang` thay vì cột trống `noi_dung` (100% NaN).
+  4. *Chuẩn hóa thứ tự ưu tiên `dev_014` (Điện thoại trả góp):*
+     - Đặt bộ xử lý `khach_tra` (sau khi trừ bớt/máy cũ thu lại) lên TRƯỚC tính AOV doanh thu gộp `thanh_tien`, bảo toàn chính xác 100% kết quả của Sub #24 cho `q_94f634ace6b1`, `q_e0ac213834f6`, `q_f30748b72898`.
+  5. *Mở khóa truy vấn ngày đông khách / ngày đỉnh doanh thu:* Sửa guard `is_busiest_day` để nhận diện cụm từ `"đắt khách nhất"`, `"nhiều tiền nhất"`.
+- **Kết quả nghiệm thu Candidate #25 trên 1.000 câu Public Test:**
+  - **Tổng số câu trả lời:** **731 / 1.000 câu** (**73.1%**), tăng **+69 câu mở mới** so với Sub #24.
+  - **Số câu Abstain an toàn:** **269 / 1.000 câu** (**26.9%**).
+  - **Bảo toàn kết quả cũ:** **100% (659/659 câu)** không bị hồi quy.
+  - **File ứng viên:** [`submission.jsonl`](file:///home/pt/AI%20Challenge/submission.jsonl) (SHA256: `ce630ac1b0908e9ff72337fa21235b3fc1ef002471a2d9a9db7e9c8bfa1c187c`).
+  - **Điểm số kỳ vọng:** **`0.57500 – 0.59000`**.
+
+---
+
+### 09/11/2026 — Chiến lược Đột phá Nâng tỷ lệ trả lời lên $\ge 80.0\%$ ($\ge 800$ câu)
+- **Mục tiêu:** Mở khóa thêm $\ge 69$ câu hỏi chất lượng cao từ nhóm 269 câu abstain để đạt ngưỡng $\ge 800$ câu trả lời với Precision $\ge 90\%$, hướng tới mục tiêu điểm số **`0.62000 – 0.65000+`**.
+- **Giải phẫu 269 câu Abstain còn lại theo chủ đề:**
+  1. *Rolling Window (44 câu):* 7 ngày gần nhất, 30 ngày gần nhất, tuần này, tuần rồi, tuần trước, hôm qua.
+     - **Công thức vàng đã kiểm chứng 100% trên Train (`diff = 0.0` trên cả 4 doanh nghiệp):**
+       * 7 ngày gần nhất: `[as_of_date - 6 days, as_of_date]`.
+       * 30 ngày gần nhất: `[as_of_date - 29 days, as_of_date]`.
+       * Tuần trước: `[thứ 2 tuần trước, chủ nhật tuần trước]`.
+       * Hôm qua: `as_of_date - 1 day`.
+  2. *Công nợ & Trả góp (`debt_collection`: 37 câu):* Tập trung tại `dev_003`, `dev_004`, `dev_006`, `dev_014`.
+  3. *Tác động đổi giá 30 ngày (`price_change_30d`: 14 câu):* So sánh lượng bán 30 ngày kể từ ngày đổi giá vs 30 ngày trước ngày đổi giá.
+  4. *Top K Ranking (`top_k_ranking`: 12 câu):* Top 3, Top 5 mặt hàng bán chạy nhất tuần/tháng.
+  5. *Lãi gộp (`gross_profit`: 10 câu):* Tính doanh thu trừ giá vốn tại các doanh nghiệp có bảng nhập hàng/giá vốn.
+  6. *Hạn dùng / Lô thuốc (`lot_expiry`: 7 câu):* Phân tích bảng `lo_hang` trong nhà thuốc `dev_006`.
+  7. *Tồn kho (`inventory_stock`: 5 câu):* Đếm số lượng tồn cuối ngày/hôm nay theo đơn vị chuẩn.
+  8. *Nhận diện Cổng 1 (`unanswerable`):* Nhận diện các câu hỏi hỏi về mặt hàng không tồn tại trong DB của quán (như Đậu phụ rán giòn ở `dev_008`), câu hỏi chủ quan/cảm tính, hoặc hỏi số liệu ngoài khoảng thời gian $\rightarrow$ Trả về `unanswerable` (+1 điểm thưởng).
