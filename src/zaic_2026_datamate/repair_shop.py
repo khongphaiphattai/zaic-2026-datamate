@@ -447,9 +447,7 @@ def resolve_repair_shop_query(
                 )
             ]
         elif "va ruot" in t_norm:
-            # Check if query asks specifically for 'va ruot' vs general 'va'
-            # If ambiguous, abstain to protect points
-            return "abstain", None, "Tác vụ vá ruột chưa đạt ngưỡng tin cậy 95%"
+            matched = sub[sub["lam_gi"].apply(lambda x: "va ruot" in strip_accents(x))]
         return "number", len(matched), None
 
     # 14. Day of week average: 'trung binh moi thu tu', 'kac ngay thu 3 ... trung binh'

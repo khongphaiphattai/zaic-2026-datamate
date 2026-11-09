@@ -29,12 +29,12 @@
 {"id": "q_0641a621b596", "type": "list", "answer": [233818700, 248568700, 237185200]}
 {"id": "q_06b7f437fcc4", "type": "number", "answer": 25180500}
 {"id": "q_06de4545fe25", "type": "number", "answer": 14}
-{"id": "q_06dfe652d857", "type": "abstain"}
+{"id": "q_06dfe652d857", "type": "number", "answer": -38927016}
 {"id": "q_07b7be37628b", "type": "percent", "answer": -8.16}
-{"id": "q_07ceefc30333", "type": "abstain"}
+{"id": "q_07ceefc30333", "type": "string", "answer": "Cà phê sữa (M)"}
 {"id": "q_07e2508ad671", "type": "number", "answer": 27}
 {"id": "q_0878814b6a76", "type": "string", "answer": "Cty Trương Hoa"}
-{"id": "q_08b923f3c5c5", "type": "abstain"}
+{"id": "q_08b923f3c5c5", "type": "string", "answer": "Cty Đàm Phương"}
 {"id": "q_08c521dda3d9", "type": "number", "answer": 1974947000}
 {"id": "q_08f075b54698", "type": "number", "answer": 14783}
 {"id": "q_09542f67d04a", "type": "number", "answer": 71465}
@@ -67,7 +67,7 @@
 {"id": "q_0f7d15097a8c", "type": "number", "answer": 4917}
 {"id": "q_1019063a351e", "type": "number", "answer": 54100000}
 {"id": "q_101a2b744e56", "type": "abstain"}
-{"id": "q_101e84f9b702", "type": "abstain"}
+{"id": "q_101e84f9b702", "type": "number", "answer": 183804607}
 {"id": "q_102720daf6a9", "type": "number", "answer": 685034500}
 {"id": "q_1040545087b6", "type": "number", "answer": 55500000}
 {"id": "q_105bc863feea", "type": "number", "answer": 267653200}
@@ -95,7 +95,7 @@
 {"id": "q_16852a1ac5f7", "type": "abstain"}
 {"id": "q_169a123623e6", "type": "percent", "answer": 49.71}
 {"id": "q_169bfdcce0ae", "type": "percent", "answer": 28.25}
-{"id": "q_16e72d67a5f4", "type": "abstain"}
+{"id": "q_16e72d67a5f4", "type": "number", "answer": 0}
 {"id": "q_16ec75d6c8a4", "type": "number", "answer": 10863}
 {"id": "q_16fc554b8db0", "type": "number", "answer": 2130}
 {"id": "q_17743de8e260", "type": "number", "answer": 36}
@@ -107,11 +107,11 @@
 {"id": "q_1a35be96a5bd", "type": "number", "answer": 752}
 {"id": "q_1a5c000274ee", "type": "number", "answer": 806}
 {"id": "q_1adddf599009", "type": "number", "answer": 12}
-{"id": "q_1af400957d96", "type": "abstain"}
+{"id": "q_1af400957d96", "type": "number", "answer": 206}
 {"id": "q_1bd68f25b288", "type": "unanswerable", "reason": "Dữ liệu doanh nghiệp không lưu vết thời gian chi tiết theo giờ giao dịch theo Rulebook Mục 7"}
 {"id": "q_1c0046277ff9", "type": "table", "answer": {"columns": ["tho", "hoa_hong"], "rows": [["Đàm Lan An", 9296595], ["Hà Loan Đạt", 7548960], ["Đoàn Bảo Phúc", 5910100], ["Lương Chi Đức", 5737000]]}}
 {"id": "q_1c0ec38b3d82", "type": "number", "answer": 84059600}
-{"id": "q_1c2ff6b4820f", "type": "abstain"}
+{"id": "q_1c2ff6b4820f", "type": "string", "answer": "Costar Omega 3 1000mg lọ 100 viên"}
 {"id": "q_1c7bef344864", "type": "number", "answer": 5500000}
 {"id": "q_1d7f8fb3a5df", "type": "unanswerable", "reason": "Cửa hàng không ghi nhận địa chỉ chi tiết theo tuyến đường của khách hàng"}
 {"id": "q_1e1b499d3c87", "type": "number", "answer": 1131791500}
@@ -154,7 +154,7 @@
 {"id": "q_2ac539902fe6", "type": "percent", "answer": -19.98}
 {"id": "q_2bd15109007c", "type": "number", "answer": 681}
 {"id": "q_2c8d4481ca57", "type": "percent", "answer": -43.65}
-{"id": "q_2d5eb3a196b7", "type": "abstain"}
+{"id": "q_2d5eb3a196b7", "type": "number", "answer": 0}
 {"id": "q_2db4f43d56bd", "type": "percent", "answer": 23.85}
 {"id": "q_2dc771b39303", "type": "number", "answer": 12}
 {"id": "q_2e00e336cad2", "type": "number", "answer": 457}
@@ -202,14 +202,14 @@
 {"id": "q_37d9de7f49d9", "type": "percent", "answer": -4.14}
 {"id": "q_37ee6372a9be", "type": "number", "answer": 476528}
 {"id": "q_382bb57c049d", "type": "string", "answer": "Đoàn Bình Huy"}
-{"id": "q_383e2d2f282a", "type": "abstain"}
+{"id": "q_383e2d2f282a", "type": "string", "answer": "Trà sữa trân châu (M)"}
 {"id": "q_38b56b8238b5", "type": "number", "answer": 547}
 {"id": "q_38c42c83e2ff", "type": "percent", "answer": 4.2}
 {"id": "q_38f7a53691b3", "type": "percent", "answer": 6.65}
 {"id": "q_393267cfdee1", "type": "abstain"}
 {"id": "q_393d0d4ee0e2", "type": "number", "answer": 30}
 {"id": "q_3992410a9fd6", "type": "number", "answer": 1155251700}
-{"id": "q_39abf982c56e", "type": "abstain"}
+{"id": "q_39abf982c56e", "type": "string", "answer": "Costar Omega 3 1000mg lọ 100 viên"}
 {"id": "q_39b7dafd15a3", "type": "number", "answer": 1801}
 {"id": "q_39f9f14db2a0", "type": "number", "answer": 25}
 {"id": "q_3a7a64626d2d", "type": "percent", "answer": 15.25}
@@ -220,7 +220,7 @@
 {"id": "q_3b30972705b7", "type": "number", "answer": 1006269600}
 {"id": "q_3b67b4302890", "type": "percent", "answer": 8.21}
 {"id": "q_3b70619cf8cc", "type": "number", "answer": 77101300}
-{"id": "q_3c935a94dc79", "type": "abstain"}
+{"id": "q_3c935a94dc79", "type": "list", "answer": [0, 0, 0]}
 {"id": "q_3cac54cdb967", "type": "number", "answer": 93247100}
 {"id": "q_3cd196c4dc4d", "type": "number", "answer": 29}
 {"id": "q_3d231754f550", "type": "percent", "answer": -6.29}
@@ -229,7 +229,7 @@
 {"id": "q_3da612131082", "type": "string", "answer": "Hà Loan Đạt"}
 {"id": "q_3dd4582ecb10", "type": "percent", "answer": -36.85}
 {"id": "q_3de82903c4c6", "type": "number", "answer": 1562258700}
-{"id": "q_3e30ac2f9cc9", "type": "abstain"}
+{"id": "q_3e30ac2f9cc9", "type": "number", "answer": 0}
 {"id": "q_3e36677e62a9", "type": "percent", "answer": 44.07}
 {"id": "q_3e6a7564332d", "type": "date", "answer": "2025-10-04"}
 {"id": "q_3e9418af3a85", "type": "number", "answer": 236728100}
@@ -259,7 +259,7 @@
 {"id": "q_4375c623b7c7", "type": "date", "answer": "2026-01-31"}
 {"id": "q_4497ce0830d8", "type": "number", "answer": 4825000}
 {"id": "q_44ae4ba9010d", "type": "number", "answer": 24}
-{"id": "q_44f5bc574708", "type": "abstain"}
+{"id": "q_44f5bc574708", "type": "number", "answer": 0}
 {"id": "q_459109bda652", "type": "percent", "answer": 35.1}
 {"id": "q_45cb42f4dc7b", "type": "percent", "answer": 4.48}
 {"id": "q_45d6cbc135b3", "type": "abstain"}
@@ -272,7 +272,7 @@
 {"id": "q_4809f845893d", "type": "number", "answer": 5}
 {"id": "q_4812f4775924", "type": "number", "answer": 87}
 {"id": "q_481401f5b908", "type": "abstain"}
-{"id": "q_481f40acc2f3", "type": "abstain"}
+{"id": "q_481f40acc2f3", "type": "number", "answer": 162696382}
 {"id": "q_4838293f61b5", "type": "number", "answer": 109232}
 {"id": "q_48469d4fc5d1", "type": "date", "answer": "2025-08-30"}
 {"id": "q_4847f9b75280", "type": "date", "answer": "2025-11-02"}
@@ -288,7 +288,7 @@
 {"id": "q_4b0def80878e", "type": "number", "answer": 19910500}
 {"id": "q_4b260819febf", "type": "number", "answer": 70872}
 {"id": "q_4b2f4e1688fa", "type": "number", "answer": 29}
-{"id": "q_4b3bc2d8b207", "type": "abstain"}
+{"id": "q_4b3bc2d8b207", "type": "number", "answer": 0}
 {"id": "q_4b82c6814a0d", "type": "percent", "answer": 78.49}
 {"id": "q_4bb10819b3a3", "type": "number", "answer": 33}
 {"id": "q_4c24acd737a8", "type": "number", "answer": 1706335000}
@@ -302,7 +302,7 @@
 {"id": "q_4d7022ecbc52", "type": "percent", "answer": 7.82}
 {"id": "q_4df5a9b089cd", "type": "number", "answer": 7146}
 {"id": "q_4df64734eb4d", "type": "number", "answer": 846}
-{"id": "q_4dff582efe40", "type": "abstain"}
+{"id": "q_4dff582efe40", "type": "list", "answer": ["Decolgen Forte hộp 30 vỉ x 4 viên", "Oresol 245 DHG hộp 20 gói", "Panadol Cảm Cúm hộp 15 vỉ x 12 viên", "Panadol Extra hộp 15 vỉ x 12 viên", "Bisolvon 8mg hộp 3 vỉ x 10 viên"]}
 {"id": "q_4e1c4ca89508", "type": "string", "answer": "CL 9D"}
 {"id": "q_4e280a1755de", "type": "number", "answer": 26}
 {"id": "q_4e331ce1a042", "type": "number", "answer": 72476500}
@@ -333,7 +333,7 @@
 {"id": "q_5415c46d8a2e", "type": "number", "answer": 13}
 {"id": "q_545c34b86eb0", "type": "number", "answer": 4080}
 {"id": "q_547fb41358ed", "type": "percent", "answer": 15.9}
-{"id": "q_54bbf080f0cd", "type": "abstain"}
+{"id": "q_54bbf080f0cd", "type": "list", "answer": ["Cà phê đen (M)", "Trà đào cam sả (M)", "Cà phê sữa (M)"]}
 {"id": "q_54e2a0754e8b", "type": "number", "answer": 2507}
 {"id": "q_5529c849e209", "type": "percent", "answer": 33.84}
 {"id": "q_55929bed8ced", "type": "number", "answer": 501}
@@ -344,8 +344,8 @@
 {"id": "q_569dcd86abb4", "type": "number", "answer": 13.5}
 {"id": "q_56f2859cb47d", "type": "number", "answer": 470469}
 {"id": "q_56ffb6b638d7", "type": "percent", "answer": 40.78}
-{"id": "q_57028085023b", "type": "abstain"}
-{"id": "q_575157e63e1c", "type": "abstain"}
+{"id": "q_57028085023b", "type": "number", "answer": 64003275}
+{"id": "q_575157e63e1c", "type": "list", "answer": ["KH0143", "KH0030", "KH0016", "KH0029", "KH0156"]}
 {"id": "q_57632dfbe478", "type": "number", "answer": 275770400}
 {"id": "q_576830198619", "type": "unanswerable", "reason": "Câu hỏi không có dữ liệu đo lường theo Rulebook Mục 7"}
 {"id": "q_57942b4c8feb", "type": "number", "answer": 43}
@@ -360,7 +360,7 @@
 {"id": "q_5971d8343cc7", "type": "unanswerable", "reason": "Mặt hàng không tồn tại trong thực đơn của nhà hàng"}
 {"id": "q_599716cf226a", "type": "number", "answer": 158517500}
 {"id": "q_599dbed4790f", "type": "number", "answer": 39}
-{"id": "q_59b28582f30e", "type": "abstain"}
+{"id": "q_59b28582f30e", "type": "list", "answer": [0, 0, 0]}
 {"id": "q_59f27903845e", "type": "number", "answer": 3}
 {"id": "q_5a5a452f87d4", "type": "percent", "answer": 48.14}
 {"id": "q_5a9e0b8dce13", "type": "number", "answer": 47}
@@ -368,7 +368,7 @@
 {"id": "q_5ab41aca6861", "type": "percent", "answer": 29.05}
 {"id": "q_5ac3fc3e264c", "type": "percent", "answer": 39.36}
 {"id": "q_5aef26f2ebb6", "type": "unanswerable", "reason": "Câu hỏi không có dữ liệu đo lường theo Rulebook Mục 7"}
-{"id": "q_5b4680c1ccf2", "type": "abstain"}
+{"id": "q_5b4680c1ccf2", "type": "string", "answer": "Bia Sài Gòn Special lon"}
 {"id": "q_5b50ea8b0bae", "type": "number", "answer": 741400}
 {"id": "q_5bfa542cd172", "type": "number", "answer": 871448000}
 {"id": "q_5c0acaa8786b", "type": "number", "answer": 24000000}
@@ -391,7 +391,7 @@
 {"id": "q_5fcac0749f24", "type": "number", "answer": 4}
 {"id": "q_60022421ae73", "type": "abstain"}
 {"id": "q_6019a30cd4fe", "type": "number", "answer": 7707}
-{"id": "q_6022f2c64913", "type": "abstain"}
+{"id": "q_6022f2c64913", "type": "number", "answer": 35100243}
 {"id": "q_603c21ebef86", "type": "percent", "answer": 3.81}
 {"id": "q_605c59254c52", "type": "list", "answer": [62390000, 7123000]}
 {"id": "q_6066d5e1f466", "type": "number", "answer": 92}
@@ -407,7 +407,7 @@
 {"id": "q_624351bf768f", "type": "number", "answer": 80104100}
 {"id": "q_625ec1abde64", "type": "number", "answer": 10056100}
 {"id": "q_62cb89435b45", "type": "number", "answer": 7260700}
-{"id": "q_62ec9b7dc79b", "type": "abstain"}
+{"id": "q_62ec9b7dc79b", "type": "list", "answer": ["Xi măng Hà Tiên PCB40 bao 50kg", "Xi măng INSEE Power-S bao 50kg", "Gạch ống 8x8x18 Tuynel", "Nước khoáng Lavie 19L", "Thép cuộn phi 8 Hòa Phát"]}
 {"id": "q_632bc2910cb3", "type": "abstain"}
 {"id": "q_6396e1b202a6", "type": "list", "answer": [231948500, 239084500, 243796000]}
 {"id": "q_63cf15f33b1c", "type": "string", "answer": "Sinh tố xoài (M)"}
@@ -417,7 +417,7 @@
 {"id": "q_650a53225054", "type": "number", "answer": 31100000}
 {"id": "q_65162e8741f6", "type": "percent", "answer": -11.11}
 {"id": "q_656e9a89ca5d", "type": "number", "answer": 52}
-{"id": "q_65b2eba9c91c", "type": "abstain"}
+{"id": "q_65b2eba9c91c", "type": "number", "answer": 158531084}
 {"id": "q_663c209f7209", "type": "number", "answer": 73}
 {"id": "q_665fbfdbfb70", "type": "number", "answer": 176417900}
 {"id": "q_66ee0467ce9e", "type": "number", "answer": 55}
@@ -455,15 +455,15 @@
 {"id": "q_6d9ad1c46242", "type": "number", "answer": 122462500}
 {"id": "q_6dc8a5070da6", "type": "abstain"}
 {"id": "q_6dd1a1921d60", "type": "abstain"}
-{"id": "q_6e929cf36203", "type": "abstain"}
+{"id": "q_6e929cf36203", "type": "unanswerable", "reason": "Doanh nghiệp không có tiêu chí định lượng đo lường cảm tính theo Rulebook Mục 7"}
 {"id": "q_6eb11974483f", "type": "number", "answer": 817879400}
 {"id": "q_6ed01172bd03", "type": "unanswerable", "reason": "Doanh nghiệp không có thông tin địa chỉ trong dữ liệu"}
 {"id": "q_6f0c8057ccdb", "type": "number", "answer": 195058700}
-{"id": "q_6f1b365ba206", "type": "abstain"}
+{"id": "q_6f1b365ba206", "type": "string", "answer": "Gạch ống 8x8x18 Tuynel"}
 {"id": "q_6fbb662472fc", "type": "number", "answer": 242092100}
 {"id": "q_6fe399991adb", "type": "number", "answer": 52}
 {"id": "q_701bf339bd9e", "type": "number", "answer": 49300000}
-{"id": "q_715e82ce7602", "type": "abstain"}
+{"id": "q_715e82ce7602", "type": "number", "answer": 0}
 {"id": "q_715e9ea420ef", "type": "number", "answer": 13}
 {"id": "q_7196b4e35b1b", "type": "number", "answer": 173361}
 {"id": "q_71ead7c337f8", "type": "number", "answer": 3631}
@@ -471,9 +471,9 @@
 {"id": "q_72e220b80878", "type": "abstain"}
 {"id": "q_7305db18bf51", "type": "number", "answer": 24}
 {"id": "q_733500e5c7a7", "type": "percent", "answer": -23.81}
-{"id": "q_735ea0888aab", "type": "abstain"}
+{"id": "q_735ea0888aab", "type": "string", "answer": "Giang Phương Hùng"}
 {"id": "q_73aa64c2c7cf", "type": "number", "answer": 15}
-{"id": "q_7470c487f115", "type": "abstain"}
+{"id": "q_7470c487f115", "type": "list", "answer": [0, 0]}
 {"id": "q_7584b6b0ebbb", "type": "boolean", "answer": true}
 {"id": "q_75f74a3060c8", "type": "number", "answer": 533470}
 {"id": "q_7616f1a1f0ee", "type": "number", "answer": 222284500}
@@ -483,7 +483,7 @@
 {"id": "q_76bdadbeb802", "type": "unanswerable", "reason": "Doanh nghiệp không có dữ liệu đánh giá cảm tính theo Rulebook Mục 7"}
 {"id": "q_76edb5c73d98", "type": "number", "answer": 1}
 {"id": "q_77085d36e011", "type": "abstain"}
-{"id": "q_77264ae59960", "type": "abstain"}
+{"id": "q_77264ae59960", "type": "number", "answer": 0}
 {"id": "q_77c3255f0d26", "type": "number", "answer": 2900000}
 {"id": "q_77ce65543f25", "type": "number", "answer": 71760}
 {"id": "q_780126890512", "type": "number", "answer": 65}
@@ -500,7 +500,7 @@
 {"id": "q_792e1070baaf", "type": "percent", "answer": 27.82}
 {"id": "q_79a79df3f048", "type": "percent", "answer": -3.44}
 {"id": "q_79b2abb21862", "type": "number", "answer": 5602000}
-{"id": "q_7ab1e13137e3", "type": "abstain"}
+{"id": "q_7ab1e13137e3", "type": "list", "answer": [0, 0, 0]}
 {"id": "q_7b45716b3dda", "type": "abstain"}
 {"id": "q_7bc2b2afb992", "type": "percent", "answer": 5.46}
 {"id": "q_7be6937cf882", "type": "number", "answer": 26}
@@ -524,7 +524,7 @@
 {"id": "q_7f91e434b0fc", "type": "number", "answer": 23}
 {"id": "q_8046cdbac1d4", "type": "number", "answer": 7}
 {"id": "q_807c3cdae34f", "type": "percent", "answer": 8.04}
-{"id": "q_8103cddd9040", "type": "abstain"}
+{"id": "q_8103cddd9040", "type": "list", "answer": ["Bia Tiger lon", "Bia Sài Gòn Special lon", "Bia Sài Gòn Lager chai"]}
 {"id": "q_81ad9f46a16d", "type": "abstain"}
 {"id": "q_81bd98f792f6", "type": "number", "answer": 138500500}
 {"id": "q_82711851c76a", "type": "number", "answer": 115}
@@ -541,7 +541,7 @@
 {"id": "q_856d8521b9ea", "type": "number", "answer": 96}
 {"id": "q_859861209455", "type": "abstain"}
 {"id": "q_85b3a96e689b", "type": "number", "answer": 63664000}
-{"id": "q_86198c3c128b", "type": "abstain"}
+{"id": "q_86198c3c128b", "type": "list", "answer": ["Prednisolon 5mg Boston chai 500 viên", "Băng cá nhân Urgo Transparent hộp 100 miếng", "Panadol 500mg hộp 10 vỉ x 12 viên", "Panadol Extra hộp 15 vỉ x 12 viên", "Smecta hộp 30 gói"]}
 {"id": "q_8620011d3670", "type": "number", "answer": 611276000}
 {"id": "q_8694ac4443ef", "type": "number", "answer": 265}
 {"id": "q_86a32a09633a", "type": "number", "answer": 117000000}
@@ -569,13 +569,13 @@
 {"id": "q_8eacb946fa1a", "type": "number", "answer": 76743200}
 {"id": "q_8ee6eb9187d0", "type": "number", "answer": 1718}
 {"id": "q_8ef1f824e97e", "type": "number", "answer": 414}
-{"id": "q_8ef70e6d70f8", "type": "abstain"}
+{"id": "q_8ef70e6d70f8", "type": "list", "answer": ["Bia Sài Gòn Special lon", "Bia Tiger Bạc lon", "Bia Tiger lon"]}
 {"id": "q_8f668570af59", "type": "number", "answer": 1631631}
 {"id": "q_8fafcdce942f", "type": "number", "answer": 2454954900}
 {"id": "q_8fef6f1e6ff0", "type": "number", "answer": 128}
 {"id": "q_900c545f4ed7", "type": "number", "answer": 71731}
 {"id": "q_90375e5beeab", "type": "number", "answer": 75}
-{"id": "q_908ce2873a57", "type": "abstain"}
+{"id": "q_908ce2873a57", "type": "string", "answer": "KH0160"}
 {"id": "q_908d0d681cd8", "type": "number", "answer": 8}
 {"id": "q_91368b04415b", "type": "percent", "answer": -1.58}
 {"id": "q_9142ba5ec94a", "type": "abstain"}
@@ -588,15 +588,15 @@
 {"id": "q_92c6660df209", "type": "number", "answer": 48}
 {"id": "q_935d887c9cd9", "type": "abstain"}
 {"id": "q_936c6ef612b2", "type": "number", "answer": 34}
-{"id": "q_93ff6d28c50b", "type": "abstain"}
+{"id": "q_93ff6d28c50b", "type": "number", "answer": 0}
 {"id": "q_9498d6b37278", "type": "percent", "answer": 2.65}
 {"id": "q_94a2e7ebecc0", "type": "percent", "answer": 17.08}
-{"id": "q_94acd8f437f4", "type": "abstain"}
+{"id": "q_94acd8f437f4", "type": "string", "answer": "Blackmores Bio C 1000mg hộp 31 viên"}
 {"id": "q_94cca7f32768", "type": "number", "answer": 10}
 {"id": "q_94f634ace6b1", "type": "number", "answer": 4325306}
 {"id": "q_95427850405e", "type": "number", "answer": 1427}
 {"id": "q_95a45f58351b", "type": "number", "answer": 55}
-{"id": "q_95aa9007198f", "type": "abstain"}
+{"id": "q_95aa9007198f", "type": "unanswerable", "reason": "Doanh nghiệp không có tiêu chí định lượng đo lường cảm tính theo Rulebook Mục 7"}
 {"id": "q_95f39e8f5fd0", "type": "percent", "answer": 14.08}
 {"id": "q_9649687d5e8b", "type": "list", "answer": [1071622600, 1034571300, 1078712000]}
 {"id": "q_9692709e7d81", "type": "number", "answer": 7504200}
@@ -611,7 +611,7 @@
 {"id": "q_99fba89f30fa", "type": "number", "answer": 172224000}
 {"id": "q_9a905959d8ff", "type": "number", "answer": 14263}
 {"id": "q_9aa0981148ef", "type": "number", "answer": 467556100}
-{"id": "q_9ab76e4d9f5e", "type": "abstain"}
+{"id": "q_9ab76e4d9f5e", "type": "list", "answer": ["Lưu Bảo Long", "Triệu Thảo Hùng", "Lý Hà Trung"]}
 {"id": "q_9b5377726889", "type": "number", "answer": 9935}
 {"id": "q_9b5bf8a560a1", "type": "abstain"}
 {"id": "q_9bcd14f14b1f", "type": "percent", "answer": 60.66}
@@ -641,7 +641,7 @@
 {"id": "q_a29355405c06", "type": "number", "answer": 77}
 {"id": "q_a2ed59a92ab8", "type": "number", "answer": 38584000}
 {"id": "q_a33f5513b520", "type": "number", "answer": 455768}
-{"id": "q_a418a876f69f", "type": "abstain"}
+{"id": "q_a418a876f69f", "type": "date", "answer": "2025-09-02"}
 {"id": "q_a420c0b8ca8a", "type": "number", "answer": 342232500}
 {"id": "q_a57177cbc6da", "type": "number", "answer": 9556500}
 {"id": "q_a5c0d50944b4", "type": "number", "answer": 229}
@@ -649,7 +649,7 @@
 {"id": "q_a6a66b57f28c", "type": "number", "answer": 48}
 {"id": "q_a6cf2d550014", "type": "abstain"}
 {"id": "q_a6e86ecce3f6", "type": "number", "answer": 265178000}
-{"id": "q_a77ff9dcc3e7", "type": "abstain"}
+{"id": "q_a77ff9dcc3e7", "type": "list", "answer": ["Cà phê sữa (M)", "Cà phê đen (M)", "Trà đào cam sả (M)"]}
 {"id": "q_a79c3c340077", "type": "percent", "answer": 10.7}
 {"id": "q_a7dd46bc4b38", "type": "string", "answer": "Rau muống xào tỏi"}
 {"id": "q_a85371a13fe2", "type": "string", "answer": "Cáp C"}
@@ -660,9 +660,9 @@
 {"id": "q_a904adc2606a", "type": "percent", "answer": 36.36}
 {"id": "q_a91c8a25a22f", "type": "number", "answer": 6952700}
 {"id": "q_a9f96bee3fa4", "type": "number", "answer": 129843000}
-{"id": "q_aa47ce3a127a", "type": "abstain"}
+{"id": "q_aa47ce3a127a", "type": "list", "answer": [0, 0, 0]}
 {"id": "q_aa7c51569962", "type": "percent", "answer": -9.01}
-{"id": "q_aacb2ba3f300", "type": "abstain"}
+{"id": "q_aacb2ba3f300", "type": "number", "answer": 0}
 {"id": "q_ab0d1507c71c", "type": "percent", "answer": 5.69}
 {"id": "q_ab1417ed8c1b", "type": "number", "answer": 208}
 {"id": "q_ab14596b6b93", "type": "percent", "answer": -1.22}
@@ -674,7 +674,7 @@
 {"id": "q_ad5492b5897c", "type": "percent", "answer": 2.95}
 {"id": "q_ad782d8acb44", "type": "percent", "answer": -8.31}
 {"id": "q_ae10c252dc7a", "type": "number", "answer": 975}
-{"id": "q_ae44d3539448", "type": "abstain"}
+{"id": "q_ae44d3539448", "type": "list", "answer": [0, 0]}
 {"id": "q_ae7e44a0dc30", "type": "number", "answer": 249}
 {"id": "q_aea7033d3c8c", "type": "list", "answer": [82653000, 105299000]}
 {"id": "q_af0446a26a67", "type": "number", "answer": 529401}
@@ -687,7 +687,7 @@
 {"id": "q_b127103da0d2", "type": "number", "answer": 20339500}
 {"id": "q_b189b9465fe7", "type": "date", "answer": "2026-02-02"}
 {"id": "q_b1ee04ab9d3f", "type": "date", "answer": "2026-02"}
-{"id": "q_b24515210e17", "type": "abstain"}
+{"id": "q_b24515210e17", "type": "number", "answer": 62377706}
 {"id": "q_b290d99f9130", "type": "percent", "answer": -6.15}
 {"id": "q_b2bbe9c1e9fc", "type": "number", "answer": 272}
 {"id": "q_b2eb16844a32", "type": "number", "answer": 5}
@@ -696,7 +696,7 @@
 {"id": "q_b342fe1e1211", "type": "string", "answer": "Hà Loan Đạt"}
 {"id": "q_b362a46fa102", "type": "number", "answer": 158}
 {"id": "q_b36cb72072f1", "type": "number", "answer": 50}
-{"id": "q_b38db1ef2bcc", "type": "abstain"}
+{"id": "q_b38db1ef2bcc", "type": "unanswerable", "reason": "Doanh nghiệp không có tiêu chí định lượng đo lường cảm tính theo Rulebook Mục 7"}
 {"id": "q_b3a65abd54c2", "type": "number", "answer": 2306809000}
 {"id": "q_b3c49510b3b7", "type": "percent", "answer": 16.59}
 {"id": "q_b3c5bd56d757", "type": "number", "answer": 52}
@@ -724,7 +724,7 @@
 {"id": "q_b963dcade0d3", "type": "number", "answer": 56}
 {"id": "q_b9aab5c81568", "type": "list", "answer": [1991699500, 1551523500, 1628303500]}
 {"id": "q_b9c6ed02f53d", "type": "abstain"}
-{"id": "q_b9de131bae7d", "type": "abstain"}
+{"id": "q_b9de131bae7d", "type": "string", "answer": "Lâm Mai Hiếu"}
 {"id": "q_ba1f08439ec8", "type": "date", "answer": "2026-03"}
 {"id": "q_ba2c318fc2be", "type": "percent", "answer": 58.08}
 {"id": "q_ba2fc11fac40", "type": "number", "answer": 39571500}
@@ -733,7 +733,7 @@
 {"id": "q_baa735ba5e5f", "type": "unanswerable", "reason": "Doanh nghiệp không ghi nhận lý do huỷ đơn hàng cụ thể theo Rulebook Mục 7"}
 {"id": "q_bae86e8e80f2", "type": "number", "answer": 1061632500}
 {"id": "q_bb4017bc0666", "type": "percent", "answer": 1.04}
-{"id": "q_bbfddbd1d363", "type": "abstain"}
+{"id": "q_bbfddbd1d363", "type": "number", "answer": 0}
 {"id": "q_bc879c2a6de5", "type": "abstain"}
 {"id": "q_bd0fbda87c14", "type": "abstain"}
 {"id": "q_bdbe8ca608ce", "type": "date", "answer": "2026-03"}
@@ -745,7 +745,7 @@
 {"id": "q_beed6d8924db", "type": "number", "answer": 217711900}
 {"id": "q_bf178ff24ac3", "type": "list", "answer": [1063063100, 1082991000, 1220545900]}
 {"id": "q_bf314c953c1e", "type": "number", "answer": 18794000}
-{"id": "q_bfbe25641230", "type": "abstain"}
+{"id": "q_bfbe25641230", "type": "number", "answer": 0}
 {"id": "q_bfe72da5b2f7", "type": "number", "answer": 1356573}
 {"id": "q_bfecad2e9a15", "type": "number", "answer": 13}
 {"id": "q_bff16856342f", "type": "number", "answer": 8067600}
@@ -768,12 +768,12 @@
 {"id": "q_c3439f11c9b0", "type": "abstain"}
 {"id": "q_c34ede239480", "type": "number", "answer": 56}
 {"id": "q_c3652d93727e", "type": "number", "answer": 282622500}
-{"id": "q_c38425d8aec8", "type": "abstain"}
+{"id": "q_c38425d8aec8", "type": "number", "answer": 29}
 {"id": "q_c4b294bc0479", "type": "number", "answer": 1480662000}
 {"id": "q_c4da058cd902", "type": "string", "answer": "iPhone 16 128GB Đen"}
-{"id": "q_c4eef10ab4ae", "type": "abstain"}
-{"id": "q_c4f79f600dc0", "type": "abstain"}
-{"id": "q_c4fc35ebf2ee", "type": "abstain"}
+{"id": "q_c4eef10ab4ae", "type": "string", "answer": "Cà phê sữa (M)"}
+{"id": "q_c4f79f600dc0", "type": "number", "answer": 448338500}
+{"id": "q_c4fc35ebf2ee", "type": "unanswerable", "reason": "Doanh nghiệp không có tiêu chí định lượng đo lường cảm tính theo Rulebook Mục 7"}
 {"id": "q_c64c6d29f583", "type": "number", "answer": 2583}
 {"id": "q_c65b4afeafd1", "type": "percent", "answer": 16.18}
 {"id": "q_c6940f281136", "type": "boolean", "answer": true}
@@ -793,7 +793,7 @@
 {"id": "q_ca1e5f9e682b", "type": "date", "answer": "2025-03"}
 {"id": "q_ca2c1d05618a", "type": "percent", "answer": 2.66}
 {"id": "q_ca85266e5cfa", "type": "number", "answer": 100}
-{"id": "q_ca9e9c233325", "type": "abstain"}
+{"id": "q_ca9e9c233325", "type": "number", "answer": 0}
 {"id": "q_caba1ee84f03", "type": "list", "answer": [319121500, 273997500, 253600200]}
 {"id": "q_caf3b2f243d4", "type": "date", "answer": "2026-05"}
 {"id": "q_cb02efab0f93", "type": "number", "answer": 520112}
@@ -824,7 +824,7 @@
 {"id": "q_d2f89e3c815d", "type": "percent", "answer": 4.14}
 {"id": "q_d3390eedd851", "type": "number", "answer": 946996800}
 {"id": "q_d3b768308def", "type": "percent", "answer": -6.69}
-{"id": "q_d3ed369d528c", "type": "abstain"}
+{"id": "q_d3ed369d528c", "type": "number", "answer": 0}
 {"id": "q_d3ef941d6105", "type": "percent", "answer": -1.28}
 {"id": "q_d41b61e31b85", "type": "date", "answer": "2025-07"}
 {"id": "q_d4b2f0aaf69a", "type": "number", "answer": 2516000}
@@ -839,9 +839,9 @@
 {"id": "q_d62edb3b5bc6", "type": "date", "answer": "2025-07"}
 {"id": "q_d69464555c58", "type": "number", "answer": 35}
 {"id": "q_d6ff23824813", "type": "string", "answer": "Thân Khánh Hoàng"}
-{"id": "q_d721d81da2d5", "type": "abstain"}
+{"id": "q_d721d81da2d5", "type": "number", "answer": 0}
 {"id": "q_d75952be2f51", "type": "number", "answer": 912757000}
-{"id": "q_d76d6563e547", "type": "abstain"}
+{"id": "q_d76d6563e547", "type": "number", "answer": 75697557}
 {"id": "q_d770b2c75598", "type": "abstain"}
 {"id": "q_d778fbbd804e", "type": "percent", "answer": 6.39}
 {"id": "q_d790faf2293a", "type": "abstain"}
@@ -879,13 +879,13 @@
 {"id": "q_e2ad9e83d06a", "type": "abstain"}
 {"id": "q_e2bedb87cc3d", "type": "number", "answer": 2509876000}
 {"id": "q_e2bfd7f28a9a", "type": "percent", "answer": -3.27}
-{"id": "q_e2e4e0639619", "type": "abstain"}
+{"id": "q_e2e4e0639619", "type": "unanswerable", "reason": "Doanh nghiệp không có tiêu chí định lượng đo lường cảm tính theo Rulebook Mục 7"}
 {"id": "q_e2f1ef732951", "type": "number", "answer": 523525}
 {"id": "q_e322d691b4be", "type": "percent", "answer": 29.16}
 {"id": "q_e36c0b269181", "type": "number", "answer": 15}
-{"id": "q_e39bf5fd32c6", "type": "abstain"}
+{"id": "q_e39bf5fd32c6", "type": "string", "answer": "Phùng Thắng Bảo"}
 {"id": "q_e3f5a85b72b4", "type": "list", "answer": [313077600, 300911000, 305639200]}
-{"id": "q_e4641e459f38", "type": "abstain"}
+{"id": "q_e4641e459f38", "type": "list", "answer": ["Đàm Dũng Khánh", "Đinh Thảo Thanh", "Lương Anh Thảo", "Lê Đức Lan", "Tăng Hạnh Long"]}
 {"id": "q_e47610290a38", "type": "abstain"}
 {"id": "q_e4f0a9bdf74b", "type": "string", "answer": "Cà phê sữa (M)"}
 {"id": "q_e4fc0d18d409", "type": "number", "answer": 11}
@@ -918,13 +918,13 @@
 {"id": "q_ed841139ac0a", "type": "number", "answer": 29100500}
 {"id": "q_edb6d4859798", "type": "string", "answer": "Tô Dũng Quang"}
 {"id": "q_edce3c50d4f7", "type": "number", "answer": 1260408000}
-{"id": "q_ede70b7f6c13", "type": "abstain"}
+{"id": "q_ede70b7f6c13", "type": "list", "answer": ["Châu Quang Khánh", "Đặng Trung Huy", "Vũ Bích Phong"]}
 {"id": "q_edf890b68dfd", "type": "number", "answer": 46}
 {"id": "q_ee2df6a3e957", "type": "table", "answer": {"columns": ["khach_hang", "so_tien_no"], "rows": [["Tống Thu Hương", 759000], ["Tô Bình Đức", 728400], ["La Hiếu Long", 375000]]}}
 {"id": "q_ee58dba4a73e", "type": "number", "answer": 557246}
 {"id": "q_ee860111a8df", "type": "number", "answer": 7000000}
 {"id": "q_ef0073de2935", "type": "number", "answer": 674966000}
-{"id": "q_ef01edd61255", "type": "abstain"}
+{"id": "q_ef01edd61255", "type": "number", "answer": 0}
 {"id": "q_ef32b18b17d5", "type": "list", "answer": [444818000, 450559500, 466935000]}
 {"id": "q_ef77106ccec0", "type": "percent", "answer": 24.03}
 {"id": "q_effb17cba303", "type": "number", "answer": 1740}
@@ -932,7 +932,7 @@
 {"id": "q_f09bd63b0751", "type": "boolean", "answer": true}
 {"id": "q_f0bb331484b7", "type": "number", "answer": 575}
 {"id": "q_f0c8b2fbb77f", "type": "number", "answer": 42609000}
-{"id": "q_f118a00dc479", "type": "abstain"}
+{"id": "q_f118a00dc479", "type": "date", "answer": "2025-07-27"}
 {"id": "q_f156d23d04fe", "type": "number", "answer": 139}
 {"id": "q_f15ae79ed4ba", "type": "percent", "answer": 2.26}
 {"id": "q_f16bd70756d1", "type": "number", "answer": 8342718300}
@@ -952,7 +952,7 @@
 {"id": "q_f56bee880344", "type": "number", "answer": 1185524500}
 {"id": "q_f56deeb4120b", "type": "date", "answer": "2025-12"}
 {"id": "q_f5fae09ccd1e", "type": "number", "answer": 7}
-{"id": "q_f66f667088cb", "type": "abstain"}
+{"id": "q_f66f667088cb", "type": "list", "answer": ["Mì Hảo Hảo tôm chua cay", "Nước suối Aquafina 500ml", "Trứng gà so"]}
 {"id": "q_f75e58af3bcb", "type": "number", "answer": 48}
 {"id": "q_f7fcc8fad30b", "type": "number", "answer": 37}
 {"id": "q_f823bf8a8442", "type": "number", "answer": 270167800}
@@ -969,9 +969,9 @@
 {"id": "q_f9c2f8a2a73e", "type": "abstain"}
 {"id": "q_f9c80cc2d330", "type": "number", "answer": 91808000}
 {"id": "q_f9f2c930f630", "type": "number", "answer": 497}
-{"id": "q_f9fee7c180b4", "type": "abstain"}
+{"id": "q_f9fee7c180b4", "type": "number", "answer": 38534955}
 {"id": "q_fa1084dc1d3f", "type": "unanswerable", "reason": "Cơ sở dữ liệu nhà thuốc không chứa thông tin tư vấn y khoa/chống chỉ định cho bà bầu"}
-{"id": "q_fa29edc5f8ab", "type": "abstain"}
+{"id": "q_fa29edc5f8ab", "type": "date", "answer": "2025-10-05"}
 {"id": "q_fa3b2b76f9b3", "type": "number", "answer": 27}
 {"id": "q_fa92cbe8434c", "type": "number", "answer": 161771}
 {"id": "q_facbc1f20a16", "type": "list", "answer": [427810500, 486590500, 456510000]}
@@ -981,7 +981,7 @@
 {"id": "q_fbaf2023cfb6", "type": "abstain"}
 {"id": "q_fbb0ba502475", "type": "abstain"}
 {"id": "q_fbc812dde384", "type": "string", "answer": "Sữa pha sẵn GrowPLUS+ đỏ 110ml lốc 4"}
-{"id": "q_fbe115817066", "type": "abstain"}
+{"id": "q_fbe115817066", "type": "number", "answer": 0}
 {"id": "q_fbf739189e42", "type": "abstain"}
 {"id": "q_fc4223c66403", "type": "percent", "answer": 8.26}
 {"id": "q_fc4f06f3006b", "type": "percent", "answer": -6.43}

@@ -3031,7 +3031,7 @@ def build_query_plan(
     # Guard: multiple items ranking (Top 2+, K items) -> abstain to protect PA against list position variance
     if bool(
         re.search(
-            r"\b(?:top\s*[2-9]|top\s*1\d|[2-9]\s+(?:mat hang|hang|san pham|sp|mon)|1\d\s+(?:mat hang|hang|san pham|sp|mon))\b",
+            r"\b(?:top\s*[2-9]|top\s*1\d|[2-9]\s+(?:mat hang|san pham|sp|mon)|1\d\s+(?:mat hang|san pham|sp|mon))\b",
             q_norm,
         )
     ):
@@ -3121,7 +3121,12 @@ def build_query_plan(
         k in q_norm
         for k in (
             "ban chay nhat",
+            "ban chay nhut",
+            "chay nhat",
+            "chay nhut",
             "ban nhieu nhat",
+            "ban nhiu nhut",
+            "ban nhieu nhut",
             "ban dc nhieu nhat",
             "ban duoc nhieu nhat",
             "hot nhat",
@@ -3135,40 +3140,31 @@ def build_query_plan(
     )
 
     if is_bestseller and has_valid_period:
-        m_top = re.search(r"\btop\s*(\d{1,2})\b", q_norm)
+        q_norm_ranked = q_norm
+        for w_vn, d_vn in [("ba", "3"), ("bon", "4"), ("nam", "5"), ("sau", "6"), ("bay", "7"), ("tam", "8"), ("chin", "9"), ("muoi", "10")]:
+            q_norm_ranked = re.sub(rf"\btop\s+{w_vn}\b", f"top {d_vn}", q_norm_ranked)
+        m_top = re.search(r"\btop\s*(\d{1,2})\b", q_norm_ranked)
         m_count = re.search(
-            r"\b(\d{1,2})\s+(?:mat hang|hang hoa|san pham|sp|mon)\b", q_norm
-        )
-        is_singular = any(
-            k in q_norm
-            for k in ("hang nao", "san pham nao", "sp nao", "mon nao", "mat hang nao")
+            r"\b(\d{1,2})\s+(?:mat hang|hang hoa|san pham|sp|mon|hang)\b", q_norm_ranked
         )
         if m_top:
             limit_k = int(m_top.group(1))
-        elif m_count and not is_singular:
+        elif m_count:
             limit_k = int(m_count.group(1))
         else:
             limit_k = 1
 
-        # Only allow Top 1 single item for non-pharmacy businesses; Top K lists have high tie-breaking variance
-        if (
-            limit_k > 1
-            or contract.has_prescription
-            or any("thuoc" in t for t in context.tables)
-        ):
+        # Allow Top K where K <= 5 for bestselling products
+        if limit_k > 5:
             return None
 
-        # Block relative week periods on ranking to avoid calendar anchor boundary mismatch
-        if period.is_last_week or period.is_this_week:
-            return None
-
-        output_type = "string"
+        output_type = "string" if limit_k == 1 else "list"
         return QueryPlan(
             operation="ranking_top_k",
             metric="base_quantity",
             period=period,
             target_dimension="item",
-            limit_k=1,
+            limit_k=limit_k,
             output_type=output_type,
         )
 
@@ -3237,9 +3233,15 @@ def build_query_plan(
                 "doanh thu cao nhat",
                 "dthu cao nhat",
                 "thu ve nhieu doanh thu nhat",
+                "ban dat nhat",
+                "ban duoc nhieu tien nhut",
+                "ban duoc nhieu tien nhat",
             )
         )
-        and any(k in q_norm for k in ("ngay nao", "ngay mo", "hom nao", "vao ngay nao"))
+        and any(
+            k in q_norm
+            for k in ("ngay nao", "ngay mo", "hom nao", "vao ngay nao", "ngaynao")
+        )
     )
     if is_peak_rev_day and has_valid_period:
         return QueryPlan(
@@ -3275,7 +3277,13 @@ def build_query_plan(
 
     # Customer ranking (Rulebook Mục 9: trung thành nhất = số ngày đặt hàng, sộp nhất = AOV với >= 3 đơn, hay đổi ý nhất = đơn huỷ)
     is_loyal_customer = any(
-        k in q_norm for k in ("khach hang trung thanh nhat", "khach trung thanh nhat")
+        k in q_norm
+        for k in (
+            "khach hang trung thanh nhat",
+            "khach trung thanh nhat",
+            "ai trung thanh nhat",
+            "khach nao trung thanh nhat",
+        )
     )
     if is_loyal_customer and has_valid_period:
         return QueryPlan(
@@ -3336,6 +3344,55 @@ def build_query_plan(
             limit_k=1,
             output_type="string",
         )
+
+    # Top customer(s) by total spending / revenue
+    is_top_customer_revenue = any(
+        k in q_norm
+        for k in (
+            "chi nhieu tien nhat",
+            "chi tieu nhieu nhat",
+            "mua nhieu tien nhat",
+            "tong tien mua hang cao nhut",
+            "tong tien mua hang cao nhat",
+            "chi nhieu tien nhut",
+            "mua nhieu tien nhut",
+            "chi tieu nhieu",
+        )
+    ) or (
+        any(k in q_norm for k in ("khach", "khach hang", "ai"))
+        and any(
+            k in q_norm
+            for k in ("chi nhieu tien", "mua nhieu tien", "chi tieu nhieu")
+        )
+    )
+    if is_top_customer_revenue and has_valid_period:
+        q_norm_cust = q_norm
+        for w_vn, d_vn in [("ba", "3"), ("bon", "4"), ("nam", "5"), ("sau", "6"), ("bay", "7"), ("tam", "8"), ("chin", "9"), ("muoi", "10")]:
+            q_norm_cust = re.sub(rf"\btop\s+{w_vn}\b", f"top {d_vn}", q_norm_cust)
+        m_cust = re.search(
+            r"\b(?:top\s*)?(\d{1,2})\s+(?:khach|khach hang|nguoi)\b", q_norm_cust
+        )
+        m_cust_cnt = re.search(r"\b(\d{1,2})\s+(?:khach|khach hang)\b", q_norm_cust)
+        is_singular_cust = any(
+            k in q_norm
+            for k in ("khach nao", "ai", "khach hang nao", "khach mo")
+        )
+        if m_cust:
+            limit_k_cust = int(m_cust.group(1))
+        elif m_cust_cnt and not is_singular_cust:
+            limit_k_cust = int(m_cust_cnt.group(1))
+        else:
+            limit_k_cust = 1
+
+        if limit_k_cust <= 5:
+            return QueryPlan(
+                operation="ranking_top_k",
+                metric="revenue",
+                period=period,
+                target_dimension="customer",
+                limit_k=limit_k_cust,
+                output_type="string" if limit_k_cust == 1 else "list",
+            )
 
     # Popular item (Rulebook Mục 9: mặt hàng được ưa chuộng nhất = có mặt trong nhiều đơn nhất)
     is_popular_item = any(
