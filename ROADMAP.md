@@ -1247,3 +1247,15 @@
   6. *Hạn dùng / Lô thuốc (`lot_expiry`: 7 câu):* Phân tích bảng `lo_hang` trong nhà thuốc `dev_006`.
   7. *Tồn kho (`inventory_stock`: 5 câu):* Đếm số lượng tồn cuối ngày/hôm nay theo đơn vị chuẩn.
   8. *Nhận diện Cổng 1 (`unanswerable`):* Nhận diện các câu hỏi hỏi về mặt hàng không tồn tại trong DB của quán (như Đậu phụ rán giòn ở `dev_008`), câu hỏi chủ quan/cảm tính, hoặc hỏi số liệu ngoài khoảng thời gian $\rightarrow$ Trả về `unanswerable` (+1 điểm thưởng).
+
+- **Tiến độ Thực thi Mũi 1 (Hoàn thành mốc 76.8% Trả lời — Candidate #26):**
+  * *Triển khai module `src/zaic_2026_datamate/rolling_window.py`:* 
+    - Xử lý mượt mà: Tổng doanh thu (7 ngày, 30 ngày), Đếm đơn (30 ngày, 7 ngày, hôm qua), Đếm số lượng đơn vị (đĩa, lon, gói), Top K món bán chạy nhất tuần rồi/tuần này.
+    - Tích hợp 4 lớp chốt chặn chống can thiệp chéo: Không đụng vào câu so sánh `%` tăng trưởng MTD, không đụng câu AOV trung bình mỗi đơn, không đụng ca làm việc sáng/chiều, không đụng so sánh đổi giá.
+  * *Kiểm thử nghiệm thu (`tests/test_rolling_window.py`):* 
+    - Vượt qua 100% test suite với 4 doanh nghiệp Train và bảo toàn tuyệt đối **0 regression** trên toàn bộ 731 câu cũ của Candidate #25.
+  * *Kết quả trên 1.000 câu Public Test (`preview_sub26.jsonl` $\rightarrow$ `submission.jsonl`):*
+    - **Tổng số câu trả lời:** **768 / 1.000 câu** (**76.8%**), tăng thêm **+37 câu mở mới** sạch sẽ.
+    - **Số câu Abstain an toàn:** **232 / 1.000 câu** (**23.2%**).
+    - **Tỷ lệ bảo toàn:** **100% (731/731 câu cũ nguyên vẹn)**.
+    - **Điểm số kỳ vọng:** **`0.61000 – 0.63000`**.
