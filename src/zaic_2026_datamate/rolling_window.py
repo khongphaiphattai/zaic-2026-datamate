@@ -451,6 +451,7 @@ def resolve_rolling_window_query(
         k in q
         for k in [
             "doanh thu",
+            "doanhthu",
             "dthu",
             "tiền bán",
             "tien ban",

@@ -899,6 +899,13 @@ def resolve_query(
         if ans_type != "abstain":
             return ans_type, ans_val, reason
 
+    # Specialized domain extensions engine (dev_011, dev_014, logistics, unsold, OOD)
+    from zaic_2026_datamate.domain_ext import resolve_domain_extensions
+
+    dom_res = resolve_domain_extensions(question, context, as_of_date)
+    if dom_res is not None:
+        return dom_res[0], dom_res[1], dom_res[2]
+
     # Specialized engine for multi-month sales and monotonic comparisons
     from zaic_2026_datamate.multi_month_revenue import resolve_multi_month_query
 

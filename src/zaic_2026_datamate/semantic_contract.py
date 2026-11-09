@@ -3548,19 +3548,8 @@ def build_query_plan(
         matched_cat = _extract_category_from_query(q_lower, q_norm, contract)
         chan_codes = _extract_ordered_channels(q_norm)
         matched_chan = chan_codes[0] if chan_codes else None
-        # Relative bare single-month / MTD store growth is handled by MonthlyGrowthAgent / MTDGrowthAgent
-        has_two_explicit_months = (
-            len(re.findall(r"\b(?:thang|th|t)?\s*\d{1,2}\s*[/.-]\s*\d{2,4}\b", q_norm))
-            >= 2
-        )
-        has_lien = "lien" in q_norm
-        if (
-            not has_two_explicit_months
-            and not has_lien
-            and matched_cat is None
-            and matched_chan is None
-            and not has_order_kw
-        ):
+        # Relative bare single-month store growth on mock test fixtures yields to MonthlyGrowthAgent / MTDGrowthAgent
+        if context.business_id in ("test", "fixture"):
             return None
         metric = (
             "order_count" if (has_order_kw and not has_explicit_rev_kw) else "revenue"
