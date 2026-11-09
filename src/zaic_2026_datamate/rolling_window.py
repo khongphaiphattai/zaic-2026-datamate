@@ -265,18 +265,10 @@ def resolve_rolling_window_query(
         and not is_top_k
         and any(k in q for k in ["mặt hàng", "sp", "món", "san pham", "mặt hangf"])
     )
-    if is_top_k or is_top_1:
+    if is_top_1:
         item_col = _find_item_name_col(context, tbl)
         qty_col = _find_qty_col(context, tbl)
         if item_col:
-            k_val = 1
-            if is_top_k:
-                k_m = re.search(
-                    r"\b(?:top|tóp)\s*(\d+)|(\d+)\s*(?:mặt hàng|món|sp)\b", q
-                )
-                if k_m:
-                    k_val = int(k_m.group(1) or k_m.group(2))
-
             qty_expr = f"sum(TRY_CAST({qty_col} AS DOUBLE))" if qty_col else "count(*)"
             sql = f"""
                 SELECT {item_col} as item, {qty_expr} as q
@@ -285,16 +277,14 @@ def resolve_rolling_window_query(
                   {status_clause}
                 GROUP BY {item_col}
                 ORDER BY q DESC
-                LIMIT {k_val}
+                LIMIT 1
             """
             try:
                 res = context.query(sql)
                 if not res.empty:
                     items = res["item"].dropna().tolist()
-                    if is_top_1:
+                    if items:
                         return "string", str(items[0]), None
-                    else:
-                        return "list", items, None
             except Exception:
                 pass
 

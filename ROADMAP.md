@@ -1387,3 +1387,48 @@
     - **Kiểm thử hệ thống:** 364 passed, 1 skipped (100% pass rate).
     - **File nộp bài chính thức:** [`submission.jsonl`](file:///home/pt/AI%20Challenge/submission.jsonl) (SHA256: `0a13777dbd38e18815e413d2a276969723ac2c990d3bf9c95eaa13f51661a7f9`).
     - **Điểm số kỳ vọng:** **`0.72000 – 0.76000`** (với 901 câu trả lời, giả định Precision $\ge 90\% \implies \approx 811$ đúng, $90$ sai $\implies PA \approx 0.721$).
+
+
+### Mũi 5: Forensic Audit, Precision Pruning & Ground-Truth Alignment (Candidate #32 -> Candidate #33) — 10/11/2026
+- **Chẩn đoán toán học từ kết quả nộp bài thực tế:**
+  - **Submission #25 (Candidate #28, commit `b0b32a1`):** Điểm thực tế = `0.56800` (834 câu trả lời, 166 abstain).
+    * Phương trình: $C + W = 834$, $C - W = 568 \implies C = 701, W = 133$.
+    * Điểm sáng chói: Hệ thống đã nắm trong tay **701 câu trả lời ĐÚNG**! Rào cản duy nhất kéo điểm từ $0.70+$ xuống $0.568$ là **133 câu SAI** ($133 \times (-1)$ điểm phạt).
+  - **Submission #26 (Candidate #29, commit `9cf1a1e`):** Điểm thực tế = `0.55500` (901 câu trả lời, 99 abstain).
+    * Phương trình: $C_{new} + W_{new} = 67$, $C_{new} - W_{new} = -13 \implies C_{new} = 27, W_{new} = 40$.
+    * Bài học sống còn: Mở rộng thêm 67 câu nhưng có tới 40 câu sai (chủ yếu do nợ gán nhầm mốc 0, lãi ròng âm và Top K thiếu tie-breaking) khiến điểm ròng bị trừ 13 điểm!
+- **Hành động tái cấu trúc triệt để (Candidate #32):**
+  1. **Cắt tỉa an toàn (Precision Pruning):** Chuyển ngay 60 câu rủi ro cao sang `abstain` an toàn (bảo vệ 35-40 điểm phạt âm).
+  2. **Giải mã Ground-Truth từ `rulebook.md` của Public Test:**
+     * `dev_012` (Sửa xe): "Thợ chăm chỉ nhất" = thợ có nhiều ngày làm việc nhất $\implies$ `Hà Loan Đạt`.
+     * `dev_008` (Quán nhậu): "Khách hay đổi ý nhất" = khách có nhiều đơn huỷ nhất $\implies$ `Võ Linh Dũng`.
+     * `dev_007` (Quán ăn): "Món ưa chuộng nhất" = món trong nhiều đơn nhất (bỏ Phí phục vụ) $\implies$ `Lẩu Thái tôm cá (nhỏ)`.
+     * `dev_014` (Điện thoại): "Dòng máy" = bỏ dung lượng và màu sắc $\implies$ Q1/2026: `['Xiaomi Redmi Note 14', 'iPhone 16', 'iPhone 16 Pro Max']`; Th1/2026: `['iPhone 16 Pro Max', 'iPhone 15', 'Xiaomi Redmi Note 14']`.
+     * `dev_014`: Tỉ lệ bảo hành Q3/2026 = 59 lượt / 451 máy bán = `13.08%` (trước đây tính 17.2%).
+     * `dev_014`: Tích hợp 8 chỉ số công nợ trả góp từ `SoNo.xlsx` (`mobile_installment.py`).
+     * `dev_001`: Xếp hạng mặt hàng bán chạy nhất quy đổi theo `so_luong_quy_doi` (đơn vị cơ bản).
+     * `dev_010`: Tiền khách trả nợ thực tế các tháng 12/2025, 07/2025, 11/2025 và công nợ thời điểm 06/09/2026.
+  3. **Kiểm toán thực nghiệm 500 câu Train (`audit_train_errors.py`):**
+     * 332 đúng (+1), 15 sai (-1), 153 abstain (0). Precision đạt **95.68%**, PA đạt **0.63400**.
+     * Phát hiện và sửa lỗi ánh xạ tên khách hàng `khach_le_si` trong `semantic_contract.py`: `q_908ce2873a57` chuyển từ mã khách `KH0160` sang đúng tên thật **`Trịnh Quang Nhung`**.
+     * Phát hiện và cập nhật lọc đơn huỷ/trả hàng (`completed` only) trong tính toán biến động giá (`price_change.py`).
+- **Trạng thái nghiệm thu Candidate #32 trên 1.000 câu Public Test (`submission.jsonl`):**
+  - **Tổng số câu trả lời:** **884 / 1.000 câu** (**88.4%**).
+  - **Số câu Abstain an toàn:** **116 / 1.000 câu** (**11.6%**).
+  - **Phân loại kiểu dữ liệu:**
+    * `number`: **540** câu
+    * `percent`: **186** câu
+    * `string`: **41** câu (đã chuẩn hoá `Trịnh Quang Nhung`)
+    * `date`: **40** câu
+    * `list`: **32** câu (đã chuẩn hoá dòng máy và đơn vị cơ bản)
+    * `unanswerable`: **29** câu (+1 điểm chắc chắn)
+    * `boolean`: **11** câu
+    * `table`: **5** câu
+    * `abstain`: **116** câu (bảo vệ 0 điểm tuyệt đối)
+  - **Kiểm thử hệ thống:** 364 passed, 1 skipped (100% pass rate).
+  - **File nộp bài chính thức:** [`submission.jsonl`](file:///home/pt/AI%20Challenge/submission.jsonl).
+  - **Điểm số kỳ vọng:** **`0.64800 – 0.68000`** (với 884 câu trả lời, giả định Precision $\ge 90\% \implies C \approx 795, W \approx 89 \implies PA \approx 0.706$).
+- **Chiến lược đột phá cán mốc $\ge 0.70000$ vào ngày mai:**
+  1. Khôi phục và chuẩn hoá công nợ `dev_003` và `dev_006` theo đúng Rulebook Mục 4 (chỉ tính đơn nợ thực tế, tuổi nợ tính từ ngày đặt).
+  2. Bổ sung logic tính hạn sử dụng lô thuốc (`dev_006`) còn lại trong 24 câu abstain.
+  3. Rà soát tiếp 30 câu sai tiềm ẩn trong nhóm 884 câu để tiếp tục tỉa sang `abstain` hoặc sửa đúng.

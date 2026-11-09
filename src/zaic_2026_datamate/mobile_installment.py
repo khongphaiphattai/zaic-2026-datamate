@@ -53,6 +53,17 @@ def norm_item(s: Any) -> str:
     )
 
 
+def extract_dong_may(name: Any) -> str:
+    """Extract model family per Rulebook Section 6:
+
+    'dòng máy = phần tên hàng đứng trước dung lượng …GB; tên không có phần …GB thì dòng máy là cả tên'
+    """
+    m = re.match(r"^(.*?)\s+\d+GB\b", str(name), re.IGNORECASE)
+    if m:
+        return m.group(1).strip()
+    return str(name).strip()
+
+
 def add_months(d: pd.Timestamp, months: int) -> tuple[int, int]:
     """Add calendar months to a timestamp."""
     y = d.year + (d.month + months - 1) // 12
@@ -326,6 +337,21 @@ def resolve_mobile_installment_query(
             }.get(p.quarter_str, [])
             sub = bh[bh["nhan_m"].isin(q_months)]
             if any(k in t_norm for k in ["%", "phan tram"]):
+                if "so_ban_hang" in context.tables and "so_ban_hang_ghi_tat" in context.tables:
+                    sbh = context.tables["so_ban_hang"].copy()
+                    is_ret = sbh["ghi_chu"].astype(str).str.lower().str.contains("trả|tra|huỷ|huy|cancel")
+                    ret_ords = set(zip(sbh.loc[is_ret, "sheet_name"], sbh.loc[is_ret, "stt"]))
+                    sbh_cl = sbh[~sbh.set_index(["sheet_name", "stt"]).index.isin(ret_ords)].copy()
+                    gt_map = {}
+                    for _, r in context.tables["so_ban_hang_ghi_tat"].iterrows():
+                        gt_map[norm_item(r["ghi_tat"])] = r["loai"]
+                        gt_map[norm_item(r["ten_hang"])] = r["loai"]
+                    sbh_cl["m"] = pd.to_datetime(sbh_cl["ngay"]).dt.strftime("%Y-%m")
+                    sbh_cl["loai"] = sbh_cl["hang"].apply(norm_item).map(lambda x: gt_map.get(x, "khac"))
+                    sub_may = sbh_cl[sbh_cl["m"].isin(q_months) & sbh_cl["loai"].isin(["máy mới", "máy cũ"])]
+                    tot_may = sub_may["sl"].sum()
+                    if tot_may > 0:
+                        return "percent", round(len(sub) / tot_may * 100, 2), None
                 return "abstain", None, "Warranty sales ratio percentage abstained for safety"
             return "number", len(sub), None
 
@@ -425,8 +451,9 @@ def resolve_mobile_installment_query(
                     & (sbh_clean["loai"].isin(["máy mới", "máy cũ"]))
                 ]
             if not sub.empty:
+                sub["dong_may"] = sub["canonical_name"].apply(extract_dong_may)
                 top3 = (
-                    sub.groupby("canonical_name")["sl"]
+                    sub.groupby("dong_may")["sl"]
                     .sum()
                     .sort_values(ascending=False)
                     .head(3)

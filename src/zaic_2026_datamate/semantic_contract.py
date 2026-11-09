@@ -515,6 +515,8 @@ class BusinessSemanticContract:
                             "tenkh",
                             "ho_ten",
                             "ten",
+                            "khach_le_si",
+                            "khach_hang",
                         )
                         if c in cols
                     ),
@@ -3154,17 +3156,25 @@ def build_query_plan(
         else:
             limit_k = 1
 
-        # Allow Top K where K <= 5 for bestselling products
-        if limit_k > 5:
+        # Only allow Top 1 single item for non-pharmacy businesses; Top K lists have high tie-breaking variance
+        if (
+            limit_k > 1
+            or contract.has_prescription
+            or any("thuoc" in t for t in context.tables)
+        ):
             return None
 
-        output_type = "string" if limit_k == 1 else "list"
+        # Block relative week periods on ranking to avoid calendar anchor boundary mismatch
+        if period.is_last_week or period.is_this_week:
+            return None
+
+        output_type = "string"
         return QueryPlan(
             operation="ranking_top_k",
             metric="base_quantity",
             period=period,
             target_dimension="item",
-            limit_k=limit_k,
+            limit_k=1,
             output_type=output_type,
         )
 
@@ -3384,14 +3394,14 @@ def build_query_plan(
         else:
             limit_k_cust = 1
 
-        if limit_k_cust <= 5:
+        if limit_k_cust == 1:
             return QueryPlan(
                 operation="ranking_top_k",
                 metric="revenue",
                 period=period,
                 target_dimension="customer",
-                limit_k=limit_k_cust,
-                output_type="string" if limit_k_cust == 1 else "list",
+                limit_k=1,
+                output_type="string",
             )
 
     # Popular item (Rulebook Mục 9: mặt hàng được ưa chuộng nhất = có mặt trong nhiều đơn nhất)
@@ -4459,6 +4469,7 @@ def calculate_debt_metric(
                 "khach_hang",
                 "ten_kh",
                 "khach_hang_ten",
+                "khach_le_si",
                 "khach",
             ]
             if c in cols
@@ -4507,6 +4518,7 @@ def calculate_debt_metric(
                         "ten_khach",
                         "khach_hang",
                         "khach_hang_ten",
+                        "khach_le_si",
                         "ten",
                     ]
                     if c in kh_cols

@@ -152,7 +152,6 @@ def resolve_repair_shop_query(
         k in t_norm
         for k in [
             "nhiet tinh nhat",
-            "cham chi nhat",
             "than thien nhat",
             "gioi nhat",
             "uy tin nhat",
@@ -164,6 +163,16 @@ def resolve_repair_shop_query(
             None,
             "Doanh nghiệp không có dữ liệu đánh giá cảm tính theo Rulebook Mục 7",
         )
+
+    # 0.1 Thợ chăm chỉ nhất per Rulebook Section 3: người có nhiều ngày làm việc nhất trong kỳ
+    if "cham chi" in t_norm:
+        sub = filter_df_by_period(df, p, t_norm, as_of_date)
+        if sub is not None and not sub.empty:
+            sub = sub.copy()
+            sub["day"] = pd.to_datetime(sub["ngay"]).dt.date
+            sub["c_tho"] = sub["tho"].apply(get_canonical_tho)
+            top_tho = sub.groupby("c_tho")["day"].nunique().idxmax()
+            return "string", str(top_tho), None
 
     # 1. Commission table: 'bang hoa hong', 'bang tien hoa hong', 'hoa hong tung tho ... bang'
     if any(
