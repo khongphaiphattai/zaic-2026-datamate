@@ -195,6 +195,33 @@ def resolve_mobile_installment_query(
                     return "number", int(round(orders.sum())), None
 
     # -------------------------------------------------------------------------
+    # B0. AVERAGE ORDER VALUE (AOV - Gross Revenue thanh_tien)
+    # -------------------------------------------------------------------------
+    if any(k in t_norm for k in ["trung binh", "binh quan", "bq"]) and any(
+        k in t_norm for k in ["moi don", "1 don", "mot don", "tren mot don", "moi dh", "1 dh", "tren 1 don"]
+    ):
+        sbh = context.tables["so_ban_hang"].copy()
+        is_return = sbh["ghi_chu"].astype(str).str.lower().str.contains("trả|tra|huỷ|huy|cancel")
+        returned_orders = set(zip(sbh.loc[is_return, "sheet_name"], sbh.loc[is_return, "stt"]))
+        sbh_clean = sbh[~sbh.set_index(["sheet_name", "stt"]).index.isin(returned_orders)].copy()
+        sbh_clean["m"] = pd.to_datetime(sbh_clean["ngay"]).dt.strftime("%Y-%m")
+        if p.start_date and p.end_date:
+            sbh_clean["d_str"] = pd.to_datetime(sbh_clean["ngay"]).dt.strftime("%Y-%m-%d")
+            sub = sbh_clean[(sbh_clean["d_str"] >= p.start_date) & (sbh_clean["d_str"] <= p.end_date)]
+            order_totals = sub.groupby(["sheet_name", "stt"])["thanh_tien"].sum()
+            if len(order_totals) > 0:
+                aov = float(order_totals.sum() / len(order_totals))
+                val = int(round(aov))
+                return "number", val, None
+        elif target_month:
+            sub = sbh_clean[sbh_clean["m"] == target_month]
+            order_totals = sub.groupby(["sheet_name", "stt"])["thanh_tien"].sum()
+            if len(order_totals) > 0:
+                aov = float(order_totals.sum() / len(order_totals))
+                val = int(round(aov))
+                return "number", val, None
+
+    # -------------------------------------------------------------------------
     # C. INSTALLMENT CONTRACTS (so_no_tra_gop)
     # -------------------------------------------------------------------------
     if "so_no_tra_gop" in context.tables and any(

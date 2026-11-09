@@ -1766,14 +1766,14 @@ class BusinessSemanticContract:
                     "ten_san_pham",
                     "ten_mon",
                     "ten_thuoc",
-                    "noi_dung",
+                    "mat_hang",
                     "hang_hoa",
                     "hang_ban",
-                    "mat_hang",
                     "ten_hang",
                     "hang",
+                    "noi_dung",
                 )
-                if c in cols
+                if c in cols and df[c].notna().any()
             ),
             None,
         )
@@ -3176,7 +3176,7 @@ def build_query_plan(
         )
 
     # Busiest day (ngày đắt khách nhất / nhiều đơn nhất theo Rulebook Mục 9)
-    is_busiest_day = not any(k in q_norm for k in ("khach", "ai")) and (
+    is_busiest_day = not any(k in q_norm for k in ("khach nao", "ai", "khach hang nao")) and (
         any(
             k in q_norm
             for k in (
@@ -3198,6 +3198,31 @@ def build_query_plan(
         return QueryPlan(
             operation="ranking_top_k",
             metric="order_count",
+            period=period,
+            target_dimension="date",
+            limit_k=1,
+            output_type="date",
+        )
+
+    # Peak revenue day (ngày bán được nhiều tiền nhất / thu về nhiều doanh thu nhất)
+    is_peak_rev_day = not any(k in q_norm for k in ("khach nao", "ai", "khach hang nao")) and (
+        any(
+            k in q_norm
+            for k in (
+                "nhieu tien nhat",
+                "nhieu dthu nhat",
+                "nhieu doanh thu nhat",
+                "doanh thu cao nhat",
+                "dthu cao nhat",
+                "thu ve nhieu doanh thu nhat",
+            )
+        )
+        and any(k in q_norm for k in ("ngay nao", "ngay mo", "hom nao", "vao ngay nao"))
+    )
+    if is_peak_rev_day and has_valid_period:
+        return QueryPlan(
+            operation="ranking_top_k",
+            metric="revenue",
             period=period,
             target_dimension="date",
             limit_k=1,

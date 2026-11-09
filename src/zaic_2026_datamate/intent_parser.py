@@ -854,6 +854,15 @@ def resolve_query(
         if ans_type != "abstain":
             return ans_type, ans_val, reason
 
+    # Specialized engine for multi-month sales and monotonic comparisons
+    from zaic_2026_datamate.multi_month_revenue import resolve_multi_month_query
+
+    mm_type, mm_val, mm_reason = resolve_multi_month_query(
+        question, context, as_of_date
+    )
+    if mm_type != "abstain":
+        return mm_type, mm_val, mm_reason
+
     q = question.lower()
     period = parse_time_expressions(question, as_of_date)
     table, order_col, date_col, status_col = find_primary_sales_table(context)
@@ -1512,34 +1521,37 @@ def resolve_query(
     # (matched_product is already extracted at top of resolve_query)
 
     # Block item quantity queries (e.g. "bán được mấy hộp X", "bao nhiêu chai Y", "total bn ly", "nhiêu bình", "số tuýp", "số kg")
-    has_item_qty_kw = bool(
-        re.search(
-            r"\b(?:bn|bnhiu|mấy|may|bao nhiêu|bao nhieu|nhiêu|nhieu|số lượng|so luong|số|so|đếm|dem)\s+(?:ly|kg|cây|cay|cuộn|cuon|mét|m\b|bao|phần(?!\s+trăm)|phan(?!\s+tram)|chai|hộp|hop|gói|goi|lon|bịch|bich|thùng|thung|cái|cai|chiếc|chiec|viên|vien|bình|binh|tuýp|tuyp|đĩa|dia|tô|bát|bộ|bo)\b",
-            q,
+    has_item_qty_kw = (not has_rev_keyword) and (
+        bool(
+            re.search(
+                r"\b(?:bn|bnhiu|mấy|may|bao nhiêu|bao nhieu|nhiêu|nhieu|số lượng|so luong|số|so|đếm|dem)\s+(?:ly|kg|cây|cay|cuộn|cuon|mét|m\b|bao|phần(?!\s+trăm)|phan(?!\s+tram)|chai|hộp|hop|gói|goi|lon|bịch|bich|thùng|thung|cái|cai|chiếc|chiec|viên|vien|bình|binh|tuýp|tuyp|đĩa|dia|tô|bát|bộ|bo)\b",
+                q,
+            )
         )
-    ) or (
-        any(k in q for k in ["mấy", "may", "bao nhiêu", "bao nhieu", "bnhiu"])
-        and any(
-            re.search(rf"\b{k}\b", q)
-            for k in [
-                "hộp",
-                "chai",
-                "lon",
-                "gói",
-                "bịch",
-                "thùng",
-                "vé",
-                "đĩa",
-                "tô",
-                "bát",
-                "cuốn",
-                "suất",
-                "viên",
-                "tuýp",
-                "bộ",
-                "bo",
-                "kg",
-            ]
+        or (
+            any(k in q for k in ["mấy", "may", "bao nhiêu", "bao nhieu", "bnhiu"])
+            and any(
+                re.search(rf"\b{k}\b", q)
+                for k in [
+                    "hộp",
+                    "chai",
+                    "lon",
+                    "gói",
+                    "bịch",
+                    "thùng",
+                    "vé",
+                    "đĩa",
+                    "tô",
+                    "bát",
+                    "cuốn",
+                    "suất",
+                    "viên",
+                    "tuýp",
+                    "bộ",
+                    "bo",
+                    "kg",
+                ]
+            )
         )
     )
     if has_item_qty_kw:
@@ -1641,6 +1653,7 @@ def resolve_query(
             "trung binh",
             "binh wan",
             "bình wan",
+            "bq",
         ]
     )
     has_aov_order = any(
@@ -1661,6 +1674,9 @@ def resolve_query(
             "mỗi đh",
             "mổi đh",
             "1 đh",
+            "một đh",
+            "mot dh",
+            "moi dh",
             "mỗi hoá đơn",
             "mỗi hóa đơn",
         ]
@@ -1732,66 +1748,26 @@ def resolve_query(
                 "Không xác định được khoảng thời gian rõ ràng để tính AOV",
             )
 
-        if "chi_tiet_don" in context.tables and table == "don_hang":
-            ct_cols = list(context.tables["chi_tiet_don"].columns)
-            ct_order_col = next(
-                (
-                    c
-                    for c in [
-                        "ma_don_hang",
-                        "ma_hoa_don",
-                        "ma_phieu",
-                        "so_phieu",
-                        "ma_chung_tu",
-                    ]
-                    if c in ct_cols
-                ),
-                None,
+        rev_c = find_revenue_column(context, table)
+        if rev_c:
+            date_where = build_date_where_clause(date_col, period)
+            status_clause = get_valid_sales_status_clause(
+                status_col, order_col=order_col, table=table
             )
-            ct_rev = next((c for c in ["amount", "tien_ban"] if c in ct_cols), None)
-            if ct_order_col and ct_rev:
-                d_date_where = build_date_where_clause(f"d.{date_col}", period)
-                d_status_cond = (
-                    f"AND d.{status_col} = 'completed'"
-                    if (
-                        status_col
-                        and "completed"
-                        in context.tables[table][status_col].dropna().values
-                    )
-                    else ""
-                )
-                sql = f"""
-                    SELECT ROUND(SUM(c.{ct_rev}) * 1.0 / NULLIF(COUNT(DISTINCT d.{order_col}), 0))
-                    FROM chi_tiet_don c
-                    JOIN {table} d ON c.{ct_order_col} = d.{order_col}
-                    WHERE {d_date_where}
-                      {d_status_cond}
-                """
-                try:
-                    val = context.scalar(sql)
-                    if val is not None and val > 0:
-                        return "number", int(val), None
-                except Exception as e:
-                    return "abstain", None, str(e)
-        else:
-            rev_c = find_revenue_column(context, table)
-            if rev_c:
-                date_where = build_date_where_clause(date_col, period)
-                status_clause = get_valid_sales_status_clause(
-                    status_col, order_col=order_col, table=table
-                )
-                sql = f"""
-                    SELECT ROUND(SUM({rev_c}) * 1.0 / NULLIF(COUNT(DISTINCT {order_col}), 0))
-                    FROM {table}
-                    WHERE {date_where}
-                      {status_clause}
-                """
-                try:
-                    val = context.scalar(sql)
-                    if val is not None and val > 0:
-                        return "number", int(val), None
-                except Exception as e:
-                    return "abstain", None, str(e)
+            sql = f"""
+                SELECT SUM({rev_c}) * 1.0 / NULLIF(COUNT(DISTINCT {order_col}), 0)
+                FROM {table}
+                WHERE {date_where}
+                  {status_clause}
+            """
+            try:
+                val = context.scalar(sql)
+                if val is not None and val > 0:
+                    val_float = float(val)
+                    res = int(round(val_float))
+                    return "number", res, None
+            except Exception as e:
+                return "abstain", None, str(e)
 
     # -------------------------------------------------------------------------
     # 6. INTENT: OVERALL STORE REVENUE (Tổng doanh thu toàn cửa hàng)
@@ -2249,11 +2225,22 @@ def resolve_query(
     has_unrecognized_product_subject = False
     if m_subject:
         subj = m_subject.group(1).strip()
+        # Clean temporal tokens (e.g. th3/2025, 7/26, 7 ngay gan nhat)
+        clean_subj = re.sub(
+            r"\b(?:th|t|tháng|thang|quý|quy|năm|nam)?\s*\d{1,2}(?:[/.-]\d{2,4})?\b",
+            "",
+            subj,
+        )
+        clean_subj = re.sub(
+            r"\b\d+\s*(?:ngày|ngay|tuần|tuan|tháng|thang)\s*(?:gần\s+nhất|gan\s+nhat|qua)?\b",
+            "",
+            clean_subj,
+        )
         # If temporal like 't10/2025', '5/2026', '2025', 'q1' or stop words
         if not re.match(
             r"^(?:t\d{1,2}[/.-]\d{2,4}|\d{1,2}[/.-]\d{2,4}|\d{4}|q\d)$", subj
         ):
-            words = set(re.findall(r"[a-zA-Z_À-ỹ]+", subj.lower()))
+            words = set(re.findall(r"[a-zA-Z_À-ỹ]+", clean_subj.lower()))
             STORE_STOP_WORDS = {
                 "cua",
                 "hang",
@@ -2273,6 +2260,7 @@ def resolve_query(
                 "trong",
                 "la",
                 "t",
+                "th",
                 "thang",
                 "quy",
                 "nam",
@@ -2338,6 +2326,16 @@ def resolve_query(
                 "bay",
                 "giờ",
                 "gio",
+                "gan",
+                "gần",
+                "nhat",
+                "nhất",
+                "nhứt",
+                "nhaats",
+                "moi",
+                "mỗi",
+                "wán",
+                "trog",
             }
             if not words.issubset(STORE_STOP_WORDS) and not matched_product:
                 has_unrecognized_product_subject = True
