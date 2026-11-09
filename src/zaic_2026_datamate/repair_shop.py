@@ -428,7 +428,7 @@ def resolve_repair_shop_query(
         sub = filter_df_by_period(df, p, t_norm, as_of_date)
         if sub is None or sub.empty:
             return "abstain", None, "Không xác định được khoảng thời gian"
-        vc = sub["plate"].value_counts()
+        vc = sub["xe"].value_counts()
         return "number", int((vc >= 2).sum()), None
 
     # 13. Specific repair task: 'sua dien', 'dau lap', 'va ruot xe'
@@ -442,10 +442,8 @@ def resolve_repair_shop_query(
         elif any(k in t_norm for k in ["dau lap", "nhot lap"]):
             matched = sub[
                 sub["lam_gi"].apply(
-                    lambda x: any(
-                        k in strip_accents(x)
-                        for k in ["lap", "nhot hop so", "dau hop so"]
-                    )
+                    lambda x: "dau lap" in strip_accents(x)
+                    or "nhot lap" in strip_accents(x)
                 )
             ]
         elif "va ruot" in t_norm:

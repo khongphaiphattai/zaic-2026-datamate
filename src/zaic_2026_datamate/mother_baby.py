@@ -44,9 +44,12 @@ def resolve_mother_baby_query(
 
     target_month = p.month_str
     is_mtd = False
-    if not target_month and ("thang nay" in t_norm or "thang ni" in t_norm or "th nay" in t_norm) and as_of_date:
+    if any(k in t_norm for k in ["thang nay", "thang ni", "th nay", "toi nay", "den nay", "hom nay", "bua ni"]) and as_of_date:
         target_month = as_of_date[:7]
-        is_mtd = True
+        if not as_of_date.endswith(("-28", "-29", "-30", "-31")):
+            is_mtd = True
+    elif not target_month and as_of_date:
+        target_month = as_of_date[:7]
 
     # 1. Unanswerable guards
     if any(k in t_norm for k in ["truong chinh", "lac long quan", "khach o duong"]):
@@ -56,9 +59,10 @@ def resolve_mother_baby_query(
     if any(k in t_norm for k in ["dang tin cay", "uy tin", "ncc nao tot"]):
         return "unanswerable", None, "Không có tiêu chí khách quan xác định mức độ uy tín của nhà cung cấp"
 
-    # Clean ban_hang (exclude cancelled / refunded orders)
+    # Clean ban_hang (exclude cancelled / refunded orders completely per Rulebook Section 1)
     bh = context.tables["ban_hang"].copy()
-    bh_valid = bh[~bh["ghi_chu"].astype(str).str.lower().isin(["cancel", "huỷ"])].copy()
+    cancelled_hds = set(bh.loc[bh["ghi_chu"].astype(str).str.lower().str.contains("cancel|huỷ|huy|trả|tra"), "hd"])
+    bh_valid = bh[~bh["hd"].isin(cancelled_hds)].copy()
     bh_valid["m"] = pd.to_datetime(bh_valid["ngay"]).dt.strftime("%Y-%m")
     bh_valid["d"] = pd.to_datetime(bh_valid["ngay"]).dt.strftime("%Y-%m-%d")
 

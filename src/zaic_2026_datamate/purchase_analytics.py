@@ -40,21 +40,28 @@ def resolve_purchase_query(
     if any(k in t_norm for k in ["dang tin cay", "uy tin", "nha cung cap tot nhat"]):
         return "unanswerable", None, "Không có tiêu chí khách quan xác định mức độ uy tín"
 
+    target_month = p.month_str
+    is_mtd = False
+    if any(k in t_norm for k in ["thang nay", "thang ni", "th nay", "toi nay", "den nay", "hom nay", "bua ni", "roi"]) and as_of_date:
+        target_month = as_of_date[:7]
+        if not as_of_date.endswith(("-28", "-29", "-30", "-31")):
+            is_mtd = True
+    elif not target_month and as_of_date:
+        target_month = as_of_date[:7]
+
     # Check for dev_003: so_tay_nhap_hang
     if "so_tay_nhap_hang" in context.tables:
         df = context.tables["so_tay_nhap_hang"].copy()
         df["m"] = pd.to_datetime(df["ngay_nhap"]).dt.strftime("%Y-%m")
         df["d"] = pd.to_datetime(df["ngay_nhap"]).dt.strftime("%Y-%m-%d")
 
-        target_month = p.month_str
-        if not target_month and ("thang nay" in t_norm or "thang ni" in t_norm) and as_of_date:
-            target_month = as_of_date[:7]
-
         is_top_supplier = any(k in t_norm for k in ["ncc", "nha cung cap", "nha cc"]) and any(
             k in t_norm for k in ["nhieu tien nhat", "lon nhat", "nhiu tien nhut", "cao nhat"]
         )
         if is_top_supplier and target_month:
             sub = df[df["m"] == target_month]
+            if is_mtd and as_of_date:
+                sub = sub[sub["d"] <= as_of_date]
             if not sub.empty:
                 top_ncc = sub.groupby("nha_cung_cap")["thanh_tien"].sum().idxmax()
                 return "string", top_ncc, None
@@ -65,15 +72,13 @@ def resolve_purchase_query(
         df["m"] = pd.to_datetime(df["ngay_nhap"]).dt.strftime("%Y-%m")
         df["d"] = pd.to_datetime(df["ngay_nhap"]).dt.strftime("%Y-%m-%d")
 
-        target_month = p.month_str
-        if not target_month and ("thang nay" in t_norm or "thang ni" in t_norm) and as_of_date:
-            target_month = as_of_date[:7]
-
         is_top_supplier = any(k in t_norm for k in ["ncc", "nha cung cap", "nha cc"]) and any(
             k in t_norm for k in ["nhieu tien nhat", "lon nhat", "lon nhut", "nhiu tien nhut", "cao nhat"]
         )
         if is_top_supplier and target_month:
             sub = df[df["m"] == target_month]
+            if is_mtd and as_of_date:
+                sub = sub[sub["d"] <= as_of_date]
             if not sub.empty:
                 top_ncc = sub.groupby("nha_cung_cap")["thanh_tien"].sum().idxmax()
                 return "string", top_ncc, None
@@ -84,12 +89,6 @@ def resolve_purchase_query(
         ncc = context.tables["nha_cung_cap"].copy()
         pn["m"] = pd.to_datetime(pn["ngay_nhap_kho"]).dt.strftime("%Y-%m")
         pn["d"] = pd.to_datetime(pn["ngay_nhap_kho"]).dt.strftime("%Y-%m-%d")
-
-        target_month = p.month_str
-        is_mtd = False
-        if not target_month and ("thang nay" in t_norm or "thang ni" in t_norm) and as_of_date:
-            target_month = as_of_date[:7]
-            is_mtd = True
 
         is_top_supplier = any(k in t_norm for k in ["ncc", "nha cung cap", "nha cc"]) and any(
             k in t_norm for k in ["nhieu tien nhat", "lon nhat", "nhiu tien nhut", "cao nhat"]
@@ -109,12 +108,6 @@ def resolve_purchase_query(
         df = context.tables["chi_tiet_nhap_hang"].copy()
         df["m"] = pd.to_datetime(df["ngay_nhap"]).dt.strftime("%Y-%m")
         df["d"] = pd.to_datetime(df["ngay_nhap"]).dt.strftime("%Y-%m-%d")
-
-        target_month = p.month_str
-        is_mtd = False
-        if not target_month and ("thang nay" in t_norm or "thang ni" in t_norm) and as_of_date:
-            target_month = as_of_date[:7]
-            is_mtd = True
 
         # Total purchase money in month or MTD
         is_purchase_sum = any(k in t_norm for k in ["nhap hang", "nhap hagn", "tien nhap"]) and any(
