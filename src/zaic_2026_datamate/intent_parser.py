@@ -863,6 +863,15 @@ def resolve_query(
     if mm_type != "abstain":
         return mm_type, mm_val, mm_reason
 
+    # Specialized engine for rolling windows (7 days, 30 days, last week, this week, yesterday)
+    from zaic_2026_datamate.rolling_window import resolve_rolling_window_query
+
+    rw_res = resolve_rolling_window_query(question, context, as_of_date)
+    if rw_res is not None:
+        rw_type, rw_val, rw_reason = rw_res
+        if rw_type != "abstain":
+            return rw_type, rw_val, rw_reason
+
     q = question.lower()
     period = parse_time_expressions(question, as_of_date)
     table, order_col, date_col, status_col = find_primary_sales_table(context)
@@ -938,7 +947,7 @@ def resolve_query(
         )
         if sem_type != "abstain":
             return sem_type, sem_val, sem_reason
-        return "abstain", None, "Rolling N-day query abstained to protect PA score"
+        # Fall through to deterministic handlers below (Order Count, Store Revenue, AOV)
 
     # 3. Block conditions / reasons (late delivery, reasons for cancellation/return, etc.)
     q_no_ewallet = re.sub(r"\b(?:vi\s+dien\s+tu|ví\s+điện\s+tử|cadivi)\b", "", q)
@@ -1329,13 +1338,19 @@ def resolve_query(
     has_order_count_kw = (
         bool(
             re.search(
-                r"(?:bao nhiêu|bao nhieu|bao nhiu|bnhiu|mấy|may|co bao nhieu|có bao nhiêu|co bao nhiu|có bao nhiu|tổng cộng mấy|tổng mấy|được mấy|duoc may|được bao nhiêu|duoc bao nhieu)\s+(?:đơn|don|đh|dh|bill|hóa đơn|hoa don)\b",
+                r"(?:bao nhiêu|bao nhieu|bao nhiu|bnhiu|mấy|may|co bao nhieu|có bao nhiêu|co bao nhiu|có bao nhiu|tổng cộng mấy|tổng mấy|được mấy|duoc may|được bao nhiêu|duoc bao nhieu)\s+(?:đơn|don|đh|dh|bill|hóa đơn|hoa don|o\s*đờ|o\s*do|order)\b",
                 q,
             )
         )
         or bool(
             re.search(
-                r"\b(?:được|chốt được|lên được|co|có)\s+(?:mấy|may|bao nhiêu|bao nhieu|bnhiu)\s+(?:đơn|don|đh|dh|bill)\b",
+                r"\b(?:được|chốt được|lên được|co|có)\s+(?:mấy|may|bao nhiêu|bao nhieu|bnhiu)\s+(?:đơn|don|đh|dh|bill|o\s*đờ|o\s*do|order)\b",
+                q,
+            )
+        )
+        or bool(
+            re.search(
+                r"\b(?:số\s+đh|so\s+dh|số\s+đơn|so\s+don|số\s+hóa\s+đơn|so\s+hoa\s+don|số\s+o\s*đờ|so\s+o\s*do)\b",
                 q,
             )
         )
@@ -1566,14 +1581,6 @@ def resolve_query(
             "abstain",
             None,
             "Câu hỏi đếm số lượng mặt hàng - từ chối an toàn để tránh -1 điểm",
-        )
-
-    # Block rolling N days queries (e.g. "30 ngày gần nhất") to avoid boundary ambiguity
-    if period.last_n_days:
-        return (
-            "abstain",
-            None,
-            "Khoảng thời gian N ngày gần nhất chưa đạt độ tin cậy 95%",
         )
 
     # If product matched and query asks for its revenue — ưu tiên resolve_semantic_plan trước khi abstain
