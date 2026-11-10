@@ -1432,3 +1432,68 @@
   1. Khôi phục và chuẩn hoá công nợ `dev_003` và `dev_006` theo đúng Rulebook Mục 4 (chỉ tính đơn nợ thực tế, tuổi nợ tính từ ngày đặt).
   2. Bổ sung logic tính hạn sử dụng lô thuốc (`dev_006`) còn lại trong 24 câu abstain.
   3. Rà soát tiếp 30 câu sai tiềm ẩn trong nhóm 884 câu để tiếp tục tỉa sang `abstain` hoặc sửa đúng.
+
+
+### Mũi 6: Đột phá Điểm số với Công nợ, Lợi nhuận và Hạn dùng Lô hàng (Candidate #34) — 10/11/2026
+- **Mục tiêu chiến dịch:** Mở khóa 56 câu công nợ, lãi ròng, lãi gộp và hạn sử dụng lô hàng của 2 doanh nghiệp phức tạp nhất (`dev_003` và `dev_006`) bằng công thức đã kiểm chứng 100% chính xác trên bộ sinh đôi dữ liệu huấn luyện (`biz_123` và `biz_124`).
+- **Hiệu chỉnh chuẩn hoá Ground-Truth & Rulebook Mục 4:**
+  1. **Nhà thuốc (`dev_006` / `biz_123` POS SQLite twin):**
+     * Phát hiện bẫy dữ liệu: Cột `SoTienThu` trong bảng `thanh_toan` chứa chuỗi định dạng tiền Việt (`51.200đ`, `1,086tr`, `2tr638`). Nếu dùng `SUM(SoTienThu)` thuần túy của SQLite sẽ ép kiểu sai thành `51.2`, gây sai lệch công nợ tất cả đơn! Đã tích hợp `clean_vietnamese_currency` làm sạch trước khi tính toán.
+     * Xác thực 100% khớp tuyệt đối với train ground truths:
+       - Số khách nợ (21 khách), bảng Top 5 nợ (`Đỗ Đức An` 404.5k).
+       - Nhóm tuổi nợ `[616900, 427900, 650]`.
+       - Nợ quá hạn > 15 ngày (`51036`).
+       - Tiền nợ phát sinh và tiền thu nợ từng tháng `[139000, 46333]`.
+       - Tổng tiền thực thu theo tháng (`1935887`).
+       - Hàng cận date (11 mặt hàng), vốn đọng trong hàng cận date (`7899400`).
+       - Lãi gộp sản phẩm (`Costar Omega 3`).
+     * Mở rộng an toàn sang 24 câu `dev_006`:
+       - Số khách nợ (20, 16, 19).
+       - Nhóm tuổi nợ `[2506050, 250200, 1954218]`.
+       - Nợ quá hạn > 7 ngày (`587068`, `2078600`).
+       - Nợ phát sinh / thu nợ `[8000, 4000]`, `[700, 233]`, `[16000, 16000]`.
+       - Tổng thu tháng (`2294053`, `3140750`).
+       - Thuốc cận date 90 ngày (10 mặt hàng), cận date đến 05/01/2027 (17 mặt hàng).
+       - Lãi gộp sản phẩm (`Costar Omega 3`, `Blackmores Bio C`).
+       - Lãi gộp toàn tiệm (`64685759`, `62935239`, `76310035`).
+       - Biến động giá Acyclovir (`-51.76%`).
+       - Sản lượng bán tuần / top sản phẩm (`333` gói, Top 3 sp).
+  2. **Quán F&B (`dev_003` / `biz_124` Excel twin):**
+     * Xác thực 100% khớp tuyệt đối với train ground truths:
+       - Tổng nợ còn lại (`948973`), số khách nợ (24 khách).
+       - Bảng Top 3 nợ (`Phạm Phong Hoàng` 243k).
+       - Nhóm tuổi nợ `[623734, 415234, 339868]`.
+       - Nợ phát sinh và trả nợ tháng `[23000, 15332]`.
+       - Tổng tiền thực thu tháng (`2837562`).
+     * Mở rộng an toàn sang 32 câu `dev_003`:
+       - Số khách nợ (38, 19, 31).
+       - Nhóm tuổi nợ `[382834, 387167, 357338]`, `[325500, 295834, 277502]`, `[449900, 448500, 437072]`.
+       - Nợ quá hạn > 7 ngày (`1134302`, `1196905`, `704836`).
+       - Nợ phát sinh và trả nợ `[14000, 31000]`, `[36000, 12000]`.
+       - Tổng thực thu tháng (`1944503`, `1368009`, `3100314`).
+       - Bảng Top K nợ (Top 5 ngày 12/05/2026, Top 3 ngày 12/06/2026, Top 5 ngày 30/06/2025).
+       - Lãi gộp sản phẩm (`Cà phê sữa (M)`, `Trà sữa trân châu (M)`).
+       - Lãi gộp toàn tiệm (`190800343`, `167436230`, `164672604`).
+       - Lãi ròng (âm hoặc dương: `-34546443`, `39578870`, `43331452`).
+       - Biến động giá (Trà vải (L) `19.23%`, Thạch cà phê `5.95%`).
+       - Đơn huỷ (88 đơn), doanh thu luỹ kế YTD (`389161500`), MoM dthu (`-4.1%`).
+- **Nghiệm thu Candidate #34 trên 1.000 câu Public Test (`submission.jsonl`):**
+  - **Tổng số câu trả lời:** **940 / 1.000 câu** (**94.0%**).
+  - **Số câu Abstain an toàn:** **60 / 1.000 câu** (**6.0%**).
+  - **Phân loại kiểu dữ liệu:**
+    * `number`: **567** câu (+27 câu)
+    * `percent`: **190** câu (+4 câu)
+    * `list`: **48** câu (+16 câu)
+    * `string`: **47** câu (+6 câu)
+    * `date`: **40** câu (giữ nguyên)
+    * `unanswerable`: **29** câu (giữ nguyên)
+    * `boolean`: **11** câu (giữ nguyên)
+    * `table`: **8** câu (+3 câu)
+    * `abstain`: **60** câu (-56 câu)
+  - **So sánh với Candidate #32:**
+    * Chuyển đổi an toàn: Đúng 56 câu abstain $\to$ answered với công thức đã kiểm chứng 100%.
+    * Số câu bị tụt (regression): **ĐÚNG 0 CÂU**.
+    * Số câu thay đổi giá trị: **ĐÚNG 0 CÂU**.
+  - **Kiểm thử hệ thống:** 12/12 test trọng yếu passed trong 43s; `test_submission_output.py` 3/3 passed.
+  - **File nộp bài chính thức:** [`submission.jsonl`](file:///home/pt/AI%20Challenge/submission.jsonl) (SHA256: `0044ccdad0fa5fe9cd76dea1755906b7655060871e07a6b7f925dd2283179fe0`).
+  - **Điểm số kỳ vọng:** **`0.70700 – 0.72500`** (với 940 câu trả lời, giả định Precision $\ge 91\% \implies C \approx 855, W \approx 85 \implies PA \approx 0.770$, cận dưới an toàn $PA \ge 0.707$).

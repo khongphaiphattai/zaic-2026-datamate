@@ -94,3 +94,41 @@ def test_rolling_window_typo(public_loader):
     assert res is not None
     assert res[0] == "number"
     assert res[1] == 400282000
+
+
+def test_dev_006_extensions(public_loader):
+    ctx6 = public_loader.load_business("dev_006")
+    # Debt customer count
+    res = resolve_domain_extensions("Den het ngay 13/12/2025 tiem con bao nhieu khach no chua tra xong?", ctx6, "2025-12-13")
+    assert res == ("number", 20, None)
+
+    # Debt aging buckets
+    res2 = resolve_domain_extensions("Đến hết 17/12/2025 chia tiền nợ còn lại theo tuổi nợ 0–7 ngày, 8–15 ngày và trên 15 ngày, từng nhóm có bao nhiêu tiền?", ctx6, "2025-12-17")
+    assert res2 == ("list", [2506050, 250200, 1954218], None)
+
+    # Expiring lots list
+    res3 = resolve_domain_extensions("Kể giúp các sp còn lô tồn hết hạn trong 90 ngày tới.", ctx6, "2026-08-08")
+    assert res3 is not None and res3[0] == "list" and len(res3[1]) == 10
+
+    # Top gross profit product
+    res4 = resolve_domain_extensions("2/2026 hàng mô lãi gộp nhiều nhất rứa?", ctx6, "2026-08-08")
+    assert res4 == ("string", "Costar Omega 3 1000mg lọ 100 viên", None)
+
+
+def test_dev_003_extensions(public_loader):
+    ctx3 = public_loader.load_business("dev_003")
+    # Debt customer count
+    res = resolve_domain_extensions("Đến hết ngày 15/05/2026, cửa hàng còn bao nhiêu khách hàng chưa trả hết nợ?", ctx3, "2026-05-15")
+    assert res == ("number", 38, None)
+
+    # Debt aging buckets
+    res2 = resolve_domain_extensions("Đến ngày 06/07/2025 tiền khách còn nợ chia theo tuổi nợ 0–7, 8–15 và trên 15 ngày thì mỗi nhóm nhiêu z?", ctx3, "2025-07-06")
+    assert res2 == ("list", [382834, 387167, 357338], None)
+
+    # Customer debt additions and repayments
+    res3 = resolve_domain_extensions("Khách Lưu Sơn Hằng tháng 10 năm 2025 nợ thêm bnhiu, trả đc bnhiu? Cho số nợ thêm trước rồi số trả được.", ctx3, "2026-08-21")
+    assert res3 == ("list", [14000, 31000], None)
+
+    # Store net profit
+    res4 = resolve_domain_extensions("Tháng 7/26 trừ hết chi phí quán còn lãi ròng bnhiu?", ctx3, "2026-08-21")
+    assert res4 == ("number", 39578870, None)
