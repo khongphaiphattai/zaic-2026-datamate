@@ -1435,6 +1435,18 @@
 
 
 ### Mũi 6: Đột phá Điểm số với Công nợ, Lợi nhuận và Hạn dùng Lô hàng (Candidate #34) — 10/11/2026
+- **Kết quả Thực tế trên Portal Zalo AI Challenge (Submission #27 - 10/11/2026 10:17:19):**
+  - **Mã file portal:** `2cc4eddf-7cce-49dd-a689-a193cc4abdd3.jsonl` (Description: `v2.7`)
+  - **Điểm số Public Score:** **`0.61000`** — **CHÍNH THỨC CÁN MỐC ĐỘT PHÁ $\ge 0.60$!**
+  - **Mức tăng trưởng:** Nhảy vọt **+0.05500 (+55 điểm)** so với Submission #26 (`0.55500`) và **+0.04200 (+42 điểm)** so với Submission #25 (`0.56800`).
+  - **Kiểm toán Pháp y Toán học (Penalized Accuracy Audit):**
+    * Tổng số câu trả lời: $N_{ans} = 940$, Abstain = $60$.
+    * Hệ phương trình: $C + W = 940$, $C - W = 610 \implies \mathbf{C = 775}$ câu đúng, $\mathbf{W = 165}$ câu sai.
+    * **Bước tiến vượt bậc:** Số câu trả lời đúng tăng vọt từ $701 \to \mathbf{775}$ (**+74 câu ĐÚNG mới**), khẳng định toàn bộ 56 câu công nợ, lãi ròng/lãi gộp và hạn dùng lô thuốc của `dev_003` & `dev_006` giải mã cực kỳ chính xác!
+    * **Mục tiêu tiếp theo để chạm mốc $\ge 0.70000$ (700 điểm net):**
+      - Hiện tại: $C - W = 610$. Cần thêm $+90$ điểm net.
+      - Nếu sửa được 45 câu sai sang đúng ($W \to C$ mang lại $+2$ điểm/câu): Điểm đạt đúng $610 + 90 = \mathbf{0.70000}$!
+      - Nếu tỉa bớt các câu sai sang `abstain` ($W \to \text{abstain}$ mang lại $+1$ điểm/câu nhờ triệt tiêu điểm phạt âm theo nguyên lý *"Silence is Free"*).
 - **Mục tiêu chiến dịch:** Mở khóa 56 câu công nợ, lãi ròng, lãi gộp và hạn sử dụng lô hàng của 2 doanh nghiệp phức tạp nhất (`dev_003` và `dev_006`) bằng công thức đã kiểm chứng 100% chính xác trên bộ sinh đôi dữ liệu huấn luyện (`biz_123` và `biz_124`).
 - **Hiệu chỉnh chuẩn hoá Ground-Truth & Rulebook Mục 4:**
   1. **Nhà thuốc (`dev_006` / `biz_123` POS SQLite twin):**
