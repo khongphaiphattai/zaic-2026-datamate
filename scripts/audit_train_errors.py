@@ -169,4 +169,9 @@ def audit_train(
 
 
 if __name__ == "__main__":
-    audit_train()
+    import argparse
+    parser = argparse.ArgumentParser(description="Audit train questions against ground truth")
+    parser.add_argument("--limit", type=int, default=None, help="Limit number of questions")
+    parser.add_argument("--out-dir", type=str, default="artifacts/v35b-audit", help="Output directory")
+    args = parser.parse_args()
+    audit_train(limit=args.limit, out_dir=args.out_dir)

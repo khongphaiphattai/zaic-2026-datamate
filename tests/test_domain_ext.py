@@ -132,3 +132,78 @@ def test_dev_003_extensions(public_loader):
     # Store net profit
     res4 = resolve_domain_extensions("Tháng 7/26 trừ hết chi phí quán còn lãi ròng bnhiu?", ctx3, "2026-08-21")
     assert res4 == ("number", 39578870, None)
+
+    # Gross profit with typo laix gop
+    res5 = resolve_domain_extensions("Laix gộp 5/2025 bnhiu?", ctx3, "2026-08-21")
+    assert res5 == ("number", 164672604, None)
+
+
+def test_dev_008_extensions(public_loader):
+    ctx8 = public_loader.load_business("dev_008")
+    # YTD order count
+    res1 = resolve_domain_extensions("Dau nam den hnay tong so dh bnhiu?", ctx8, "2026-05-16")
+    assert res1 == ("number", 9848, None)
+
+    # Total debt on 2026-07-22
+    res2 = resolve_domain_extensions("Tính đến hết ngày 22/07/2026, khách hàng còn nợ cửa hàng tổng cộng bao nhiêu tiền?", ctx8, "2026-07-22")
+    assert res2 == ("number", 4549169, None)
+
+    # Debt customer count
+    res3 = resolve_domain_extensions("Đến hết ngày 22/07/2026, số khách còn công nợ với cửa hàng là bao nhiêu?", ctx8, "2026-07-22")
+    assert res3 == ("number", 15, None)
+
+    # Aging buckets
+    res4 = resolve_domain_extensions("Đến hết ngày 22/07/2026, nợ còn lại chia theo tuổi nợ: nhóm 0–7 ngày, 8–15 ngày, trên 15 ngày mỗi nhóm bao nhiêu?", ctx8, "2026-07-22")
+    assert res4 == ("list", [1429334, 1961667, 1158168], None)
+
+    # Inventory at cost
+    res5 = resolve_domain_extensions("Hết ngày 22/07/2026, hàng còn dư trong kho của quán tính theo giá vốn là bao nhiêu tiền?", ctx8, "2026-07-22")
+    assert res5 == ("number", 172773009, None)
+
+
+def test_dev_014_debt_extensions(public_loader):
+    ctx14 = public_loader.load_business("dev_014")
+    # Total debt on 2026-09-27
+    res1 = resolve_domain_extensions("chị ơi, tih toi het ngay 27/9/2026 tong tien khach kòn nợ shop mik bnhiu đó ha chị", ctx14, "2026-09-27")
+    assert res1 == ("number", 21218668, None)
+
+    # Aging buckets on 2026-09-23
+    res2 = resolve_domain_extensions("Đến ngày 23/09/2026 tiền khách còn nợ chia theo tuổi nợ 0–7, 8–15 và trên 15 ngày, mỗi nhóm bnhiu?", ctx14, "2026-09-23")
+    assert res2 == ("list", [12652000, 8511500, 159168], None)
+
+    # Debt customer count on 2026-06-02
+    res3 = resolve_domain_extensions("Chéc giùm tại ngày 02/06/2026 tiệm còn mấy khách có công nợ?", ctx14, "2026-06-02")
+    assert res3 == ("number", 5, None)
+
+
+def test_dev_007_extensions(public_loader):
+    ctx7 = public_loader.load_business("dev_007")
+    # Inventory at cost
+    res1 = resolve_domain_extensions("Cuối ngày 19/09/2026, hàng còn dư trong kho tính theo giá vốn đáng bao nhiêu tiền?", ctx7, "2026-09-19")
+    assert res1 == ("number", 146562947, None)
+
+    # Purchase cost August 2026
+    res2 = resolve_domain_extensions("Tháng 8/2026 quán cất hàng hết bao nhiêu tiền?", ctx7, "2026-09-19")
+    assert res2 == ("number", 133121600, None)
+
+    # Best employee July 2026
+    res3 = resolve_domain_extensions("Th7/2026 nhân diên nào bán giỏi nhất?", ctx7, "2026-09-19")
+    assert res3 == ("string", "NV005", None)
+
+    # Top 5 customers March 2025
+    res4 = resolve_domain_extensions("5 khách mua nhiều tiền nhất th3/2025 là ai z?", ctx7, "2026-09-19")
+    assert res4 == ("list", ["Triệu Dương Đức", "Ngô Hồng Duy", "Phạm Thảo Loan", "Diệp Thanh Quang", "Phùng Bảo Khoa"], None)
+
+
+def test_dev_002_and_dev_011_extensions(public_loader):
+    ctx2 = public_loader.load_business("dev_002")
+    res1 = resolve_domain_extensions("Liệt kê 3 mặt hàng bán chạy nhất tháng 6/2025.", ctx2, "2026-05-24")
+    assert res1 == ("list", ["Cà phê đen (M)", "Trà đào cam sả (M)", "Cà phê sữa (M)"], None)
+
+    res2 = resolve_domain_extensions("Th9/2025 3 khach nao chi nhieu tien nhat?", ctx2, "2026-05-24")
+    assert res2 == ("list", ["Châu Quang Khánh", "Đặng Trung Huy", "Vũ Bích Phong"], None)
+
+    ctx11 = public_loader.load_business("dev_011")
+    res3 = resolve_domain_extensions("Tháng 1/26 sp nào bán chạy nhất?", ctx11, "2026-07-31")
+    assert res3 == ("string", "Ốp lưng silicon iPhone", None)
+
