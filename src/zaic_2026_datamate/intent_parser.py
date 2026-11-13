@@ -732,7 +732,10 @@ def get_valid_sales_status_clause(
         [f"TRY_CAST({status_col} AS VARCHAR) ILIKE '%{tok}%'" for tok in bad_tokens]
     )
     and_conds = " AND ".join(
-        [f"TRY_CAST({prefix}{status_col} AS VARCHAR) NOT ILIKE '%{tok}%'" for tok in bad_tokens]
+        [
+            f"TRY_CAST({prefix}{status_col} AS VARCHAR) NOT ILIKE '%{tok}%'"
+            for tok in bad_tokens
+        ]
     )
 
     # Rulebook Section 1: Đơn có trả hàng, kể cả chỉ trả một phần, là đơn trả hàng: bỏ cả đơn.
@@ -841,21 +844,18 @@ def get_all_product_names(context: BusinessContext) -> list[tuple[str, str, str]
         if tname == "calendar" or "khach" in tname:
             continue
         for col in df.columns:
-            if (
-                any(
-                    k in col
-                    for k in [
-                        "ten_hang",
-                        "ten_sp",
-                        "ten_san_pham",
-                        "ten_mon",
-                        "noi_dung",
-                        "hang_hoa",
-                        "mat_hang",
-                    ]
-                )
-                or col in ("hang", "san_pham")
-            ):
+            if any(
+                k in col
+                for k in [
+                    "ten_hang",
+                    "ten_sp",
+                    "ten_san_pham",
+                    "ten_mon",
+                    "noi_dung",
+                    "hang_hoa",
+                    "mat_hang",
+                ]
+            ) or col in ("hang", "san_pham"):
                 vals = df[col].dropna().unique()
                 for v in vals:
                     s = str(v).strip()
@@ -941,7 +941,9 @@ def resolve_query(
         )
         if ans_type != "abstain":
             if not context.last_code_path:
-                context.last_code_path = "mobile_installment.resolve_mobile_installment_query"
+                context.last_code_path = (
+                    "mobile_installment.resolve_mobile_installment_query"
+                )
             return ans_type, ans_val, reason
 
     # Specialized engine for mother and baby store
@@ -1307,7 +1309,16 @@ def resolve_query(
                 "Dữ liệu doanh nghiệp không lưu vết thời gian chi tiết theo giờ giao dịch theo Rulebook Mục 7",
             )
 
-    # Gate 1: Profit / cost queries when business lacks cost/expense tables
+    # Gate 1 + Schema-general Gross/Net Profit & Top-Profit Product Analytics
+    from zaic_2026_datamate.profit_analytics import resolve_profit_query
+
+    profit_type, profit_val, profit_reason = resolve_profit_query(
+        question, context, as_of_date
+    )
+    if profit_type != "abstain":
+        return profit_type, profit_val, profit_reason
+
+    # Gate 1 fallback: Profit / cost queries when business lacks cost/expense columns
     if any(
         k in q
         for k in [
@@ -1319,21 +1330,22 @@ def resolve_query(
             "tien loi",
         ]
     ):
-        has_cost_table = any(
+        has_cost_data = any(
             any(
-                k in tname
+                k in c.lower()
                 for k in (
-                    "chi_phi",
                     "gia_von",
-                    "nhap_hang",
-                    "nhap",
-                    "so_quy",
-                    "chi_tiet_nhap",
+                    "don_gia_nhap",
+                    "gia_nhap",
+                    "cogs",
+                    "so_tien_chi",
                 )
             )
-            for tname in context.tables
+            or any(k in tname for k in ("chi_phi", "gia_von", "so_quy"))
+            for tname, df in context.tables.items()
+            for c in df.columns
         )
-        if not has_cost_table:
+        if not has_cost_data:
             return (
                 "unanswerable",
                 None,
@@ -2654,9 +2666,7 @@ def resolve_query(
         hd_spec = find_header_detail_revenue_spec(context, table, order_col)
         if hd_spec:
             ct_order_col, ct_rev = hd_spec
-            d_date_where = build_date_where_clause(
-                f"d.{effective_date_col}", period
-            )
+            d_date_where = build_date_where_clause(f"d.{effective_date_col}", period)
             d_shift_where = build_shift_where_clause(
                 f"d.{effective_date_col}", period.shift
             )

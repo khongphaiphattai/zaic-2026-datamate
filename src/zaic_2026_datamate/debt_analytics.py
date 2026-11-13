@@ -44,6 +44,10 @@ _TELEX_DEBT_REPLACEMENTS: tuple[tuple[str, str], ...] = (
     (r"\bnhiu\b", "nhieu"),
     (r"\bbnhiu\b", "bao nhieu"),
     (r"\bbn\b", "bao nhieu"),
+    (r"\bthangs\b", "thang"),
+    (r"\bnawm\b", "nam"),
+    (r"\bnaof\b", "nao"),
+    (r"\btowis\b", "toi"),
 )
 
 _EXCLUDED_NON_DEBT_TERMS = (
@@ -92,7 +96,7 @@ def normalize_debt_text(question: str) -> str:
     return " ".join(norm.split())
 
 
-def _find_col(cols_map: dict[str, str], candidates: tuple[str, ...]) -> str | None:
+def find_col(cols_map: dict[str, str], candidates: tuple[str, ...]) -> str | None:
     """Return actual column name matching the first candidate in priority order."""
     for cand in candidates:
         if cand in cols_map:
@@ -100,7 +104,7 @@ def _find_col(cols_map: dict[str, str], candidates: tuple[str, ...]) -> str | No
     return None
 
 
-def _to_numeric_series(series: pd.Series) -> pd.Series:
+def to_numeric_series(series: pd.Series) -> pd.Series:
     """Convert numeric or formatted Vietnamese currency strings to float."""
     num = pd.to_numeric(series, errors="coerce")
     if series.notna().sum() > 0 and num.isna().sum() > 0:
@@ -249,10 +253,10 @@ def _build_customer_directory(
         ):
             continue
         kh_cols = {c.lower(): c for c in df.columns}
-        k_id = _find_col(kh_cols, id_cands)
+        k_id = find_col(kh_cols, id_cands)
         # Ensure name column is distinct from id column when both 'kh' and 'ma_*' exist
         rem_name_cands = tuple(c for c in name_cands if kh_cols.get(c) != k_id)
-        k_nm = _find_col(kh_cols, rem_name_cands)
+        k_nm = find_col(kh_cols, rem_name_cands)
         if not k_id or not k_nm:
             continue
         for cid_raw, nm_raw in zip(df[k_id], df[k_nm], strict=False):
@@ -314,8 +318,8 @@ def _resolve_payment_table(
         if not any(k in tl for k in ("so_quy", "thanh_toan", "phieu_thu")):
             continue
         pcols = {c.lower(): c for c in df.columns}
-        p_ts = _find_col(pcols, ts_cands)
-        p_val = _find_col(pcols, val_cands)
+        p_ts = find_col(pcols, ts_cands)
+        p_val = find_col(pcols, val_cands)
         if not p_ts or not p_val:
             continue
 
@@ -337,7 +341,7 @@ def _resolve_payment_table(
         pdf = df.copy()
         pdf["_pay_ts"] = parse_mixed_excel_dates(pdf[p_ts])
         pdf["_pay_day"] = pdf["_pay_ts"].dt.normalize()
-        pdf["_pay_val"] = _to_numeric_series(pdf[p_val])
+        pdf["_pay_val"] = to_numeric_series(pdf[p_val])
         return pdf, chosen_oid, p_val
     return None, None, None
 
@@ -366,7 +370,7 @@ def extract_debt_ledger(context: BusinessContext) -> DebtLedgerSchema | None:
     df_raw = context.tables[ord_table_name].copy()
     cols = {c.lower(): c for c in df_raw.columns}
 
-    pay_col = _find_col(
+    pay_col = find_col(
         cols,
         (
             "phuong_thuc_thanh_toan",
@@ -376,7 +380,7 @@ def extract_debt_ledger(context: BusinessContext) -> DebtLedgerSchema | None:
             "thanh_toan_bang",
         ),
     )
-    balance_col = _find_col(
+    balance_col = find_col(
         cols,
         (
             "con_no",
@@ -389,7 +393,7 @@ def extract_debt_ledger(context: BusinessContext) -> DebtLedgerSchema | None:
             "da_thu",
         ),
     )
-    id_col = _find_col(
+    id_col = find_col(
         cols,
         (
             "order_id",
@@ -429,7 +433,7 @@ def extract_debt_ledger(context: BusinessContext) -> DebtLedgerSchema | None:
         )
 
     # Prefer date-first column or timestamp column for exact calendar-day alignment
-    ts_col = _find_col(
+    ts_col = find_col(
         cols,
         (
             "ngay_dat",
@@ -446,7 +450,7 @@ def extract_debt_ledger(context: BusinessContext) -> DebtLedgerSchema | None:
             "ngay",
         ),
     )
-    tot_col = _find_col(
+    tot_col = find_col(
         cols,
         (
             "tong_sau_giam_gia",
@@ -467,9 +471,9 @@ def extract_debt_ledger(context: BusinessContext) -> DebtLedgerSchema | None:
 
     df_raw["_order_ts"] = parse_mixed_excel_dates(df_raw[ts_col])
     df_raw["_order_day"] = df_raw["_order_ts"].dt.normalize()
-    df_raw["_order_total"] = _to_numeric_series(df_raw[tot_col])
+    df_raw["_order_total"] = to_numeric_series(df_raw[tot_col])
 
-    status_col = _find_col(
+    status_col = find_col(
         cols,
         (
             "trang_thai",
@@ -496,11 +500,11 @@ def extract_debt_ledger(context: BusinessContext) -> DebtLedgerSchema | None:
             pay_norm.str.contains(_CREDIT_METHOD_PATTERN, regex=True, na=False)
         ].copy()
     elif "cong_no" in cols:
-        credit_orders = orders[_to_numeric_series(orders[cols["cong_no"]]) > 0].copy()
+        credit_orders = orders[to_numeric_series(orders[cols["cong_no"]]) > 0].copy()
     else:
         return None
 
-    cid_col = _find_col(
+    cid_col = find_col(
         cols,
         (
             "ma_khach_hang",
@@ -514,7 +518,7 @@ def extract_debt_ledger(context: BusinessContext) -> DebtLedgerSchema | None:
             "kh",
         ),
     )
-    cust_name_col = _find_col(
+    cust_name_col = find_col(
         cols,
         (
             "ten_goi",
@@ -573,10 +577,10 @@ def _compute_active_debt_orders(
         )
     else:
         cols = {c.lower(): c for c in orders.columns}
-        da_tra_col = _find_col(cols, ("khach_da_tra", "da_tra", "da_thu"))
+        da_tra_col = find_col(cols, ("khach_da_tra", "da_tra", "da_thu"))
         if da_tra_col is None:
             return None, cutoff_day
-        orders["_paid"] = _to_numeric_series(orders[da_tra_col])
+        orders["_paid"] = to_numeric_series(orders[da_tra_col])
 
     orders["_debt"] = orders["_order_total"] - orders["_paid"]
     active = orders[orders["_debt"] > 0].copy()
@@ -719,7 +723,7 @@ def _extract_cutoff_date_str(
     return None
 
 
-def _extract_month_ym(q_norm: str, as_of_date: str | None) -> str | None:
+def extract_month_ym(q_norm: str, as_of_date: str | None) -> str | None:
     """Extract YYYY-MM target month from question text or relative 'tháng này'."""
     m_my = re.search(r"\bthang\s*(\d{1,2})(?:\s*[/\-]|\s+nam\s+)(\d{4})\b", q_norm)
     if m_my:
@@ -751,7 +755,7 @@ def _is_month_outside_domain(ledger: DebtLedgerSchema, month_ym: str) -> bool:
     return bool(m_end < min_d or m_start > max_d)
 
 
-def _month_cutoff_eod(month_ym: str, as_of_date: str | None) -> pd.Timestamp:
+def month_cutoff_eod(month_ym: str, as_of_date: str | None) -> pd.Timestamp:
     """Upper inclusive timestamp cutoff for a target month capped at as_of_date."""
     year, month = int(month_ym[:4]), int(month_ym[5:7])
     last_day = calendar.monthrange(year, month)[1]
@@ -793,7 +797,7 @@ def _calculate_monthly_credit_repayment(
     if _is_month_outside_domain(ledger, month_ym):
         return "unanswerable", None, "Tháng được hỏi nằm ngoài khoảng thời gian dữ liệu"
 
-    cutoff_eod = _month_cutoff_eod(month_ym, as_of_date)
+    cutoff_eod = month_cutoff_eod(month_ym, as_of_date)
     p_sub = ledger.pay_df[
         (ledger.pay_df["_pay_ts"].dt.strftime("%Y-%m") == month_ym)
         & (ledger.pay_df["_pay_ts"] <= cutoff_eod)
@@ -868,7 +872,7 @@ def _calculate_customer_monthly_delta(
             "Không xác định duy nhất khách hàng trong danh sách khách hàng",
         )
 
-    cutoff_eod = _month_cutoff_eod(month_ym, as_of_date)
+    cutoff_eod = month_cutoff_eod(month_ym, as_of_date)
     cutoff_day = cutoff_eod.normalize()
 
     c_orders = ledger.credit_orders[
@@ -947,7 +951,7 @@ def resolve_debt_query(
         and re.search(r"\b(?:tra\s+bot\s+no|tra\s+no|tra\s+duoc|tra\s+dc)\b", q_norm)
     )
     if asks_delta:
-        month_ym = _extract_month_ym(q_norm, as_of_date)
+        month_ym = extract_month_ym(q_norm, as_of_date)
         if not month_ym:
             return (
                 "abstain",
@@ -973,7 +977,7 @@ def resolve_debt_query(
         )
     )
     if asks_repay:
-        month_ym = _extract_month_ym(q_norm, as_of_date)
+        month_ym = extract_month_ym(q_norm, as_of_date)
         if not month_ym:
             return "abstain", None, "Không xác định được tháng thu hồi công nợ"
         ledger = extract_debt_ledger(context)

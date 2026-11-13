@@ -2984,23 +2984,15 @@ def build_query_plan(
             output_type="unanswerable",
         )
 
-    # Gate 1 Unanswerable: Profit / Cost questions when business has no cost/expense tables
+    # Gate 1 Unanswerable: Profit / Cost questions when business has no cost/expense columns
     if any(k in q_norm for k in ("lai rong", "loi nhuan", "tien loi")):
-        has_cost_table = any(
-            any(
-                k in tname
-                for k in (
-                    "chi_phi",
-                    "gia_von",
-                    "nhap_hang",
-                    "nhap",
-                    "so_quy",
-                    "chi_tiet_nhap",
-                )
-            )
-            for tname in context.tables
+        has_cost_data = any(
+            any(k in c.lower() for k in ("gia_von", "don_gia_nhap", "gia_nhap", "cogs"))
+            or any(k in tname for k in ("chi_phi", "gia_von", "so_quy"))
+            for tname, df in context.tables.items()
+            for c in df.columns
         )
-        if not has_cost_table:
+        if not has_cost_data:
             return QueryPlan(
                 operation="unanswerable_gate",
                 metric="unanswerable",
