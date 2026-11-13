@@ -10,18 +10,15 @@ Supports:
 from __future__ import annotations
 
 import argparse
-import json
 import logging
-import os
-import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
-from zaic_2026_datamate.data_loader import BusinessContext, DataLoader
-from zaic_2026_datamate.pipeline import PipelineConfig, build_agent
-from zaic_2026_datamate.provenance import fetch_model_provenance
-from zaic_2026_datamate.submission import write_submission
+from zaic_2026_datamate.container_runner import run_pipeline_to_result
+from zaic_2026_datamate.data_loader import DataLoader
 from zaic_2026_datamate.llm_client import OpenAICompatibleClient
+from zaic_2026_datamate.pipeline import PipelineConfig
+from zaic_2026_datamate.provenance import fetch_model_provenance
 
 logging.basicConfig(level=logging.WARNING)
 
@@ -40,138 +37,52 @@ def generate_submission(
     order_paraphrases: bool = False,
     monthly_growth: bool = False,
     mtd_growth: bool = False,
-) -> Dict[str, int]:
-    questions_path = Path(questions_path)
-    data_dir = Path(data_dir)
-    calendar_path = Path(calendar_path)
-    output_path = Path(output_path)
-
-    if limit is not None and (limit <= 0 or output_path.name == "submission.jsonl"):
-        raise ValueError("--limit requires a positive limit and a separate preview output filename")
-    if output_path.exists() and not overwrite:
-        raise FileExistsError(f"Output exists: {output_path}; use --overwrite explicitly")
-    expected_ids = [json.loads(line)["id"] for line in questions_path.read_text().splitlines() if line.strip()]
-    if limit is not None:
-        expected_ids = expected_ids[:limit]
-    loader = DataLoader(data_dir, calendar_path)
-    business_cache: Dict[str, BusinessContext] = {}
-
-    config = PipelineConfig(enable_slow_path=enable_slow_path, order_paraphrases=order_paraphrases,
-                            model=model, confidence_threshold=confidence_threshold, monthly_growth=monthly_growth,
-                            mtd_growth=mtd_growth)
-    llm_client = None
-    if enable_slow_path:
-        url = base_url or os.getenv("LLM_BASE_URL", "http://localhost:8000/v1")
-        fetch_model_provenance(url, model)
-        print(f"🧠 Kích hoạt SLOW PATH: Endpoint={url}, Model={model}, Confidence Threshold={confidence_threshold}")
-        llm_client = OpenAICompatibleClient(base_url=url, model=model)
-
-    agent = build_agent(config, llm_client)
+    log_dir: str | Path | None = None,
+) -> Dict[str, Any]:
+    config = PipelineConfig(
+        enable_slow_path=enable_slow_path,
+        order_paraphrases=order_paraphrases,
+        model=model,
+        confidence_threshold=confidence_threshold,
+        monthly_growth=monthly_growth,
+        mtd_growth=mtd_growth,
+    )
 
     print(f"🚀 BẮT ĐẦU CHẠY PIPELINE TRÊN TẬP PUBLIC TEST: {questions_path}")
     print("=" * 75)
 
-    stats = {
-        "total": 0,
-        "answered": 0,
-        "fast_path": 0,
-        "slow_path": 0,
-        "paraphrase_fast_path": 0,
-        "monthly_growth_path": 0,
-        "mtd_growth_path": 0,
-        "abstain": 0,
-        "unanswerable": 0,
-        "number": 0,
-        "percent": 0,
-        "string": 0,
-        "date": 0,
-        "list": 0,
-    }
+    def _on_progress(done: int, total_q: int, stats: dict[str, int], elapsed: float) -> None:
+        print(
+            f"[{done:04d}/{total_q}] Đã xử lý {done} câu | "
+            f"Fast: {stats['fast_path']} | Slow: {stats['slow_path']} | "
+            f"Abstain: {stats['abstain']} | Thời gian: {elapsed:.1f}s",
+            flush=True,
+        )
 
-    start_time = time.time()
-    submission_rows: List[Dict[str, Any]] = []
+    stats = run_pipeline_to_result(
+        questions_path=questions_path,
+        data_dir=data_dir,
+        calendar_path=calendar_path,
+        output_path=output_path,
+        config=config,
+        log_dir=log_dir,
+        base_url=base_url,
+        limit=limit,
+        overwrite=overwrite,
+        progress_callback=_on_progress,
+        loader_cls=DataLoader,
+        provenance_fn=fetch_model_provenance,
+        client_cls=OpenAICompatibleClient,
+    )
 
-    try:
-        with open(questions_path, "r", encoding="utf-8") as f:
-            for idx, line in enumerate(f):
-                if limit and idx >= limit:
-                    break
-                if not line.strip():
-                    continue
-                q = json.loads(line)
-                qid = q["id"]
-                biz_id = q["business_id"]
-                q_text = q["question"]
-                as_of_date = q.get("as_of_date")
-                stats["total"] += 1
-
-                # Cache business context
-                if biz_id not in business_cache:
-                    business_cache[biz_id] = loader.load_business(biz_id)
-                ctx = business_cache[biz_id]
-
-                # Resolve query via Hybrid cascade
-                ans_type, ans_val, reason, route = agent.answer_query(
-                    question=q_text,
-                    context=ctx,
-                    as_of_date=as_of_date,
-                )
-
-                if ans_type == "abstain":
-                    stats["abstain"] += 1
-                    row = {
-                        "id": qid,
-                        "type": "abstain",
-                    }
-                elif ans_type == "unanswerable":
-                    stats["unanswerable"] += 1
-                    stats["answered"] += 1
-                    stats[route] += 1
-                    row = {
-                        "id": qid,
-                        "type": "unanswerable",
-                        "reason": reason or "Không đủ dữ liệu để trả lời",
-                    }
-                else:
-                    stats["answered"] += 1
-                    stats[route] += 1
-                    stats[ans_type] = stats.get(ans_type, 0) + 1
-                    if ans_type == "number" and ans_val is not None:
-                        if isinstance(ans_val, float) and not ans_val.is_integer():
-                            ans_val = float(round(ans_val, 2))
-                        else:
-                            ans_val = int(round(ans_val))
-                    elif ans_type == "percent" and ans_val is not None:
-                        ans_val = float(round(ans_val, 2))
-                    row = {
-                        "id": qid,
-                        "type": ans_type,
-                        "answer": ans_val,
-                    }
-
-                submission_rows.append(row)
-
-                if (idx + 1) % 50 == 0 or (idx + 1) == 1000 or (limit and (idx + 1) == limit):
-                    elapsed = time.time() - start_time
-                    print(
-                        f"[{idx + 1:04d}/{limit or 1000}] Đã xử lý {idx + 1} câu | "
-                        f"Fast: {stats['fast_path']} | Slow: {stats['slow_path']} | "
-                        f"Abstain: {stats['abstain']} | Thời gian: {elapsed:.1f}s",
-                        flush=True,
-                    )
-
-    finally:
-        for context in business_cache.values():
-            context.duckdb_conn.close()
-
-    write_submission(output_path, submission_rows, expected_ids, overwrite=overwrite)
-
-    total_time = time.time() - start_time
+    total_time = stats["total_elapsed_seconds"]
+    total = max(1, stats["total"])
     print("\n" + "=" * 75)
     print("✅ ĐÃ XUẤT FILE NỘP BÀI THÀNH CÔNG:")
-    print(f"📁 Đường dẫn: {output_path.resolve()}")
+    print(f"📁 Đường dẫn: {Path(output_path).resolve()}")
+    print(f"🔑 SHA256:    {stats['submission_sha256']}")
     print(f"Tổng số câu:       {stats['total']}")
-    print(f"🎯 Số câu trả lời:  {stats['answered']} ({stats['answered'] / stats['total'] * 100:.1f}%)")
+    print(f"🎯 Số câu trả lời:  {stats['answered']} ({stats['answered'] / total * 100:.1f}%)")
     print(f"   ⚡ Fast Path:    {stats['fast_path']}")
     print(f"   🧠 Slow Path:    {stats['slow_path']}")
     print(f"   Count fallback: {stats['paraphrase_fast_path']}")
@@ -182,8 +93,8 @@ def generate_submission(
     print(f"   - date:          {stats['date']}")
     print(f"   - list:          {stats['list']}")
     print(f"   - unanswerable:  {stats['unanswerable']}")
-    print(f"⚪ Số câu từ chối:  {stats['abstain']} ({stats['abstain'] / stats['total'] * 100:.1f}%) [0 điểm - không phạt]")
-    print(f"⏱️ Tổng thời gian:   {total_time:.2f}s (Trung bình: {total_time / stats['total'] * 1000:.1f}ms/câu)")
+    print(f"⚪ Số câu từ chối:  {stats['abstain']} ({stats['abstain'] / total * 100:.1f}%) [0 điểm - không phạt]")
+    print(f"⏱️ Tổng thời gian:   {total_time:.2f}s (Trung bình: {total_time / total * 1000:.1f}ms/câu)")
     print("=" * 75)
     return stats
 
@@ -194,6 +105,7 @@ if __name__ == "__main__":
     parser.add_argument("--data-dir", default="data/public_test/public_test/data")
     parser.add_argument("--calendar", default="data/public_test/public_test/calendar.csv")
     parser.add_argument("--output", default="submission.jsonl")
+    parser.add_argument("--log-dir", default=None)
     parser.add_argument("--enable-slow-path", action="store_true")
     parser.add_argument("--base-url", default=None)
     parser.add_argument("--model", default="datamate-business24")
@@ -225,4 +137,5 @@ if __name__ == "__main__":
         order_paraphrases=True if use_prod else args.order_paraphrases,
         monthly_growth=True if use_prod else args.monthly_growth,
         mtd_growth=True if use_prod else args.mtd_growth,
+        log_dir=args.log_dir,
     )

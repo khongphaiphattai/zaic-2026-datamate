@@ -169,6 +169,8 @@ class HybridAgent:
             Tuple: (ans_type, ans_value, reason, route_source)
             route_source: 'fast_path' | 'slow_path' | 'abstain'
         """
+        if context is not None and hasattr(context, "reset_trace"):
+            context.reset_trace()
         if self.slow_engine is not None:
             self.slow_engine.reset_audit()
         # =====================================================================

@@ -898,6 +898,7 @@ def resolve_query(
             question, context, as_of_date
         )
         if ans_type != "abstain":
+            context.last_code_path = "repair_shop.resolve_repair_shop_query"
             return ans_type, ans_val, reason
 
     # Specialized engine for purchase and supplier analytics
@@ -926,9 +927,10 @@ def resolve_query(
             question, context, as_of_date
         )
         if ans_type != "abstain":
+            context.last_code_path = "purchase_analytics.resolve_purchase_query"
             return ans_type, ans_val, reason
 
-    # Specialized engine for mobile store & installments (dev_014)
+    # Specialized engine for mobile store & installments
     if "so_no_tra_gop" in context.tables:
         from zaic_2026_datamate.mobile_installment import (
             resolve_mobile_installment_query,
@@ -938,9 +940,10 @@ def resolve_query(
             question, context, as_of_date
         )
         if ans_type != "abstain":
+            context.last_code_path = "mobile_installment.resolve_mobile_installment_query"
             return ans_type, ans_val, reason
 
-    # Specialized engine for mother and baby store (dev_013)
+    # Specialized engine for mother and baby store
     if "quan_ly_danh_muc" in context.tables:
         from zaic_2026_datamate.mother_baby import resolve_mother_baby_query
 
@@ -948,13 +951,15 @@ def resolve_query(
             question, context, as_of_date
         )
         if ans_type != "abstain":
+            context.last_code_path = "mother_baby.resolve_mother_baby_query"
             return ans_type, ans_val, reason
 
-    # Specialized domain extensions engine (dev_011, dev_014, logistics, unsold, OOD)
+    # Specialized domain extensions engine (logistics, unsold, OOD)
     from zaic_2026_datamate.domain_ext import resolve_domain_extensions
 
     dom_res = resolve_domain_extensions(question, context, as_of_date)
     if dom_res is not None:
+        context.last_code_path = "domain_ext.resolve_domain_extensions"
         return dom_res[0], dom_res[1], dom_res[2]
 
     # Specialized engine for multi-month sales and monotonic comparisons
@@ -964,6 +969,7 @@ def resolve_query(
         question, context, as_of_date
     )
     if mm_type != "abstain":
+        context.last_code_path = "multi_month_revenue.resolve_multi_month_query"
         return mm_type, mm_val, mm_reason
 
     # Specialized engine for rolling windows (7 days, 30 days, last week, this week, yesterday)
@@ -973,6 +979,7 @@ def resolve_query(
     if rw_res is not None:
         rw_type, rw_val, rw_reason = rw_res
         if rw_type != "abstain":
+            context.last_code_path = "rolling_window.resolve_rolling_window_query"
             return rw_type, rw_val, rw_reason
 
     # Specialized engine for price change impact comparisons
@@ -982,7 +989,10 @@ def resolve_query(
     if pc_res is not None:
         pc_type, pc_val, pc_reason = pc_res
         if pc_type != "abstain":
+            context.last_code_path = "price_change.resolve_price_change_query"
             return pc_type, pc_val, pc_reason
+
+    context.last_code_path = "intent_parser.resolve_query"
 
     q = question.lower()
     period = parse_time_expressions(question, as_of_date)
@@ -2794,6 +2804,7 @@ def resolve_query(
 
     sem_type, sem_val, sem_reason = resolve_semantic_plan(question, context, as_of_date)
     if sem_type != "abstain":
+        context.last_code_path = "semantic_contract.resolve_semantic_plan"
         return sem_type, sem_val, sem_reason
 
     # -------------------------------------------------------------------------

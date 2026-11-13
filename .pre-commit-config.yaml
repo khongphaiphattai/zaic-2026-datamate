@@ -3,7 +3,7 @@ repos:
     hooks:
       - id: ruff-check
         name: ruff check
-        entry: uv run ruff check --no-cache src/ tests/ scripts/audit_train_errors.py scripts/verify_holdout.py scripts/generate_public_submission.py scripts/compare_submissions.py
+        entry: uv run ruff check --no-cache src/ tests/ scripts/audit_train_errors.py scripts/verify_holdout.py scripts/generate_public_submission.py scripts/compare_submissions.py scripts/run_container.py
         language: system
         pass_filenames: false
       - id: pytest-fast-guards

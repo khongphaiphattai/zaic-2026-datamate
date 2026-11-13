@@ -29,6 +29,7 @@ def audit_train(
     out_dir: str | Path = "artifacts/v35b-audit",
     limit: Optional[int] = None,
     max_wrong: Optional[int] = None,
+    save_abstains: bool = False,
 ):
     questions_path = Path(questions_path)
     answers_path = Path(answers_path)
@@ -62,6 +63,7 @@ def audit_train(
     score_abstain = 0
     score_wrong = 0
     wrong_cases: List[Dict[str, Any]] = []
+    abstain_cases: List[Dict[str, Any]] = []
     by_business = defaultdict(lambda: {"correct": 0, "wrong": 0, "abstain": 0})
 
     start_time = time.time()
@@ -87,6 +89,17 @@ def audit_train(
         if ans_type == "abstain":
             score_abstain += 1
             by_business[bid]["abstain"] += 1
+            if save_abstains:
+                abstain_cases.append({
+                    "id": qid,
+                    "business_id": bid,
+                    "question": q_text,
+                    "as_of_date": as_of_date,
+                    "tgt_type": tgt_type,
+                    "tgt_val": tgt_val,
+                    "reason": reason,
+                    "route": route,
+                })
         else:
             is_match = evaluate_match(ans_type, ans_val, tgt_type, tgt_val)
             if is_match:
@@ -147,6 +160,13 @@ def audit_train(
             f.write(json.dumps(item, ensure_ascii=False) + "\n")
     print(f"\n💾 Đã lưu {len(wrong_cases)} câu sai vào: {wrong_file}")
 
+    if save_abstains:
+        abstain_file = out_dir / "abstain.jsonl"
+        with open(abstain_file, "w", encoding="utf-8") as f:
+            for item in abstain_cases:
+                f.write(json.dumps(item, ensure_ascii=False) + "\n")
+        print(f"💾 Đã lưu {len(abstain_cases)} câu abstain vào: {abstain_file}")
+
     summary_file = out_dir / "summary.json"
     summary_data = {
         "total": total,
@@ -172,5 +192,11 @@ if __name__ == "__main__":
     parser.add_argument("--limit", type=int, default=None, help="Limit number of questions")
     parser.add_argument("--out-dir", type=str, default="artifacts/v35b-audit", help="Output directory")
     parser.add_argument("--max-wrong", type=int, default=None, help="Fail with exit(1) when score_wrong > max_wrong")
+    parser.add_argument("--save-abstains", action="store_true", help="Also write abstain.jsonl for P1 twin profiling")
     args = parser.parse_args()
-    audit_train(limit=args.limit, out_dir=args.out_dir, max_wrong=args.max_wrong)
+    audit_train(
+        limit=args.limit,
+        out_dir=args.out_dir,
+        max_wrong=args.max_wrong,
+        save_abstains=args.save_abstains,
+    )

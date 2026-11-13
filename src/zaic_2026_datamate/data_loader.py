@@ -564,17 +564,39 @@ class BusinessContext:
     readme: str = ""
     duckdb_conn: duckdb.DuckDBPyConnection = field(default_factory=duckdb.connect)
     last_sql: str | None = None
+    sql_history: list[str] = field(default_factory=list)
+    last_code_path: str | None = None
+    last_execution_output: Any = None
+
+    def reset_trace(self) -> None:
+        """Reset per-question SQL/code execution trace fields."""
+        self.last_sql = None
+        self.sql_history.clear()
+        self.last_code_path = None
+        self.last_execution_output = None
+
+    def record_sql(self, sql: str, output: Any = None) -> None:
+        """Record an executed SQL statement and an optional output preview."""
+        cleaned = sql.strip()
+        self.last_sql = cleaned
+        if cleaned:
+            self.sql_history.append(cleaned)
+        if output is not None:
+            self.last_execution_output = output
 
     def query(self, sql: str) -> pd.DataFrame:
         """Execute SQL query directly against the in-memory DuckDB connection."""
-        self.last_sql = sql.strip()
-        return self.duckdb_conn.execute(sql).fetchdf()
+        df = self.duckdb_conn.execute(sql).fetchdf()
+        preview = df.head(5).to_dict(orient="records") if not df.empty else []
+        self.record_sql(sql, preview)
+        return df
 
     def scalar(self, sql: str) -> Any:
         """Execute SQL query and return a single scalar value."""
-        self.last_sql = sql.strip()
         rows = self.duckdb_conn.execute(sql).fetchall()
-        return rows[0][0] if rows else None
+        val = rows[0][0] if rows else None
+        self.record_sql(sql, val)
+        return val
 
 
 class DataLoader:
@@ -585,12 +607,21 @@ class DataLoader:
     """
 
     def __init__(
-        self, data_dir: str | Path, calendar_path: str | Path | None = None
+        self,
+        data_dir: str | Path,
+        calendar_path: str | Path | None = None,
+        *,
+        use_default_calendar: bool = True,
+        temp_dir: str | Path | None = None,
     ) -> None:
         self.data_dir = Path(data_dir)
-        self.calendar_path = (
-            Path(calendar_path) if calendar_path else self._find_calendar()
-        )
+        self.temp_dir = Path(temp_dir) if temp_dir is not None else None
+        if calendar_path is not None:
+            self.calendar_path = Path(calendar_path)
+        elif use_default_calendar:
+            self.calendar_path = self._find_calendar()
+        else:
+            self.calendar_path = None
         self.calendar_df: pd.DataFrame | None = None
         if self.calendar_path and self.calendar_path.is_file():
             self._load_calendar()
@@ -629,10 +660,14 @@ class DataLoader:
         if not biz_dir.is_dir():
             raise FileNotFoundError(f"Business directory not found: {biz_dir}")
 
+        duck_conn = duckdb.connect(":memory:")
+        if self.temp_dir is not None:
+            duck_temp = str(self.temp_dir).replace("'", "''")
+            duck_conn.execute(f"SET temp_directory = '{duck_temp}'")
         context = BusinessContext(
             business_id=business_id,
             data_dir=biz_dir,
-            duckdb_conn=duckdb.connect(":memory:"),
+            duckdb_conn=duck_conn,
         )
 
         # 1. Load README.md if available
@@ -842,16 +877,23 @@ class DataLoader:
         sqlite_path: Path,
         raw_tables: dict[str, list[pd.DataFrame]],
     ) -> None:
-        """Read all tables from a SQLite database."""
-        conn = sqlite3.connect(sqlite_path)
-        cursor = conn.cursor()
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-        tables = [row[0] for row in cursor.fetchall()]
+        """Read all tables from a SQLite database safely (read-only mount compatible)."""
+        uri_base = sqlite_path.resolve().as_uri()
+        try:
+            conn = sqlite3.connect(f"{uri_base}?mode=ro", uri=True)
+            conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
+        except sqlite3.OperationalError:
+            conn = sqlite3.connect(f"{uri_base}?mode=ro&immutable=1", uri=True)
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+            tables = [row[0] for row in cursor.fetchall()]
 
-        for table in tables:
-            try:
-                df = pd.read_sql_query(f'SELECT * FROM "{table}"', conn)
-                raw_tables.setdefault(table, []).append(df)
-            except Exception:
-                continue
-        conn.close()
+            for table in tables:
+                try:
+                    df = pd.read_sql_query(f'SELECT * FROM "{table}"', conn)
+                    raw_tables.setdefault(table, []).append(df)
+                except Exception:
+                    continue
+        finally:
+            conn.close()
