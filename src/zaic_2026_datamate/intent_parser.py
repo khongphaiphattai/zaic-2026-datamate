@@ -931,7 +931,7 @@ def resolve_query(
             return ans_type, ans_val, reason
 
     # Specialized engine for mobile store & installments
-    if "so_no_tra_gop" in context.tables:
+    if "so_no_tra_gop" in context.tables or "so_no_so_no" in context.tables:
         from zaic_2026_datamate.mobile_installment import (
             resolve_mobile_installment_query,
         )
@@ -940,7 +940,8 @@ def resolve_query(
             question, context, as_of_date
         )
         if ans_type != "abstain":
-            context.last_code_path = "mobile_installment.resolve_mobile_installment_query"
+            if not context.last_code_path:
+                context.last_code_path = "mobile_installment.resolve_mobile_installment_query"
             return ans_type, ans_val, reason
 
     # Specialized engine for mother and baby store
@@ -1096,6 +1097,13 @@ def resolve_query(
     if is_reason_q:
         return "abstain", None, "Conditional / reason query abstained"
 
+    # 3b. Customer debt, aging, monthly repayments, and credit delta analytics
+    from zaic_2026_datamate.debt_analytics import resolve_debt_query
+
+    debt_type, debt_val, debt_reason = resolve_debt_query(question, context, as_of_date)
+    if debt_type != "abstain":
+        return debt_type, debt_val, debt_reason
+
     # 4. Block inventory queries ("còn", "trong kho", "tồn kho", "cuối ngày")
     if bool(
         re.search(
@@ -1171,8 +1179,42 @@ def resolve_query(
     # -------------------------------------------------------------------------
     # 0.1 Out of Domain / Missing Entity Check -> Unanswerable
     # -------------------------------------------------------------------------
+    is_snapshot_debt_or_installment = (
+        any(
+            k in q
+            for k in (
+                "còn nợ",
+                "con no",
+                "còn thiếu",
+                "con thieu",
+                "trả góp",
+                "tra gop",
+                "tuổi nợ",
+                "tuoi no",
+            )
+        )
+        and (
+            "so_no_so_no" in context.tables
+            or "so_no_tra_gop" in context.tables
+            or period.start_date == period.end_date
+        )
+    ) or (
+        ("so_no_so_no" in context.tables or "so_no_tra_gop" in context.tables)
+        and any(
+            k in q
+            for k in (
+                "tiền góp",
+                "tien gop",
+                "kỳ góp",
+                "ky gop",
+                "chưa tới hạn",
+                "chua toi han",
+            )
+        )
+    )
     if (
-        date_col
+        not is_snapshot_debt_or_installment
+        and date_col
         and table
         and check_date_out_of_domain(context, period, date_col, table)
     ):

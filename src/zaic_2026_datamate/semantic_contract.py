@@ -1099,9 +1099,7 @@ class BusinessSemanticContract:
                 uprice = pd.to_numeric(df[price_col], errors="coerce")
                 mask_rec = rq_num.isna() & uprice.gt(0) & rev_series.gt(0)
                 if mask_rec.any():
-                    rq_num = rq_num.where(
-                        ~mask_rec, (rev_series / uprice).round(6)
-                    )
+                    rq_num = rq_num.where(~mask_rec, (rev_series / uprice).round(6))
             raw_qtys = rq_num.fillna(1.0)
         else:
             raw_qtys = pd.Series(1.0, index=df.index)
@@ -1113,13 +1111,14 @@ class BusinessSemanticContract:
             for rq, u, iname, iid in zip(raw_qtys, units, item_names, item_ids):
                 iname_norm = _item_norm_key(iname)
                 iid_norm = norm_vn(iid)
-                factor = unit_conv.get((iname_norm, u)) or unit_conv.get(
-                    (iid_norm, u)
-                )
+                factor = unit_conv.get((iname_norm, u)) or unit_conv.get((iid_norm, u))
                 if factor is None:
                     factor = 1.0
                     if u in ("thung", "hop", "loc"):
-                        if iname_norm not in has_explicit and iname_norm in fallback_conv:
+                        if (
+                            iname_norm not in has_explicit
+                            and iname_norm in fallback_conv
+                        ):
                             factor = fallback_conv[iname_norm]
                         elif iid_norm not in has_explicit and iid_norm in fallback_conv:
                             factor = fallback_conv[iid_norm]
@@ -1504,7 +1503,14 @@ class BusinessSemanticContract:
         d_price_col = next(
             (
                 c
-                for c in ("don_gia", "gia_ban", "gia_1_dv", "gia", "gia_san_pham", "gia_le")
+                for c in (
+                    "don_gia",
+                    "gia_ban",
+                    "gia_1_dv",
+                    "gia",
+                    "gia_san_pham",
+                    "gia_le",
+                )
                 if c in d_cols
             ),
             None,
@@ -2058,7 +2064,14 @@ class BusinessSemanticContract:
         price_col = next(
             (
                 c
-                for c in ("don_gia", "gia_ban", "gia_1_dv", "gia", "gia_san_pham", "gia_le")
+                for c in (
+                    "don_gia",
+                    "gia_ban",
+                    "gia_1_dv",
+                    "gia",
+                    "gia_san_pham",
+                    "gia_le",
+                )
                 if c in cols
             ),
             None,
@@ -2305,7 +2318,9 @@ class BusinessSemanticContract:
                     base_cat = name_to_cat.get(base_norm) or CAFE_CATEGORY_LOOKUP.get(
                         base_norm
                     )
-                base_key = name_to_id.get(base_norm) or name_to_id.get(base_nkey, base_nkey)
+                base_key = name_to_id.get(base_norm) or name_to_id.get(
+                    base_nkey, base_nkey
+                )
 
                 line_order_ids.append(oid)
                 line_item_keys.append(base_key)
@@ -3071,7 +3086,13 @@ def build_query_plan(
     # SNAPSHOT DEBT QUERIES (Công nợ chốt tại ngày X)
     # -------------------------------------------------------------------------
     if (
-        any(k in q_norm for k in ("no", "cong no"))
+        not ("so_no_so_no" in context.tables or "so_no_tra_gop" in context.tables)
+        and re.search(
+            r"\b(?:cong\s+no|du\s+no|con\s+no|tien\s+no|so\s+no|dang\s+no|kieu\s+no|"
+            r"mua\s+chiu|ghi\s+no|khach\s+(?:dang\s+|con\s+)?no|"
+            r"chua\s+tra\s+het\s+no|no\s+(?:cua\s+hang|tiem|nhieu\s+nhat|nhut|lon\s+nhat))\b",
+            q_norm,
+        )
         and not any(
             k in q_norm
             for k in (
@@ -3088,6 +3109,8 @@ def build_query_plan(
                 "tre han",
                 "nợ thêm",
                 "no them",
+                "gia ban",
+                "don gia",
             )
         )
         and not re.search(r"\b(?:qua|hon|tren|it nhat|sau)\s*\d+\s*ngay\b", q_norm)
@@ -3141,20 +3164,31 @@ def build_query_plan(
                     output_type="table",
                 )
             # Check customer count
-            if any(
+            has_amount_cue = any(
                 k in q_norm
-                for k in (
-                    "bao nhieu khach",
-                    "bao nhiu khach",
-                    "bnhiu khach",
-                    "bn khach",
-                    "may khach",
-                    "so khach",
-                    "con bao nhieu khach",
-                    "con bao nhiu khach",
-                    "chua tra het no",
+                for k in ("bao nhieu tien", "tong tien", "so tien", "nhieu tien")
+            )
+            if (
+                any(
+                    k in q_norm
+                    for k in (
+                        "bao nhieu khach",
+                        "bao nhiu khach",
+                        "bnhiu khach",
+                        "bn khach",
+                        "may khach",
+                        "so khach",
+                        "con bao nhieu khach",
+                        "con bao nhiu khach",
+                    )
                 )
-            ) or re.search(r"\b(?:bao nhieu|bao nhiu|bnhiu|bn|may)\s+khach\b", q_norm):
+                or re.search(
+                    r"\b(?:bao nhieu|bao nhiu|bnhiu|bn|may|so)\s+(?:khach|nguoi)\b",
+                    q_norm,
+                )
+                or re.search(r"\bdem\b.*\b(?:khach|nguoi)\b", q_norm)
+                or ("chua tra het no" in q_norm and not has_amount_cue)
+            ):
                 return QueryPlan(
                     operation="debt_snapshot",
                     metric="customer_count",
@@ -3358,11 +3392,21 @@ def build_query_plan(
 
     if is_bestseller and has_valid_period:
         q_norm_ranked = q_norm
-        for w_vn, d_vn in [("ba", "3"), ("bon", "4"), ("nam", "5"), ("sau", "6"), ("bay", "7"), ("tam", "8"), ("chin", "9"), ("muoi", "10")]:
+        for w_vn, d_vn in [
+            ("ba", "3"),
+            ("bon", "4"),
+            ("nam", "5"),
+            ("sau", "6"),
+            ("bay", "7"),
+            ("tam", "8"),
+            ("chin", "9"),
+            ("muoi", "10"),
+        ]:
             q_norm_ranked = re.sub(rf"\btop\s+{w_vn}\b", f"top {d_vn}", q_norm_ranked)
         m_top = re.search(r"\btop\s*(\d{1,2})\b", q_norm_ranked)
         m_count = re.search(
-            r"\b(\d{1,2})\s+(?:mat hangf?|hang hoa|san pham|sp|mon|hang)\b", q_norm_ranked
+            r"\b(\d{1,2})\s+(?:mat hangf?|hang hoa|san pham|sp|mon|hang)\b",
+            q_norm_ranked,
         )
         if m_top:
             limit_k = int(m_top.group(1))
@@ -3595,21 +3639,28 @@ def build_query_plan(
     ) or (
         any(k in q_norm for k in ("khach", "khach hang", "ai"))
         and any(
-            k in q_norm
-            for k in ("chi nhieu tien", "mua nhieu tien", "chi tieu nhieu")
+            k in q_norm for k in ("chi nhieu tien", "mua nhieu tien", "chi tieu nhieu")
         )
     )
     if is_top_customer_revenue and has_valid_period:
         q_norm_cust = q_norm
-        for w_vn, d_vn in [("ba", "3"), ("bon", "4"), ("nam", "5"), ("sau", "6"), ("bay", "7"), ("tam", "8"), ("chin", "9"), ("muoi", "10")]:
+        for w_vn, d_vn in [
+            ("ba", "3"),
+            ("bon", "4"),
+            ("nam", "5"),
+            ("sau", "6"),
+            ("bay", "7"),
+            ("tam", "8"),
+            ("chin", "9"),
+            ("muoi", "10"),
+        ]:
             q_norm_cust = re.sub(rf"\btop\s+{w_vn}\b", f"top {d_vn}", q_norm_cust)
         m_cust = re.search(
             r"\b(?:top\s*)?(\d{1,2})\s+(?:khach|khach hang|nguoi)\b", q_norm_cust
         )
         m_cust_cnt = re.search(r"\b(\d{1,2})\s+(?:khach|khach hang)\b", q_norm_cust)
         is_singular_cust = any(
-            k in q_norm
-            for k in ("khach nao", "ai", "khach hang nao", "khach mo")
+            k in q_norm for k in ("khach nao", "ai", "khach hang nao", "khach mo")
         )
         if m_cust:
             limit_k_cust = int(m_cust.group(1))
@@ -4440,381 +4491,14 @@ def calculate_debt_metric(
     top_k: int = 5,
 ) -> tuple[str, Any, str | None]:
     """Calculate snapshot customer debt metric as of cutoff_date per Rulebook Section 4."""
-    as_of = pd.to_datetime(cutoff_date_str + " 23:59:59")
-    h_table, d_table = BusinessSemanticContract._identify_header_and_detail_tables(
-        context
+    from zaic_2026_datamate.debt_analytics import calculate_debt_snapshot_metric
+
+    return calculate_debt_snapshot_metric(
+        context=context,
+        cutoff_date_str=cutoff_date_str,
+        metric_type=metric_type,
+        top_k=top_k,
     )
-    ord_table_name = h_table if h_table is not None else d_table
-    if ord_table_name is None or ord_table_name not in context.tables:
-        return "abstain", None, "Không tìm thấy bảng đơn hàng"
-
-    # Strict refusal gate: Only businesses with dedicated separate retail orders/customers schemas
-    # Combined F&B POS tables (`ban_hang_tong_hop*`) have ambiguous receipt timing and must abstain cleanly.
-    if ord_table_name == "ban_hang_tong_hop" or ord_table_name.startswith(
-        "ban_hang_tong_hop_"
-    ):
-        return (
-            "abstain",
-            None,
-            "Bảng bán hàng tổng hợp F&B không đủ độ tin cậy để chốt công nợ tại thời điểm",
-        )
-
-    df_dh = context.tables[ord_table_name].copy()
-    cols = {c.lower(): c for c in df_dh.columns}
-
-    # Find timestamp col
-    ts_col = next(
-        (
-            cols[c]
-            for c in [
-                "gio_tao_don",
-                "thoi_gian_lap",
-                "thoi_gian",
-                "ngay_gio",
-                "thoi_gian_tao",
-            ]
-            if c in cols
-        ),
-        None,
-    )
-    if not ts_col:
-        ts_col = next(
-            (
-                cols[c]
-                for c in [
-                    "ngay_dat",
-                    "ngay_lap",
-                    "ngay_ban",
-                    "ngay_hd",
-                    "ngay_don_hang",
-                    "ngay_tao",
-                    "ngay",
-                ]
-                if c in cols
-            ),
-            None,
-        )
-    if not ts_col:
-        return "abstain", None, "Không tìm thấy cột ngày đơn"
-
-    df_dh["order_ts"] = pd.to_datetime(df_dh[ts_col], errors="coerce")
-    orders = df_dh[df_dh["order_ts"] <= as_of].copy()
-
-    # Status filter: exclude cancelled
-    status_col = next(
-        (
-            cols[c]
-            for c in ["trang_thai", "tinh_trang", "status", "trang_thai_giao"]
-            if c in cols
-        ),
-        None,
-    )
-    if status_col:
-        orders = orders[
-            ~orders[status_col].astype(str).str.lower().str.contains("hủy|huy")
-        ]
-
-    # Payment method filter: only debt
-    pay_col = next(
-        (
-            cols[c]
-            for c in [
-                "phuong_thuc_tt",
-                "phuong_thuc_thanh_toan",
-                "hinh_thuc_thanh_toan",
-                "tra_bang",
-                "thanh_toan_bang",
-            ]
-            if c in cols
-        ),
-        None,
-    )
-    if pay_col:
-        orders = orders[
-            orders[pay_col].astype(str).str.lower().str.contains("no|nợ|debt")
-        ]
-    else:
-        if "cong_no" not in cols:
-            return "abstain", None, "Không có thông tin phương thức thanh toán ghi nợ"
-
-    # Order total col
-    tot_col = next(
-        (
-            cols[c]
-            for c in [
-                "tong_sau_giam_gia",
-                "tong_thanh_toan",
-                "tong_tien",
-                "thanh_tien",
-                "tien_hang_truoc_giam",
-                "tong_don",
-            ]
-            if c in cols
-        ),
-        None,
-    )
-    if not tot_col:
-        return "abstain", None, "Không tìm thấy cột tổng đơn"
-    orders["order_total"] = pd.to_numeric(orders[tot_col], errors="coerce").fillna(0.0)
-
-    # Order id col
-    id_col = next(
-        (
-            cols[c]
-            for c in [
-                "order_id",
-                "ma_hoa_don",
-                "ma_don_hang",
-                "ma_chung_tu",
-                "so_ct",
-                "so_phieu",
-                "so_hoa_don",
-                "bill",
-                "don_so",
-                "stt",
-                "ma_bill",
-                "ma_don",
-                "id",
-            ]
-            if c in cols
-        ),
-        None,
-    )
-
-    # Deduplicate orders if combined table
-    if id_col and orders[id_col].duplicated().any():
-        orders = orders.groupby(id_col, as_index=False).first()
-
-    # Identify payments table
-    pay_table = None
-    for tname, df in context.tables.items():
-        if (
-            any(k in tname for k in ["so_quy", "thanh_toan", "phieu_thu"])
-            and "nhap" not in tname
-        ):
-            pay_table = df.copy()
-            break
-
-    if pay_table is not None:
-        pcols = {c.lower(): c for c in pay_table.columns}
-        p_ts_col = next(
-            (
-                pcols[c]
-                for c in [
-                    "thoi_gian",
-                    "ngay_gio_thu",
-                    "thoi_gian_thu",
-                    "ngay_tt",
-                    "ngay_thu",
-                ]
-                if c in pcols
-            ),
-            None,
-        )
-        p_val_col = next(
-            (
-                pcols[c]
-                for c in [
-                    "gia_tri",
-                    "so_tien_thu",
-                    "tien_thu",
-                    "so_tien",
-                    "tien",
-                    "amount",
-                ]
-                if c in pcols
-            ),
-            None,
-        )
-        p_id_col = next(
-            (
-                pcols[c]
-                for c in [
-                    "so_ct",
-                    "ma_hoa_don",
-                    "ma_bill",
-                    "ma_don",
-                    "order_id",
-                    "ma_phieu",
-                    "so_hd",
-                    "ma_chung_tu",
-                    "so_hoa_don",
-                    "bill",
-                ]
-                if c in pcols
-            ),
-            None,
-        )
-
-        if p_ts_col and p_val_col and p_id_col:
-            pay_table["pay_ts"] = pd.to_datetime(pay_table[p_ts_col], errors="coerce")
-            pays = pay_table[pay_table["pay_ts"] <= as_of]
-            pays[p_val_col] = pd.to_numeric(pays[p_val_col], errors="coerce").fillna(
-                0.0
-            )
-            paid_per_order = pays.groupby(pays[p_id_col].astype(str))[p_val_col].sum()
-            orders["paid"] = orders[id_col].astype(str).map(paid_per_order).fillna(0.0)
-        else:
-            orders["paid"] = 0.0
-    else:
-        da_tra_col = next(
-            (cols[c] for c in ["khach_da_tra", "da_tra", "da_thu"] if c in cols), None
-        )
-        if da_tra_col:
-            orders["paid"] = pd.to_numeric(orders[da_tra_col], errors="coerce").fillna(
-                0.0
-            )
-        else:
-            orders["paid"] = 0.0
-
-    orders["debt"] = orders["order_total"] - orders["paid"]
-    active = orders[orders["debt"] > 0].copy()
-
-    # Customer name & ID
-    cust_id_col = next(
-        (
-            cols[c]
-            for c in [
-                "ma_khach_hang",
-                "ma_kh",
-                "customer_id",
-                "kh",
-                "ma_khach",
-                "ma_kh_mua",
-                "makh",
-            ]
-            if c in cols
-        ),
-        None,
-    )
-    cust_name_col = next(
-        (
-            cols[c]
-            for c in [
-                "ten_goi",
-                "ten_khach_hang",
-                "khach_hang",
-                "ten_kh",
-                "khach_hang_ten",
-                "khach_le_si",
-                "khach",
-            ]
-            if c in cols
-        ),
-        None,
-    )
-
-    cust_name_map = {}
-    for tname, df in context.tables.items():
-        if any(k in tname.lower() for k in ["khach", "customer"]) and not any(
-            k in tname.lower()
-            for k in [
-                "hoa_don",
-                "don_hang",
-                "chi_tiet",
-                "phieu_nhap",
-                "tra_hang",
-                "so_quy",
-                "the_kho",
-            ]
-        ):
-            kh_cols = {c.lower(): c for c in df.columns}
-            k_id = next(
-                (
-                    kh_cols[c]
-                    for c in [
-                        "ma_khach_hang",
-                        "ma_kh",
-                        "customer_id",
-                        "kh",
-                        "ma_khach",
-                        "makh",
-                    ]
-                    if c in kh_cols
-                ),
-                None,
-            )
-            k_nm = next(
-                (
-                    kh_cols[c]
-                    for c in [
-                        "ten_khach_hang",
-                        "ten_kh",
-                        "ten_goi",
-                        "ho_ten",
-                        "ten_khach",
-                        "khach_hang",
-                        "khach_hang_ten",
-                        "khach_le_si",
-                        "ten",
-                    ]
-                    if c in kh_cols
-                ),
-                None,
-            )
-            if k_id and k_nm:
-                for _, r in df.iterrows():
-                    sid = str(r[k_id]).strip()
-                    snm = str(r[k_nm]).strip()
-                    if sid and snm and sid.lower() not in ("nan", "none", ""):
-                        clean_nm = re.sub(
-                            r"\s*[-–(]?\s*(?:0\d{9,10}|\+84\d{9,10}|\d{3,4}\s*\d{3}\s*\d{3,4})\s*\)?$",
-                            "",
-                            snm,
-                        ).strip()
-                        cust_name_map[sid] = clean_nm
-
-    if metric_type == "total_amount":
-        tot = int(round(active["debt"].sum()))
-        return "number", tot, None
-    elif metric_type == "customer_count":
-        if cust_id_col:
-            valid_cids = active[cust_id_col].dropna().astype(str).str.strip()
-            valid_cids = valid_cids[
-                ~valid_cids.str.lower().isin(["", "nan", "none", "le", "khach le"])
-            ]
-            cnt = int(valid_cids.nunique())
-            return "number", cnt, None
-        return "abstain", None, "Không có mã khách hàng để đếm"
-    elif metric_type == "top_k_table":
-        if cust_id_col and cust_name_map:
-            active["resolved_name"] = active[cust_id_col].astype(str).map(cust_name_map)
-            if cust_name_col:
-                active["resolved_name"] = active["resolved_name"].fillna(
-                    active[cust_name_col]
-                )
-            else:
-                active["resolved_name"] = active["resolved_name"].fillna(
-                    active[cust_id_col]
-                )
-        elif cust_name_col:
-            active["resolved_name"] = active[cust_name_col]
-        else:
-            active["resolved_name"] = active[cust_id_col]
-        active["resolved_name"] = (
-            active["resolved_name"]
-            .astype(str)
-            .str.replace(
-                r"\s*[-–(]?\s*(?:0\d{9,10}|\+84\d{9,10}|\d{3,4}\s*\d{3}\s*\d{3,4})\s*\)?$",
-                "",
-                regex=True,
-            )
-            .str.strip()
-        )
-        active = active[
-            ~active["resolved_name"]
-            .astype(str)
-            .str.lower()
-            .isin(["", "nan", "none", "khách lẻ", "khach le", "vang lai"])
-        ]
-        top = (
-            active.groupby("resolved_name")["debt"]
-            .sum()
-            .sort_values(ascending=False)
-            .head(top_k)
-        )
-        rows = [[str(name), int(round(val))] for name, val in top.items()]
-        return "table", {"columns": ["khach_hang", "so_tien_no"], "rows": rows}, None
 
 
 def execute_query_plan(

@@ -230,14 +230,164 @@ def _resolve_installment_as_of(
     return max(valid) if valid else pd.Timestamp.max
 
 
+def resolve_unified_debt_query(
+    question: str,
+    context: BusinessContext,
+    as_of_date: str | None = None,
+) -> tuple[str, Any, str | None]:
+    """Resolve general debt balances and active debtor counts using unified ledgers."""
+    if "so_no_so_no" not in context.tables and "so_no_tra_gop" not in context.tables:
+        return "abstain", None, "Không tìm thấy sổ công nợ hoặc sổ trả góp"
+
+    t_norm = strip_accents(question)
+    if not re.search(
+        r"\b(?:con\s+no|du\s+no|cong\s+no|con\s+thieu|thieu\s+tien|no)\b", t_norm
+    ):
+        return "abstain", None, "Không phải câu hỏi công nợ chung"
+
+    # Guard complex/unverified installment schedule or unsupported breakdowns
+    if any(
+        k in t_norm
+        for k in (
+            "tra gop",
+            "tien gop",
+            "ky gop",
+            "qua han",
+            "tre han",
+            "cham gop",
+            "cham",
+            "chua toi han",
+            "ke ca",
+            "tuoi no",
+            "nha cung cap",
+            "ncc",
+            "top",
+            "liet ke",
+            "danh sach",
+            "bang",
+        )
+    ):
+        return "abstain", None, "Dạng công nợ phức tạp cần kiểm tra lịch trả góp"
+
+    m_dmy = re.search(
+        r"\b(?:ngay|toi|den|tai|het)\s*(\d{1,2})[/-](\d{1,2})[/-](\d{4})\b",
+        t_norm,
+    )
+    m_ymd = re.search(r"\b(\d{4})-(\d{2})-(\d{2})\b", question)
+    if m_dmy:
+        cutoff_ts = pd.Timestamp(
+            year=int(m_dmy.group(3)),
+            month=int(m_dmy.group(2)),
+            day=int(m_dmy.group(1)),
+        )
+    elif m_ymd:
+        cutoff_ts = pd.Timestamp(
+            year=int(m_ymd.group(1)),
+            month=int(m_ymd.group(2)),
+            day=int(m_ymd.group(3)),
+        )
+    else:
+        so_no_df = context.tables.get("so_no_so_no")
+        tg_df = context.tables.get("so_no_tra_gop")
+        cutoff_ts = _resolve_installment_as_of(
+            as_of_date,
+            context,
+            so_no_df["ngay"] if so_no_df is not None and "ngay" in so_no_df else None,
+            tg_df["ngay_gop"] if tg_df is not None and "ngay_gop" in tg_df else None,
+            tg_df["ngay"] if tg_df is not None and "ngay" in tg_df else None,
+        )
+
+    if cutoff_ts == pd.Timestamp.max:
+        cutoff_eod_str = None
+    else:
+        cutoff_eod = cutoff_ts.normalize() + pd.Timedelta(
+            hours=23, minutes=59, seconds=59
+        )
+        cutoff_eod_str = cutoff_eod.strftime("%Y-%m-%d %H:%M:%S")
+
+    unified = unify_debt_and_installment_ledgers(
+        context.tables.get("so_no_so_no"),
+        context.tables.get("so_no_tra_gop"),
+        as_of_date=cutoff_eod_str,
+    )
+    if unified.empty:
+        return "abstain", None, "Không có dữ liệu công nợ hợp nhất đến ngày xét"
+
+    context.last_code_path = "mobile_installment.unify_debt_and_installment_ledgers"
+
+    # 1. Active debtor count (deduplicated across ledgers)
+    if re.search(
+        r"\b(?:bao nhieu|bao nhiu|bnhiu|bn|may|so)\s+khach\b", t_norm
+    ) or "con bao nhieu khach" in t_norm:
+        active = unified[unified["remaining_debt"] > 0]
+        return "number", int(active["khach_norm"].nunique()), None
+
+    # 2. Specific customer remaining debt across unified ledgers
+    all_names = sorted(
+        {
+            str(n).strip()
+            for n in unified["khach_norm"].dropna()
+            if str(n).strip() and str(n).strip() != "nan"
+        }
+    )
+    phrase_matches = [
+        nm for nm in all_names if re.search(rf"(?<!\w){re.escape(nm)}(?!\w)", t_norm)
+    ]
+    maximal_matches = [
+        nm
+        for nm in phrase_matches
+        if not any(other != nm and nm in other for other in phrase_matches)
+    ]
+    if len(maximal_matches) == 1:
+        target_nm = maximal_matches[0]
+        bal = unified.loc[unified["khach_norm"] == target_nm, "remaining_debt"].sum()
+        return "number", int(round(bal)), None
+    if len(maximal_matches) > 1:
+        return "abstain", None, "Nhiều khách hàng trùng khớp trong sổ công nợ"
+
+    m_cust_tok = re.search(
+        r"\bkhach(?:\s+hang)?\s+(?!con\b|dang\b|mua\b|no\b|thieu\b|tra\b|hang\b|cua\b)([a-z0-9\s]{1,35}?)\s+(?:con\s+no|con\s+thieu|no|thieu|da\s+tra)\b",
+        t_norm,
+    )
+    if m_cust_tok:
+        tok = m_cust_tok.group(1).strip()
+        if tok not in {"hang", "cua hang", "con", "dang", "dang con", "mua chiu"}:
+            tok_matches = [
+                nm
+                for nm in all_names
+                if re.search(rf"(?<!\w){re.escape(tok)}(?!\w)", nm)
+            ]
+            if len(tok_matches) == 1:
+                target_nm = tok_matches[0]
+                bal = unified.loc[
+                    unified["khach_norm"] == target_nm, "remaining_debt"
+                ].sum()
+                return "number", int(round(bal)), None
+            return "abstain", None, "Tên khách hàng chưa đủ rõ để chốt công nợ"
+
+    # 3. Storewide combined remaining debt
+    if any(
+        k in t_norm
+        for k in ("tong", "bao nhieu", "bn", "bnhiu", "nhieu tien", "con no", "con thieu")
+    ):
+        tot = int(round(unified["remaining_debt"].sum()))
+        return "number", tot, None
+
+    return "abstain", None, "Không khớp mẫu công nợ hợp nhất"
+
+
 def resolve_mobile_installment_query(
     question: str,
     context: BusinessContext,
     as_of_date: str | None = None,
 ) -> tuple[str, Any, str | None]:
     """Resolve mobile retail & installment questions using deterministic schema logic."""
-    if "so_ban_hang" not in context.tables:
-        return "abstain", None, "Không tìm thấy bảng so_ban_hang"
+    has_sales = "so_ban_hang" in context.tables
+    has_ledgers = any(
+        t in context.tables for t in ("so_no_tra_gop", "so_no_so_no", "so_no_bao_hanh", "thu_may_cu")
+    )
+    if not has_sales and not has_ledgers:
+        return "abstain", None, "Không tìm thấy bảng so_ban_hang hoặc sổ công nợ"
 
     t_norm = strip_accents(question)
     p = parse_time_expressions(question, as_of_date=as_of_date)
@@ -269,7 +419,7 @@ def resolve_mobile_installment_query(
             tmc["m"] = pd.to_datetime(tmc["ngay"]).dt.strftime("%Y-%m")
 
             # A1. Percentage of orders with trade-in: 'bnhiu % dh co thu may cu'
-            if any(k in t_norm for k in ["%", "phan tram"]) and any(
+            if has_sales and any(k in t_norm for k in ["%", "phan tram"]) and any(
                 k in t_norm for k in ["dh", "don hang", "don"]
             ):
                 if target_month:
@@ -301,7 +451,7 @@ def resolve_mobile_installment_query(
     # -------------------------------------------------------------------------
     # B. ORDER NET AMOUNT AFTER DISCOUNTS & TRADE-IN (khach_tra)
     # -------------------------------------------------------------------------
-    if any(k in t_norm for k in ["khach phai tra", "khach tra"]) and any(
+    if has_sales and any(k in t_norm for k in ["khach phai tra", "khach tra"]) and any(
         k in t_norm
         for k in [
             "tru tien bot",
@@ -330,7 +480,7 @@ def resolve_mobile_installment_query(
     # -------------------------------------------------------------------------
     # B0. AVERAGE ORDER VALUE (AOV - Gross Revenue thanh_tien)
     # -------------------------------------------------------------------------
-    if any(k in t_norm for k in ["trung binh", "binh quan", "bq"]) and any(
+    if has_sales and any(k in t_norm for k in ["trung binh", "binh quan", "bq"]) and any(
         k in t_norm for k in ["moi don", "1 don", "mot don", "tren mot don", "moi dh", "1 dh", "tren 1 don"]
     ):
         sbh = context.tables["so_ban_hang"].copy()
@@ -415,6 +565,16 @@ def resolve_mobile_installment_query(
             return "abstain", None, "Complex installment aggregate abstained under Silence is Free"
 
     # -------------------------------------------------------------------------
+    # C+. UNIFIED DEBT & INSTALLMENT LEDGER (so_no_so_no + so_no_tra_gop)
+    # -------------------------------------------------------------------------
+    if "so_no_so_no" in context.tables or "so_no_tra_gop" in context.tables:
+        u_type, u_val, u_reason = resolve_unified_debt_query(
+            question, context, as_of_date
+        )
+        if u_type != "abstain":
+            return u_type, u_val, u_reason
+
+    # -------------------------------------------------------------------------
     # D. WARRANTY (so_no_bao_hanh)
     # -------------------------------------------------------------------------
     if "so_no_bao_hanh" in context.tables and any(
@@ -475,7 +635,7 @@ def resolve_mobile_installment_query(
     # -------------------------------------------------------------------------
     # E. PRODUCT & CATEGORY ANALYTICS (so_ban_hang + so_ban_hang_ghi_tat)
     # -------------------------------------------------------------------------
-    if "so_ban_hang_ghi_tat" in context.tables:
+    if has_sales and "so_ban_hang_ghi_tat" in context.tables:
         sbh = context.tables["so_ban_hang"].copy()
         is_return = sbh["ghi_chu"].astype(str).str.lower().str.contains("trả|tra|huỷ|huy|cancel")
         returned_orders = set(zip(sbh.loc[is_return, "sheet_name"], sbh.loc[is_return, "stt"]))
