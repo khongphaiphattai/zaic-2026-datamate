@@ -437,15 +437,12 @@ def test_profit_unanswerable_and_abstain_guards() -> None:
             )[0]
             == "abstain"
         )
-        # Inventory cost valuation belongs to Slice P1.3, not profit_analytics
-        assert (
-            agent.answer_query(
-                "Hết ngày 15/06/2025, số hàng còn trong kho đáng bao nhiêu tiền, tính theo giá vốn?",
-                ctx_pharma,
-                as_of_date="2025-06-15",
-            )[0]
-            == "abstain"
-        )
+        # Inventory cost valuation belongs to Slice P1.3 (profit_analytics stays abstain; full agent emits unanswerable without stock/cost tables)
+        from zaic_2026_datamate.profit_analytics import resolve_profit_query
+
+        inv_cost_q = "Hết ngày 15/06/2025, số hàng còn trong kho đáng bao nhiêu tiền, tính theo giá vốn?"
+        assert resolve_profit_query(inv_cost_q, ctx_pharma, as_of_date="2025-06-15")[0] == "abstain"
+        assert agent.answer_query(inv_cost_q, ctx_pharma, as_of_date="2025-06-15")[0] == "unanswerable"
     finally:
         ctx_pharma.duckdb_conn.close()
 

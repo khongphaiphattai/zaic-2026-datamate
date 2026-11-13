@@ -1106,6 +1106,17 @@ def resolve_query(
     if debt_type != "abstain":
         return debt_type, debt_val, debt_reason
 
+    # 3c. Inventory cost valuation, box/unit split, and batch/expiry analytics
+    from zaic_2026_datamate.inventory_batch_analytics import (
+        resolve_inventory_batch_query,
+    )
+
+    inv_type, inv_val, inv_reason = resolve_inventory_batch_query(
+        question, context, as_of_date
+    )
+    if inv_type != "abstain":
+        return inv_type, inv_val, inv_reason
+
     # 4. Block inventory queries ("còn", "trong kho", "tồn kho", "cuối ngày")
     if bool(
         re.search(

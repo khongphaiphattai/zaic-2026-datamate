@@ -124,7 +124,7 @@
 {"id": "q_203767dd52af", "type": "number", "answer": 8}
 {"id": "q_20b7bbf203c7", "type": "table", "answer": {"columns": ["tho", "hoa_hong"], "rows": [["Đàm Lan An", 8001675], ["Hà Loan Đạt", 7363040], ["Đoàn Bảo Phúc", 6251840], ["Lương Chi Đức", 5608625]]}}
 {"id": "q_20fc83f06434", "type": "number", "answer": 2568866500}
-{"id": "q_210d0cfc81e5", "type": "abstain"}
+{"id": "q_210d0cfc81e5", "type": "date", "answer": "2028-01-16"}
 {"id": "q_2199b91fe707", "type": "date", "answer": "2025-03-14"}
 {"id": "q_219f01962c05", "type": "list", "answer": [648052000, 31254500]}
 {"id": "q_21b93db251ef", "type": "number", "answer": 1586}
@@ -206,7 +206,7 @@
 {"id": "q_38b56b8238b5", "type": "number", "answer": 547}
 {"id": "q_38c42c83e2ff", "type": "percent", "answer": 4.2}
 {"id": "q_38f7a53691b3", "type": "percent", "answer": 6.65}
-{"id": "q_393267cfdee1", "type": "abstain"}
+{"id": "q_393267cfdee1", "type": "number", "answer": 7891700}
 {"id": "q_393d0d4ee0e2", "type": "number", "answer": 75}
 {"id": "q_3992410a9fd6", "type": "number", "answer": 1155251700}
 {"id": "q_39abf982c56e", "type": "abstain"}
@@ -244,7 +244,7 @@
 {"id": "q_408c2137f088", "type": "unanswerable", "reason": "Cửa hàng không ghi nhận giá vốn trên từng đơn bán lẻ"}
 {"id": "q_409bb74c67b4", "type": "percent", "answer": 26.52}
 {"id": "q_40a6843b2c37", "type": "number", "answer": 4038000}
-{"id": "q_411cb8ae0f94", "type": "abstain"}
+{"id": "q_411cb8ae0f94", "type": "date", "answer": "2026-12-02"}
 {"id": "q_4162fa76a222", "type": "number", "answer": 15}
 {"id": "q_416be8994e14", "type": "number", "answer": 14}
 {"id": "q_41922e7c51ec", "type": "percent", "answer": -51.33}
@@ -445,7 +445,7 @@
 {"id": "q_6bf3b5bc42fc", "type": "number", "answer": 62}
 {"id": "q_6bf3c6b59786", "type": "percent", "answer": 89.95}
 {"id": "q_6c18fd06a115", "type": "number", "answer": 63}
-{"id": "q_6c4f54f5fb85", "type": "abstain"}
+{"id": "q_6c4f54f5fb85", "type": "list", "answer": ["Nhiệt kế điện tử Microlife MT500", "Cao Sao Vàng TW3 hộp 3g", "Tiffy Dey hộp 25 vỉ x 4 viên", "Nước muối sinh lý Natri clorid 0,9% Vĩnh Phúc chai 500ml", "Siro ăn ngon Ích Nhi Plus chai 100ml", "Prednisolon 5mg Boston chai 500 viên", "Fugacar 500mg hộp 1 viên", "Panadol Extra hộp 15 vỉ x 12 viên", "Băng cá nhân Urgo Transparent hộp 100 miếng", "Kudos Vitamin C 1000mg viên sủi tuýp 20 viên", "Hagifen 400mg DHG hộp 10 vỉ x 10 viên", "Zyrtec 10mg hộp 1 vỉ x 10 viên", "Calcium Corbière Extra 10ml hộp 30 ống", "Oresol 245 DHG hộp 20 gói", "V.Rohto Vitamin nhỏ mắt lọ 13ml", "Metformin Stella 500mg hộp 6 vỉ x 10 viên", "Enervon hộp 10 vỉ x 10 viên"]}
 {"id": "q_6c89c24d2349", "type": "number", "answer": 214}
 {"id": "q_6c9f50b55906", "type": "percent", "answer": 25.26}
 {"id": "q_6cb10c20f215", "type": "abstain"}
@@ -765,7 +765,7 @@
 {"id": "q_c2eaa7985cf2", "type": "percent", "answer": 6.91}
 {"id": "q_c3158f13ca1c", "type": "number", "answer": 112}
 {"id": "q_c33e026f59e7", "type": "abstain"}
-{"id": "q_c3439f11c9b0", "type": "abstain"}
+{"id": "q_c3439f11c9b0", "type": "number", "answer": 12913800}
 {"id": "q_c34ede239480", "type": "number", "answer": 56}
 {"id": "q_c3652d93727e", "type": "number", "answer": 282622500}
 {"id": "q_c38425d8aec8", "type": "number", "answer": 29}
@@ -938,7 +938,7 @@
 {"id": "q_f16bd70756d1", "type": "number", "answer": 8342718300}
 {"id": "q_f1772e835811", "type": "number", "answer": 65110500}
 {"id": "q_f18a6235b749", "type": "string", "answer": "Phùng Ngọc Thu"}
-{"id": "q_f1c0ff1d2330", "type": "abstain"}
+{"id": "q_f1c0ff1d2330", "type": "number", "answer": 102100783}
 {"id": "q_f20f4f3ec923", "type": "abstain"}
 {"id": "q_f264ab49a2c8", "type": "number", "answer": 64}
 {"id": "q_f274c9241995", "type": "percent", "answer": 0.98}
