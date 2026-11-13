@@ -15,8 +15,26 @@ from zaic_2026_datamate.debt_analytics import (
 )
 
 _DUP_TABLE_RE = re.compile(r"(?:_sheet\d+|_\d+)$")
-_CANCELLED_ORDER_RE = re.compile(r"huy|cancel|nhap\b|draft", re.IGNORECASE)
-_INACTIVE_IMPORT_RE = re.compile(r"huy|cancel|nhap\b|draft", re.IGNORECASE)
+_DRAFT_ACCENTED_RE = re.compile(r"\bnháp\b", re.IGNORECASE)
+_CANCELLED_STATUS_RE = re.compile(
+    r"(?:^|[^a-z])huy(?:$|[^a-z])|cancel|draft", re.IGNORECASE
+)
+_RETURN_STATUS_RE = re.compile(
+    r"(?:^|[^a-z])(?:tra\s*hang|tra\s*lai|doi\s*tra|hoan\s*tra|khong\s*giao|that\s*bai)(?:$|[^a-z])|\b(?:return|refund)",
+    re.IGNORECASE,
+)
+
+
+def inactive_status_mask(series: pd.Series, include_returns: bool = False) -> pd.Series:
+    """Detect cancelled/draft statuses (preserving `nháp` vs `nhập`), optionally including returns."""
+    raw = series.fillna("").astype(str)
+    norm = raw.map(strip_accents_norm)
+    mask = raw.str.contains(_DRAFT_ACCENTED_RE, na=False) | norm.str.contains(
+        _CANCELLED_STATUS_RE, na=False
+    )
+    if include_returns:
+        mask = mask | norm.str.contains(_RETURN_STATUS_RE, na=False)
+    return mask
 
 
 def find_df_col(
@@ -608,10 +626,10 @@ def _extract_active_lots(
                 {
                     "_doc_id": imp_hdr[h_doc].astype(str),
                     "_imp_dt": parse_mixed_excel_dates(imp_hdr[h_dt]),
-                    "_imp_st": imp_hdr[h_st].fillna("").astype(str) if h_st else "",
+                    "_inactive": inactive_status_mask(imp_hdr[h_st]) if h_st else False,
                 }
             )
-            h_df = h_df[~h_df["_imp_st"].str.contains(_INACTIVE_IMPORT_RE, na=False)]
+            h_df = h_df[~h_df["_inactive"].astype(bool)]
             h_df = h_df.drop_duplicates("_doc_id")
             lots = lots.merge(h_df[["_doc_id", "_imp_dt"]], on="_doc_id", how="inner")
             lots = lots[lots["_imp_dt"].isna() | (lots["_imp_dt"] <= cutoff_eod)].copy()
@@ -732,11 +750,11 @@ def _extract_active_lots(
                     {
                         "_ord_id": oh_df[oid].astype(str),
                         "_ord_dt": parse_mixed_excel_dates(oh_df[odt]),
-                        "_ord_st": oh_df[ost].fillna("").astype(str) if ost else "",
+                        "_inactive": inactive_status_mask(oh_df[ost]) if ost else False,
                     }
                 )
                 oh = oh[
-                    (~oh["_ord_st"].str.contains(_CANCELLED_ORDER_RE, na=False))
+                    (~oh["_inactive"].astype(bool))
                     & oh["_ord_dt"].notna()
                     & (oh["_ord_dt"] <= cutoff_eod)
                 ].drop_duplicates("_ord_id")

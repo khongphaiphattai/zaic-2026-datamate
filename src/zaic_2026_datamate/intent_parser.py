@@ -1117,6 +1117,15 @@ def resolve_query(
     if inv_type != "abstain":
         return inv_type, inv_val, inv_reason
 
+    # 3d. Monthly in-minus-out product ledger (nhập trừ bán)
+    from zaic_2026_datamate.in_out_ledger import resolve_in_minus_out_query
+
+    io_type, io_val, io_reason = resolve_in_minus_out_query(
+        question, context, as_of_date
+    )
+    if io_type != "abstain":
+        return io_type, io_val, io_reason
+
     # 4. Block inventory queries ("còn", "trong kho", "tồn kho", "cuối ngày")
     if bool(
         re.search(
