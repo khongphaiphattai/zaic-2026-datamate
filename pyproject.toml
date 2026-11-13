@@ -26,4 +26,22 @@ build-backend = "uv_build"
 [dependency-groups]
 dev = [
     "pytest>=9.1.1",
+    "ruff>=0.17.5",
 ]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+markers = [
+    "slow: heavy integration tests requiring local data/train dataset",
+]
+
+[tool.ruff]
+target-version = "py314"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "B", "PLE"]
+ignore = ["B905"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*.py" = ["E401", "E701", "E702", "E731"]
+"scripts/*.py" = ["E402", "E731"]

@@ -217,4 +217,4 @@ def resolve_mother_baby_query(
             if t_rev > 0:
                 return "percent", round(tai_tiem_rev / t_rev * 100, 2), None
 
-    return "abstain", None, "Không tìm thấy mẫu phù hợp cho câu hỏi dev_013"
+    return "abstain", None, "Không tìm thấy mẫu phù hợp cho câu hỏi cửa hàng mẹ và bé"

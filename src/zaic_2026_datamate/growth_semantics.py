@@ -13,7 +13,7 @@ from typing import Literal
 from zaic_2026_datamate.monthly_growth import (
     GrowthIntent,
     GrowthWindows,
-    _text,
+    norm_text,
     compile_growth_windows,
     monthly_growth_period,
 )
@@ -69,7 +69,7 @@ def certify_growth_question(
         if full_month is not None:
             intent = GrowthIntent("full_month", *full_month)
             comparison = "previous_full_month"
-        elif any(pattern.fullmatch(_text(question)) for pattern in _MTD):
+        elif any(pattern.fullmatch(norm_text(question)) for pattern in _MTD):
             intent = GrowthIntent("month_to_date", anchor.year, anchor.month)
             comparison = "previous_month_same_days"
         else:

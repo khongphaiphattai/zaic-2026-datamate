@@ -1,4 +1,3 @@
-import math
 import pytest
 from zaic_2026_datamate.evaluation import evaluate_match, valid_answer
 

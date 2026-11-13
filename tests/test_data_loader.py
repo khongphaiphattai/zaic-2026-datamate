@@ -53,6 +53,7 @@ def test_clean_dataframe():
     assert pd.api.types.is_datetime64_any_dtype(cleaned_df["thoi_gian"])
 
 
+@pytest.mark.slow
 def test_load_business_biz_128():
     train_dir = Path("data/train/train/data")
     if not train_dir.exists():
@@ -78,6 +79,7 @@ def test_load_business_biz_128():
     assert res == 89526400.0
 
 
+@pytest.mark.slow
 def test_load_business_biz_106_split():
     train_dir = Path("data/train/train/data")
     if not train_dir.exists():
@@ -91,6 +93,7 @@ def test_load_business_biz_106_split():
     assert len(ctx.tables["danh_sach_hoa_don_chi_tiet"]) == 126186
 
 
+@pytest.mark.slow
 def test_load_business_biz_123_sqlite():
     train_dir = Path("data/train/train/data")
     if not train_dir.exists():

@@ -108,12 +108,134 @@ def parse_contracts(tg_df: pd.DataFrame) -> list[dict[str, Any]]:
     return contracts
 
 
+def _quarter_to_months(quarter_str: str | None) -> list[str]:
+    """Expand 'YYYY-QN' string into its three 'YYYY-MM' month strings."""
+    if not quarter_str:
+        return []
+    m = re.match(r"^(\d{4})-Q([1-4])$", quarter_str)
+    if not m:
+        return []
+    year, q = int(m.group(1)), int(m.group(2))
+    start_m = (q - 1) * 3 + 1
+    return [f"{year:04d}-{mm:02d}" for mm in range(start_m, start_m + 3)]
+
+
+def unify_debt_and_installment_ledgers(
+    so_no_df: pd.DataFrame | None,
+    tra_gop_df: pd.DataFrame | None,
+    as_of_date: str | None = None,
+) -> pd.DataFrame:
+    """Combine general debt ledger (`so_no_so_no`) and installment ledger (`so_no_tra_gop`).
+
+    Returns normalized rows up to `as_of_date` with columns:
+    ['source', 'khach', 'khach_norm', 'orig_date', 'total_debt', 'paid_amount', 'remaining_debt'].
+    """
+    as_of = pd.to_datetime(as_of_date) if as_of_date else None
+    rows: list[dict[str, Any]] = []
+
+    if so_no_df is not None and not so_no_df.empty:
+        entries: list[dict[str, Any]] = []
+        curr: dict[str, Any] | None = None
+        for _, r in so_no_df.iterrows():
+            debt_amt = clean_vietnamese_currency(r.get("no"))
+            ngay_val = pd.to_datetime(r.get("ngay"), errors="coerce")
+            khach_val = str(r.get("khach") or "").strip()
+            if debt_amt is not None and debt_amt > 0 and khach_val and khach_val.lower() != "nan":
+                curr = {
+                    "source": "so_no",
+                    "khach": khach_val,
+                    "khach_norm": strip_accents(khach_val),
+                    "orig_date": ngay_val,
+                    "total_debt": float(debt_amt),
+                    "payments": [],
+                }
+                entries.append(curr)
+            paid_amt = clean_vietnamese_currency(r.get("da_tra"))
+            paid_date = pd.to_datetime(r.get("ngay_tra"), errors="coerce")
+            if curr is not None and paid_amt and paid_amt > 0:
+                if pd.isna(paid_date) or as_of is None or paid_date <= as_of:
+                    curr["payments"].append(float(paid_amt))
+
+        for entry in entries:
+            if as_of is not None and pd.notna(entry["orig_date"]) and entry["orig_date"] > as_of:
+                continue
+            paid = sum(entry["payments"])
+            rows.append(
+                {
+                    "source": "so_no",
+                    "khach": entry["khach"],
+                    "khach_norm": entry["khach_norm"],
+                    "orig_date": entry["orig_date"],
+                    "total_debt": entry["total_debt"],
+                    "paid_amount": paid,
+                    "remaining_debt": max(0.0, entry["total_debt"] - paid),
+                }
+            )
+
+    if tra_gop_df is not None and not tra_gop_df.empty:
+        for c in parse_contracts(tra_gop_df):
+            if as_of is not None and pd.notna(c["ngay"]) and c["ngay"] > as_of:
+                continue
+            total_c = float(c["so_ky"] * c["gop_thang"])
+            paid_c = sum(
+                p["da_gop"]
+                for p in c["payments"]
+                if as_of is None or pd.isna(p["ngay_gop"]) or p["ngay_gop"] <= as_of
+            )
+            rows.append(
+                {
+                    "source": "tra_gop",
+                    "khach": c["khach"],
+                    "khach_norm": strip_accents(c["khach"]),
+                    "orig_date": c["ngay"],
+                    "total_debt": total_c,
+                    "paid_amount": float(paid_c),
+                    "remaining_debt": max(0.0, total_c - float(paid_c)),
+                }
+            )
+
+    if not rows:
+        return pd.DataFrame(
+            columns=[
+                "source",
+                "khach",
+                "khach_norm",
+                "orig_date",
+                "total_debt",
+                "paid_amount",
+                "remaining_debt",
+            ]
+        )
+    return pd.DataFrame(rows)
+
+
+def _resolve_installment_as_of(
+    as_of_date: str | None,
+    context: BusinessContext,
+    *date_series: pd.Series | None,
+) -> pd.Timestamp:
+    """Resolve as_of cutoff from explicit anchor, loaded calendar, or max ledger date."""
+    if as_of_date:
+        return pd.to_datetime(as_of_date)
+    if context.calendar_df is not None and "date" in context.calendar_df.columns:
+        cal_dates = pd.to_datetime(context.calendar_df["date"], errors="coerce").dropna()
+        if not cal_dates.empty:
+            return cal_dates.max()
+    candidates = [
+        pd.to_datetime(s, errors="coerce").dropna().max()
+        for s in date_series
+        if s is not None
+    ]
+    valid = [d for d in candidates if pd.notna(d)]
+    return max(valid) if valid else pd.Timestamp.max
+
+
 def resolve_mobile_installment_query(
     question: str,
     context: BusinessContext,
     as_of_date: str | None = None,
 ) -> tuple[str, Any, str | None]:
-    """Resolve dev_014 questions using exact deterministic logic."""
+    """Resolve mobile retail & installment questions using deterministic schema logic."""
     if "so_ban_hang" not in context.tables:
         return "abstain", None, "Không tìm thấy bảng so_ban_hang"
 
@@ -239,9 +361,13 @@ def resolve_mobile_installment_query(
         k in t_norm
         for k in ["tra gop", "tien gop", "ky gop", "qua han gop", "cham gop"]
     ):
-        contracts = parse_contracts(context.tables["so_no_tra_gop"])
-        as_of = (
-            pd.to_datetime(as_of_date) if as_of_date else pd.to_datetime("2026-09-30")
+        tg_df = context.tables["so_no_tra_gop"]
+        contracts = parse_contracts(tg_df)
+        as_of = _resolve_installment_as_of(
+            as_of_date,
+            context,
+            tg_df.get("ngay_gop"),
+            tg_df.get("ngay"),
         )
 
         # C1. Single customer installments due count: 'khach X toi han may ky gop'
@@ -297,8 +423,11 @@ def resolve_mobile_installment_query(
         bh = context.tables["so_no_bao_hanh"].copy()
         bh["nhan_m"] = pd.to_datetime(bh["ngay_nhan"]).dt.strftime("%Y-%m")
         bh["mua_m"] = pd.to_datetime(bh["ngay_mua"]).dt.strftime("%Y-%m")
-        as_of_dt = (
-            pd.to_datetime(as_of_date) if as_of_date else pd.to_datetime("2026-09-30")
+        as_of_dt = _resolve_installment_as_of(
+            as_of_date,
+            context,
+            bh.get("ngay_nhan"),
+            bh.get("ngay_mua"),
         )
 
         # D1. Machines sold in month X and brought to warranty: 'may ban ra thang X ... mang lai bao hanh'
@@ -315,26 +444,14 @@ def resolve_mobile_installment_query(
             k in t_norm for k in ["nhieu luot", "nhiu luot", "cao nhat"]
         ):
             if p.quarter_str:
-                q_months = {
-                    "2025-Q3": ["2025-07", "2025-08", "2025-09"],
-                    "2025-Q4": ["2025-10", "2025-11", "2025-12"],
-                    "2026-Q1": ["2026-01", "2026-02", "2026-03"],
-                    "2026-Q2": ["2026-04", "2026-05", "2026-06"],
-                    "2026-Q3": ["2026-07", "2026-08", "2026-09"],
-                }.get(p.quarter_str, [])
+                q_months = _quarter_to_months(p.quarter_str)
                 sub = bh[bh["nhan_m"].isin(q_months)]
                 if not sub.empty:
                     return "string", sub["may"].value_counts().idxmax(), None
 
         # D3. Warranty ticket count in quarter / month
         if p.quarter_str:
-            q_months = {
-                "2025-Q3": ["2025-07", "2025-08", "2025-09"],
-                "2025-Q4": ["2025-10", "2025-11", "2025-12"],
-                "2026-Q1": ["2026-01", "2026-02", "2026-03"],
-                "2026-Q2": ["2026-04", "2026-05", "2026-06"],
-                "2026-Q3": ["2026-07", "2026-08", "2026-09"],
-            }.get(p.quarter_str, [])
+            q_months = _quarter_to_months(p.quarter_str)
             sub = bh[bh["nhan_m"].isin(q_months)]
             if any(k in t_norm for k in ["%", "phan tram"]):
                 if "so_ban_hang" in context.tables and "so_ban_hang_ghi_tat" in context.tables:
@@ -439,13 +556,7 @@ def resolve_mobile_installment_query(
                     & (sbh_clean["loai"].isin(["máy mới", "máy cũ"]))
                 ]
             elif p.quarter_str:
-                q_months = {
-                    "2025-Q3": ["2025-07", "2025-08", "2025-09"],
-                    "2025-Q4": ["2025-10", "2025-11", "2025-12"],
-                    "2026-Q1": ["2026-01", "2026-02", "2026-03"],
-                    "2026-Q2": ["2026-04", "2026-05", "2026-06"],
-                    "2026-Q3": ["2026-07", "2026-08", "2026-09"],
-                }.get(p.quarter_str, [])
+                q_months = _quarter_to_months(p.quarter_str)
                 sub = sbh_clean[
                     (sbh_clean["m"].isin(q_months))
                     & (sbh_clean["loai"].isin(["máy mới", "máy cũ"]))
@@ -471,18 +582,41 @@ def resolve_mobile_installment_query(
                     top_m = sub.groupby("canonical_name")["sl"].sum().idxmax()
                     return "string", top_m, None
 
-        # E7. Specific item unit count: 'iphone 13 th nay ban dc may chiec', 'op lung silicon iphone', 'xiaomi redmi note 14'
-        for kw, pat in [
-            ("iphone 13", "iPhone 13"),
-            ("op lung silicon iphone", "Ốp lưng silicon iPhone"),
-            ("xiaomi redmi note 14", "Xiaomi Redmi Note 14"),
-        ]:
-            if kw in t_norm:
-                if target_month:
+        # E7. Dynamic specific item unit count from canonical product list
+        if target_month and "canonical_name" in sbh_clean.columns:
+            canon_names = sorted(
+                sbh_clean["canonical_name"].dropna().astype(str).unique().tolist(),
+                key=len,
+                reverse=True,
+            )
+            matched_canon = next(
+                (cname for cname in canon_names if len(strip_accents(cname)) >= 4 and strip_accents(cname) in t_norm),
+                None,
+            )
+            if not matched_canon:
+                # Try stripped family name prefix (before capacity/color like iPhone 13)
+                families = sorted(
+                    {extract_dong_may(c) for c in canon_names if len(strip_accents(extract_dong_may(c))) >= 5},
+                    key=len,
+                    reverse=True,
+                )
+                fam = next(
+                    (f for f in families if re.search(rf"(?<!\w){re.escape(strip_accents(f))}(?!\w)", t_norm)),
+                    None,
+                )
+                if fam:
                     sub = sbh_clean[
                         (sbh_clean["m"] == target_month)
-                        & (sbh_clean["canonical_name"].str.contains(pat, case=False))
+                        & (sbh_clean["canonical_name"].str.contains(fam, case=False, regex=False))
                     ]
+                    if not sub.empty:
+                        return "number", int(sub["sl"].sum()), None
+            else:
+                sub = sbh_clean[
+                    (sbh_clean["m"] == target_month)
+                    & (sbh_clean["canonical_name"] == matched_canon)
+                ]
+                if not sub.empty:
                     return "number", int(sub["sl"].sum()), None
 
-    return "abstain", None, "Không tìm thấy mẫu phù hợp cho câu hỏi dev_014"
+    return "abstain", None, "Không tìm thấy mẫu phù hợp cho câu hỏi cửa hàng điện thoại"

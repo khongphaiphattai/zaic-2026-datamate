@@ -1,18 +1,17 @@
-"""Specialized Domain Extensions Engine for ZAIC 2026 DataMate.
+"""Specialized Schema-Driven Domain Extensions Engine for ZAIC 2026 DataMate.
 
-Handles deterministic, verified patterns for:
-1. Phone Retail Analytics (dev_011, dev_014):
-   - Trade-in phone deductions (thu_may_cu)
-   - Customer net payable (khach_tra)
-   - Total phones sold (all phones, used phones only, specific models)
-   - Warranty returns & trade-in percentage
-2. Logistics & Delivery (dev_004):
-   - Number of delivery trips / rounds (đợt giao hàng, luot_giao)
-3. Unsold Product Inventory (dev_004, dev_013):
-   - Number of unsold items in period (hàng ế, không bán được cái nào)
-4. Out-Of-Domain Gate 1 (dev_008, dev_006):
-   - Non-existent menu items (Đậu phụ rán giòn, Cháo ngao in dev_008)
-   - Non-database clinical advice (bà bầu dùng thuốc in dev_006)
+Handles deterministic, generalizable schema patterns across businesses:
+1. Schema-driven Out-of-Domain (OOD) Guard:
+   - Missing clinical/pregnancy columns
+   - Subjective queries without rating/evaluation columns
+   - Cancellation/return reason queries without reason tracking columns
+2. Logistics & Delivery rounds (`luot_giao` / `lan_giao`)
+3. Unsold product inventory vs catalog
+4. Phone retail schema analytics (`so_ban_hang` + `so_ban_hang_ghi_tat`)
+5. Warranty returns & trade-in ratio (`thu_may_cu`, `so_no_bao_hanh`)
+6. Supplier ranking from purchase ledgers (`nha_cung_cap`)
+7. Order count above dynamic monetary threshold
+8. Inventory ledger (`the_kho`) stockout counts at dynamic target dates
 """
 
 from __future__ import annotations
@@ -23,8 +22,47 @@ from typing import Any, Tuple
 
 import pandas as pd
 
+from zaic_2026_datamate.cleaner import clean_vietnamese_currency
 from zaic_2026_datamate.data_loader import BusinessContext
-from zaic_2026_datamate.intent_parser import parse_time_expressions
+from zaic_2026_datamate.intent_parser import (
+    get_valid_sales_status_clause,
+    parse_time_expressions,
+)
+
+_REASON_COL_KEYWORDS = (
+    "ly_do",
+    "nguyen_nhan",
+    "reason",
+)
+_REASON_VALUE_TOKENS = (
+    "giao tre",
+    "cham giao",
+    "goi nham",
+    "nham mon",
+    "mon bi loi",
+)
+_NOTE_COL_CANDIDATES = (
+    "ghi_chu",
+    "note",
+    "trang_thai",
+    "tinh_trang",
+    "xu_ly",
+    "trang_thai_xu_ly",
+    "trang_thai_don",
+)
+_CLINICAL_COL_TOKENS = (
+    "chong_chi_dinh",
+    "thai_ky",
+    "ba_bau",
+    "mang_thai",
+    "chi_dinh",
+)
+_RATING_COL_TOKENS = (
+    "danh_gia",
+    "rating",
+    "review",
+    "xep_hang",
+)
 
 
 def strip_accents(s: str) -> str:
@@ -68,428 +106,543 @@ def extract_explicit_month(text: str, as_of_date: str | None = None) -> str | No
     return None
 
 
-def resolve_domain_extensions(
-    question: str,
-    context: BusinessContext,
-    as_of_date: str | None = None,
-) -> Tuple[str, Any, str | None] | None:
-    """Attempt to resolve query with high-precision domain rules.
+def _extract_explicit_iso_date(text: str) -> str | None:
+    """Extract an explicit dd/mm/yyyy or dd-mm-yyyy date into ISO YYYY-MM-DD."""
+    m = re.search(r"\b(\d{1,2})[/-](\d{1,2})[/-](\d{4})\b", text)
+    if not m:
+        return None
+    day, month, year = int(m.group(1)), int(m.group(2)), int(m.group(3))
+    if 1 <= month <= 12 and 1 <= day <= 31 and 1990 <= year <= 2100:
+        return f"{year:04d}-{month:02d}-{day:02d}"
+    return None
 
-    Returns (type, answer, reason) or None if not handled.
-    """
-    q_norm = strip_accents(question).replace("–", "-").replace("—", "-")
 
-    # =========================================================================
-    # 1. OUT-OF-DOMAIN GATE 1 (type: "unanswerable")
-    # =========================================================================
-    # dev_008: Non-existent menu items
-    if any(k in q_norm for k in ["dau phu ran gion", "chao ngao"]):
-        return (
-            "unanswerable",
-            None,
-            "Mặt hàng không tồn tại trong thực đơn của nhà hàng",
-        )
+def _extract_money_threshold(q_norm: str) -> float | None:
+    """Parse a minimum order threshold in VND (e.g. 'tu 760.000', 'tu 500k', '>= 1tr')."""
+    pattern = re.compile(
+        r"(?:\btu\b|>=|\btoi thieu\b|\blon hon(?: hoac bang)?\b|\bdat tu\b)\s*"
+        r"(\d+(?:[.,]\d+)?)\s*(?:(tr|trieu|k|nghin|ngan|dong|d)\b)?",
+        re.IGNORECASE,
+    )
+    m = pattern.search(q_norm)
+    if not m:
+        return None
+    raw_num, unit = m.group(1), (m.group(2) or "").lower()
+    # Ignore percentage expressions like "tu 50%"
+    after = q_norm[m.end() :].lstrip()
+    if after.startswith("%") or after.startswith("phan tram"):
+        return None
 
-    # dev_006: Medical / Pregnancy advice (no clinical table in store database)
-    if "ba bau dung" in q_norm or "phu nu mang thai" in q_norm:
-        return (
-            "unanswerable",
-            None,
-            "Cơ sở dữ liệu nhà thuốc không chứa thông tin tư vấn y khoa/chống chỉ định cho bà bầu",
-        )
-
-    # Subjective queries without factual metrics (ngon nhất, chất lượng tốt nhất, trung thực nhất, khó tính nhất)
-    if any(
-        k in q_norm
-        for k in [
-            "chat luong tot nhat",
-            "chat luong cao nhat",
-            "trung thuc nhat",
-            "ngon nhat",
-            "ngon nhut",
-            "kho tinh nhat",
-            "kho tinh nhut",
-        ]
+    if unit in ("tr", "trieu"):
+        val = float(raw_num.replace(",", ".")) * 1_000_000.0
+    elif unit in ("k", "nghin", "ngan"):
+        val = float(raw_num.replace(",", ".")) * 1_000.0
+    elif re.match(r"^\d{1,3}(?:\.\d{3})+$", raw_num) or re.match(
+        r"^\d{1,3}(?:,\d{3})+$", raw_num
     ):
+        val = float(raw_num.replace(".", "").replace(",", ""))
+    else:
+        val = float(raw_num.replace(",", "."))
+
+    # Require realistic currency magnitude (>= 10,000 VND) to avoid years/counts
+    return val if val >= 10_000.0 else None
+
+
+def _quarter_to_bounds(quarter_str: str) -> tuple[str, str] | None:
+    """Convert 'YYYY-QN' string to inclusive (start_date, end_date) bounds."""
+    m = re.match(r"^(\d{4})-Q([1-4])$", quarter_str)
+    if not m:
+        return None
+    year, q = int(m.group(1)), int(m.group(2))
+    bounds = {
+        1: (f"{year}-01-01", f"{year}-03-31"),
+        2: (f"{year}-04-01", f"{year}-06-30"),
+        3: (f"{year}-07-01", f"{year}-09-30"),
+        4: (f"{year}-10-01", f"{year}-12-31"),
+    }
+    return bounds[q]
+
+
+def _has_reason_tracking(context: BusinessContext) -> bool:
+    """Return True if any non-alias table tracks cancellation/return reasons."""
+    for tname, df in context.tables.items():
+        if tname.endswith("_sheet1"):
+            continue
+        cols_lower = [c.lower() for c in df.columns]
+        if any(any(tok in col for tok in _REASON_COL_KEYWORDS) for col in cols_lower):
+            return True
+        for col in df.columns:
+            if any(cand in col.lower() for cand in _NOTE_COL_CANDIDATES):
+                vals = df[col].dropna().astype(str).head(200)
+                if any(
+                    any(tok in strip_accents(v) for tok in _REASON_VALUE_TOKENS)
+                    for v in vals
+                ):
+                    return True
+    return False
+
+
+def _has_clinical_columns(context: BusinessContext) -> bool:
+    """Return True if any table exposes clinical/pregnancy guidance columns."""
+    for tname, df in context.tables.items():
+        if tname.endswith("_sheet1"):
+            continue
+        for col in df.columns:
+            if any(tok in col.lower() for tok in _CLINICAL_COL_TOKENS):
+                return True
+    return False
+
+
+def _has_rating_columns(context: BusinessContext) -> bool:
+    """Return True if any table exposes subjective quality/rating columns."""
+    for tname, df in context.tables.items():
+        if tname.endswith("_sheet1"):
+            continue
+        for col in df.columns:
+            if any(tok in col.lower() for tok in _RATING_COL_TOKENS):
+                return True
+    return False
+
+
+def _check_schema_ood(
+    q_norm: str, context: BusinessContext
+) -> Tuple[str, Any, str | None] | None:
+    """Gate 1 schema checks for unanswerable questions without business_id hardcodes."""
+    if ("ba bau dung" in q_norm or "phu nu mang thai" in q_norm) and not _has_clinical_columns(context):
+        return (
+            "unanswerable",
+            None,
+            "Cơ sở dữ liệu không chứa thông tin tư vấn y khoa/chống chỉ định cho bà bầu",
+        )
+
+    subjective_phrases = (
+        "chat luong tot nhat",
+        "chat luong cao nhat",
+        "trung thuc nhat",
+        "ngon nhat",
+        "ngon nhut",
+        "kho tinh nhat",
+        "kho tinh nhut",
+    )
+    if any(k in q_norm for k in subjective_phrases) and not _has_rating_columns(context):
         return (
             "unanswerable",
             None,
             "Doanh nghiệp không có tiêu chí định lượng đo lường cảm tính theo Rulebook Mục 7",
         )
 
-    # Cancellation & return reasons for businesses without reason tracking (dev_003, dev_004, dev_008)
-    if any(k in q_norm for k in ["vi giao tre", "do giao tre", "giao tre", "cham giao"]):
-        if context.business_id in ("dev_004", "biz_117", "biz_118"):
-            return (
-                "unanswerable",
+    asks_delay = any(k in q_norm for k in ("vi giao tre", "do giao tre", "giao tre", "cham giao"))
+    asks_wrong_dish = any(k in q_norm for k in ("goi nham mon", "goi nham", "mon bi loi"))
+    asks_reason_why = any(
+        k in q_norm for k in ("chu yeu vi sao", "ly do chu yeu", "vi sao z")
+    ) and any(k in q_norm for k in ("huy don", "tra don", "tra mon"))
+
+    if (asks_delay or asks_wrong_dish or asks_reason_why) and not _has_reason_tracking(context):
+        return (
+            "unanswerable",
+            None,
+            "Doanh nghiệp không ghi nhận lý do huỷ/trả đơn hàng cụ thể theo Rulebook Mục 7",
+        )
+    return None
+
+
+def _resolve_delivery_rounds(
+    q_norm: str, question: str, context: BusinessContext, as_of_date: str | None
+) -> Tuple[str, Any, str | None] | None:
+    """Count distinct order-delivery rounds across delivery tables."""
+    triggers = (
+        "dot giao hang",
+        "luot giao hang",
+        "chuyen giao hang",
+        "may dot giao",
+        "giao hang tong cong may dot",
+    )
+    if not any(k in q_norm for k in triggers):
+        return None
+    t_month = extract_explicit_month(question, as_of_date)
+    if not t_month:
+        return None
+
+    for tname, tbl in context.tables.items():
+        if "giao_hang" not in tname or tname.endswith("_sheet1"):
+            continue
+        date_c = next(
+            (c for c in ("thoi_gian_giao", "ngay_giao_hang", "ngay_cho", "ngay_giao") if c in tbl.columns),
+            None,
+        )
+        order_c = next(
+            (c for c in ("so_don", "ma_don_hang", "ma_bill", "ma_don") if c in tbl.columns),
+            None,
+        )
+        round_c = next(
+            (c for c in ("luot_giao", "lan_giao", "so_luot", "dot") if c in tbl.columns),
+            None,
+        )
+        if date_c and order_c and round_c:
+            sql = f"""
+                SELECT count(distinct concat({order_c}, '_', cast({round_c} as varchar)))
+                FROM {tname}
+                WHERE cast({date_c} as varchar) LIKE '{t_month}%'
+            """
+            try:
+                res = context.query(sql)
+                if not res.empty and pd.notna(res.iloc[0, 0]):
+                    return "number", int(res.iloc[0, 0]), None
+            except Exception:
+                pass
+    return None
+
+
+def _resolve_unsold_items(
+    q_norm: str, question: str, context: BusinessContext, as_of_date: str | None
+) -> Tuple[str, Any, str | None] | None:
+    """Count catalog products with zero sales inside the requested period."""
+    triggers = (
+        "mat hang e",
+        "hang e",
+        "khong ban duoc cai nao",
+        "hok ban ra dc cai nao",
+        "khong ai mua cai nao",
+        "khong ban dc cai nao",
+    )
+    if not any(k in q_norm for k in triggers):
+        return None
+
+    cat_table = cat_col = None
+    for tname, df in context.tables.items():
+        if tname.endswith("_sheet1"):
+            continue
+        if any(k in tname for k in ("danh_muc", "danh_sach_hang", "hang_hoa", "san_pham")):
+            cat_col = next(
+                (col for col in ("ten_hang", "ten_hang_hoa", "ten_san_pham", "hang") if col in df.columns),
                 None,
-                "Doanh nghiệp không ghi nhận lý do huỷ đơn hàng cụ thể theo Rulebook Mục 7",
             )
-
-    if any(k in q_norm for k in ["goi nham mon", "goi nham", "mon bi loi"]):
-        if context.business_id in ("dev_003", "dev_008", "biz_115", "biz_116"):
-            return (
-                "unanswerable",
-                None,
-                "Doanh nghiệp không ghi nhận lý do trả món theo Rulebook Mục 7",
-            )
-
-    if any(k in q_norm for k in ["chu yeu vi sao", "ly do chu yeu", "vi sao z"]):
-        if any(k in q_norm for k in ["huy don", "tra don", "tra mon"]):
-            if context.business_id in ("dev_003", "dev_004", "dev_008"):
-                return (
-                    "unanswerable",
-                    None,
-                    "Doanh nghiệp không ghi nhận lý do huỷ/trả đơn theo Rulebook Mục 7",
-                )
-
-    # =========================================================================
-    # 2. LOGISTICS: ĐỢT GIAO HÀNG (dev_004)
-    # =========================================================================
-    if any(
-        k in q_norm
-        for k in [
-            "dot giao hang",
-            "luot giao hang",
-            "chuyen giao hang",
-            "may dot giao",
-            "giao hang tong cong may dot",
-        ]
-    ):
-        for tname in context.tables.keys():
-            if "giao_hang" in tname and not tname.endswith("_sheet1"):
-                tbl = context.tables[tname]
-                date_c = next(
-                    (
-                        c
-                        for c in [
-                            "thoi_gian_giao",
-                            "ngay_giao_hang",
-                            "ngay_cho",
-                            "ngay_giao",
-                        ]
-                        if c in tbl.columns
-                    ),
-                    None,
-                )
-                order_c = next(
-                    (
-                        c
-                        for c in ["so_don", "ma_don_hang", "ma_bill", "ma_don"]
-                        if c in tbl.columns
-                    ),
-                    None,
-                )
-                round_c = next(
-                    (
-                        c
-                        for c in ["luot_giao", "lan_giao", "so_luot", "dot"]
-                        if c in tbl.columns
-                    ),
-                    None,
-                )
-                if date_c and order_c and round_c:
-                    t_month = extract_explicit_month(question, as_of_date)
-                    if t_month:
-                        sql = f"""
-                            SELECT count(distinct concat({order_c}, '_', cast({round_c} as varchar)))
-                            FROM {tname}
-                            WHERE cast({date_c} as varchar) LIKE '{t_month}%'
-                        """
-                        try:
-                            res = context.query(sql)
-                            if not res.empty:
-                                val = int(res.iloc[0, 0])
-                                return "number", val, None
-                        except Exception:
-                            pass
-
-    # =========================================================================
-    # 3. UNSOLD ITEMS / HÀNG Ế (dev_004, dev_013, etc.)
-    # =========================================================================
-    if any(
-        k in q_norm
-        for k in [
-            "mat hang e",
-            "hang e",
-            "khong ban duoc cai nao",
-            "hok ban ra dc cai nao",
-            "khong ai mua cai nao",
-            "khong ban dc cai nao",
-        ]
-    ):
-        # Look for catalog table
-        cat_table = None
-        cat_col = None
-        for tname, df in context.tables.items():
-            if tname.endswith("_sheet1"):
-                continue
-            if any(
-                k in tname for k in ["danh_muc", "danh_sach_hang", "hang_hoa", "san_pham"]
-            ):
-                for col in ["ten_hang", "ten_hang_hoa", "ten_san_pham", "hang"]:
-                    if col in df.columns:
-                        cat_table = tname
-                        cat_col = col
-                        break
-            if cat_table:
+            if cat_col:
+                cat_table = tname
                 break
 
-        # Look for sales table
-        sales_table = None
-        sales_col = None
-        sales_date_col = None
-        for tname, df in context.tables.items():
-            if tname.endswith("_sheet1"):
-                continue
-            if any(k in tname for k in ["so_ban_hang", "ban_hang", "chi_tiet_ban_hang"]):
-                for col in ["ten_hang", "ten_hang_hoa", "ten_san_pham", "mat_hang", "hang_ban", "hang"]:
-                    if col in df.columns:
-                        sales_table = tname
-                        sales_col = col
-                        break
-                for dcol in ["thoi_gian", "ngay", "ngay_lap", "ngay_ban"]:
-                    if dcol in df.columns:
-                        sales_date_col = dcol
-                        break
-            if sales_table and sales_date_col:
+    sales_table = sales_col = sales_date_col = None
+    for tname, df in context.tables.items():
+        if tname.endswith("_sheet1"):
+            continue
+        if any(k in tname for k in ("so_ban_hang", "ban_hang", "chi_tiet_ban_hang")):
+            sales_col = next(
+                (col for col in ("ten_hang", "ten_hang_hoa", "ten_san_pham", "mat_hang", "hang_ban", "hang") if col in df.columns),
+                None,
+            )
+            sales_date_col = next(
+                (dcol for dcol in ("thoi_gian", "ngay", "ngay_lap", "ngay_ban") if dcol in df.columns),
+                None,
+            )
+            if sales_col and sales_date_col:
+                sales_table = tname
                 break
 
-        if cat_table and cat_col and sales_table and sales_col and sales_date_col:
-            period = parse_time_expressions(question, as_of_date)
-            if period.start_date and period.end_date:
-                sql = f"""
-                    WITH catalog AS (
-                        SELECT DISTINCT {cat_col} AS item FROM {cat_table} WHERE {cat_col} IS NOT NULL
-                    ),
-                    sold AS (
-                        SELECT DISTINCT {sales_col} AS item FROM {sales_table}
-                        WHERE {sales_date_col} >= '{period.start_date}' AND {sales_date_col} <= '{period.end_date}'
-                          AND {sales_col} IS NOT NULL
-                    )
-                    SELECT count(*) FROM catalog WHERE item NOT IN (SELECT item FROM sold)
-                """
-                try:
-                    res = context.query(sql)
-                    if not res.empty:
-                        return "number", int(res.iloc[0, 0]), None
-                except Exception:
-                    pass
+    if not (cat_table and cat_col and sales_table and sales_col and sales_date_col):
+        return None
 
-    # =========================================================================
-    # 4. PHONE STORE ANALYTICS (dev_011 & dev_014)
-    # =========================================================================
-    has_so_ban_hang = "so_ban_hang" in context.tables
-    has_ghi_tat = "so_ban_hang_ghi_tat" in context.tables
-    if has_so_ban_hang and has_ghi_tat:
-        sbh_name = "so_ban_hang"
-        gt_name = "so_ban_hang_ghi_tat"
-        sbh_cols = context.tables[sbh_name].columns
+    period = parse_time_expressions(question, as_of_date)
+    if not (period.start_date and period.end_date):
+        return None
 
-        # Target Month / Date
-        t_month = extract_explicit_month(question, as_of_date)
+    sql = f"""
+        WITH catalog AS (
+            SELECT DISTINCT {cat_col} AS item FROM {cat_table} WHERE {cat_col} IS NOT NULL
+        ),
+        sold AS (
+            SELECT DISTINCT {sales_col} AS item FROM {sales_table}
+            WHERE {sales_date_col} >= '{period.start_date}' AND {sales_date_col} <= '{period.end_date}'
+              AND {sales_col} IS NOT NULL
+        )
+        SELECT count(*) FROM catalog WHERE item NOT IN (SELECT item FROM sold)
+    """
+    try:
+        res = context.query(sql)
+        if not res.empty and pd.notna(res.iloc[0, 0]):
+            return "number", int(res.iloc[0, 0]), None
+    except Exception:
+        pass
+    return None
 
-        # 4.1. Trade-in phone value (thu_may_cu)
-        if "thu_may_cu" in sbh_cols and any(
-            k in q_norm for k in ["thu may cu", "thu mua may cu", "tien thu may cu"]
-        ):
-            if t_month:
-                sql = f"""
-                    SELECT sum(TRY_CAST(thu_may_cu AS DOUBLE))
-                    FROM {sbh_name}
-                    WHERE cast(ngay as varchar) LIKE '{t_month}%'
-                """
-                try:
-                    res = context.query(sql)
-                    if not res.empty and pd.notna(res.iloc[0, 0]):
-                        return "number", int(round(float(res.iloc[0, 0]))), None
-                except Exception:
-                    pass
 
-        # 4.2. Customer net payment (khach_tra / khach phai tra) - dev_011 only (dev_014 has order-level grouping)
-        if (
-            context.business_id == "dev_011"
-            and "khach_tra" in sbh_cols
-            and not any(
-                k in q_norm
-                for k in [
-                    "tra gop",
-                    "may khach",
-                    "bao nhieu khach",
-                    "bn khach",
-                    "nguoi",
-                    "trung binh",
-                    "binh quan",
-                    "moi may",
-                ]
+def _compute_order_khach_tra(df: pd.DataFrame, t_month: str) -> int | None:
+    """Compute monthly net customer payments across orders, deduplicating multi-line receipts."""
+    if "ngay" not in df.columns or "khach_tra" not in df.columns:
+        return None
+    sub = df[df["ngay"].astype(str).str.startswith(t_month)].copy()
+    if sub.empty:
+        return None
+    sub["_kt"] = sub["khach_tra"].map(clean_vietnamese_currency)
+    sub = sub[sub["_kt"].notna()]
+    if sub.empty:
+        return None
+    if "stt" in sub.columns and sub["stt"].notna().all():
+        order_sums = sub.groupby(["ngay", "stt"], dropna=False)["_kt"].max()
+        return int(round(float(order_sums.sum())))
+    return int(round(float(sub["_kt"].sum())))
+
+
+def _resolve_phone_store_analytics(
+    q_norm: str, question: str, context: BusinessContext, as_of_date: str | None
+) -> Tuple[str, Any, str | None] | None:
+    """Schema-driven phone store analytics for `so_ban_hang` + `so_ban_hang_ghi_tat`."""
+    if "so_ban_hang" not in context.tables or "so_ban_hang_ghi_tat" not in context.tables:
+        return None
+
+    sbh_name = "so_ban_hang"
+    gt_name = "so_ban_hang_ghi_tat"
+    sbh_df = context.tables[sbh_name]
+    sbh_cols = sbh_df.columns
+    t_month = extract_explicit_month(question, as_of_date)
+
+    # 1. Trade-in deduction value (thu_may_cu)
+    if (
+        "thu_may_cu" in sbh_cols
+        and t_month
+        and any(k in q_norm for k in ("thu may cu", "thu mua may cu", "tien thu may cu"))
+    ):
+        sql = f"""
+            SELECT sum(TRY_CAST(thu_may_cu AS DOUBLE))
+            FROM {sbh_name}
+            WHERE cast(ngay as varchar) LIKE '{t_month}%'
+        """
+        try:
+            res = context.query(sql)
+            if not res.empty and pd.notna(res.iloc[0, 0]):
+                return "number", int(round(float(res.iloc[0, 0]))), None
+        except Exception:
+            pass
+
+    # 2. Customer net payment (khach_tra) — general schema logic with order deduplication
+    if (
+        "khach_tra" in sbh_cols
+        and t_month
+        and not any(
+            k in q_norm
+            for k in ("tra gop", "may khach", "bao nhieu khach", "bn khach", "nguoi", "trung binh", "binh quan", "moi may")
+        )
+        and any(
+            k in q_norm
+            for k in (
+                "khach phai tra",
+                "khach phai tra het",
+                "tien khach phai tra",
+                "khach tra tong",
+                "tong tien khach tra",
+                "khach tra bn",
+                "khach tra bao nhieu",
             )
-            and any(
+        )
+    ):
+        val = _compute_order_khach_tra(sbh_df, t_month)
+        if val is not None:
+            return "number", val, None
+
+    # 3. Peak sales day in month (must precede Store Total so "bữa nào ... nhiều tiền nhứt" never falls into sum)
+    if (
+        "thanh_tien" in sbh_cols
+        and "ngay" in sbh_cols
+        and t_month
+        and (
+            any(
                 k in q_norm
-                for k in [
-                    "khach phai tra",
-                    "khach phai tra het",
-                    "tien khach phai tra",
-                    "khach tra tong",
-                    "tong tien khach tra",
-                    "khach tra bn",
-                    "khach tra bao nhieu",
-                ]
+                for k in (
+                    "bua nao tiem ban duoc nhieu tien",
+                    "ngay nao ban duoc nhieu tien nhut",
+                    "ngay nao dthu cao nhat",
+                )
             )
-        ):
-            if t_month:
-                sql = f"""
-                    SELECT sum(TRY_CAST(khach_tra AS DOUBLE))
-                    FROM {sbh_name}
-                    WHERE cast(ngay as varchar) LIKE '{t_month}%'
-                """
-                try:
-                    res = context.query(sql)
-                    if not res.empty and pd.notna(res.iloc[0, 0]):
-                        return "number", int(round(float(res.iloc[0, 0]))), None
-                except Exception:
-                    pass
+            or bool(
+                re.search(
+                    r"\b(?:bua|ngay|hom)\s+(?:nao|mo)\b.*?\b(?:ban|dthu|doanh\s+thu)\b.*?\b(?:cao|nhieu\s+tien)\s+(?:nhat|nhut)\b",
+                    q_norm,
+                )
+            )
+        )
+    ):
+        sql = f"""
+            SELECT cast(ngay as varchar)
+            FROM {sbh_name}
+            WHERE cast(ngay as varchar) LIKE '{t_month}%'
+            GROUP BY ngay
+            ORDER BY sum(TRY_CAST(thanh_tien AS DOUBLE)) DESC
+            LIMIT 1
+        """
+        try:
+            res = context.query(sql)
+            if not res.empty and pd.notna(res.iloc[0, 0]):
+                return "date", str(res.iloc[0, 0])[:10], None
+        except Exception:
+            pass
 
-        # 4.3. Store revenue 07/2025
-        if context.business_id == "dev_011" and "thanh_tien" in sbh_cols and any(
+    # 4. Store total revenue from `thanh_tien` when asked cleanly (guard against product-scoped & peak queries)
+    if (
+        "thanh_tien" in sbh_cols
+        and "ngay" in sbh_cols
+        and t_month
+        and not any(
             k in q_norm
-            for k in [
-                "tiem ban th7/2025 duoc tong cong",
-                "tong cong bao nhieu tien nhi",
-                "duoc tong cong bao nhieu tien",
-            ]
-        ):
-            if t_month:
-                sql = f"""
-                    SELECT sum(TRY_CAST(thanh_tien AS DOUBLE))
-                    FROM {sbh_name}
-                    WHERE cast(ngay as varchar) LIKE '{t_month}%'
-                """
-                try:
-                    res = context.query(sql)
-                    if not res.empty and pd.notna(res.iloc[0, 0]):
-                        return "number", int(round(float(res.iloc[0, 0]))), None
-                except Exception:
-                    pass
+            for k in (
+                "tra gop",
+                "thu may cu",
+                "khach tra",
+                "khach phai tra",
+                "bao hanh",
+                "trung binh",
+                "binh quan",
+                "%",
+                "phan tram",
+                "bua nao",
+                "ngay nao",
+                "hom nao",
+                "mon nao",
+                "san pham nao",
+                "nhut",
+                "cao nhat",
+                "nhieu nhat",
+            )
+        )
+        and bool(
+            re.search(
+                r"\b(?:tiem\s+ban\s+(?:duoc|dc)|duoc\s+tong\s+cong|tong\s+cong\s+bao\s+nhieu\s+tien|tong\s+doanh\s+thu)\b",
+                q_norm,
+            )
+        )
+        and any(k in q_norm for k in ("tien", "doanh thu", "dthu"))
+    ):
+        sql = f"""
+            SELECT sum(TRY_CAST(thanh_tien AS DOUBLE))
+            FROM {sbh_name}
+            WHERE cast(ngay as varchar) LIKE '{t_month}%'
+        """
+        try:
+            res = context.query(sql)
+            if not res.empty and pd.notna(res.iloc[0, 0]):
+                return "number", int(round(float(res.iloc[0, 0]))), None
+        except Exception:
+            pass
 
-        # 4.4. Peak sales day in month
-        if any(
-            k in q_norm
-            for k in [
-                "bua nao tiem ban duoc nhieu tien",
-                "ngay nao ban duoc nhieu tien nhut",
-                "ngay nao dthu cao nhat",
-            ]
-        ):
-            if t_month:
-                sql = f"""
-                    SELECT cast(ngay as varchar)
-                    FROM {sbh_name}
-                    WHERE cast(ngay as varchar) LIKE '{t_month}%'
-                    GROUP BY ngay
-                    ORDER BY sum(TRY_CAST(thanh_tien AS DOUBLE)) DESC
-                    LIMIT 1
-                """
-                try:
-                    res = context.query(sql)
-                    if not res.empty and pd.notna(res.iloc[0, 0]):
-                        return "date", str(res.iloc[0, 0])[:10], None
-                except Exception:
-                    pass
+    # 5. Used phone sales count
+    if (
+        t_month
+        and any(k in q_norm for k in ("dien thoai cu", "may cu"))
+        and any(k in q_norm for k in ("may may", "may chiec", "bao nhieu"))
+        and not any(k in q_norm for k in ("gop ca may moi", "ca may moi", "khong ke phu kien", "%", "phan tram"))
+    ):
+        sql = f"""
+            SELECT sum(TRY_CAST(b.sl AS BIGINT))
+            FROM {sbh_name} b
+            JOIN {gt_name} g ON b.hang = g.ghi_tat
+            WHERE g.loai = 'máy cũ'
+              AND cast(b.ngay as varchar) LIKE '{t_month}%'
+        """
+        try:
+            res = context.query(sql)
+            if not res.empty and pd.notna(res.iloc[0, 0]):
+                return "number", int(res.iloc[0, 0]), None
+        except Exception:
+            pass
 
-        # 4.5. Used phone sales count (may cu)
-        if any(
-            k in q_norm
-            for k in [
-                "dien thoai cu",
-                "may cu",
-            ]
-        ) and any(k in q_norm for k in ["may may", "may chiec", "bao nhieu"]):
-            if not any(k in q_norm for k in ["gop ca may moi", "ca may moi", "khong ke phu kien", "%", "phan tram"]):
-                if t_month:
-                    sql = f"""
-                        SELECT sum(TRY_CAST(b.sl AS BIGINT))
-                        FROM {sbh_name} b
-                        JOIN {gt_name} g ON b.hang = g.ghi_tat
-                        WHERE g.loai = 'máy cũ'
-                          AND cast(b.ngay as varchar) LIKE '{t_month}%'
-                    """
-                    try:
-                        res = context.query(sql)
-                        if not res.empty and pd.notna(res.iloc[0, 0]):
-                            return "number", int(res.iloc[0, 0]), None
-                    except Exception:
-                        pass
+    # 6. All phones sold (excluding accessories)
+    if t_month and any(
+        k in q_norm
+        for k in (
+            "khong ke phu kien",
+            "gop ca may moi voi may cu",
+            "ca may moi lan may cu",
+            "bao nhieu chiec dien thoai",
+        )
+    ):
+        sql = f"""
+            SELECT sum(TRY_CAST(b.sl AS BIGINT))
+            FROM {sbh_name} b
+            JOIN {gt_name} g ON b.hang = g.ghi_tat
+            WHERE g.loai IN ('máy mới', 'máy cũ')
+              AND cast(b.ngay as varchar) LIKE '{t_month}%'
+        """
+        try:
+            res = context.query(sql)
+            if not res.empty and pd.notna(res.iloc[0, 0]):
+                return "number", int(res.iloc[0, 0]), None
+        except Exception:
+            pass
 
-        # 4.6. All phones sold (khong ke phu kien / ca may moi lan may cu)
-        if any(
-            k in q_norm
-            for k in [
-                "khong ke phu kien",
-                "gop ca may moi voi may cu",
-                "ca may moi lan may cu",
-                "bao nhieu chiec dien thoai",
-            ]
-        ):
-            if t_month:
-                sql = f"""
-                    SELECT sum(TRY_CAST(b.sl AS BIGINT))
-                    FROM {sbh_name} b
-                    JOIN {gt_name} g ON b.hang = g.ghi_tat
-                    WHERE g.loai IN ('máy mới', 'máy cũ')
-                      AND cast(b.ngay as varchar) LIKE '{t_month}%'
-                """
-                try:
-                    res = context.query(sql)
-                    if not res.empty and pd.notna(res.iloc[0, 0]):
-                        return "number", int(res.iloc[0, 0]), None
-                except Exception:
-                    pass
+    # 7. Dynamic specific product lookup from `so_ban_hang_ghi_tat.ten_hang`
+    qty_triggers = (
+        "may cai",
+        "may chiec",
+        "bnhiu chiec",
+        "bao nhieu chiec",
+        "ban duoc bao nhieu",
+        "may may",
+        "bnhiu may",
+        "bao nhieu may",
+        "bao nhiu may",
+        "bn may",
+    )
+    if t_month and "ten_hang" in context.tables[gt_name].columns and any(k in q_norm for k in qty_triggers):
+        names = (
+            context.tables[gt_name]["ten_hang"]
+            .dropna()
+            .astype(str)
+            .unique()
+            .tolist()
+        )
+        matched_raw_names: list[str] = []
+        # Pass 1: exact normalized product name match (longest first)
+        full_candidates = sorted(
+            ((strip_accents(name), name) for name in names if len(strip_accents(name)) >= 4),
+            key=lambda x: len(x[0]),
+            reverse=True,
+        )
+        for name_norm, raw_name in full_candidates:
+            if name_norm in q_norm:
+                matched_raw_names = [raw_name]
+                break
 
-        # 4.7. Specific phone models
-        models_map = [
-            ("iphone 16 pro max", "%16 Pro Max%"),
-            ("xiaomi redmi note 14", "%Redmi Note 14%"),
-            ("samsung galaxy a56", "%A56%"),
-            ("the nho microsd 64gb", "%MicroSD 64GB%"),
-        ]
-        for trigger, pat in models_map:
-            if trigger in q_norm and any(
-                k in q_norm
-                for k in [
-                    "may cai",
-                    "may chiec",
-                    "bnhiu chiec",
-                    "bao nhieu chiec",
-                    "ban duoc bao nhieu",
-                    "may may",
-                    "bnhiu may",
-                    "bao nhieu may",
-                    "bao nhiu may",
-                    "bn may",
-                ]
-            ):
-                if t_month:
-                    sql = f"""
-                        SELECT sum(TRY_CAST(b.sl AS BIGINT))
-                        FROM {sbh_name} b
-                        JOIN {gt_name} g ON b.hang = g.ghi_tat
-                        WHERE g.ten_hang LIKE '{pat}'
-                          AND cast(b.ngay as varchar) LIKE '{t_month}%'
-                    """
-                    try:
-                        res = context.query(sql)
-                        if not res.empty and pd.notna(res.iloc[0, 0]):
-                            return "number", int(res.iloc[0, 0]), None
-                    except Exception:
-                        pass
+        # Pass 2: base-model family match after stripping capacity/color/condition suffixes
+        if not matched_raw_names:
+            family_map: dict[str, list[str]] = {}
+            for raw_name in names:
+                base = strip_accents(raw_name)
+                base = re.sub(
+                    r"\s+(?:5g|4g|\d+gb|cu(?:\s*\d+%?)?|titan(?:\s+\w+)*|trang|den|xam|xanh(?:\s+(?:la|duong))?|tim|hong|vang|bac)\b",
+                    "",
+                    base,
+                )
+                base = re.sub(r"\s+", " ", base).strip()
+                if len(base) >= 4:
+                    family_map.setdefault(base, []).append(raw_name)
+            for base_norm in sorted(family_map, key=len, reverse=True):
+                if re.search(rf"(?<!\w){re.escape(base_norm)}(?!\w)", q_norm):
+                    matched_raw_names = family_map[base_norm]
+                    break
 
-    # =========================================================================
-    # 5. DEV_014 TRADE-IN & WARRANTY SPECIALS
-    # =========================================================================
+        if matched_raw_names:
+            in_list = ", ".join("'" + n.replace("'", "''") + "'" for n in matched_raw_names)
+            sql = f"""
+                SELECT sum(TRY_CAST(b.sl AS BIGINT))
+                FROM {sbh_name} b
+                JOIN {gt_name} g ON b.hang = g.ghi_tat
+                WHERE g.ten_hang IN ({in_list})
+                  AND cast(b.ngay as varchar) LIKE '{t_month}%'
+            """
+            try:
+                res = context.query(sql)
+                if not res.empty and pd.notna(res.iloc[0, 0]):
+                    return "number", int(res.iloc[0, 0]), None
+            except Exception:
+                pass
+    return None
+
+
+def _resolve_warranty_and_tradein(
+    q_norm: str, question: str, context: BusinessContext, as_of_date: str | None
+) -> Tuple[str, Any, str | None] | None:
+    """Resolve trade-in order share and quarterly/monthly warranty statistics."""
     if "thu_may_cu" in context.tables and "so_ban_hang" in context.tables:
-        # % don co thu may cu 4-2026
-        if any(k in q_norm for k in ["thu lai may cu", "thu may cu"]) and any(
-            k in q_norm for k in ["%", "phan tram", "chiem may"]
+        if any(k in q_norm for k in ("thu lai may cu", "thu may cu")) and any(
+            k in q_norm for k in ("%", "phan tram", "chiem may")
         ):
             t_month = extract_explicit_month(question, as_of_date)
             if t_month:
@@ -501,7 +654,7 @@ def resolve_domain_extensions(
                         SELECT count(distinct tru_vao_stt_so_ban) as c FROM thu_may_cu
                         WHERE cast(ngay as varchar) LIKE '{t_month}%' AND tru_vao_stt_so_ban IS NOT NULL
                     )
-                    SELECT thu.c * 100.0 / tot.c FROM thu, tot
+                    SELECT thu.c * 100.0 / NULLIF(tot.c, 0) FROM thu, tot
                 """
                 try:
                     res = context.query(sql)
@@ -511,43 +664,32 @@ def resolve_domain_extensions(
                     pass
 
     if "so_no_bao_hanh" in context.tables and "so_ban_hang" in context.tables:
-        # Luot bao hanh / so may ban ra % trong Quy
-        if "bao hanh" in q_norm and any(k in q_norm for k in ["%", "phan tram", "chiem bnhiu"]):
-            if "quy 3/2026" in q_norm or ("quy 3" in q_norm and "2026" in q_norm):
-                return "percent", 13.08, None
+        if "bao hanh" in q_norm and any(k in q_norm for k in ("%", "phan tram", "chiem bnhiu")):
             period = parse_time_expressions(question, as_of_date)
-            if period.quarter_str:
-                q_months = {
-                    "2025-Q3": ("2025-07-01", "2025-09-30"),
-                    "2025-Q4": ("2025-10-01", "2025-12-31"),
-                    "2026-Q1": ("2026-01-01", "2026-03-31"),
-                    "2026-Q2": ("2026-04-01", "2026-06-30"),
-                    "2026-Q3": ("2026-07-01", "2026-09-30"),
-                }.get(period.quarter_str)
-                if q_months:
-                    sql = f"""
-                        WITH bh AS (
-                            SELECT count(*) as c FROM so_no_bao_hanh
-                            WHERE ngay_nhan >= '{q_months[0]}' AND ngay_nhan <= '{q_months[1]}'
-                        ),
-                        phones AS (
-                            SELECT sum(TRY_CAST(b.sl AS BIGINT)) as c
-                            FROM so_ban_hang b
-                            JOIN so_ban_hang_ghi_tat g ON b.hang = g.ghi_tat
-                            WHERE g.loai IN ('máy mới', 'máy cũ')
-                              AND b.ngay >= '{q_months[0]}' AND b.ngay <= '{q_months[1]}'
-                        )
-                        SELECT bh.c * 100.0 / phones.c FROM bh, phones
-                    """
-                    try:
-                        res = context.query(sql)
-                        if not res.empty and pd.notna(res.iloc[0, 0]):
-                            return "percent", round(float(res.iloc[0, 0]), 2), None
-                    except Exception:
-                        pass
+            q_bounds = _quarter_to_bounds(period.quarter_str) if period.quarter_str else None
+            if q_bounds and "so_ban_hang_ghi_tat" in context.tables:
+                sql = f"""
+                    WITH bh AS (
+                        SELECT count(*) as c FROM so_no_bao_hanh
+                        WHERE ngay_nhan >= '{q_bounds[0]}' AND ngay_nhan <= '{q_bounds[1]}'
+                    ),
+                    phones AS (
+                        SELECT sum(TRY_CAST(b.sl AS BIGINT)) as c
+                        FROM so_ban_hang b
+                        JOIN so_ban_hang_ghi_tat g ON b.hang = g.ghi_tat
+                        WHERE g.loai IN ('máy mới', 'máy cũ')
+                          AND b.ngay >= '{q_bounds[0]}' AND b.ngay <= '{q_bounds[1]}'
+                    )
+                    SELECT bh.c * 100.0 / NULLIF(phones.c, 0) FROM bh, phones
+                """
+                try:
+                    res = context.query(sql)
+                    if not res.empty and pd.notna(res.iloc[0, 0]):
+                        return "percent", round(float(res.iloc[0, 0]), 2), None
+                except Exception:
+                    pass
 
-        # Distinct machines sold in month X brought to warranty up to as_of
-        if any(k in q_norm for k in ["may ban ra", "may ban thang", "ban thang"]) and "bao hanh" in q_norm:
+        if any(k in q_norm for k in ("may ban ra", "may ban thang", "ban thang")) and "bao hanh" in q_norm:
             t_month = extract_explicit_month(question, as_of_date)
             if t_month and as_of_date:
                 sql = f"""
@@ -562,508 +704,578 @@ def resolve_domain_extensions(
                         return "number", int(res.iloc[0, 0]), None
                 except Exception:
                     pass
+    return None
 
-    # =========================================================================
-    # 6. TOP SUPPLIER (dev_003) & SPECIAL METRICS
-    # =========================================================================
-    if context.business_id == "dev_003":
-        # Top supplier: nha cung cap chinh
-        if any(k in q_norm for k in ["nha cung cap chinh", "nha cung cap lon nhat"]):
-            t_month = extract_explicit_month(question, as_of_date)
-            if t_month and "so_tay_nhap_hang" in context.tables:
-                sql = f"""
-                    SELECT nha_cung_cap, sum(TRY_CAST(thanh_tien AS DOUBLE)) as tot
-                    FROM so_tay_nhap_hang
-                    WHERE cast(ngay_nhap as varchar) LIKE '{t_month}%'
-                    GROUP BY nha_cung_cap
-                    ORDER BY tot DESC
-                    LIMIT 1
-                """
-                try:
-                    res = context.duckdb_conn.execute(sql).fetchone()
-                    if res and res[0]:
-                        return "string", str(res[0]), None
-                except Exception:
-                    pass
 
-    # Mother and baby (dev_013): orders >= threshold
-    if context.business_id == "dev_013":
-        if any(k in q_norm for k in ["760.000", "760000", "760k"]):
-            t_month = extract_explicit_month(question, as_of_date)
-            if t_month and "ban_hang" in context.tables:
-                sql = f"""
-                    SELECT count(distinct hd)
-                    FROM (
-                        SELECT hd, sum(TRY_CAST(tt AS DOUBLE)) as total_order
-                        FROM ban_hang
-                        WHERE cast(ngay as varchar) LIKE '{t_month}%'
-                        GROUP BY hd
-                        HAVING sum(TRY_CAST(tt AS DOUBLE)) >= 760000
-                    )
-                """
-                try:
-                    res = context.duckdb_conn.execute(sql).fetchone()
-                    if res and res[0] is not None:
-                        return "number", int(res[0]), None
-                except Exception:
-                    pass
+def _resolve_top_supplier(
+    q_norm: str, question: str, context: BusinessContext, as_of_date: str | None
+) -> Tuple[str, Any, str | None] | None:
+    """Rank top supplier by import spend from any purchase table with `nha_cung_cap`."""
+    if not any(k in q_norm for k in ("nha cung cap chinh", "nha cung cap lon nhat")):
+        return None
+    t_month = extract_explicit_month(question, as_of_date)
+    if not t_month:
+        return None
 
-    # =========================================================================
-    # 7. PHARMACY INVENTORY & EXCELLENCE (dev_006)
-    # =========================================================================
-    if context.business_id == "dev_006":
-        # Out of stock / đứt hàng / cháy hàng
-        if any(k in q_norm for k in ["chay hang", "dut hang"]):
-            if "the_kho" in context.tables:
-                sql = """
-                    WITH ranked AS (
-                        SELECT ma_hang_hoa, ton_cuoi,
-                               ROW_NUMBER() OVER (PARTITION BY ma_hang_hoa ORDER BY ngay_gio_phat_sinh DESC, ma_giao_dich_kho DESC) as rn
-                        FROM the_kho
-                        WHERE ngay_gio_phat_sinh <= '2026-08-08 23:59:59'
-                    )
-                    SELECT count(CASE WHEN ton_cuoi = 0 THEN 1 END) FROM ranked WHERE rn = 1
-                """
-                try:
-                    res = context.duckdb_conn.execute(sql).fetchone()
-                    if res and res[0] is not None:
-                        return "number", int(res[0]), None
-                except Exception:
-                    pass
+    for tname, df in context.tables.items():
+        if tname.endswith("_sheet1") or "nha_cung_cap" not in df.columns:
+            continue
+        amt_col = next(
+            (c for c in ("thanh_tien", "tong_tien_phieu", "tong_tien", "tri_gia") if c in df.columns),
+            None,
+        )
+        date_col = next(
+            (c for c in ("ngay_nhap", "ngay", "thoi_gian", "ngay_lap") if c in df.columns),
+            None,
+        )
+        if not (amt_col and date_col):
+            continue
+        sql = f"""
+            SELECT nha_cung_cap, sum(TRY_CAST({amt_col} AS DOUBLE)) as tot
+            FROM {tname}
+            WHERE cast({date_col} as varchar) LIKE '{t_month}%'
+              AND nha_cung_cap IS NOT NULL
+            GROUP BY nha_cung_cap
+            ORDER BY tot DESC
+            LIMIT 1
+        """
+        try:
+            row = context.duckdb_conn.execute(sql).fetchone()
+            if row and row[0]:
+                return "string", str(row[0]), None
+        except Exception:
+            pass
+    return None
 
-        if "het hang" in q_norm and "01/06/2025" in q_norm:
-            if "the_kho" in context.tables:
-                sql = """
-                    WITH ranked AS (
-                        SELECT ma_hang_hoa, ton_cuoi,
-                               ROW_NUMBER() OVER (PARTITION BY ma_hang_hoa ORDER BY ngay_gio_phat_sinh DESC, ma_giao_dich_kho DESC) as rn
-                        FROM the_kho
-                        WHERE ngay_gio_phat_sinh <= '2025-06-01 23:59:59'
-                    )
-                    SELECT count(CASE WHEN ton_cuoi = 0 THEN 1 END) FROM ranked WHERE rn = 1
-                """
-                try:
-                    res = context.duckdb_conn.execute(sql).fetchone()
-                    if res and res[0] is not None:
-                        return "number", int(res[0]), None
-                except Exception:
-                    pass
 
-        # Expiry lot queries
-        if "berocca" in q_norm and any(k in q_norm for k in ["can date", "gan het han", "lo gan"]):
-            return "date", "2028-01-16", None
-        if "augmentin" in q_norm and any(k in q_norm for k in ["can date", "gan het han", "lo gan"]):
-            return "date", "2027-01-17", None
-        if "oresol" in q_norm and any(k in q_norm for k in ["can date", "gan het han", "lo gan"]):
-            return "date", "2026-12-02", None
+def _resolve_orders_above_threshold(
+    q_norm: str, question: str, context: BusinessContext, as_of_date: str | None
+) -> Tuple[str, Any, str | None] | None:
+    """Count distinct orders meeting a dynamic minimum VND threshold in a target month."""
+    if not any(k in q_norm for k in ("bao nhieu don", "may don", "so don", "bn don")):
+        return None
+    threshold = _extract_money_threshold(q_norm)
+    t_month = extract_explicit_month(question, as_of_date)
+    if threshold is None or not t_month:
+        return None
 
-        # Lots expiring in 120 days
-        if "120 ngay" in q_norm and any(k in q_norm for k in ["bn lo", "bao nhieu lo"]):
-            return "number", 13, None
-        if any(k in q_norm for k in ["06/12/2026", "120 ngay"]) and any(k in q_norm for k in ["tien von", "dong bnhiu", "dong bao nhieu"]):
-            return "number", 7836100, None
-        if "180 ngay" in q_norm and any(k in q_norm for k in ["tien von", "dong bnhiu", "ton bao nhieu"]):
-            return "number", 12858200, None
-        if "08/08/2026" in q_norm and any(k in q_norm for k in ["ton trong kho", "gia von la bao nhieu"]):
-            return "number", 101446900, None
+    preferred_tables = [
+        t for t in context.tables if not t.endswith("_sheet1") and not re.search(r"_(?:202[4-9]|[0-9]+)$", t)
+    ]
+    for tname in preferred_tables:
+        df = context.tables[tname]
+        if not any(k in tname for k in ("ban_hang", "don_hang", "chi_tiet")):
+            continue
+        ord_col = next(
+            (c for c in ("hd", "ma_don_hang", "ma_hoa_don", "ma_bill", "ma_don", "so_ct") if c in df.columns),
+            None,
+        )
+        amt_col = next(
+            (c for c in ("tt", "thanh_tien", "tong_tien", "tri_gia", "amount") if c in df.columns),
+            None,
+        )
+        date_col = next(
+            (c for c in ("ngay", "ngay_dat_hang", "ngay_lap", "ngay_ban", "thoi_gian") if c in df.columns),
+            None,
+        )
+        status_col = next(
+            (
+                c
+                for c in (
+                    "trang_thai",
+                    "trang_thai_don_hang",
+                    "tinh_trang",
+                    "tinh_trang_don",
+                    "xu_ly",
+                    "ket_qua",
+                )
+                if c in df.columns
+            ),
+            None,
+        )
+        if not (ord_col and amt_col and date_col):
+            continue
+        status_clause = get_valid_sales_status_clause(
+            status_col, order_col=ord_col, table=tname
+        )
+        sql = f"""
+            SELECT count(*)
+            FROM (
+                SELECT {ord_col}
+                FROM {tname}
+                WHERE cast({date_col} as varchar) LIKE '{t_month}%'
+                  AND {ord_col} IS NOT NULL
+                  {status_clause}
+                GROUP BY {ord_col}
+                HAVING sum(TRY_CAST({amt_col} AS DOUBLE)) >= {threshold}
+            )
+        """
+        try:
+            row = context.duckdb_conn.execute(sql).fetchone()
+            if row and row[0] is not None:
+                return "number", int(row[0]), None
+        except Exception:
+            pass
+    return None
 
-        # Product quantities and imports
-        if "zyrtec" in q_norm and ("7/2026" in q_norm or "07/2026" in q_norm):
-            return "number", 167, None
-        if "panadol 500mg" in q_norm and ("5-2025" in q_norm or "05/2025" in q_norm):
-            return "number", 950, None
-        if "tiffy dey" in q_norm and ("6 nam 2025" in q_norm or "06/2025" in q_norm):
-            return "number", 1500, None
-        if "vitamin c 500mg" in q_norm and ("9 nam 2025" in q_norm or "09/2025" in q_norm):
-            return "number", 20, None
-        if "biosubtyl" in q_norm and ("11/2025" in q_norm or "t11/2025" in q_norm):
-            return "number", 37, None
-        if "hagifen" in q_norm and ("9/2025" in q_norm or "09/2025" in q_norm):
-            return "number", 26, None
-        if any(k in q_norm for k in ["cat hang", "tien nhap hang"]) and ("6/2025" in q_norm or "06/2025" in q_norm):
-            return "number", 182107800, None
-        if "loratadin" in q_norm and ("11/25" in q_norm or "11/2025" in q_norm):
-            return "number", 2036700, None
-        if "tuan truoc" in q_norm and any(k in q_norm for k in ["trung bih", "trung binh"]) and "don" in q_norm:
-            return "number", 110660, None
 
-        # Customer debt counts
-        if "13/12/2025" in q_norm and any(k in q_norm for k in ["bao nhieu khach", "khach no chua tra"]):
-            return "number", 20, None
-        if "16/11/2025" in q_norm and any(k in q_norm for k in ["khach con thieu tien", "bao nhieu nguoi", "thieu tien"]):
-            return "number", 16, None
-        if "16/06/2025" in q_norm and any(k in q_norm for k in ["khach thieu tien", "khach no", "con bnhiu"]):
-            return "number", 19, None
+def _resolve_the_kho_stockouts(
+    q_norm: str, question: str, context: BusinessContext, as_of_date: str | None
+) -> Tuple[str, Any, str | None] | None:
+    """Count out-of-stock SKUs (`ton_cuoi == 0`) from `the_kho` ledger as of target date."""
+    if "the_kho" not in context.tables:
+        return None
+    if not any(k in q_norm for k in ("chay hang", "dut hang", "het hang")):
+        return None
+    cols = set(context.tables["the_kho"].columns)
+    if not {"ma_hang_hoa", "ton_cuoi", "ngay_gio_phat_sinh"} <= cols:
+        return None
 
-        # Aging buckets
-        if "17/12/2025" in q_norm and "tuoi no" in q_norm:
-            return "list", [2506050, 250200, 1954218], None
-        if "10/10/2025" in q_norm and any(k in q_norm for k in ["qua 7 ngay", "hon 7 ngay"]):
-            return "number", 587068, None
-        if "28/12/2025" in q_norm and any(k in q_norm for k in ["qua 7 ngay", "hon 7 ngay"]):
-            return "number", 2078600, None
+    target_date = _extract_explicit_iso_date(question) or as_of_date
+    if not target_date:
+        return None
 
-        # Customer debt additions and repayments
-        if "le son trung" in q_norm and any(k in q_norm for k in ["t7/2026", "7/2026"]):
-            return "list", [8000, 4000], None
-        if "vuong chi ha" in q_norm and any(k in q_norm for k in ["11/2025", "11-2025"]):
-            return "list", [700, 233], None
-        if "diep hong hong" in q_norm and any(k in q_norm for k in ["t3/2026", "3/2026"]):
-            return "list", [16000, 16000], None
+    order_expr = (
+        "ngay_gio_phat_sinh DESC, ma_giao_dich_kho DESC"
+        if "ma_giao_dich_kho" in cols
+        else "ngay_gio_phat_sinh DESC"
+    )
+    sql = f"""
+        WITH ranked AS (
+            SELECT ma_hang_hoa, ton_cuoi,
+                   ROW_NUMBER() OVER (PARTITION BY ma_hang_hoa ORDER BY {order_expr}) as rn
+            FROM the_kho
+            WHERE ngay_gio_phat_sinh <= '{target_date} 23:59:59'
+        )
+        SELECT count(CASE WHEN TRY_CAST(ton_cuoi AS DOUBLE) = 0 THEN 1 END)
+        FROM ranked
+        WHERE rn = 1
+    """
+    try:
+        row = context.duckdb_conn.execute(sql).fetchone()
+        if row and row[0] is not None:
+            return "number", int(row[0]), None
+    except Exception:
+        pass
+    return None
 
-        # Debt collection in month
-        if ("11 nam 2025" in q_norm or "11/2025" in q_norm or "thang 11" in q_norm) and any(k in q_norm for k in ["doi duoc", "mua chiu"]):
-            return "number", 2294053, None
-        if any(k in q_norm for k in ["9/2025", "thang 9"]) and any(k in q_norm for k in ["ban thieu", "mua thieu", "tra no cho cac don"]):
-            return "number", 3140750, None
 
-        # Expiring stock in warehouse
-        if "90 ngay" in q_norm and any(k in q_norm for k in ["lo ton", "het han", "cung han"]):
-            return "list", [
-                "Băng cá nhân Urgo Transparent hộp 100 miếng",
-                "Cao Sao Vàng TW3 hộp 3g",
-                "Fugacar 500mg hộp 1 viên",
-                "Kudos Vitamin C 1000mg viên sủi tuýp 20 viên",
-                "Nhiệt kế điện tử Microlife MT500",
-                "Nước muối sinh lý Natri clorid 0,9% Vĩnh Phúc chai 500ml",
-                "Panadol Extra hộp 15 vỉ x 12 viên",
-                "Prednisolon 5mg Boston chai 500 viên",
-                "Siro ăn ngon Ích Nhi Plus chai 100ml",
-                "Tiffy Dey hộp 25 vỉ x 4 viên",
-            ], None
-        if "08/08/2026" in q_norm and "05/01/2027" in q_norm:
-            return "list", [
-                "Băng cá nhân Urgo Transparent hộp 100 miếng",
-                "Calcium Corbière Extra 10ml hộp 30 ống",
-                "Cao Sao Vàng TW3 hộp 3g",
-                "Enervon hộp 10 vỉ x 10 viên",
-                "Fugacar 500mg hộp 1 viên",
-                "Hagifen 400mg DHG hộp 10 vỉ x 10 viên",
-                "Kudos Vitamin C 1000mg viên sủi tuýp 20 viên",
-                "Metformin Stella 500mg hộp 6 vỉ x 10 viên",
-                "Nhiệt kế điện tử Microlife MT500",
-                "Nước muối sinh lý Natri clorid 0,9% Vĩnh Phúc chai 500ml",
-                "Oresol 245 DHG hộp 20 gói",
-                "Panadol Extra hộp 15 vỉ x 12 viên",
-                "Prednisolon 5mg Boston chai 500 viên",
-                "Siro ăn ngon Ích Nhi Plus chai 100ml",
-                "Tiffy Dey hộp 25 vỉ x 4 viên",
-                "V.Rohto Vitamin nhỏ mắt lọ 13ml",
-                "Zyrtec 10mg hộp 1 vỉ x 10 viên",
-            ], None
+def _is_inventory_stock_query(q_norm: str) -> bool:
+    """Detect current/closing inventory stock queries cleanly without catching debt or sales-count queries."""
+    if any(
+        k in q_norm
+        for k in (
+            "chay hang",
+            "dut hang",
+            "het hang",
+            "lo ton",
+            "het han",
+            "qua han",
+            "sap het han",
+            "gia von",
+            "nha cung cap",
+            "ncc",
+            "bao hanh",
+            "tra gop",
+            "phai thu",
+            "phai tra",
+            "du no",
+            "cong no",
+            "con no",
+            "khach no",
+            "no cua hang",
+            "tien no",
+            "doanh thu",
+            "bao nhieu don",
+            "may don",
+        )
+    ):
+        return False
+    explicit_stock = bool(
+        re.search(
+            r"\b(?:ton\s+kho|trong\s+kho|ton\s+cuoi|hang\s+ton|con\s+ton|hop\s+chan|vien\s+le|cai\s+le|goi\s+le|vi\s+le|chai\s+le)\b",
+            q_norm,
+        )
+    ) or bool(re.search(r"\bkho\b.*\bton\b|\bton\b.*\bkho\b", q_norm))
+    remaining_stock = bool(
+        re.search(r"\bcon\s+(?:lai\s+|ton\s+)?(?:may|bao\s+nhieu|bnhiu|bn)\b", q_norm)
+    ) and any(k in q_norm for k in ("cuoi ngay", "het hom nay", "kho", "trong kho", "ton"))
+    return explicit_stock or remaining_stock
 
-        # Product gross profit rankings
-        if any(k in q_norm for k in ["2/2026", "th2/2026"]) and "lai gop" in q_norm and any(k in q_norm for k in ["hang mo", "sp nao", "mat hang"]):
-            return "string", "Costar Omega 3 1000mg lọ 100 viên", None
-        if any(k in q_norm for k in ["th7/2025", "7/2025"]) and "lai gop" in q_norm and any(k in q_norm for k in ["sp nao", "mat hang"]):
-            return "string", "Costar Omega 3 1000mg lọ 100 viên", None
-        if any(k in q_norm for k in ["t5/2026", "5/2026"]) and "lai gop" in q_norm and any(k in q_norm for k in ["sp nao", "mat hang"]):
-            return "string", "Blackmores Bio C 1000mg hộp 31 viên", None
 
-        # Store gross profit
-        if any(k in q_norm for k in ["2/2026", "thang 2/2026"]) and "loi nhuan gop" in q_norm:
-            return "number", 64685759, None
-        if any(k in q_norm for k in ["6/25", "6/2025"]) and "lai gop" in q_norm:
-            return "number", 62935239, None
-        if any(k in q_norm for k in ["11/25", "11/2025"]) and "lai gop" in q_norm:
-            return "number", 76310035, None
+def _collect_inventory_candidates(context: BusinessContext) -> list[tuple[str, str, str]]:
+    """Collect (product_name_lower, table, column) candidates across catalog and inventory tables."""
+    from zaic_2026_datamate.intent_parser import get_all_product_names
 
-        # Price change Acyclovir
-        if "acyclovir" in q_norm and "18.000" in q_norm:
-            return "percent", -51.76, None
+    candidates = list(get_all_product_names(context))
+    seen = {c[0] for c in candidates}
+    extra_cols = {"product", "ten_hang", "hang_hoa", "ten_san_pham", "ten_sp"}
+    for tname, df in context.tables.items():
+        if tname == "calendar" or tname.endswith("_sheet1") or "khach" in tname:
+            continue
+        for col in df.columns:
+            cl = col.lower()
+            if cl in extra_cols or (cl == "ten_goi" and "san_pham" in tname):
+                for val in df[col].dropna().unique():
+                    s_l = str(val).strip().lower()
+                    if len(s_l) >= 3 and s_l not in seen:
+                        seen.add(s_l)
+                        candidates.append((s_l, tname, col))
+    return candidates
 
-        # Sales rankings & quantities
-        if any(k in q_norm for k in ["th11/2025", "11/2025"]) and "top 3 sp ban chay nhat" in q_norm:
-            return "list", [
-                "Băng cá nhân Urgo Transparent hộp 100 miếng",
-                "Tiffy Dey hộp 25 vỉ x 4 viên",
-                "Khẩu trang y tế 4 lớp Khánh An hộp 50 cái",
-            ], None
-        if "2025-07-20" == as_of_date and "tuan nay" in q_norm and "ban chay nhat" in q_norm:
-            return "list", [
-                "Prednisolon 5mg Boston chai 500 viên",
-                "Băng cá nhân Urgo Transparent hộp 100 miếng",
-                "Panadol 500mg hộp 10 vỉ x 12 viên",
-                "Panadol Extra hộp 15 vỉ x 12 viên",
-                "Biosubtyl-II hộp 25 gói",
-            ], None
-        if "2025-09-23" == as_of_date and "tuan roi" in q_norm and "mua nhieu tien nhat" in q_norm:
-            return "list", ["Lưu Bảo Long", "Triệu Thảo Hùng", "Lý Hà Trung"], None
-        if "2026-06-25" == as_of_date and "tuan nay" in q_norm and "bao nhieu goi" in q_norm:
-            return "number", 333, None
 
-    # =========================================================================
-    # 8. SPECIALIZED BUSINESS METRICS (dev_003, dev_008, dev_010, dev_014)
-    # =========================================================================
-    if context.business_id == "dev_003":
-        if "nhom banh" in q_norm and ("2/2026" in q_norm or "02/2026" in q_norm):
-            return "string", "Bánh tiramisu", None
-        if "croissant" in q_norm and ("3/2026" in q_norm or "03/2026" in q_norm):
-            return "number", 23, None
-        if "tiramisu" in q_norm and ("10/2025" in q_norm or "t10/2025" in q_norm):
-            return "number", -34, None
+def _lookup_sku_for_product(
+    context: BusinessContext, product_name: str, norm_fn: Any
+) -> str | None:
+    """Resolve SKU/item ID for a matched product name across catalog tables."""
+    target_norm = norm_fn(product_name)
+    for tname, df in context.tables.items():
+        if tname.endswith("_sheet1") or not any(
+            k in tname for k in ("san_pham", "hang_hoa", "hang_h_a")
+        ):
+            continue
+        cols = {c.lower(): c for c in df.columns}
+        code_c = next(
+            (cols[k] for k in ("ma_sku", "ma_hang_hoa", "ma_san_pham_ban", "ma_hang", "ma_sp", "id_sp") if k in cols),
+            None,
+        )
+        name_c = next(
+            (cols[k] for k in ("ten_san_pham", "ten_goi", "ten_hang_hoa", "ten_hang", "ten_sp", "hang_hoa", "product") if k in cols),
+            None,
+        )
+        if not (code_c and name_c):
+            continue
+        for _, row in df.iterrows():
+            if norm_fn(row[name_c]) == target_norm:
+                code_val = str(row[code_c]).strip()
+                if code_val:
+                    return code_val
+    return None
 
-        # Customer debt counts
-        if "15/05/2026" in q_norm and any(k in q_norm for k in ["chua tra het no", "con no"]):
-            return "number", 38, None
-        if "16/07/2025" in q_norm and "con no" in q_norm:
-            return "number", 19, None
-        if "02/07/2025" in q_norm and "con cong no" in q_norm:
-            return "number", 31, None
 
-        # Debt aging buckets
-        if "06/07/2025" in q_norm and "tuoi no" in q_norm:
-            return "list", [382834, 387167, 357338], None
-        if "17/06/2026" in q_norm and "tuoi no" in q_norm:
-            return "list", [325500, 295834, 277502], None
-        if "05/04/2026" in q_norm and "tuoi no" in q_norm:
-            return "list", [449900, 448500, 437072], None
+def _extract_inventory_split_units(
+    q_norm: str,
+    product_name: str,
+    factors: dict[str, float],
+    norm_fn: Any,
+    alnum_fn: Any,
+) -> tuple[str | None, str | None]:
+    """Extract explicit `(major_unit, minor_unit)` pair from an inventory split question."""
+    if not factors:
+        return None, None
+    q_clean = alnum_fn(q_norm)
+    p_clean = alnum_fn(norm_fn(product_name))
+    if p_clean and p_clean in q_clean:
+        q_clean = q_clean.replace(p_clean, " ")
+    q_clean = re.sub(
+        r"\b(?:hop|thung)\s+\d+\s*(?:vi|goi|ong|tuyp|lon|chai)\s*[x*]\s*\d+\s*(?:vien|goi|ong|lon|chai)\b",
+        " ",
+        q_clean,
+    )
+    q_clean = re.sub(r"\s+", " ", q_clean).strip()
+    unit_choices = sorted([u for u in factors if u], key=len, reverse=True)
+    if not unit_choices:
+        return None, None
 
-        # Debt > 7 days
-        if "22/04/2026" in q_norm and any(k in q_norm for k in ["qua 7 ngay", "hon 7 ngay"]):
-            return "number", 1134302, None
-        if "11/07/2026" in q_norm and any(k in q_norm for k in ["hon 7 ngay", "qua 7 ngay"]):
-            return "number", 1196905, None
-        if ("9/6/2025" in q_norm or "09/06/2025" in q_norm) and any(k in q_norm for k in ["hon 7 ngay", "qua 7 ngay"]):
-            return "number", 704836, None
+    u_pat = "|".join(re.escape(u) for u in unit_choices)
+    minor_u: str | None = None
+    major_u: str | None = None
+    m_min = re.search(rf"\b({u_pat})\s+le\b", q_clean) or re.search(
+        rf"\ble\s+(?:bao\s+nhieu|may|bn|bnhiu)?\s*({u_pat})\b", q_clean
+    )
+    if m_min:
+        minor_u = m_min.group(1)
+    m_maj = re.search(rf"\b({u_pat})\s+(?:chan|nguyen)\b", q_clean)
+    if m_maj:
+        major_u = m_maj.group(1)
+    elif minor_u:
+        minor_f_tmp = factors.get(minor_u, 1.0)
+        for cand_u in re.findall(
+            rf"\b(?:bao\s+nhieu|may|bn|bnhiu|con|duoc)\s+({u_pat})\b", q_clean
+        ):
+            if cand_u != minor_u and factors.get(cand_u, 0.0) > minor_f_tmp:
+                major_u = cand_u
+                break
+    return major_u, minor_u
 
-        # Customer debt additions and repayments
-        if "luu son hang" in q_norm and ("10 nam 2025" in q_norm or "10/2025" in q_norm):
-            return "list", [14000, 31000], None
-        if "ha duy trung" in q_norm and ("9/2025" in q_norm or "09/2025" in q_norm):
-            return "list", [36000, 12000], None
 
-        # Monthly debt collected
-        if any(k in q_norm for k in ["7/2025", "thang 7"]) and any(k in q_norm for k in ["mua thieu", "mua chiu"]):
-            return "number", 1944503, None
-        if ("th nay" in q_norm or "thang nay" in q_norm) and "tra no cho quan" in q_norm:
-            return "number", 1368009, None
-        if ("06/2026" in q_norm or "6/2026" in q_norm) and "mua chiu" in q_norm:
-            return "number", 3100314, None
+def _format_inventory_answer(
+    rem_qty: float,
+    q_norm: str,
+    context: BusinessContext,
+    product_name: str,
+    product_code: str | None,
+) -> Tuple[str, Any, str | None] | None:
+    """Format scalar or [boxes, pieces] stock quantity cleanly."""
+    import math
 
-        # Top K debt customers (table)
-        if "12/05/2026" in q_norm and "top 5" in q_norm and "cong no" in q_norm:
-            return "table", {
-                "columns": ["khach_hang", "so_tien_no"],
-                "rows": [
-                    ["Mai Loan Đạt", 157000],
-                    ["Chung Loan Hiếu", 138000],
-                    ["Tống Giang Ngọc", 135000],
-                    ["Lâm Hiếu Nam", 119000],
-                    ["Tô Linh Hồng", 100000],
-                ],
-            }, None
-        if "12/06/2026" in q_norm and "top 3" in q_norm and "cong no" in q_norm:
-            return "table", {
-                "columns": ["khach_hang", "so_tien_no"],
-                "rows": [
-                    ["Đoàn Hùng Minh", 181834],
-                    ["Lý Khánh Thảo", 129000],
-                    ["Lâm Ngân Thanh", 100500],
-                ],
-            }, None
-        if "30/06/2025" in q_norm and any(k in q_norm for k in ["5 khach no", "top 5"]):
-            return "table", {
-                "columns": ["khach_hang", "so_tien_no"],
-                "rows": [
-                    ["Đào Châu Tâm", 169000],
-                    ["Đoàn Hiếu Khánh", 86000],
-                    ["Chung Khoa Thảo", 86000],
-                    ["Lưu Sơn Hằng", 82000],
-                    ["Đàm Hà Phúc", 76667],
-                ],
-            }, None
+    from zaic_2026_datamate.price_change import alnum_phrase, build_product_unit_conversions, norm_vn
 
-        # Product gross profit rankings
-        if any(k in q_norm for k in ["t4/2026", "4/2026"]) and "lai gop nhieu nhat" in q_norm:
-            return "string", "Cà phê sữa (M)", None
-        if any(k in q_norm for k in ["t6/2025", "6/2025"]) and "cho loi nhieu nhat" in q_norm:
-            return "string", "Trà sữa trân châu (M)", None
-        if any(k in q_norm for k in ["1-2026", "1/2026"]) and "lai gop cao nhat" in q_norm:
-            return "string", "Cà phê sữa (M)", None
+    if not math.isfinite(rem_qty) or rem_qty < 0:
+        return None
+    rem_int = int(round(rem_qty))
+    has_split_marker = bool(
+        re.search(r"\b(?:chan|nguyen)\b", q_norm) and re.search(r"\ble\b", q_norm)
+    ) or any(
+        k in q_norm
+        for k in (
+            "hop chan",
+            "vi chan",
+            "thung chan",
+            "hop nguyen",
+            "vi nguyen",
+            "vien le",
+            "vi le",
+            "cai le",
+            "goi le",
+            "chai le",
+            "lon le",
+        )
+    )
+    if not has_split_marker:
+        return "number", rem_int, None
 
-        # Store gross profit
-        if ("thang 6" in q_norm or "th 6" in q_norm) and "lai gop" in q_norm and as_of_date == "2026-08-21":
-            return "number", 190800343, None
-        if any(k in q_norm for k in ["th6/2025", "6/2025"]) and "lai gop" in q_norm:
-            return "number", 167436230, None
-        if any(k in q_norm for k in ["5/2025", "thang 5/2025"]) and any(k in q_norm for k in ["lai gop", "laix gop"]):
-            return "number", 164672604, None
+    _, factors = build_product_unit_conversions(context, product_name, product_code)
+    major_u, minor_u = _extract_inventory_split_units(
+        q_norm, product_name, factors, norm_vn, alnum_phrase
+    )
+    minor_factor = factors.get(minor_u, 1.0) if minor_u else 1.0
+    major_factor = factors.get(major_u) if major_u else None
+    if major_factor is not None and minor_factor > 0 and major_factor > minor_factor:
+        minor_total = (
+            rem_int
+            if abs(minor_factor - 1.0) < 1e-9
+            else int(math.floor(rem_qty / minor_factor + 1e-9))
+        )
+        step = int(round(major_factor / minor_factor))
+        if step > 1:
+            return "list", [minor_total // step, minor_total % step], None
 
-        # Store net profit (lãi ròng)
-        if any(k in q_norm for k in ["10/2025", "thang 10/2025"]) and "lai rong" in q_norm:
-            return "number", -34546443, None
-        if any(k in q_norm for k in ["7/26", "7/2026"]) and any(k in q_norm for k in ["tru het chi phi", "lai rong"]):
-            return "number", 39578870, None
-        if any(k in q_norm for k in ["1-2026", "1/2026"]) and any(k in q_norm for k in ["tru chi phi", "loi that"]):
-            return "number", 43331452, None
+    factor = factors.get("hop")
+    if (factor is None or factor <= 1) and factors:
+        large = [v for k, v in factors.items() if v > 1 and (k in norm_vn(q_norm) or k in ("thung", "hop", "loc"))]
+        factor = max(large) if large else max(factors.values())
+    if factor and factor > 1:
+        f_int = int(round(factor))
+        return "list", [rem_int // f_int, rem_int % f_int], None
+    return None
 
-        # Price changes
-        if "tra vai (l)" in q_norm and "47.000" in q_norm:
-            return "percent", 19.23, None
-        if "thach ca phe" in q_norm and "7.400" in q_norm:
-            return "percent", 5.95, None
 
-        # Order & sales metrics
-        if "thang ba" in q_norm and "don bi huy" in q_norm:
-            return "number", 88, None
-        if "tu dau nam den hom nay" in q_norm and "ban duco bao nhieu tien" in q_norm:
-            return "number", 389161500, None
-        if "top nam mon ban chay" in q_norm and "tuan nay" in q_norm:
-            return "list", [
-                "Cà phê sữa (M)",
-                "Trà sữa trân châu (M)",
-                "Nước ép cam (M)",
-                "Trà đào cam sả (M)",
-                "Trà đào cam sả (L)",
-            ], None
-        if any(k in q_norm for k in ["7/2025", "thang 7/2025"]) and "top 5 hang ban chay nhat" in q_norm:
-            return "list", [
-                "Cà phê sữa (M)",
-                "Trà đào cam sả (M)",
-                "Trà sữa trân châu (M)",
-                "Bạc xỉu (M)",
-                "Cà phê sữa (L)",
-            ], None
-        if "tu mung 1 toi het hom nay" in q_norm and "cung ky thang trc" in q_norm:
-            return "percent", -4.1, None
+def _resolve_the_kho_item_stock(
+    context: BusinessContext, sku: str, target_date: str
+) -> float | None:
+    """Query closing stock across all branches for one SKU from `the_kho`."""
+    cols = set(context.tables["the_kho"].columns)
+    if not {"ma_hang_hoa", "ton_cuoi", "ngay_gio_phat_sinh"} <= cols:
+        return None
+    part_cols = "ma_hang_hoa, ma_chi_nhanh" if "ma_chi_nhanh" in cols else "ma_hang_hoa"
+    order_expr = (
+        "ngay_gio_phat_sinh DESC, ma_giao_dich_kho DESC"
+        if "ma_giao_dich_kho" in cols
+        else "ngay_gio_phat_sinh DESC"
+    )
+    sku_esc = sku.replace("'", "''")
+    sql = f"""
+        WITH ranked AS (
+            SELECT ton_cuoi,
+                   ROW_NUMBER() OVER (PARTITION BY {part_cols} ORDER BY {order_expr}) AS rn
+            FROM the_kho
+            WHERE ma_hang_hoa = '{sku_esc}'
+              AND ngay_gio_phat_sinh <= '{target_date} 23:59:59'
+        )
+        SELECT SUM(TRY_CAST(ton_cuoi AS DOUBLE)) FROM ranked WHERE rn = 1
+    """
+    try:
+        row = context.duckdb_conn.execute(sql).fetchone()
+        if row and row[0] is not None:
+            return float(row[0])
+    except Exception:
+        pass
+    return None
 
-    if context.business_id == "dev_010":
-        if "d-nee" in q_norm and ("9/2025" in q_norm or "09/2025" in q_norm):
-            return "number", 12502000, None
-        if "hipp" in q_norm and ("1/2026" in q_norm or "01/2026" in q_norm):
-            return "number", 1140000, None
 
-    if context.business_id == "dev_008":
-        if "nv001" in q_norm and any(k in q_norm for k in ["thang nay", "thangs nay"]):
-            return "number", 168292000, None
-        if "ca trau" in q_norm:
-            return "unanswerable", None, "Món không có trong thực đơn quán nhậu"
-        if "1/2026" in q_norm and any(k in q_norm for k in ["mua nhieu lan nhat", "nhieu don nhat"]):
-            return "string", "Hồ Trung Phúc", None
-        if "9/25" in q_norm and any(k in q_norm for k in ["mua nhieu don nhat", "nhieu lan nhat"]):
-            return "string", "Cao Hồng Sơn", None
-        if "doi y" in q_norm or "đổi ý" in question.lower():
-            return "string", "Võ Linh Dũng", None
-        # dev_008 debt & YTD orders & inventory
-        if any(k in q_norm for k in ["dau nam den hnay tong so dh", "dau nam den hnay tong so hoa don"]) or ("dau nam" in q_norm and "hnay" in q_norm and "so dh" in q_norm):
-            return "number", 9848, None
-        if any(k in q_norm for k in ["tong cong bao nhieu tien", "khach hang con no cua hang tong cong"]) and "22/07/2026" in q_norm:
-            return "number", 4549169, None
-        if "so khach con cong no" in q_norm and "22/07/2026" in q_norm:
-            return "number", 15, None
-        if "tuoi no: nhom 0-7" in q_norm or ("0-7" in q_norm and "8-15" in q_norm and "tren 15" in q_norm):
-            return "list", [1429334, 1961667, 1158168], None
-        if "qua 10 ngay" in q_norm and "22/07/2026" in q_norm:
-            return "number", 2771668, None
-        if any(k in q_norm for k in ["hang con du trong kho", "ton kho theo gia von"]) and "22/07/2026" in q_norm:
-            return "number", 172773009, None
+def _resolve_lot_ledger_stock(
+    context: BusinessContext, sku: str, target_date: str
+) -> float | None:
+    """Compute remaining lot-level balance (imports - net lot sales) up to target_date."""
+    tbls = [t for t in context.tables if not t.endswith("_sheet1")]
+    nhap_hdr = next((t for t in tbls if t.endswith("don_nhap_hang")), None)
+    nhap_dtl = next((t for t in tbls if t.endswith("don_nhap_hang_chi_tiet")), None)
+    lot_sales = next((t for t in tbls if t.endswith("don_hang_lo")), None)
+    if not (nhap_hdr and nhap_dtl and lot_sales):
+        return None
 
-    if context.business_id == "dev_012":
-        if "cham chi" in q_norm or "chăm chỉ" in question.lower():
-            return "string", "Hà Loan Đạt", None
+    hdr_cols = set(context.tables[nhap_hdr].columns)
+    dtl_cols = set(context.tables[nhap_dtl].columns)
+    lot_cols = set(context.tables[lot_sales].columns)
+    if not (
+        {"ma_don_nhap", "ngay_nhap"} <= hdr_cols
+        and {"ma_don_nhap", "ma_sku", "ma_lo", "so_luong_nhap"} <= dtl_cols
+        and {"ma_don_hang", "ma_lo", "so_luong"} <= lot_cols
+    ):
+        return None
 
-    if context.business_id == "dev_007":
-        if "ua chuong" in q_norm or "ưa chuộng" in question.lower():
-            return "string", "Lẩu Thái tôm cá (nhỏ)", None
-        if any(k in q_norm for k in ["hang con du trong kho", "ton kho"]) and "19/09/2026" in q_norm:
-            return "number", 146562947, None
-        if "cat hang het bao nhieu tien" in q_norm and ("8/2026" in q_norm or "thang 8/2026" in q_norm):
-            return "number", 133121600, None
-        if ("nhan dien nao ban gioi nhat" in q_norm or "nhan vien nao ban gioi nhat" in q_norm) and "7/2026" in q_norm:
-            return "string", "NV005", None
-        if "5 khach mua nhieu tien nhat" in q_norm and ("3/2025" in q_norm or "th3/2025" in q_norm):
-            return "list", ["Triệu Dương Đức", "Ngô Hồng Duy", "Phạm Thảo Loan", "Diệp Thanh Quang", "Phùng Bảo Khoa"], None
-        if "3 mon ban chay nhat" in q_norm and ("8/2026" in q_norm or "thang 8 nam 2026" in q_norm):
-            return "list", ["Đậu hũ chiên giòn", "Lẩu Thái tôm cá (nhỏ)", "Bò lá lốt nướng"], None
-        if "3 mon chay nhat" in q_norm and ("5/2025" in q_norm or "th5/2025" in q_norm):
-            return "list", ["Cơm chiên Dương Châu", "Trà đá", "Cơm trắng"], None
+    order_date_selects: list[str] = []
+    for t in tbls:
+        tc = set(context.tables[t].columns)
+        st_c = next(
+            (c for c in ("trang_thai", "tinh_trang", "tinh_trang_don", "xu_ly") if c in tc),
+            None,
+        )
+        if "don_hang" in t and "ma_don_hang" in tc and "ngay_dat_hang" in tc:
+            st_clause = get_valid_sales_status_clause(
+                st_c, order_col="ma_don_hang", table=t
+            )
+            order_date_selects.append(
+                f"SELECT ma_don_hang, CAST(ngay_dat_hang AS DATE) AS d FROM {t} WHERE 1=1 {st_clause}"
+            )
+        elif "don_hang" in t and "ma_hoa_don" in tc and "ngay_lap" in tc:
+            st_clause = get_valid_sales_status_clause(
+                st_c, order_col="ma_hoa_don", table=t
+            )
+            order_date_selects.append(
+                f"SELECT ma_hoa_don AS ma_don_hang, CAST(ngay_lap AS DATE) AS d FROM {t} WHERE 1=1 {st_clause}"
+            )
+    if not order_date_selects:
+        return None
 
-    if context.business_id == "dev_002":
-        if any(k in q_norm for k in ["3 mat hang ban chay nhat", "top 3 mon ban chay"]) and ("6/2025" in q_norm or "thang 6/2025" in q_norm):
-            return "list", ["Cà phê đen (M)", "Trà đào cam sả (M)", "Cà phê sữa (M)"], None
-        if any(k in q_norm for k in ["top 3 mon ban nhiu", "top 3 mon ban nhieu", "3 mon ban chay"]) and ("10/2025" in q_norm or "th10/2025" in q_norm):
-            return "list", ["Cà phê sữa (M)", "Cà phê đen (M)", "Bạc xỉu (M)"], None
-        if any(k in q_norm for k in ["3 khach nao chi nhieu tien nhat", "top 3 khach"]):
-            return "list", ["Châu Quang Khánh", "Đặng Trung Huy", "Vũ Bích Phong"], None
+    order_cte = " UNION ".join(order_date_selects)
+    ret_expr = "COALESCE(TRY_CAST(ls.so_luong_tra AS DOUBLE), 0.0)" if "so_luong_tra" in lot_cols else "0.0"
+    sku_esc = sku.replace("'", "''")
+    sql = f"""
+        WITH sku_lots AS (
+            SELECT d.ma_lo, SUM(TRY_CAST(d.so_luong_nhap AS DOUBLE)) AS total_in
+            FROM {nhap_dtl} d
+            JOIN {nhap_hdr} h ON d.ma_don_nhap = h.ma_don_nhap
+            WHERE d.ma_sku = '{sku_esc}'
+              AND CAST(h.ngay_nhap AS DATE) <= DATE '{target_date}'
+            GROUP BY d.ma_lo
+        ),
+        ord_dates AS (
+            SELECT ma_don_hang, MIN(d) AS order_date FROM ({order_cte}) u GROUP BY ma_don_hang
+        ),
+        lot_out AS (
+            SELECT ls.ma_lo,
+                   SUM(TRY_CAST(ls.so_luong AS DOUBLE) - {ret_expr}) AS total_out
+            FROM {lot_sales} ls
+            JOIN ord_dates od ON ls.ma_don_hang = od.ma_don_hang
+            WHERE ls.ma_lo IN (SELECT ma_lo FROM sku_lots)
+              AND od.order_date <= DATE '{target_date}'
+            GROUP BY ls.ma_lo
+        )
+        SELECT COALESCE(SUM(sl.total_in), 0.0) - COALESCE(SUM(lo.total_out), 0.0)
+        FROM sku_lots sl
+        LEFT JOIN lot_out lo ON sl.ma_lo = lo.ma_lo
+    """
+    try:
+        row = context.duckdb_conn.execute(sql).fetchone()
+        if row and row[0] is not None:
+            return float(row[0])
+    except Exception:
+        pass
+    return None
 
-    if context.business_id == "dev_011":
-        if any(k in q_norm for k in ["1/26", "thang 1/26", "1/2026"]) and "sp nao ban chay nhat" in q_norm:
-            return "string", "Ốp lưng silicon iPhone", None
 
-    if context.business_id == "dev_004":
-        if "dot hang" in q_norm and ("7/2025" in q_norm or "t7/2025" in q_norm):
-            return "number", 792, None
-        if "bna duoc" in q_norm and "tu dau nam" in q_norm:
-            return "number", 8794578200, None
-        if "binh quan don hang tuan truoc" in q_norm:
-            return "number", 1164278, None
+def _resolve_snapshot_ton_kho(
+    context: BusinessContext, product_name: str, norm_fn: Any
+) -> float | None:
+    """Lookup closing balance from snapshot `ton_kho` / `bao_cao_ton_kho` table."""
+    target_norm = norm_fn(product_name)
+    for tname, df in context.tables.items():
+        if tname.endswith("_sheet1") or "ton_kho" not in tname:
+            continue
+        cols = {c.lower(): c for c in df.columns}
+        item_c = next(
+            (cols[k] for k in ("ten_hang", "hang_hoa", "product", "ten_sp", "ten_san_pham") if k in cols),
+            None,
+        )
+        val_c = next(
+            (cols[k] for k in ("ton_thuc", "ton_cuoi_ky", "ton_cuoi", "ton_kho") if k in cols),
+            None,
+        )
+        if not (item_c and val_c):
+            continue
+        for _, row in df.iterrows():
+            if norm_fn(row[item_c]) == target_norm:
+                val = pd.to_numeric(row[val_c], errors="coerce")
+                if pd.notna(val):
+                    return float(val)
+    return None
 
-    if context.business_id == "dev_013":
-        if "30 ngay gan nhat" in q_norm and "doanhthu" in q_norm:
-            return "number", 448338500, None
-        if ("hang nao" in q_norm or "hang nao" in question.lower()) and "sua bot so 2" in q_norm:
-            return "string", "Vinamilk", None
 
-    if context.business_id == "dev_010":
-        if any(k in q_norm for k in ["tra no", "thu hoi dc", "cong no"]) and ("12-2025" in q_norm or "12/2025" in q_norm):
-            return "number", 28915589, None
-        if any(k in q_norm for k in ["tra no", "thu hoi dc", "cong no"]) and ("7/25" in q_norm or "07/2025" in q_norm):
-            return "number", 27994658, None
-        if any(k in q_norm for k in ["tra no", "thu hoi dc", "cong no"]) and ("11/2025" in q_norm or "th11/2025" in q_norm):
-            return "number", 33328416, None
-        if "06/09/2026" in q_norm and any(k in q_norm for k in ["tien khach con no", "con no den het"]):
-            return "number", 107454591, None
-        if "06/09/2026" in q_norm and any(k in q_norm for k in ["dem khach", "nhieu nguoi"]):
-            return "number", 210, None
+def _resolve_inventory_stock(
+    q_norm: str, question: str, context: BusinessContext, as_of_date: str | None
+) -> Tuple[str, Any, str | None] | None:
+    """Resolve current inventory stock or return Gate-1 unanswerable if schema lacks inventory tracking."""
+    if not _is_inventory_stock_query(q_norm):
+        return None
 
-    if context.business_id == "dev_001":
-        if "3 mat hang ban chay nhat tuan roi" in q_norm or "3 mat hang nao ban chay nhat" in q_norm:
-            return "list", ["Mì Hảo Hảo tôm chua cay", "Snack Oishi tôm cay 40g", "Mì Omachi sườn hầm"], None
-        if "nhom gao" in q_norm and ("11/2025" in q_norm or "thang 11 nam 2025" in q_norm) and "kg" in q_norm:
-            return "string", "Gạo ST25", None
-        if "nhom gia vi" in q_norm and ("11/2025" in q_norm or "thang 11/2025" in q_norm) and "doanh thu cao nhat" in q_norm:
-            return "string", "Dầu ăn Tường An 1L", None
-        if "nhom cham soc ca nhan" in q_norm and ("11/2025" in q_norm or "thang 11 nam 2025" in q_norm):
-            return "string", "Tã Bobby M 32 miếng", None
+    has_stock_schema = any(
+        (not tname.endswith("_sheet1") and tname != "calendar")
+        and (
+            any(k in tname for k in ("ton_kho", "the_kho", "lo_hang", "don_hang_lo", "chi_tiet_don_lo"))
+            or any(k in col.lower() for col in df.columns for k in ("ton_cuoi", "ton_thuc", "ton_kho", "so_luong_ton"))
+        )
+        for tname, df in context.tables.items()
+    )
+    if not has_stock_schema:
+        return (
+            "unanswerable",
+            None,
+            "Doanh nghiệp không có dữ liệu theo dõi tồn kho / nhập xuất kho theo Rulebook Mục 7",
+        )
 
-    if context.business_id == "dev_014":
-        if "ta dung long" in q_norm and "toi han" in q_norm:
-            return "number", 4, None
-        # Q3/2026 warranty ratio
-        if "quy 3/2026" in q_norm and "bao hanh" in q_norm and any(k in q_norm for k in ["%", "phan tram"]):
-            return "percent", 13.08, None
-        # Q1/2026 top 3 models
-        if "quy 1/2026" in q_norm and "dong may" in q_norm:
-            return "list", ["Xiaomi Redmi Note 14", "iPhone 16", "iPhone 16 Pro Max"], None
-        # 01/2026 top 3 models
-        if ("th1/2026" in q_norm or "thang 1/2026" in q_norm) and "dong may" in q_norm:
-            return "list", ["iPhone 16 Pro Max", "iPhone 15", "Xiaomi Redmi Note 14"], None
-        # Installment debt metrics
-        if any(k in q_norm for k in ["chua toi han", "chua den han"]) and not any(k in q_norm for k in ["ong hieu anh", "ngo nam ngan", "luong khoa hoang", "khach ong", "khach ngo", "khach luong"]):
-            if "2025-09-30" == as_of_date:
-                return "number", 314300000, None
-            if "2025-10-18" == as_of_date or "hom nay" in q_norm:
-                return "number", 400700000, None
-        if "26/11/2025" in q_norm and any(k in q_norm for k in ["cham gop", "qua han"]):
-            return "number", 28600000, None
-        if any(k in q_norm for k in ["qua han", "cham dong"]):
-            if "2025-12-15" == as_of_date or "tinh toi hom nay" in q_norm:
-                return "number", 20000000, None
-            if "2026-02-08" == as_of_date or "8/2/2026" in q_norm:
-                return "number", 6, None
-            if "2026-03-13" == as_of_date or "13/03/2026" in q_norm:
-                return "number", 16, None
-            if "2026-06-01" == as_of_date or "01/06/2026" in q_norm:
-                return "number", 40200000, None
-            if "2026-09-02" == as_of_date or "02/09/2026" in q_norm:
-                return "number", 17, None
-        # Store general debt (so_no_so_no)
-        if "tong tien khach" in q_norm and "27/9/2026" in q_norm and any(k in q_norm for k in ["no", "kòn nợ"]):
-            return "number", 21218668, None
-        if "23/09/2026" in q_norm and any(k in q_norm for k in ["0-7", "0–7"]) and "8-15" in q_norm:
-            return "list", [12652000, 8511500, 159168], None
-        if "02/06/2026" in q_norm and any(k in q_norm for k in ["may khach co cong no", "may khach no", "con cong no"]):
-            return "number", 5, None
+    target_date = _extract_explicit_iso_date(question) or as_of_date
+    if not target_date:
+        return None
+
+    from zaic_2026_datamate.price_change import norm_vn, select_best_product
+
+    candidates = _collect_inventory_candidates(context)
+    picked = select_best_product(candidates, question.lower())
+    if not picked:
+        return None
+    matched_name = picked[0]
+    sku = _lookup_sku_for_product(context, matched_name, norm_vn)
+
+    rem_qty: float | None = None
+    if sku and "the_kho" in context.tables:
+        rem_qty = _resolve_the_kho_item_stock(context, sku, target_date)
+    if rem_qty is None and sku:
+        rem_qty = _resolve_lot_ledger_stock(context, sku, target_date)
+    if rem_qty is None:
+        rem_qty = _resolve_snapshot_ton_kho(context, matched_name, norm_vn)
+
+    if rem_qty is None:
+        return None
+    return _format_inventory_answer(rem_qty, q_norm, context, matched_name, sku)
+
+
+def resolve_domain_extensions(
+    question: str,
+    context: BusinessContext,
+    as_of_date: str | None = None,
+) -> Tuple[str, Any, str | None] | None:
+    """Attempt to resolve query with general, schema-driven domain rules.
+
+    Returns (type, answer, reason) or None if not handled.
+    """
+    q_norm = strip_accents(question).replace("–", "-").replace("—", "-")
+    q_norm = re.sub(r"\btoonf\b", "ton", q_norm, flags=re.IGNORECASE)
+
+    for resolver in (
+        lambda: _check_schema_ood(q_norm, context),
+        lambda: _resolve_inventory_stock(q_norm, question, context, as_of_date),
+        lambda: _resolve_delivery_rounds(q_norm, question, context, as_of_date),
+        lambda: _resolve_unsold_items(q_norm, question, context, as_of_date),
+        lambda: _resolve_phone_store_analytics(q_norm, question, context, as_of_date),
+        lambda: _resolve_warranty_and_tradein(q_norm, question, context, as_of_date),
+        lambda: _resolve_top_supplier(q_norm, question, context, as_of_date),
+        lambda: _resolve_orders_above_threshold(q_norm, question, context, as_of_date),
+        lambda: _resolve_the_kho_stockouts(q_norm, question, context, as_of_date),
+    ):
+        res = resolver()
+        if res is not None:
+            return res
 
     return None

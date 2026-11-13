@@ -200,11 +200,17 @@ if __name__ == "__main__":
     parser.add_argument("--order-paraphrases", "--daily-order-paraphrases", action="store_true")
     parser.add_argument("--monthly-growth", action="store_true")
     parser.add_argument("--mtd-growth", action="store_true")
+    parser.add_argument(
+        "--no-production",
+        action="store_true",
+        help="Disable default production flags (use explicit feature flags only)",
+    )
     parser.add_argument("--confidence-threshold", type=float, default=0.95)
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--limit", type=int, default=None)
     args = parser.parse_args()
 
+    use_prod = not args.no_production
     generate_submission(
         questions_path=args.questions,
         data_dir=args.data_dir,
@@ -216,7 +222,7 @@ if __name__ == "__main__":
         confidence_threshold=args.confidence_threshold,
         limit=args.limit,
         overwrite=args.overwrite,
-        order_paraphrases=args.order_paraphrases,
-        monthly_growth=args.monthly_growth,
-        mtd_growth=args.mtd_growth,
+        order_paraphrases=True if use_prod else args.order_paraphrases,
+        monthly_growth=True if use_prod else args.monthly_growth,
+        mtd_growth=True if use_prod else args.mtd_growth,
     )

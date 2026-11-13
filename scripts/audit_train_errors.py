@@ -8,15 +8,15 @@ from __future__ import annotations
 
 import json
 import logging
-import os
+import sys
 import time
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 from zaic_2026_datamate.data_loader import BusinessContext, DataLoader
 from zaic_2026_datamate.evaluation import evaluate_match
-from zaic_2026_datamate.pipeline import PipelineConfig, build_agent
+from zaic_2026_datamate.pipeline import build_agent, production_pipeline_config
 
 logging.basicConfig(level=logging.WARNING)
 
@@ -28,6 +28,7 @@ def audit_train(
     calendar_path: str | Path = "data/train/train/calendar.csv",
     out_dir: str | Path = "artifacts/v35b-audit",
     limit: Optional[int] = None,
+    max_wrong: Optional[int] = None,
 ):
     questions_path = Path(questions_path)
     answers_path = Path(answers_path)
@@ -52,13 +53,7 @@ def audit_train(
     loader = DataLoader(data_dir, calendar_path)
     business_cache: Dict[str, BusinessContext] = {}
 
-    config = PipelineConfig(
-        enable_slow_path=False,
-        order_paraphrases=True,
-        monthly_growth=True,
-        mtd_growth=True,
-    )
-    agent = build_agent(config)
+    agent = build_agent(production_pipeline_config())
 
     print(f"🚀 BẮT ĐẦU AUDIT TRÊN {len(questions)} CÂU HỎI TRAIN...")
     print("=" * 80)
@@ -166,6 +161,9 @@ def audit_train(
     with open(summary_file, "w", encoding="utf-8") as f:
         json.dump(summary_data, f, ensure_ascii=False, indent=2)
     print(f"💾 Đã lưu tổng kết vào: {summary_file}")
+    if max_wrong is not None and score_wrong > max_wrong:
+        print(f"❌ Audit gate failed: score_wrong={score_wrong} > max_wrong={max_wrong}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
@@ -173,5 +171,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Audit train questions against ground truth")
     parser.add_argument("--limit", type=int, default=None, help="Limit number of questions")
     parser.add_argument("--out-dir", type=str, default="artifacts/v35b-audit", help="Output directory")
+    parser.add_argument("--max-wrong", type=int, default=None, help="Fail with exit(1) when score_wrong > max_wrong")
     args = parser.parse_args()
-    audit_train(limit=args.limit, out_dir=args.out_dir)
+    audit_train(limit=args.limit, out_dir=args.out_dir, max_wrong=args.max_wrong)

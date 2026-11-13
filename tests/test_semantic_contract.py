@@ -7,7 +7,7 @@ resolve_semantic_plan, and resolve_query integration).
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Dict
 
 import duckdb
 import pandas as pd
@@ -824,9 +824,10 @@ def test_missing_schema_capabilities_and_gender_return_unanswerable():
     ],
 )
 def test_negative_controls_with_unrecognized_modifiers_abstain(rich_retail_context, question):
-    """Unrecognized modifiers, staff filters, profit/cost deductions, or boolean checks must return 'abstain'."""
+    """Unrecognized modifiers, staff filters, profit/cost deductions, or boolean checks must abstain (or return unanswerable when Gate 1 OOD applies)."""
     assert resolve_semantic_plan(question, rich_retail_context, "2025-09-30")[0] == "abstain"
-    assert resolve_query(question, rich_retail_context, "2025-09-30")[0] == "abstain"
+    expected_outer = "unanswerable" if "giao trễ" in question else "abstain"
+    assert resolve_query(question, rich_retail_context, "2025-09-30")[0] == expected_outer
 
 
 # =============================================================================
@@ -926,13 +927,14 @@ def test_step3_quantity_and_ranking():
     assert res_qty[0] == "number"
     assert res_qty[1] == 7
 
-    # 4. Inventory query must abstain (protect PA)
+    # 4. Inventory query on schema without stock tracking returns Gate 1 'unanswerable'
     res_inv = resolve_query("Cuối ngày hôm nay trong kho còn bao nhiêu lon Bia Tiger?", ctx, "2025-05-31")
-    assert res_inv[0] == "abstain"
+    assert res_inv[0] == "unanswerable"
 
-    # 5. Top K list must abstain (protect PA against list ordering variance)
+    # 5. Unambiguous non-tied Top K list resolves cleanly (returns ordered list)
     res_top3 = resolve_query("Top 3 mặt hàng bán chạy nhất tháng 5/2025 là những gì?", ctx)
-    assert res_top3[0] == "abstain"
+    assert res_top3[0] == "list"
+    assert res_top3[1] == ["Bia Tiger lon", "Bánh croissant", "Bia Sài Gòn Special lon"]
 
     # 6. Multi-month range must abstain
     res_range = resolve_query("Từ tháng 5/2025 tới tháng 8/2025 tháng nào bán được nhiều tiền nhất?", ctx)

@@ -15,8 +15,17 @@ $$PA = \frac{1}{N} \sum_{i=1}^N s_i, \quad s_i = \begin{cases} +1 & \text{answer
 1. **"Build a system that is right when it speaks."** Never guess, extrapolate, or invent business logic.
 2. **Two Types of Refusals (Critical Distinction):**
    - **`type: "unanswerable"`:** When data genuinely lacks the required metric or lies outside the date range. Correct answer gets **+1 point**. Guessing a number for an unanswerable question incurs a **-1 penalty**!
-   - **`type: "abstain"`:** When the agent's internal confidence is $< 95\%$ or query execution fails $\rightarrow$ Abstain cleanly to secure **0 points** and avoid negative penalty.
-3. **No Human-In-The-Loop:** All parsing, cleaning, SQL generation, execution, and output formatting must run 100% autonomously in the automated benchmark container.
+   - **`type: "abstain"`:** When query execution fails or fails technical validation $\rightarrow$ Abstain cleanly to secure **0 points** and avoid negative penalty.
+3. **Zero Hardcoding & General Schema Logic (ZAIC Rule §6.2):**
+   - Derive every business rule (merged `Sổ nợ + Trả góp`, ` + ` topping split, Excel serial date `45xxx`, base-unit conversion, cancelled/returned order filter, `"đến hết"`/`"tới cuối"` month-range grammar) generically from schema and calendar bounds. Never branch on `business_id` (`dev_*`/`biz_*`/`priv_*`), hardcode specific month/date routing literals (`"th9/2025"`, `"th4/2026"`), import cross-module `_private` helpers, leave dead helpers, or read `public_test` paths in core logic (locked via `tests/test_phase1_dehardcode_and_rules.py`).
+4. **Three Golden Regression Gates (Mandatory Pre-Submission Checklist):**
+   - Run all gates with **identical production config** via `build_agent(production_pipeline_config())` and `evaluate_match` (`scripts/generate_public_submission.py` defaults to production parity unless `--no-production` is passed):
+   - **Gate 1 (Train 3,000 Qs):** `scripts/audit_train_errors.py --max-wrong 0` must show zero new errors on any business; lock resolved bugs in `tests/test_regression_train_bugs.py`.
+   - **Gate 2 (Holdout Guard):** `scripts/verify_holdout.py --max-wrong 0` across 6 holdout businesses (`Wrong == 0`, exits non-zero on regression).
+   - **Gate 3 (Twin Verification vs Baseline `7fc0c7d`):** `scripts/compare_submissions.py` — every `abstain -> answer` or value change must map to schema-general logic verified on training twins (`biz_*`); otherwise abstain (*Break-Even Precision* $P \ge 50\%$).
+5. **Technical Abstain Gate (Real Output Signals Only):**
+   - `HybridAgent.answer_query` enforces finite, schema-valid outputs via `_technical_abstain_gate`: coerce `NaN`/`Inf`, `bool` in `number`/`percent`, empty strings/lists/tables, invalid calendar dates, or question-vs-`ans_type` mismatches (`list` on `boolean`/peak period) to `abstain`. Rely on deterministic execution signals rather than heuristic confidence thresholds.
+6. **No Human-In-The-Loop:** All parsing, cleaning, SQL generation, execution, and output formatting must run 100% autonomously in the automated benchmark container.
 
 ---
 
@@ -46,30 +55,15 @@ When operating in this repository, autonomously adopt the mindset of a Senior Da
 - Deeply inspect edge cases in Vietnamese commercial records (tiểu thương, tiệm tạp hóa, phòng khám, nhà xe).
 
 ### 3.2. Skill: `duckdb-data-agent`
-- **Location:** `~/.gemini/config/skills/duckdb-data-agent/SKILL.md`
-- **Responsibilities:**
-  1. *Physical unmerge:* Broadcast top-left values across merged ranges before any dataframe conversion.
-  2. *Header Sniffing:* Identify the true header row among decorative invoice headers and merchant metadata.
-  3. *Vietnamese Normalization:* Strip currency symbols, parse shorthand notations, conform date orders.
-  4. *In-Memory DuckDB Querying:* Generate clean ANSI SQL and execute within the sandbox.
+- **Mirrored Paths:** `~/.gemini/config/skills/duckdb-data-agent/SKILL.md` and `~/.agents/skills/duckdb-data-agent/SKILL.md` (keep byte-identical).
+- Covers Excel unmerging, header sniffing, Vietnamese normalization, In-Memory DuckDB patterns, and refusal guardrails.
 
-### 3.3. Production Tri-Module Architecture (Code-Level Implementation)
-To eliminate hallucination and maximize Penalized Accuracy, the architecture is decoupled into 4 distinct components in `src/zaic_2026_datamate/`:
-
-1. **`cleaner.py` (Physical Unmerge & Normalizer):**
-   - Bẻ khóa `merged_cells` bằng `openpyxl`, broadcast giá trị ô góc trái.
-   - Sniffing header tự động, chuẩn hóa tiền tệ Việt Nam (`100k`, `1.5tr`, `100.000 đ`, `(50.000)`).
-2. **`schema_linker.py` (Schema Linking & Gate 1):**
-   - Sử dụng `rapidfuzz` để liên kết từ khóa câu hỏi tiếng Việt với tên cột và giá trị ô trong bảng.
-   - Tích hợp từ điển nghiệp vụ bán hàng (`VIETNAMESE_BUSINESS_SYNONYMS`: "doanh thu" $\rightarrow$ `so_luong * gia_ban`).
-   - Tự động kích hoạt Cổng 1 (`unanswerable`) nếu câu hỏi nằm ngoài phạm vi bảng (OOD).
-3. **`engine.py` (In-Memory DuckDB & Gate 2):**
-   - Nạp DataFrame vào RAM DuckDB view và thực thi câu lệnh SQL siêu tốc.
-   - Vòng lặp tự sửa lỗi (**Self-Correction Loop**): Tự động bắt lỗi cú pháp SQL và gửi phản hồi cho agent sửa trong tối đa 2-3 lượt retry.
-   - Cổng 2 (Sanity Check): Kích hoạt `abstain` an toàn nếu kết quả trả về `NULL`, rỗng hoặc chia cho 0.
-4. **`agent.py` (`DataMateAgent`):**
-   - Đóng gói toàn bộ quy trình trên thành một entrypoint thống nhất: `agent.answer_query(query)`.
-   - Xuất dữ liệu chuẩn 8 format: `number`, `percent`, `string`, `date`, `boolean`, `list`, `table`, `unanswerable`, `abstain`.
+### 3.3. Production Pipeline (`src/zaic_2026_datamate/`)
+Inspect live modules directly rather than caching signatures; core orchestration flows through:
+- **`pipeline.py` (`PipelineConfig`, `build_agent`):** Composes `HybridAgent` / `DailyOrderParaphraseAgent` wrapped by `MonthlyGrowthAgent` and `MTDGrowthAgent`.
+- **`data_loader.py` & `cleaner.py`:** Unmerges `.xlsx`, detects multi-row headers, normalizes VN currencies/dates, builds `BusinessContext`.
+- **`intent_parser.py` & `hybrid_agent.py`:** Runs deterministic Fast Path (`resolve_query`), optional bounded Slow Path (`slow_path.py`), and `_technical_abstain_gate` before emitting benchmark output types (`number`, `percent`, `string`, `date`, `boolean`, `list`, `table`, `unanswerable`, `abstain`).
+- **Shared & Vertical Modules:** Reuse public helpers across `domain_ext.py`, `semantic_contract.py`, `growth_semantics.py`, `revenue_metric.py`, `price_change.py`, `rolling_window.py`, `repair_shop.py`, `mobile_installment.py`, `multi_month_revenue.py`, `mother_baby.py`, `purchase_analytics.py`, and `sales_status.py`.
 
 ---
 
@@ -87,10 +81,11 @@ To eliminate hallucination and maximize Penalized Accuracy, the architecture is 
 
 ## 🛠️ 5. Standard Operating Workflows
 
-### 5.1. Adding New Data Pipelines or Cleaners
-1. Write a minimal unit test first (TDD) using real/synthetic messy Excel fixtures.
-2. Implement parsing logic using `openpyxl` $\rightarrow$ `pandas` $\rightarrow$ `duckdb`.
-3. Verify with `uv run pytest`.
+### 5.1. Adding New Data Pipelines, Fixes or Regression Locks
+1. Follow TDD (red-before-green): add a minimal failing test in `tests/` using synthetic schema fixtures or verified training bugs (`tests/test_regression_train_bugs.py`), never `data/public_test`.
+2. Promote reusable normalization/matching logic to public functions; remove dead `_private` helpers in the same edit.
+3. Run fast checks (`./.git/hooks/pre-commit`: `uv run ruff check` + `uv run python -m pytest -m "not slow"`, ~9s; `pyproject.toml` sets `pythonpath = ["."]`) before `pytest -m slow` and the Three Golden Gates.
+4. Keep both `duckdb-data-agent/SKILL.md` mirrors byte-identical after discovering new data patterns.
 
 ### 5.2. Tool & MCP Orchestration
 - **`context7`:** Luôn tra cứu tài liệu mới nhất của DuckDB, Polars, và LangGraph khi cần viết các hàm phức tạp hoặc nâng cấp cú pháp.

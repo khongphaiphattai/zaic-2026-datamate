@@ -15,6 +15,8 @@ from zaic_2026_datamate.intent_parser import resolve_query
 from zaic_2026_datamate.pipeline import PipelineConfig, build_agent
 from zaic_2026_datamate.semantic_contract import BusinessSemanticContract, resolve_semantic_plan
 
+pytestmark = pytest.mark.slow
+
 
 @pytest.fixture(scope="module")
 def train_loader():

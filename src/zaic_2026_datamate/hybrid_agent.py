@@ -15,6 +15,10 @@ Orchestrates:
 from __future__ import annotations
 
 import logging
+import math
+import re
+import unicodedata
+from datetime import datetime
 from typing import Any
 
 from zaic_2026_datamate.data_loader import BusinessContext
@@ -24,6 +28,112 @@ from zaic_2026_datamate.selective_gate import daily_revenue_date
 from zaic_2026_datamate.slow_path import SlowPathEngine
 
 logger = logging.getLogger(__name__)
+
+
+def technical_abstain_gate(
+    question: str,
+    ans_type: str,
+    ans_val: Any,
+    reason: str | None,
+    route_source: str,
+) -> tuple[str, Any, str | None, str]:
+    """Enforce deterministic technical invariants on outgoing predictions.
+
+    Under Penalized Accuracy (+1 / 0 / -1), leaking NaN, Inf, invalid dates,
+    empty scalars, or syntactic type mismatches causes guaranteed -1 penalties.
+    """
+    if ans_type in ("abstain", "unanswerable"):
+        return ans_type, None if ans_type == "abstain" else ans_val, reason, route_source
+
+    if ans_type in ("number", "percent"):
+        if isinstance(ans_val, bool) or ans_val is None:
+            return "abstain", None, f"Technical gate: invalid scalar {ans_val!r} for {ans_type}", "abstain"
+        try:
+            num = float(ans_val)
+        except (TypeError, ValueError):
+            return "abstain", None, f"Technical gate: non-numeric {ans_val!r} for {ans_type}", "abstain"
+        if not math.isfinite(num):
+            return "abstain", None, f"Technical gate: non-finite {ans_val!r} for {ans_type}", "abstain"
+    elif ans_type == "boolean":
+        if not isinstance(ans_val, bool):
+            return "abstain", None, f"Technical gate: non-bool {ans_val!r} for boolean", "abstain"
+    elif ans_type == "string":
+        if not isinstance(ans_val, str) or not ans_val.strip() or ans_val.strip().lower() in ("nan", "none", "null", "nat"):
+            return "abstain", None, f"Technical gate: invalid string {ans_val!r}", "abstain"
+    elif ans_type == "date":
+        if not isinstance(ans_val, str):
+            return "abstain", None, f"Technical gate: non-str date {ans_val!r}", "abstain"
+        s = ans_val.strip()
+        if re.fullmatch(r"\d{4}-\d{2}-\d{2}", s):
+            try:
+                datetime.strptime(s, "%Y-%m-%d")
+            except ValueError:
+                return "abstain", None, f"Technical gate: invalid calendar date {s!r}", "abstain"
+        elif re.fullmatch(r"\d{4}-\d{2}", s):
+            yr, mo = int(s[:4]), int(s[5:7])
+            if not (2020 <= yr <= 2030 and 1 <= mo <= 12):
+                return "abstain", None, f"Technical gate: out-of-range month {s!r}", "abstain"
+        else:
+            return "abstain", None, f"Technical gate: invalid date format {s!r}", "abstain"
+    elif ans_type == "list":
+        if not isinstance(ans_val, list) or len(ans_val) == 0:
+            return "abstain", None, f"Technical gate: empty/invalid list {ans_val!r}", "abstain"
+        for elem in ans_val:
+            if elem is None or (isinstance(elem, float) and not math.isfinite(elem)):
+                return "abstain", None, f"Technical gate: invalid list element {elem!r}", "abstain"
+    elif ans_type == "table":
+        if (
+            not isinstance(ans_val, dict)
+            or not isinstance(ans_val.get("columns"), list)
+            or not ans_val.get("columns")
+            or not isinstance(ans_val.get("rows"), list)
+            or not ans_val.get("rows")
+        ):
+            return "abstain", None, "Technical gate: invalid or empty table", "abstain"
+        for row in ans_val["rows"]:
+            if not isinstance(row, (list, tuple)) or len(row) != len(ans_val["columns"]):
+                return "abstain", None, "Technical gate: malformed table row", "abstain"
+            for cell in row:
+                if isinstance(cell, float) and not math.isfinite(cell):
+                    return "abstain", None, f"Technical gate: non-finite table cell {cell!r}", "abstain"
+
+    if ans_type in ("list", "number"):
+        # Type-vs-question mismatch: prevent returning a numeric list/scalar for boolean or peak-date questions
+        q_norm = re.sub(
+            r"\s+",
+            " ",
+            "".join(
+                ch
+                for ch in unicodedata.normalize("NFD", question.lower().replace("đ", "d"))
+                if unicodedata.category(ch) != "Mn"
+            ),
+        ).strip()
+        if not any(k in q_norm for k in ("liet ke", "ke ten", "danh sach")):
+            asks_bool = bool(
+                re.search(
+                    r"\b(?:co|cos|co\s+phai|phai)\b.*\b(?:tang|giam|lien\s+tuc|cao\s+hon|nhieu\s+hon)\b.*\b(?:khong|khoong|ko|hong)\b"
+                    r"|\b(?:tang|giam)\s+lien\s+tuc\b",
+                    q_norm,
+                )
+            ) and not re.search(r"\bbao\s+nhieu\b", q_norm)
+            asks_peak_period = bool(
+                re.search(
+                    r"\b(?:bua|hom|ngay|thang)\s+naof?\b.*?\b(?:cao|lon|nhieu|it|thap)\b.*?\bnh(?:at|aast|ut|atf)f?\b",
+                    q_norm,
+                )
+            ) and not re.search(
+                r"\b(?:bao\s+nhieu\s+(?:tien|don|ngay|thang)|gio\s+naof?)\b",
+                q_norm,
+            )
+            if asks_bool or asks_peak_period:
+                return (
+                    "abstain",
+                    None,
+                    f"Technical gate: type-vs-question mismatch ({ans_type} returned for boolean/date question)",
+                    "abstain",
+                )
+
+    return ans_type, ans_val, reason, route_source
 
 
 class HybridAgent:
@@ -71,8 +181,10 @@ class HybridAgent:
         )
 
         if fast_type != "abstain":
-            # Preserve Fast Path decisions without consulting the model.
-            return fast_type, fast_val, fast_reason, "fast_path"
+            # Preserve Fast Path decisions after technical invariant validation.
+            return technical_abstain_gate(
+                question, fast_type, fast_val, fast_reason, "fast_path"
+            )
 
         # =====================================================================
         # ROUTE 2: SLOW PATH (SLM Text-to-SQL + DuckDB Execution Sandbox)
@@ -95,7 +207,9 @@ class HybridAgent:
             )
 
             if slow_type == "number":
-                return slow_type, slow_val, slow_reason, "slow_path"
+                return technical_abstain_gate(
+                    question, slow_type, slow_val, slow_reason, "slow_path"
+                )
             return (
                 "abstain",
                 None,

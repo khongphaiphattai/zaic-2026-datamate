@@ -1,8 +1,8 @@
 """
-repair_shop.py: Specialized Deterministic Execution Engine for Bike/Car Repair Shops (dev_012).
+repair_shop.py: Specialized Schema-Driven Execution Engine for Repair Shops (`so_sua_xe`).
 
 Handles:
-- Commission calculation (single technician or full table) based on DanhSachTho.xlsx
+- Commission calculation dynamically from technician roster/rate tables (e.g. `danh_sach_tho`)
 - Ticket counting (total tickets, warranty tickets, ticket AOV)
 - Technician analytics (revenue per technician, ticket count per technician, top rankings)
 - Vehicle model analytics (distinct vehicle count by model, top revenue model)
@@ -25,13 +25,6 @@ from zaic_2026_datamate.data_loader import BusinessContext
 from zaic_2026_datamate.intent_parser import parse_time_expressions
 
 logger = logging.getLogger(__name__)
-
-HOA_HONG_RATES: dict[str, float] = {
-    "Hà Loan Đạt": 0.32,
-    "Lương Chi Đức": 0.25,
-    "Đoàn Bảo Phúc": 0.28,
-    "Đàm Lan An": 0.33,
-}
 
 
 def strip_accents(s: str) -> str:
@@ -57,40 +50,133 @@ def extract_plate(x: Any) -> str:
     return m.group(1).upper() if m else str(x).lower().replace(" ", "")
 
 
-def get_canonical_tho(raw: Any) -> str:
-    """Map raw technician names in SoSuaXe to canonical full names."""
-    r = strip_accents(str(raw).strip())
-    if "an" in r:
-        return "Đàm Lan An"
-    if "dat" in r:
-        return "Hà Loan Đạt"
-    if "duc" in r:
-        return "Lương Chi Đức"
-    if "phuc" in r:
-        return "Đoàn Bảo Phúc"
-    return str(raw).strip()
+def _parse_commission_rate(val: Any) -> float | None:
+    """Parse commission rate from decimal (`0.32`) or percent (`32`, `'32%'`)."""
+    if pd.isna(val) or val is None:
+        return None
+    s = str(val).strip()
+    if not s:
+        return None
+    has_pct = "%" in s
+    s_clean = s.replace("%", "").replace(",", ".").strip()
+    try:
+        num = float(s_clean)
+    except ValueError:
+        return None
+    if num < 0:
+        return None
+    if has_pct or num > 1.0:
+        num = num / 100.0
+    return num if 0.0 <= num <= 1.0 else None
 
 
-def extract_specific_tho(t_norm: str) -> str | None:
+def _load_tho_registry(
+    context: BusinessContext, df: pd.DataFrame
+) -> tuple[list[str], dict[str, float]]:
+    """Dynamically build canonical technician names and commission rates from schema tables."""
+    rates: dict[str, float] = {}
+    canon_names: list[str] = []
+    seen_norm: set[str] = set()
+
+    for tname, tdf in context.tables.items():
+        if tname in ("so_sua_xe", "calendar") or tname.endswith("_sheet1") or tdf.empty:
+            continue
+        cols = list(tdf.columns)
+        name_col = next(
+            (c for c in ("ho_ten", "ten_tho", "tho", "ten", "nhan_vien", "ten_nv") if c in cols),
+            None,
+        )
+        rate_col = next(
+            (
+                c
+                for c in cols
+                if any(
+                    k in c
+                    for k in (
+                        "hoa_hong",
+                        "hue_hong",
+                        "ty_le",
+                        "ti_le",
+                        "muc_huong",
+                        "phan_tram",
+                        "rate",
+                    )
+                )
+            ),
+            None,
+        )
+        if not (name_col and (rate_col or "tho" in tname)):
+            continue
+        for _, row in tdf.iterrows():
+            raw_name = row.get(name_col)
+            if pd.isna(raw_name):
+                continue
+            cname = re.sub(r"\s+", " ", str(raw_name)).strip()
+            if not cname:
+                continue
+            cnorm = strip_accents(cname)
+            if cnorm not in seen_norm:
+                seen_norm.add(cnorm)
+                canon_names.append(cname)
+            if rate_col:
+                r = _parse_commission_rate(row.get(rate_col))
+                if r is not None:
+                    rates[cname] = r
+
+    # Fallback: add multi-word canonical names observed in `so_sua_xe.tho` only if no roster table existed
+    if not canon_names and "tho" in df.columns:
+        raw_vals = sorted(
+            {re.sub(r"\s+", " ", str(v)).strip() for v in df["tho"].dropna() if str(v).strip()},
+            key=len,
+            reverse=True,
+        )
+        for val in raw_vals:
+            vnorm = strip_accents(val)
+            if " " in vnorm and vnorm not in seen_norm:
+                seen_norm.add(vnorm)
+                canon_names.append(val)
+
+    return canon_names, rates
+
+
+def _last_token_unique_map(canonical_names: list[str]) -> dict[str, str]:
+    """Map unambiguous last word tokens (e.g. 'dat' -> 'Hà Loan Đạt') across roster names."""
+    buckets: dict[str, list[str]] = {}
+    for cname in canonical_names:
+        toks = re.findall(r"[a-z0-9]+", strip_accents(cname))
+        if toks:
+            buckets.setdefault(toks[-1], []).append(cname)
+    return {tok: names[0] for tok, names in buckets.items() if len(names) == 1}
+
+
+def canonicalize_tho_name(raw: Any, canonical_names: list[str]) -> str:
+    """Map raw technician label to its canonical full name when unambiguously identified."""
+    raw_clean = re.sub(r"\s+", " ", str(raw)).strip()
+    if not raw_clean:
+        return ""
+    r_norm = strip_accents(raw_clean)
+    exact_map = {strip_accents(c): c for c in canonical_names}
+    if r_norm in exact_map:
+        return exact_map[r_norm]
+
+    r_tokens = re.findall(r"[a-z0-9]+", r_norm)
+    last_map = _last_token_unique_map(canonical_names)
+    for tok in reversed(r_tokens):
+        if tok in last_map:
+            return last_map[tok]
+    return raw_clean
+
+
+def extract_specific_tho(t_norm: str, canonical_names: list[str]) -> str | None:
     """Extract specific technician name mentioned in query with strict boundary matching."""
-    for name, canon in [
-        ("dam lan an", "Đàm Lan An"),
-        ("ha loan dat", "Hà Loan Đạt"),
-        ("luong chi duc", "Lương Chi Đức"),
-        ("doan bao phuc", "Đoàn Bảo Phúc"),
-    ]:
-        if name in t_norm:
-            return canon
+    for cname in sorted(canonical_names, key=lambda s: len(strip_accents(s)), reverse=True):
+        c_norm = strip_accents(cname)
+        if re.search(rf"(?<![a-z0-9]){re.escape(c_norm)}(?![a-z0-9])", t_norm):
+            return cname
 
-    for last, canon in [
-        ("an", "Đàm Lan An"),
-        ("dat", "Hà Loan Đạt"),
-        ("duc", "Lương Chi Đức"),
-        ("phuc", "Đoàn Bảo Phúc"),
-    ]:
-        if re.search(rf"\b(?:tho|a|anh)\s+{last}\b", t_norm):
-            return canon
-
+    for last_tok, cname in _last_token_unique_map(canonical_names).items():
+        if re.search(rf"\b(?:tho|a|anh|chu|chi|em)\s+{re.escape(last_tok)}\b", t_norm):
+            return cname
     return None
 
 
@@ -101,26 +187,35 @@ def filter_df_by_period(
     as_of_date: str | None = None,
 ) -> pd.DataFrame | None:
     """Strictly filter dataframe by temporal expressions; returns None if undefined."""
-    if "th9/2025" in t_norm and "th11/2025" in t_norm:
-        return df[df["month"].isin(["2025-09", "2025-10", "2025-11"])]
+    m_span = re.search(
+        r"\b(?:th(?:ang)?\s*|t)?(\d{1,2})/(\d{4})\s*(?:den|toi|->|-)(?:\s*(?:het|cuoi))?\s*(?:th(?:ang)?\s*|t)?(\d{1,2})/(\d{4})\b",
+        t_norm,
+    )
+    if m_span:
+        m1, y1, m2, y2 = (int(g) for g in m_span.groups())
+        if 1 <= m1 <= 12 and 1 <= m2 <= 12 and (y1, m1) <= (y2, m2):
+            span_months: list[str] = []
+            yr, mo = y1, m1
+            while (yr, mo) <= (y2, m2) and len(span_months) < 24:
+                span_months.append(f"{yr:04d}-{mo:02d}")
+                mo += 1
+                if mo > 12:
+                    mo = 1
+                    yr += 1
+            return df[df["month"].isin(span_months)]
     if p.month_str:
         return df[df["month"] == p.month_str]
     if p.quarter_str:
-        q_months = {
-            "2025-Q3": ["2025-07", "2025-08", "2025-09"],
-            "2025-Q4": ["2025-10", "2025-11", "2025-12"],
-            "2026-Q1": ["2026-01", "2026-02", "2026-03"],
-            "2026-Q2": ["2026-04", "2026-05", "2026-06"],
-        }.get(p.quarter_str, [])
-        return df[df["month"].isin(q_months)]
+        m_q = re.match(r"^(\d{4})-Q([1-4])$", p.quarter_str)
+        if m_q:
+            yr, q_num = int(m_q.group(1)), int(m_q.group(2))
+            start_m = (q_num - 1) * 3 + 1
+            q_months = [f"{yr:04d}-{mm:02d}" for mm in range(start_m, start_m + 3)]
+            return df[df["month"].isin(q_months)]
     if p.exact_date:
         return df[df["date_str"] == p.exact_date]
     if p.start_date and p.end_date:
         return df[(df["date_str"] >= p.start_date) & (df["date_str"] <= p.end_date)]
-    if "thang 1" in t_norm or "thang mot" in t_norm:
-        return df[df["month"] == "2026-01"]
-    if "08/2026" in t_norm or "t8/2026" in t_norm:
-        return df[df["month"] == "2026-08"]
     if ("thang ni" in t_norm or "thang nay" in t_norm) and as_of_date:
         return df[df["month"] == as_of_date[:7]]
     return None
@@ -131,7 +226,7 @@ def resolve_repair_shop_query(
     context: BusinessContext,
     as_of_date: str | None = None,
 ) -> tuple[str, Any, str | None]:
-    """Resolve queries for repair shop businesses (dev_012) using exact deterministic rules."""
+    """Resolve queries for repair shop businesses (`so_sua_xe`) using schema-driven rules."""
     if "so_sua_xe" not in context.tables:
         return "abstain", None, "Không tìm thấy bảng so_sua_xe"
 
@@ -139,7 +234,8 @@ def resolve_repair_shop_query(
     if df.empty:
         return "abstain", None, "Bảng so_sua_xe rỗng"
 
-    df["tho_canonical"] = df["tho"].apply(get_canonical_tho)
+    canon_names, commission_rates = _load_tho_registry(context, df)
+    df["tho_canonical"] = df["tho"].apply(lambda x: canonicalize_tho_name(x, canon_names))
     df["plate"] = df["xe"].apply(extract_plate)
     df["month"] = pd.to_datetime(df["ngay"]).dt.strftime("%Y-%m")
     df["date_str"] = pd.to_datetime(df["ngay"]).dt.strftime("%Y-%m-%d")
@@ -170,7 +266,7 @@ def resolve_repair_shop_query(
         if sub is not None and not sub.empty:
             sub = sub.copy()
             sub["day"] = pd.to_datetime(sub["ngay"]).dt.date
-            sub["c_tho"] = sub["tho"].apply(get_canonical_tho)
+            sub["c_tho"] = sub["tho_canonical"]
             top_tho = sub.groupby("c_tho")["day"].nunique().idxmax()
             return "string", str(top_tho), None
 
@@ -187,11 +283,13 @@ def resolve_repair_shop_query(
     ) and any(
         k in t_norm for k in ["bang", "xep", "giam dan", "cao xuong thap", "cho a xin"]
     ):
+        if not commission_rates:
+            return "abstain", None, "Không tìm thấy bảng tỷ lệ hoa hồng của thợ"
         sub = filter_df_by_period(df, p, t_norm, as_of_date)
         if sub is None or sub.empty:
             return "abstain", None, "Không xác định được khoảng thời gian"
         res = []
-        for tho, r in HOA_HONG_RATES.items():
+        for tho, r in commission_rates.items():
             s_rev = sub[sub["tho_canonical"] == tho]["tien"].sum()
             res.append([tho, int(round(s_rev * r))])
         res = sorted(res, key=lambda x: x[1], reverse=True)
@@ -199,24 +297,28 @@ def resolve_repair_shop_query(
 
     # 2. Commission single tho: 'hoa hong', 'hue hong'
     if any(k in t_norm for k in ["hoa hong", "hue hong"]):
+        if not commission_rates:
+            return "abstain", None, "Không tìm thấy bảng tỷ lệ hoa hồng của thợ"
         sub = filter_df_by_period(df, p, t_norm, as_of_date)
         if sub is None or sub.empty:
             return "abstain", None, "Không xác định được khoảng thời gian"
-        matched_tho = extract_specific_tho(t_norm)
-        if matched_tho:
+        matched_tho = extract_specific_tho(t_norm, canon_names)
+        if matched_tho and matched_tho in commission_rates:
             s_rev = sub[sub["tho_canonical"] == matched_tho]["tien"].sum()
-            return "number", int(round(s_rev * HOA_HONG_RATES[matched_tho])), None
+            return "number", int(round(s_rev * commission_rates[matched_tho])), None
         # Top tho commission: 'tho mo hoa hong cao nhat', 'tho nao hoa hong cao nhat'
         if any(k in t_norm for k in ["cao nhat", "nhieu nhat"]):
             hh_scores = {
                 tho: sub[sub["tho_canonical"] == tho]["tien"].sum() * r
-                for tho, r in HOA_HONG_RATES.items()
+                for tho, r in commission_rates.items()
             }
+            if not hh_scores:
+                return "abstain", None, "Không tính được hoa hồng của thợ"
             top_tho = max(hh_scores.items(), key=lambda x: x[1])[0]
             return "string", top_tho, None
 
     # 3. Technician sales / money: 'tho X ... bao nhieu tien', 'ban tong cong bnhiu tien', 'tien hang cac phieu tho X'
-    spec_tho = extract_specific_tho(t_norm)
+    spec_tho = extract_specific_tho(t_norm, canon_names)
     if spec_tho and any(
         k in t_norm
         for k in [

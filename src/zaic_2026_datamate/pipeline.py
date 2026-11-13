@@ -27,6 +27,22 @@ class PipelineConfig:
             raise ValueError("confidence_threshold must be finite and between 0 and 1")
 
 
+def production_pipeline_config(
+    enable_slow_path: bool = False,
+    model: str = "datamate-business24",
+    confidence_threshold: float = 0.95,
+) -> PipelineConfig:
+    """Return the canonical production config shared by Train, Holdout, and Submission gates."""
+    return PipelineConfig(
+        enable_slow_path=enable_slow_path,
+        order_paraphrases=True,
+        monthly_growth=True,
+        mtd_growth=True,
+        model=model,
+        confidence_threshold=confidence_threshold,
+    )
+
+
 def build_agent(
     config: PipelineConfig, llm_client: LLMClient | None = None
 ) -> HybridAgent | MonthlyGrowthAgent | MTDGrowthAgent:

@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import logging
 import re
+import unicodedata
 from typing import Any
 
 from zaic_2026_datamate.data_loader import BusinessContext
@@ -210,8 +211,24 @@ def resolve_multi_month_query(
 
     r1, r2, r3 = revs[0], revs[1], revs[2]
 
+    q_norm = re.sub(
+        r"\s+",
+        " ",
+        "".join(
+            ch
+            for ch in unicodedata.normalize("NFD", q_lower.replace("đ", "d"))
+            if unicodedata.category(ch) != "Mn"
+        ),
+    ).strip()
+
     # 1. Boolean continuous growth
-    if any(
+    has_monotone_ask = bool(
+        re.search(
+            r"\b(?:co|cos)?\s*(?:tang|giam)\s+lien\s+tuc\b|\blien\s+tuc\s+(?:tang|giam)\b|\b(?:luon|deu)\s+(?:cao\s+hon|tang|giam)\b",
+            q_norm,
+        )
+    )
+    if has_monotone_ask or any(
         k in q_lower
         for k in [
             "phải ko",
@@ -224,7 +241,7 @@ def resolve_multi_month_query(
             "hả",
             "hông",
             "hong",
-            "khoong??",
+            "khoong",
             "ko ha",
             "co tang lien tuc",
             "có tăng liên tục",
@@ -234,11 +251,16 @@ def resolve_multi_month_query(
             "deu cao hon",
         ]
     ):
-        is_increasing = r1 < r2 < r3
-        return "boolean", is_increasing, None
+        is_decreasing = bool(re.search(r"\bgiam\s+lien\s+tuc\b|\blien\s+tuc\s+giam\b", q_norm))
+        return "boolean", (r1 > r2 > r3) if is_decreasing else (r1 < r2 < r3), None
 
     # 2. Highest / Peak month
-    if any(
+    if bool(
+        re.search(
+            r"\bthang\s+naof?\b|\b(?:cao|lon|nhieu)\s+nh(?:at|aast|ut|atf)f?\b",
+            q_norm,
+        )
+    ) or any(
         k in q_lower
         for k in [
             "cao nhất",
@@ -246,6 +268,10 @@ def resolve_multi_month_query(
             "cao nhứt",
             "cao nhut",
             "caonhất",
+            "lớn nhất",
+            "lon nhat",
+            "nhiều nhất",
+            "nhieu nhat",
             "tháng nào",
             "thang nao",
         ]

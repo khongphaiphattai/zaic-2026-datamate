@@ -11,7 +11,7 @@ import re
 import sqlite3
 import unicodedata
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -69,7 +69,7 @@ def _parse_single_date(val: Any, sheet_year: int | None = None) -> str | None:
     """Deterministically parse a date string or serial into ISO format 'YYYY-MM-DD HH:MM:SS', preserving timestamp."""
     if pd.isna(val):
         return None
-    if isinstance(val, (datetime, pd.Timestamp)):
+    if isinstance(val, (datetime, date, pd.Timestamp)):
         return val.strftime("%Y-%m-%d %H:%M:%S")
     val_str = str(val).strip()
     if not val_str or val_str.lower() in ("nan", "nat", "none", "null"):
@@ -250,7 +250,7 @@ def clean_dataframe(df: pd.DataFrame) -> tuple[pd.DataFrame, dict[str, str]]:
             sheet_year = int(m_yr.group(0))
 
     # Normalize data types
-    for orig_col, clean_col in col_mapping.items():
+    for _orig_col, clean_col in col_mapping.items():
         s = cleaned_df[clean_col]
         if s.dropna().empty:
             continue
@@ -261,6 +261,8 @@ def clean_dataframe(df: pd.DataFrame) -> tuple[pd.DataFrame, dict[str, str]]:
                 k in clean_col
                 for k in [
                     "thoi_gian",
+                    "thoi_diem",
+                    "tao_luc",
                     "ngay",
                     "date",
                     "time",
@@ -272,7 +274,7 @@ def clean_dataframe(df: pd.DataFrame) -> tuple[pd.DataFrame, dict[str, str]]:
             )
             or bool(re.search(r"\bhan\b", clean_col))
             or pd.api.types.is_datetime64_any_dtype(s)
-        ) and not ("han_gop" in clean_col)
+        ) and "han_gop" not in clean_col
 
         if is_date_col:
             if not pd.api.types.is_datetime64_any_dtype(s):
@@ -600,7 +602,6 @@ class DataLoader:
             self.data_dir.parent / "calendar.csv",
             self.data_dir.parent.parent / "calendar.csv",
             Path("data/train/train/calendar.csv"),
-            Path("data/public_test/public_test/calendar.csv"),
         ]
         for c in candidates:
             if c.is_file():

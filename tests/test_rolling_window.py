@@ -3,6 +3,7 @@ from zaic_2026_datamate.data_loader import DataLoader
 from zaic_2026_datamate.rolling_window import resolve_rolling_window_query
 
 
+@pytest.mark.slow
 def test_rolling_window_train_cases():
     loader = DataLoader(data_dir="data/train/train/data")
 

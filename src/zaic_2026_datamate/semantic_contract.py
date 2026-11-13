@@ -84,12 +84,28 @@ def norm_vn(text: Any) -> str:
     s = re.sub(r"\bdduowcj\b", "duoc", s)
     s = re.sub(r"\bcko\b", "cho", s)
     s = re.sub(r"\btoor?g\s*coor?g\b", "tong cong", s)
+    s = re.sub(r"\bsoos\b", "so", s)
+    s = re.sub(r"\btoonf\b", "ton", s)
+    s = re.sub(r"\bthangs\b", "thang", s)
+    s = re.sub(r"\bngayf\b", "ngay", s)
+    s = re.sub(r"\btieenf\b", "tien", s)
     s = re.sub(
         r"\bmi\s+(?=(?:don|cuon|cay|ly|cai|mon|tram|trieu|nghin|k\b|ngay|thang|hop|chai|lon|phan|khach))",
         "may ",
         s,
     )
     return re.sub(r"\s+", " ", s).strip()
+
+
+_UNIT_SPACE_RE = re.compile(r"\b(\d+)\s+(ml|l|g|kg|mg|cm|mm|mcg|iu)\b")
+
+
+def _item_norm_key(text: Any) -> str:
+    """Normalize an item name/ID for grouping, collapsing pack-unit spaces (e.g. '330 ml' -> '330ml')."""
+    s = norm_vn(text)
+    if not s:
+        return ""
+    return _UNIT_SPACE_RE.sub(r"\1\2", s)
 
 
 def clean_spaces_lower(text: Any) -> str:
@@ -510,6 +526,7 @@ class BusinessSemanticContract:
                         c
                         for c in (
                             "ten_goi",
+                            "khach_hang_ten",
                             "ten_khach_hang",
                             "ten_kh",
                             "tenkh",
@@ -517,6 +534,7 @@ class BusinessSemanticContract:
                             "ten",
                             "khach_le_si",
                             "khach_hang",
+                            "kh",
                         )
                         if c in cols
                     ),
@@ -652,12 +670,15 @@ class BusinessSemanticContract:
                 for iv, nv in zip(df[id_col], df[name_col]):
                     inorm = norm_vn(iv)
                     nnorm = norm_vn(nv)
+                    nkey = _item_norm_key(nv)
                     if inorm and nnorm:
                         name_to_id[nnorm] = str(iv).strip()
+                        if nkey:
+                            name_to_id.setdefault(nkey, str(iv).strip())
                         id_to_name[inorm] = str(nv).strip()
 
             if cat_col:
-                for idx, row in df.iterrows():
+                for _idx, row in df.iterrows():
                     c_val = clean_spaces_lower(row[cat_col])
                     if not c_val:
                         continue
@@ -861,9 +882,84 @@ class BusinessSemanticContract:
         )
 
     @staticmethod
-    def _build_conversion_map(context: BusinessContext) -> dict[str, float]:
-        """Parse unit conversion factors for bulk packaging units (e.g. 1 thùng = 6 bịch / 1 hộp = 10 vỉ)."""
-        conv_map: dict[str, float] = {}
+    def _canonicalize_item_names(
+        name_series: pd.Series | None,
+        raw_ids: pd.Series,
+        id_to_name: dict[str, str],
+    ) -> tuple[pd.Series, dict[str, str]]:
+        """Resolve item names via ID-first catalog lookup and compact key canonicalization."""
+        from collections import Counter
+
+        def _clean(val: Any) -> str:
+            return re.sub(r"\s+", " ", str(val)).strip()
+
+        canon_by_key: dict[str, str] = {}
+        for cname in id_to_name.values():
+            cleaned = _clean(cname)
+            nkey = _item_norm_key(cleaned)
+            if cleaned and nkey and nkey not in canon_by_key:
+                canon_by_key[nkey] = cleaned
+
+        raw_vals = (
+            list(name_series.fillna(""))
+            if name_series is not None
+            else [""] * len(raw_ids)
+        )
+        candidates: list[str] = []
+        for x, iid in zip(raw_vals, raw_ids):
+            raw_str = _clean(x)
+            inorm = norm_vn(iid)
+            if " + " in raw_str:
+                candidates.append(raw_str)
+                continue
+            if inorm and inorm not in ("nan", "none") and inorm in id_to_name:
+                candidates.append(_clean(id_to_name[inorm]))
+                continue
+            xnorm = norm_vn(raw_str)
+            if (xnorm in id_to_name) or not raw_str:
+                candidates.append(_clean(id_to_name.get(xnorm, raw_str)))
+            else:
+                candidates.append(raw_str)
+
+        counts: Counter[tuple[str, str]] = Counter()
+        first_seen: dict[tuple[str, str], int] = {}
+        for idx_i, cand in enumerate(candidates):
+            if not cand or " + " in cand:
+                continue
+            nkey = _item_norm_key(cand)
+            if not nkey or nkey in canon_by_key:
+                continue
+            counts[(nkey, cand)] += 1
+            first_seen.setdefault((nkey, cand), idx_i)
+
+        best_score: dict[str, tuple[int, int, int, int, int]] = {}
+        for (nkey, cand), cnt in counts.items():
+            score = (
+                int(any(ord(ch) > 127 for ch in cand)),
+                int(cand != cand.upper()),
+                cnt,
+                int(_UNIT_SPACE_RE.search(cand.lower()) is None),
+                -first_seen[(nkey, cand)],
+            )
+            if nkey not in best_score or score > best_score[nkey]:
+                best_score[nkey] = score
+                canon_by_key[nkey] = cand
+
+        resolved = [
+            cand if " + " in cand else canon_by_key.get(_item_norm_key(cand), cand)
+            for cand in candidates
+        ]
+        idx_out = name_series.index if name_series is not None else raw_ids.index
+        return pd.Series(resolved, index=idx_out, dtype="object"), canon_by_key
+
+    @staticmethod
+    def _build_unit_conversion_map(
+        context: BusinessContext,
+    ) -> tuple[dict[tuple[str, str], float], dict[str, float], set[str]]:
+        """Parse (item, unit) -> base-unit conversion ratios plus legacy item fallbacks."""
+        unit_conv: dict[tuple[str, str], float] = {}
+        fallback_conv: dict[str, float] = {}
+        has_explicit_unit: set[str] = set()
         for tname, df in context.tables.items():
             if not any(
                 k in tname
@@ -877,46 +973,168 @@ class BusinessSemanticContract:
                 )
             ):
                 continue
-            cols = [c.lower() for c in df.columns]
+            cols_map = {c.lower(): c for c in df.columns}
+            cols = list(cols_map.keys())
             item_col = next(
                 (
-                    c
+                    cols_map[c]
                     for c in cols
-                    if any(
+                    if c in ("hang", "ten_mon")
+                    or any(
                         k in c
-                        for k in ("ten_hang", "ten_sp", "ma_hang", "ma_sp", "hang_hoa")
+                        for k in (
+                            "ten_hang",
+                            "ten_sp",
+                            "ten_san_pham",
+                            "hang_hoa",
+                        )
                     )
                 ),
                 None,
             )
-            ratio_col = next(
+            id_col = next(
                 (
-                    c
+                    cols_map[c]
                     for c in cols
-                    if any(
-                        k in c for k in ("he_so_quy_doi", "ti_le_quy_doi", "quy_doi")
+                    if c in ("ma_hang", "ma_sp", "ma_hh", "ma_san_pham")
+                ),
+                None,
+            )
+            ratio_col = None
+            for kw in (
+                "he_so_quy_doi",
+                "ti_le_quy_doi",
+                "ty_le_quy_doi",
+                "he_so_qd",
+                "he_so",
+                "quy_doi",
+            ):
+                ratio_col = next(
+                    (
+                        cols_map[c]
+                        for c in cols
+                        if kw in c and not c.startswith(("don_vi", "dv_"))
+                    ),
+                    None,
+                )
+                if ratio_col:
+                    break
+            big_unit_col = next(
+                (
+                    cols_map[c]
+                    for c in cols
+                    if c
+                    in (
+                        "dv_lon",
+                        "dv_nhap",
+                        "don_vi_quy_doi",
+                        "don_vi_lon",
+                        "dv_quy_doi",
                     )
                 ),
                 None,
             )
-            if item_col and ratio_col:
-                sub_df = df[df[ratio_col].notna()]
-                for _, r in sub_df.iterrows():
-                    item = norm_vn(r[item_col])
-                    val = r[ratio_col]
-                    if not item:
-                        continue
-                    if isinstance(val, (int, float)) and val > 0:
-                        conv_map[item] = float(val)
-                    elif isinstance(val, str):
-                        m = re.search(r"=\s*(\d+(?:[.,]\d+)?)\s*\w+", val)
-                        if m:
-                            conv_map[item] = float(m.group(1).replace(",", "."))
-                        else:
-                            m2 = re.search(r"^\d+(?:[.,]\d+)?$", val.strip())
-                            if m2:
-                                conv_map[item] = float(m2.group(0).replace(",", "."))
-        return conv_map
+            if not ((item_col or id_col) and ratio_col):
+                continue
+            sub_df = df[df[ratio_col].notna()]
+            for _, r in sub_df.iterrows():
+                item = _item_norm_key(r[item_col]) if item_col else ""
+                item_id = norm_vn(r[id_col]) if id_col else ""
+                val = r[ratio_col]
+                if not item and not item_id:
+                    continue
+                factor: float | None = None
+                explicit_u = ""
+                if isinstance(val, (int, float)) and val > 0:
+                    factor = float(val)
+                elif isinstance(val, str):
+                    val_norm = norm_vn(val)
+                    m_lhs = re.search(r"\b1\s+([a-z0-9\s]+?)\s*=", val_norm)
+                    if m_lhs:
+                        explicit_u = m_lhs.group(1).strip()
+                    m = re.search(r"=\s*(\d+(?:[.,]\d+)?)\s*\w+", val)
+                    if m:
+                        factor = float(m.group(1).replace(",", "."))
+                    else:
+                        m2 = re.search(r"^\d+(?:[.,]\d+)?$", val.strip())
+                        if m2:
+                            factor = float(m2.group(0).replace(",", "."))
+                if factor is None or factor <= 0:
+                    continue
+                if big_unit_col and pd.notna(r[big_unit_col]):
+                    bu = norm_vn(r[big_unit_col])
+                    if bu:
+                        explicit_u = bu
+                if explicit_u:
+                    if item:
+                        unit_conv[(item, explicit_u)] = factor
+                        has_explicit_unit.add(item)
+                    if item_id:
+                        unit_conv[(item_id, explicit_u)] = factor
+                        has_explicit_unit.add(item_id)
+                else:
+                    if item:
+                        fallback_conv[item] = factor
+                    if item_id:
+                        fallback_conv[item_id] = factor
+        return unit_conv, fallback_conv, has_explicit_unit
+
+    @classmethod
+    def _compute_raw_and_base_quantities(
+        cls,
+        df: pd.DataFrame,
+        rev_series: pd.Series,
+        raw_qty_col: str | None,
+        base_qty_col: str | None,
+        unit_col: str | None,
+        price_col: str | None,
+        item_names: pd.Series,
+        item_ids: pd.Series,
+        context: BusinessContext,
+    ) -> tuple[pd.Series, pd.Series]:
+        """Compute raw and converted base quantities, recovering missing qty from revenue/price."""
+        if raw_qty_col:
+            rq_num = pd.to_numeric(df[raw_qty_col], errors="coerce")
+            if price_col is not None:
+                uprice = pd.to_numeric(df[price_col], errors="coerce")
+                mask_rec = rq_num.isna() & uprice.gt(0) & rev_series.gt(0)
+                if mask_rec.any():
+                    rq_num = rq_num.where(
+                        ~mask_rec, (rev_series / uprice).round(6)
+                    )
+            raw_qtys = rq_num.fillna(1.0)
+        else:
+            raw_qtys = pd.Series(1.0, index=df.index)
+
+        unit_conv, fallback_conv, has_explicit = cls._build_unit_conversion_map(context)
+        if unit_col and (unit_conv or fallback_conv):
+            units = df[unit_col].fillna("").astype(str).map(norm_vn)
+            bqtys: list[float] = []
+            for rq, u, iname, iid in zip(raw_qtys, units, item_names, item_ids):
+                iname_norm = _item_norm_key(iname)
+                iid_norm = norm_vn(iid)
+                factor = unit_conv.get((iname_norm, u)) or unit_conv.get(
+                    (iid_norm, u)
+                )
+                if factor is None:
+                    factor = 1.0
+                    if u in ("thung", "hop", "loc"):
+                        if iname_norm not in has_explicit and iname_norm in fallback_conv:
+                            factor = fallback_conv[iname_norm]
+                        elif iid_norm not in has_explicit and iid_norm in fallback_conv:
+                            factor = fallback_conv[iid_norm]
+                bqtys.append(float(rq) * float(factor))
+            converted_base = pd.Series(bqtys, index=df.index, dtype="float64")
+        else:
+            converted_base = raw_qtys.astype("float64")
+
+        if base_qty_col:
+            base_qtys = pd.to_numeric(df[base_qty_col], errors="coerce").fillna(
+                converted_base
+            )
+        else:
+            base_qtys = converted_base
+        return raw_qtys, base_qtys
 
     @staticmethod
     def _identify_header_and_detail_tables(
@@ -1065,6 +1283,7 @@ class BusinessSemanticContract:
                 "ngay_tao",
                 "ngay_thang",
                 "ngay_ban",
+                "ngay_mua",
                 "ngay_lap",
                 "ngay_hd",
                 "ngay_giao_dich",
@@ -1164,7 +1383,14 @@ class BusinessSemanticContract:
         h_cust_name_col = next(
             (
                 c
-                for c in ("ten_khach_hang", "ten_kh", "tenkh", "khach_hang")
+                for c in (
+                    "ten_khach_hang",
+                    "khach_hang_ten",
+                    "ten_kh",
+                    "tenkh",
+                    "khach_hang",
+                    "kh",
+                )
                 if c in h_cols
             ),
             None,
@@ -1212,7 +1438,12 @@ class BusinessSemanticContract:
                     "chi_tiet_hang",
                     "ten_san_pham",
                     "ten_hang_hoa",
+                    "ten_sp",
+                    "ten_mon",
                     "mat_hang",
+                    "hang_hoa",
+                    "hang_ban",
+                    "san_pham",
                 )
                 if c in d_cols
             ),
@@ -1230,6 +1461,7 @@ class BusinessSemanticContract:
             (
                 c
                 for c in (
+                    "quy_ra_dv_le",
                     "so_luong_quy_doi",
                     "sl_quy_doi",
                     "so_luong_le",
@@ -1244,13 +1476,16 @@ class BusinessSemanticContract:
             (
                 c
                 for c in (
+                    "so_luong_hang",
                     "so_luong_san_pham",
                     "so_luong_ban",
                     "sl_ban",
                     "so_luong",
                     "sluong",
                     "soluong",
+                    "sl_thuc",
                     "sl",
+                    "s",
                     "quantity",
                     "qty",
                 )
@@ -1259,7 +1494,19 @@ class BusinessSemanticContract:
             None,
         )
         d_unit_col = next(
-            (c for c in ("don_vi_tinh", "dvt", "don_vi", "unit") if c in d_cols),
+            (
+                c
+                for c in ("don_vi_tinh", "donvi", "dv_tinh", "dvt", "don_vi", "unit")
+                if c in d_cols
+            ),
+            None,
+        )
+        d_price_col = next(
+            (
+                c
+                for c in ("don_gia", "gia_ban", "gia_1_dv", "gia", "gia_san_pham", "gia_le")
+                if c in d_cols
+            ),
             None,
         )
 
@@ -1270,59 +1517,28 @@ class BusinessSemanticContract:
         else:
             line_revs = pd.Series(0.0, index=detail_df.index)
 
-        if d_raw_qty_col:
-            raw_qtys = pd.to_numeric(detail_df[d_raw_qty_col], errors="coerce").fillna(
-                1.0
-            )
-        else:
-            raw_qtys = pd.Series(1.0, index=detail_df.index)
-
-        conv_map = cls._build_conversion_map(context)
-        if d_base_qty_col:
-            base_qtys = pd.to_numeric(
-                detail_df[d_base_qty_col], errors="coerce"
-            ).fillna(raw_qtys)
-        elif d_unit_col:
-            units = detail_df[d_unit_col].fillna("").astype(str).map(norm_vn)
-            bqtys: list[float] = []
-            for rq, u, iname in zip(
-                raw_qtys,
-                units,
-                detail_df[d_item_name_col] if d_item_name_col else raw_item_ids,
-            ):
-                factor = 1.0
-                if u in ("thung", "hop", "loc") and norm_vn(iname) in conv_map:
-                    factor = conv_map[norm_vn(iname)]
-                bqtys.append(float(rq) * factor)
-            base_qtys = pd.Series(bqtys, index=detail_df.index, dtype="float64")
-        else:
-            base_qtys = raw_qtys.copy()
-
         if d_item_id_col:
             raw_item_ids = detail_df[d_item_id_col].fillna("").astype(str).str.strip()
         else:
             raw_item_ids = pd.Series("", index=detail_df.index, dtype="object")
 
-        if d_item_name_col:
-            raw_item_names = pd.Series(
-                [
-                    re.sub(r"\s+", " ", id_to_name.get(norm_vn(x), str(x))).strip()
-                    if norm_vn(x) in id_to_name or not str(x).strip()
-                    else re.sub(r"\s+", " ", str(x)).strip()
-                    for x in detail_df[d_item_name_col].fillna("")
-                ],
-                index=detail_df.index,
-                dtype="object",
-            )
-        else:
-            raw_item_names = pd.Series(
-                [
-                    re.sub(r"\s+", " ", id_to_name.get(norm_vn(x), str(x))).strip()
-                    for x in raw_item_ids
-                ],
-                index=detail_df.index,
-                dtype="object",
-            )
+        raw_item_names, _ = cls._canonicalize_item_names(
+            detail_df[d_item_name_col] if d_item_name_col else None,
+            raw_item_ids,
+            id_to_name,
+        )
+
+        raw_qtys, base_qtys = cls._compute_raw_and_base_quantities(
+            detail_df,
+            line_revs,
+            d_raw_qty_col,
+            d_base_qty_col,
+            d_unit_col,
+            d_price_col if d_rev_col else None,
+            raw_item_names,
+            raw_item_ids,
+            context,
+        )
 
         # Map item_key, category, is_prescription, is_service_fee
         item_keys: list[str] = []
@@ -1333,10 +1549,11 @@ class BusinessSemanticContract:
         for iid, iname in zip(raw_item_ids, raw_item_names):
             inorm = norm_vn(iid)
             nnorm = norm_vn(iname)
+            nkey = _item_norm_key(iname)
             ikey = (
                 iid
                 if (inorm and inorm not in ("nan", "none"))
-                else name_to_id.get(nnorm, nnorm)
+                else name_to_id.get(nnorm) or name_to_id.get(nkey, nkey)
             )
             item_keys.append(str(ikey))
 
@@ -1608,6 +1825,7 @@ class BusinessSemanticContract:
                 "ngay_giao_dich",
                 "ngay_xuat",
                 "ngay_ban",
+                "ngay_mua",
                 "ngay_lap",
                 "ngay",
                 "date",
@@ -1766,14 +1984,17 @@ class BusinessSemanticContract:
                 for c in (
                     "ten_hang_hoa",
                     "ten_san_pham",
+                    "ten_sp",
                     "ten_mon",
                     "ten_thuoc",
                     "mat_hang",
                     "hang_hoa",
                     "hang_ban",
+                    "san_pham",
                     "ten_hang",
                     "hang",
                     "noi_dung",
+                    "product",
                 )
                 if c in cols and df[c].notna().any()
             ),
@@ -1794,6 +2015,7 @@ class BusinessSemanticContract:
             (
                 c
                 for c in (
+                    "quy_ra_dv_le",
                     "so_luong_quy_doi",
                     "sl_quy_doi",
                     "so_luong_le",
@@ -1808,13 +2030,16 @@ class BusinessSemanticContract:
             (
                 c
                 for c in (
+                    "so_luong_hang",
                     "so_luong_san_pham",
                     "so_luong_ban",
                     "sl_ban",
                     "so_luong",
                     "sluong",
                     "soluong",
+                    "sl_thuc",
                     "sl",
+                    "s",
                     "quantity",
                     "qty",
                 )
@@ -1823,7 +2048,19 @@ class BusinessSemanticContract:
             None,
         )
         unit_col = next(
-            (c for c in ("don_vi_tinh", "dvt", "don_vi", "unit") if c in cols),
+            (
+                c
+                for c in ("don_vi_tinh", "donvi", "dv_tinh", "dvt", "don_vi", "unit")
+                if c in cols
+            ),
+            None,
+        )
+        price_col = next(
+            (
+                c
+                for c in ("don_gia", "gia_ban", "gia_1_dv", "gia", "gia_san_pham", "gia_le")
+                if c in cols
+            ),
             None,
         )
 
@@ -1887,26 +2124,11 @@ class BusinessSemanticContract:
             if item_id_col
             else pd.Series("", index=df.index, dtype="object")
         )
-        if item_name_col:
-            raw_item_names = pd.Series(
-                [
-                    re.sub(r"\s+", " ", id_to_name.get(norm_vn(x), str(x))).strip()
-                    if norm_vn(x) in id_to_name or not str(x).strip()
-                    else re.sub(r"\s+", " ", str(x)).strip()
-                    for x in df[item_name_col].fillna("")
-                ],
-                index=df.index,
-                dtype="object",
-            )
-        else:
-            raw_item_names = pd.Series(
-                [
-                    re.sub(r"\s+", " ", id_to_name.get(norm_vn(x), str(x))).strip()
-                    for x in raw_item_ids
-                ],
-                index=df.index,
-                dtype="object",
-            )
+        raw_item_names, canon_by_key = cls._canonicalize_item_names(
+            df[item_name_col] if item_name_col else None,
+            raw_item_ids,
+            id_to_name,
+        )
         raw_inline_cats = (
             df[inline_cat_col]
             if inline_cat_col
@@ -1918,27 +2140,17 @@ class BusinessSemanticContract:
             else pd.Series(None, index=df.index, dtype="object")
         )
 
-        if raw_qty_col:
-            raw_qtys = pd.to_numeric(df[raw_qty_col], errors="coerce").fillna(1.0)
-        else:
-            raw_qtys = pd.Series(1.0, index=df.index)
-
-        conv_map = cls._build_conversion_map(context)
-        if base_qty_col:
-            base_qtys = pd.to_numeric(df[base_qty_col], errors="coerce").fillna(
-                raw_qtys
-            )
-        elif unit_col:
-            units = df[unit_col].fillna("").astype(str).map(norm_vn)
-            bqtys: list[float] = []
-            for rq, u, iname in zip(raw_qtys, units, raw_item_names):
-                factor = 1.0
-                if u in ("thung", "hop", "loc") and norm_vn(iname) in conv_map:
-                    factor = conv_map[norm_vn(iname)]
-                bqtys.append(float(rq) * factor)
-            base_qtys = pd.Series(bqtys, index=df.index, dtype="float64")
-        else:
-            base_qtys = raw_qtys.copy()
+        raw_qtys, base_qtys = cls._compute_raw_and_base_quantities(
+            df,
+            raw_revs,
+            raw_qty_col,
+            base_qty_col,
+            unit_col,
+            price_col if rev_col else None,
+            raw_item_names,
+            raw_item_ids,
+            context,
+        )
 
         # Filter out non-merchandise adjustment rows in dev_013 ('Voucher', 'Phí ship', 'Dùng ... điểm')
         is_adjustment_row = raw_item_names.isin(
@@ -2073,56 +2285,59 @@ class BusinessSemanticContract:
             if is_adj:
                 continue
 
-            # Special handling for inline topping in cafe tables (e.g. dev_002: "Trà đào cam sả (M) + Trân châu đen (7.000đ)" or "Matcha latte (M) + 2 Thạch cà phê (14.000đ)")
-            m_top = re.match(
-                r"^(.+?)\s*\+\s*(?:(\d+)\s+)?(.+?)\s*\(([\d.,]+)\s*(?:đ|d|đồng)?\)\s*$",
-                iname,
-                flags=re.IGNORECASE,
-            )
-            if m_top:
-                base_name = re.sub(r"\s+", " ", m_top.group(1)).strip()
-                top_qty_str = m_top.group(2) or "1"
-                top_name = re.sub(r"\s+", " ", m_top.group(3)).strip()
-                top_amt_str = m_top.group(4).replace(".", "").replace(",", "")
-                top_amt = float(top_amt_str) if top_amt_str.isdigit() else 0.0
-                base_amt = float(rev) - top_amt
-                base_norm = norm_vn(base_name)
+            # Special handling for inline topping in cafe tables via shared cleaner helper
+            if " + " in iname:
+                from zaic_2026_datamate.cleaner import split_inline_toppings
+
+                base_part, top_parts = split_inline_toppings(
+                    iname,
+                    line_revenue=float(rev),
+                    line_qty=float(rqty),
+                    line_base_qty=float(bqty),
+                )
+                base_canon = canon_by_key.get(
+                    _item_norm_key(base_part["name"]), base_part["name"]
+                )
+                base_norm = norm_vn(base_canon)
+                base_nkey = _item_norm_key(base_canon)
                 base_cat = clean_spaces_lower(icat) if pd.notna(icat) else ""
                 if not base_cat:
                     base_cat = name_to_cat.get(base_norm) or CAFE_CATEGORY_LOOKUP.get(
                         base_norm
                     )
-                base_key = name_to_id.get(base_norm, base_norm)
+                base_key = name_to_id.get(base_norm) or name_to_id.get(base_nkey, base_nkey)
 
-                # Base drink line
                 line_order_ids.append(oid)
                 line_item_keys.append(base_key)
-                line_item_names.append(base_name)
+                line_item_names.append(base_canon)
                 line_cats.append(base_cat)
                 line_rx.append(False)
                 line_svc.append(False)
-                line_amounts.append(base_amt)
-                line_qtys.append(float(rqty))
-                line_base_qtys.append(float(bqty))
+                line_amounts.append(base_part["amount"])
+                line_qtys.append(base_part["qty"])
+                line_base_qtys.append(base_part["base_qty"])
 
-                # Topping line
-                if top_amt > 0:
-                    top_key = norm_vn(f"topping {top_name}")
-                    line_order_ids.append(oid)
-                    line_item_keys.append(top_key)
-                    line_item_names.append(f"Topping {top_name}")
-                    line_cats.append("topping")
-                    line_rx.append(False)
-                    line_svc.append(False)
-                    line_amounts.append(top_amt)
-                    line_qtys.append(float(top_qty_str))
-                    line_base_qtys.append(float(top_qty_str))
+                for tp in top_parts:
+                    if tp["amount"] > 0:
+                        top_key = norm_vn(tp["name"])
+                        line_order_ids.append(oid)
+                        line_item_keys.append(top_key)
+                        line_item_names.append(tp["name"])
+                        line_cats.append("topping")
+                        line_rx.append(False)
+                        line_svc.append(False)
+                        line_amounts.append(tp["amount"])
+                        line_qtys.append(tp["qty"])
+                        line_base_qtys.append(tp["base_qty"])
                 continue
 
             inorm = norm_vn(iid)
             nnorm = norm_vn(iname)
-            ikey = name_to_id.get(nnorm) or (
-                iid if inorm and inorm not in ("nan", "none") else nnorm
+            nkey = _item_norm_key(iname)
+            ikey = (
+                name_to_id.get(nnorm)
+                or name_to_id.get(nkey)
+                or (iid if inorm and inorm not in ("nan", "none") else nkey)
             )
 
             cat = clean_spaces_lower(icat) if pd.notna(icat) else ""
@@ -2274,11 +2489,26 @@ def _extract_ordered_channels(q_norm: str) -> list[str]:
         m = re.search(pat, q_norm)
         if m:
             found.append((m.start(), ch_code))
-    # For 'điện thoại', match when preceded by channel context OR not preceded by 'cửa hàng'/'tiệm'/'shop'
-    m_phone = re.search(r"\b(?:dien thoai|ddieenj thoai|dien thoaij)\b", q_norm)
-    if m_phone and not re.search(
-        r"\b(?:cua hang|tiem|shop|sop)\s+(?:dien thoai|ddieenj thoai|dien thoaij)\b",
+    # For 'điện thoại', match explicit channel context OR standalone occurrences not modifying products/shops
+    m_phone_ctx = re.search(
+        r"\b(?:kenh|qua|dat|dat hang|dat mua|ban qua|mua qua|goi|tu|don|hotline)\s+(?:kenh\s+|qua\s+)?(?:dien thoai|ddieenj thoai|dien thoaij)\b",
         q_norm,
+    )
+    m_phone = m_phone_ctx or re.search(
+        r"\b(?:dien thoai|ddieenj thoai|dien thoaij)\b", q_norm
+    )
+    if m_phone and (
+        m_phone_ctx
+        or (
+            not re.search(
+                r"\b(?:cua hang|tiem|shop|sop|ke|op|op lung|gia|gia do|cap|sac|day|pin|man hinh|kinh|cuong luc|bao da|thay|sua|phu kien|linh kien|mat hang|san pham|ten)\s+(?:dien thoai|ddieenj thoai|dien thoaij)\b",
+                q_norm,
+            )
+            and not re.search(
+                r"\b(?:dien thoai|ddieenj thoai|dien thoaij)\s+(?:de ban|cu|moi|thong minh|cam ung)\b",
+                q_norm,
+            )
+        )
     ):
         found.append((m_phone.start(), "phone"))
     found.sort(key=lambda x: x[0])
@@ -3024,21 +3254,6 @@ def build_query_plan(
     ) and (contract.has_prescription or any("thuoc" in t for t in context.tables)):
         return None
 
-    # Guard: raw weight kg queries
-    if bool(re.search(r"\bkg\b", q_norm)) and not bool(
-        re.search(r"\b(?:ly|coc|lon|chai|hop|dia)\b", q_norm)
-    ):
-        return None
-
-    # Guard: multiple items ranking (Top 2+, K items) -> abstain to protect PA against list position variance
-    if bool(
-        re.search(
-            r"\b(?:top\s*[2-9]|top\s*1\d|[2-9]\s+(?:mat hang|san pham|sp|mon)|1\d\s+(?:mat hang|san pham|sp|mon))\b",
-            q_norm,
-        )
-    ):
-        return None
-
     # Guard: stock/import calculations (số nhập trừ số bán)
     if any(
         k in q_norm
@@ -3050,9 +3265,7 @@ def build_query_plan(
     if bool(re.search(r"\btrong\s+(?:ba|hai|bon|may|\d+)\s+thang\b", q_norm)):
         return None
 
-    # Guard: multi-unit restaurant biz_129
-    if context.business_id == "biz_129":
-        return None
+    # Removed biz_129 guard; handled generically via quy_ra_dv_le / dv_tinh / san_pham schema linking
 
     period = parse_enhanced_period(question, as_of_date)
     has_valid_period = bool(
@@ -3077,10 +3290,12 @@ def build_query_plan(
             "ngay mo doanh thu cao nhat",
             "ngay mo ban nhieu tien nhat",
             "doanh thu ngay mo cao nhat",
+            "bua nao ban nhieu tien nhat",
+            "bua nao ban nhieu tien nhut",
         )
     ) or bool(
         re.search(
-            r"\b(?:ngay\s+nao|ngay\s+mo|hom\s+nao)\b.*?\b(?:dthu|doanh\s+thu|ban)\b.*?\b(?:cao\s+nhat|len\s+cao\s+nhat|nhieu\s+tien\s+nhat)\b",
+            r"\b(?:ngay\s+nao|ngay\s+mo|hom\s+nao|bua\s+nao|bua\s+mo)\b.*?\b(?:dthu|doanh\s+thu|ban)\b.*?\b(?:cao\s+(?:nhat|nhut)|len\s+cao\s+(?:nhat|nhut)|nhieu\s+tien\s+(?:nhat|nhut)|nhieu\s+(?:nhat|nhut))\b",
             q_norm,
         )
     )
@@ -3147,7 +3362,7 @@ def build_query_plan(
             q_norm_ranked = re.sub(rf"\btop\s+{w_vn}\b", f"top {d_vn}", q_norm_ranked)
         m_top = re.search(r"\btop\s*(\d{1,2})\b", q_norm_ranked)
         m_count = re.search(
-            r"\b(\d{1,2})\s+(?:mat hang|hang hoa|san pham|sp|mon|hang)\b", q_norm_ranked
+            r"\b(\d{1,2})\s+(?:mat hangf?|hang hoa|san pham|sp|mon|hang)\b", q_norm_ranked
         )
         if m_top:
             limit_k = int(m_top.group(1))
@@ -3156,25 +3371,22 @@ def build_query_plan(
         else:
             limit_k = 1
 
-        # Only allow Top 1 single item for non-pharmacy businesses; Top K lists have high tie-breaking variance
+        # Allow Top-1 or bounded Top-K (<=10) for non-pharmacy businesses (weekly + monthly + explicit windows)
         if (
-            limit_k > 1
+            limit_k < 1
+            or limit_k > 10
             or contract.has_prescription
             or any("thuoc" in t for t in context.tables)
         ):
             return None
 
-        # Block relative week periods on ranking to avoid calendar anchor boundary mismatch
-        if period.is_last_week or period.is_this_week:
-            return None
-
-        output_type = "string"
+        output_type = "list" if limit_k > 1 else "string"
         return QueryPlan(
             operation="ranking_top_k",
             metric="base_quantity",
             period=period,
             target_dimension="item",
-            limit_k=1,
+            limit_k=limit_k,
             output_type=output_type,
         )
 
@@ -3217,7 +3429,10 @@ def build_query_plan(
             )
         )
         or bool(
-            re.search(r"\b(?:ngay|hom)\s+(?:nao\s+)?(?:co\s+)?nhieu\s+don\b", q_norm)
+            re.search(
+                r"\b(?:ngay|hom|bua)\s+(?:nao\s+|mo\s+)?(?:co\s+)?nhieu\s+don\b",
+                q_norm,
+            )
         )
     )
     if is_busiest_day and has_valid_period:
@@ -3238,6 +3453,7 @@ def build_query_plan(
             k in q_norm
             for k in (
                 "nhieu tien nhat",
+                "nhieu tien nhut",
                 "nhieu dthu nhat",
                 "nhieu doanh thu nhat",
                 "doanh thu cao nhat",
@@ -3250,7 +3466,15 @@ def build_query_plan(
         )
         and any(
             k in q_norm
-            for k in ("ngay nao", "ngay mo", "hom nao", "vao ngay nao", "ngaynao")
+            for k in (
+                "ngay nao",
+                "ngay mo",
+                "hom nao",
+                "vao ngay nao",
+                "ngaynao",
+                "bua nao",
+                "bua mo",
+            )
         )
     )
     if is_peak_rev_day and has_valid_period:
@@ -3465,6 +3689,8 @@ def build_query_plan(
             "thang nao",
             "ngay nao",
             "hom nao",
+            "bua nao",
+            "bua mo",
             "khach hang nao",
             "khach nao",
             "ai la khach",
@@ -3510,40 +3736,42 @@ def build_query_plan(
     )
 
     units_regex = r"(?:ly|coc|hộp|hop|lon|bịch|bich|chai|cái|cai|cuộn|cuon|viên|vien|kg|gói|goi|tô|to|bát|bat|chiếc|chiec|thùng|thung|vé|ve|đĩa|dia|suất|suat|nồi|noi|cây|cay|ống|ong|bộ|bo|can|thanh|tấm|tam|ram|tờ|to|mét|met|m|phần|phan|bình|binh|tuýp|tuyp|lọ|lo|vỉ|vi|lốc|loc|miếng|mieng)"
+    qty_ask_pat = r"(?:mấy|may|maays|mays|bao nhiêu|bao nhieu|bao nhiu|baonhieu|bnhiu|bn|nhiêu|nhieu|nhiu)"
     has_qty_q = (
         bool(
             re.search(
-                rf"\b(?:mấy|may|maays|mays|bao nhiêu|bao nhieu|baonhieu|bnhiu|bn|nhiêu|nhieu|tong so|tổng số|đếm|dem)\s+{units_regex}\b",
+                rf"\b(?:{qty_ask_pat[3:-1]}|tong so|tổng số|đếm|dem)\s+{units_regex}\b",
                 q_norm,
             )
         )
         or bool(
             re.search(
-                rf"\bso\s+{units_regex}\b.*?\b(?:la\s+(?:bao\s+)?(?:nhieu|nhiu)|(?:bao\s+)?(?:nhieu|nhiu)|bnhiu|bn)\b",
+                rf"\bso\s+{units_regex}\b.*?\b(?:la\s+{qty_ask_pat}|{qty_ask_pat})\b",
                 q_norm,
             )
         )
         or bool(
             re.search(
-                rf"\bban\s+(?:duoc|dc|ra)\s+(?:tong\s+cong\s+)?(?:bao\s+nhieu|may|maays|mays|nhiêu|nhieu|bnhiu|bn)\s+{units_regex}\b",
+                rf"\bban\s+(?:duoc|dc|ra)\s+(?:tong\s+cong\s+)?{qty_ask_pat}\s+{units_regex}\b",
                 q_norm,
             )
         )
         or bool(
             re.search(
-                rf"\bban\s+(?:duoc|dc|ra).*?\b(?:bao\s+nhieu|may|maays|mays|nhiêu|nhieu|bnhiu|bn)\s+{units_regex}\b",
+                rf"\bban\s+(?:duoc|dc|ra).*?\b{qty_ask_pat}\s+{units_regex}\b",
+                q_norm,
+            )
+        )
+        or bool(re.search(rf"\b{qty_ask_pat}\s+(?:ly|coc)\b", q_norm))
+        or bool(
+            re.search(
+                rf"\b(?:quan|cua hang)\s+ban\s+(?:duoc|dc|ra)\s+{qty_ask_pat}\s+(?:ly|coc)\b",
                 q_norm,
             )
         )
         or bool(
             re.search(
-                r"\b(?:mấy|may|maays|mays|bao nhiêu|bao nhieu|baonhieu|bnhiu|bn|nhiêu|nhieu)\s+ly\b",
-                q_norm,
-            )
-        )
-        or bool(
-            re.search(
-                r"\b(?:quan|cua hang)\s+ban\s+(?:duoc|dc|ra)\s+(?:bao nhieu|may|maays|mays|nhiêu|nhieu|bnhiu|bn)\s+ly\b",
+                r"\b(?:tong\s+)?so\s+luong\b(?!\s*(?:don|hoa\s+don|khach|nguoi|dh|bill)\b)",
                 q_norm,
             )
         )
@@ -3555,7 +3783,7 @@ def build_query_plan(
             q_norm,
         )
         or re.search(
-            rf"\b(?:bao\s+nhieu\s+tien|bnhiu\s+tien|bn\s+tien|bao\s+nhieu|bnhiu|bn)\s+(?:mot|1)\s+{units_regex}\b",
+            rf"\b(?:bao\s+nhieu\s+tien|bao\s+nhiu\s+tien|bnhiu\s+tien|bn\s+tien|{qty_ask_pat})\s+(?:mot|1)\s+{units_regex}\b",
             q_norm,
         )
     )
@@ -3590,7 +3818,7 @@ def build_query_plan(
 
     has_order_kw = bool(
         re.search(
-            r"\b(?:don(?!\s+gia)|ddown|dh|bill|hoa\s+don|phieu\s+sua\s+xe|phieu\s+sua|luot\s+xe)\b",
+            r"\b(?:don(?!\s+(?:gia|vi))|ddown|dh|bill|hoa\s+don|phieu\s+sua\s+xe|phieu\s+sua|luot\s+xe)\b",
             q_norm,
         )
     )
@@ -4221,10 +4449,9 @@ def calculate_debt_metric(
         return "abstain", None, "Không tìm thấy bảng đơn hàng"
 
     # Strict refusal gate: Only businesses with dedicated separate retail orders/customers schemas
-    # Combined POS tables (e.g. F&B in dev_003) have ambiguous receipt timing and must abstain cleanly.
-    if context.business_id == "dev_003" or ord_table_name in (
-        "ban_hang_tong_hop",
-        "ban_hang_tong_hop_ban_hang",
+    # Combined F&B POS tables (`ban_hang_tong_hop*`) have ambiguous receipt timing and must abstain cleanly.
+    if ord_table_name == "ban_hang_tong_hop" or ord_table_name.startswith(
+        "ban_hang_tong_hop_"
     ):
         return (
             "abstain",
@@ -4830,15 +5057,13 @@ def execute_query_plan(
                 else:
                     metric_expr = "SUM(base_quantity)"
 
-                fetch_limit = (
-                    max(plan.limit_k, 2) if plan.limit_k == 1 else plan.limit_k
-                )
+                fetch_limit = max(plan.limit_k + 1, 2)
                 sql = f"""
-                    SELECT item_name, item_key, {metric_expr} AS metric_val
+                    SELECT MODE(item_name) AS item_name, item_key, {metric_expr} AS metric_val
                     FROM canonical_order_lines
                     WHERE {date_where} AND {dim_where} AND is_service_fee = FALSE
                       AND item_name IS NOT NULL AND item_name != ''
-                    GROUP BY item_name, item_key
+                    GROUP BY item_key
                     ORDER BY metric_val DESC, item_key ASC
                     LIMIT {fetch_limit}
                 """
@@ -4846,20 +5071,22 @@ def execute_query_plan(
                 rows = conn.execute(sql).fetchall()
                 if not rows:
                     return "abstain", None, "Không có mặt hàng nào trong kỳ"
+                top_rows = rows[: plan.limit_k]
+                # Check ties within top_k and at the boundary top_k vs top_{k+1}
+                has_tie = any(
+                    rows[i][2] is not None and rows[i][2] == rows[i + 1][2]
+                    for i in range(min(len(rows) - 1, plan.limit_k))
+                )
+                if has_tie:
+                    return (
+                        "abstain",
+                        None,
+                        f"Đồng hạng mặt hàng top {plan.limit_k} (TIE) không thể xác định duy nhất",
+                    )
                 if plan.limit_k == 1:
-                    if (
-                        len(rows) >= 2
-                        and rows[0][2] is not None
-                        and rows[0][2] == rows[1][2]
-                    ):
-                        return (
-                            "abstain",
-                            None,
-                            "Đồng hạng mặt hàng top 1 (TIE) không thể xác định duy nhất",
-                        )
-                    return "string", str(rows[0][0]), None
+                    return "string", str(top_rows[0][0]), None
                 else:
-                    return "list", [str(r[0]) for r in rows], None
+                    return "list", [str(r[0]) for r in top_rows], None
 
             if plan.target_dimension == "customer":
                 if plan.metric == "order_count":

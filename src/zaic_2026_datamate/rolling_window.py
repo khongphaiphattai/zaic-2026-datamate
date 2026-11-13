@@ -13,11 +13,11 @@ Strictly grounded in verified DuckDB SQL formulas against Ground Truth (diff = 0
 from __future__ import annotations
 
 import re
-from datetime import datetime, timedelta
 from typing import Any, Tuple
 
 from zaic_2026_datamate.data_loader import BusinessContext
 from zaic_2026_datamate.intent_parser import (
+    find_header_detail_revenue_spec,
     find_primary_sales_table,
     find_revenue_column,
     get_valid_sales_status_clause,
@@ -26,7 +26,7 @@ from zaic_2026_datamate.intent_parser import (
 )
 
 
-def _find_item_name_col(context: BusinessContext, table: str) -> str | None:
+def find_item_name_col(context: BusinessContext, table: str) -> str | None:
     cols = list(context.tables[table].columns)
     for c in [
         "ten_hang",
@@ -47,7 +47,7 @@ def _find_item_name_col(context: BusinessContext, table: str) -> str | None:
     return None
 
 
-def _find_qty_col(context: BusinessContext, table: str) -> str | None:
+def find_qty_col(context: BusinessContext, table: str) -> str | None:
     cols = list(context.tables[table].columns)
     for c in [
         "s_lg",
@@ -62,6 +62,7 @@ def _find_qty_col(context: BusinessContext, table: str) -> str | None:
         "sl_dv_co_ban",
         "s",
         "sluong",
+        "so_luong_quy_doi",
     ]:
         if c in cols:
             return c
@@ -148,7 +149,7 @@ def resolve_rolling_window_query(
     ):
         return None
 
-    # Guard: Submissions asking about debt, loans, warranty, returns
+    # Guard: Submissions asking about debt, loans, warranty, returns, or current inventory
     if any(
         k in q
         for k in [
@@ -161,7 +162,25 @@ def resolve_rolling_window_query(
             "lô tồn",
             "hết hạn",
             "tuổi nợ",
+            "tồn kho",
+            "ton kho",
+            "trong kho",
+            "tồn cuối",
+            "ton cuoi",
+            "hộp chẵn",
+            "hop chan",
+            "viên lẻ",
+            "vien le",
+            "cái lẻ",
+            "cai le",
         ]
+    ) or bool(
+        re.search(r"\b(?:hàng\s+tồn|hang\s+ton|còn\s+tồn|con\s+ton)\b", q)
+    ) or (
+        bool(re.search(r"\b(?:còn|con)\s+(?:lại|lai|tồn|ton)?\s*(?:mấy|may|bao nhiêu|bao nhieu|bnhiu|bn)\b", q))
+        and not any(k in q for k in ["nợ", "no", "phải thu", "phai thu", "phải trả", "phai tra", "đơn", "don", "ngày", "ngay"])
+    ) or (
+        bool(re.search(r"\bkho\b.*\b(?:tồn|ton)\b|\b(?:tồn|ton)\b.*\bkho\b", q))
     ):
         return None
 
@@ -220,8 +239,11 @@ def resolve_rolling_window_query(
             "tu mung 1",
             "từ đầu năm",
             "tu dau nam",
+            "từ đầu nawm",
             "đầu năm",
             "dau nam",
+            "đầu nawm",
+            "dau nawm",
         ]
     ):
         return None
@@ -243,11 +265,12 @@ def resolve_rolling_window_query(
     )
 
     # -------------------------------------------------------------------------
-    # CASE A: Top K / Top 1 Items Sold in Period
+    # CASE A: Top K / Top 1 Items Sold in Period -> delegate to semantic_contract
+    # (which computes base_quantity with NaN recovery, danh_muc conversions, and tie safety)
     # -------------------------------------------------------------------------
     is_top_k = bool(
         re.search(
-            r"\b(?:top\s*\d+|tóp\s*\d+|\d+\s*mặt hàng|\d+\s*món|\d+\s*sp)\s+bán\s+(?:chạy|nhiều)\s+nhất\b",
+            r"\b(?:top\s*\d+|tóp\s*\d+|\d+\s*(?:mặt\s*hàng\w*|mat\s*hang\w*|món|mon|sp|sản\s*phẩm\w*))\s+(?:bán\s+)?(?:chạy|nhiều)\s+nhất\b",
             q,
         )
     )
@@ -263,36 +286,42 @@ def resolve_rolling_window_query(
             ]
         )
         and not is_top_k
-        and any(k in q for k in ["mặt hàng", "sp", "món", "san pham", "mặt hangf"])
+        and any(k in q for k in ["mặt hàng", "mat hang", "sp", "món", "san pham", "sản phẩm", "mặt hangf"])
     )
-    if is_top_1:
-        item_col = _find_item_name_col(context, tbl)
-        qty_col = _find_qty_col(context, tbl)
-        if item_col:
-            qty_expr = f"sum(TRY_CAST({qty_col} AS DOUBLE))" if qty_col else "count(*)"
-            sql = f"""
-                SELECT {item_col} as item, {qty_expr} as q
-                FROM {tbl}
-                WHERE {date_where}
-                  {status_clause}
-                GROUP BY {item_col}
-                ORDER BY q DESC
-                LIMIT 1
-            """
-            try:
-                res = context.query(sql)
-                if not res.empty:
-                    items = res["item"].dropna().tolist()
-                    if items:
-                        return "string", str(items[0]), None
-            except Exception:
-                pass
+    if is_top_k or is_top_1:
+        from zaic_2026_datamate.semantic_contract import resolve_semantic_plan
+
+        sem_type, sem_val, sem_reason = resolve_semantic_plan(question, context, as_of_date)
+        if sem_type != "abstain":
+            return sem_type, sem_val, sem_reason
+        return None
 
     # -------------------------------------------------------------------------
-    # CASE B: Unit Quantity (Tổng số đĩa, lon, gói, tô, ly, chai, chiếc)
+    # CASE B: Unit Quantity (Tổng số đĩa, lon, gói, tô, ly, chai, bình, cái, chiếc)
     # -------------------------------------------------------------------------
+    _UNIT_VARIANTS: dict[str, tuple[str, ...]] = {
+        "đĩa": ("đĩa", "dia"),
+        "lon": ("lon",),
+        "gói": ("gói", "goi"),
+        "tô": ("tô", "to"),
+        "bát": ("bát", "bat"),
+        "chai": ("chai",),
+        "ly": ("ly", "cốc", "coc"),
+        "bình": ("bình", "binh"),
+        "hộp": ("hộp", "hop"),
+        "bịch": ("bịch", "bich"),
+        "thùng": ("thùng", "thung"),
+        "chiếc": ("chiếc", "chiec"),
+        "cái": ("cái", "cai"),
+        "nồi": ("nồi", "noi"),
+        "con": ("con",),
+        "viên": ("viên", "vien"),
+        "vỉ": ("vỉ", "vi"),
+    }
+    _RAW_TO_CANON_UNIT = {v: canon for canon, variants in _UNIT_VARIANTS.items() for v in variants}
+
     unit_m = re.search(
-        r"\b(?:mấy|may|bao nhiêu|bao nhieu|bnhiu|bn|nhiêu|nhieu|tổng\s+bnhiu|tổng\s+bao\s+nhiêu|tổng cộng bao nhiêu)\s+(đĩa|dia|lon|gói|goi|tô|to|bát|bat|chai|ly|cốc|coc|bình|binh|hộp|hop|bịch|bich|thùng|thung|chiếc|chiec|cái|cai|nồi|noi|con)\b",
+        r"\b(?:mấy|may|bao nhiêu|bao nhieu|bnhiu|bn|nhiêu|nhieu|tổng\s+bnhiu|tổng\s+bao\s+nhiêu|tổng cộng bao nhiêu)\s+(đĩa|dia|lon|gói|goi|tô|to|bát|bat|chai|ly|cốc|coc|bình|binh|hộp|hop|bịch|bich|thùng|thung|chiếc|chiec|cái|cai|nồi|noi|con|viên|vien|vỉ|vi)\b",
         q,
     )
     if (
@@ -304,39 +333,82 @@ def resolve_rolling_window_query(
             r"\b(?:mấy|may|bao nhiêu|bao nhieu|bnhiu)\s+(?:ngày|ngay)\b", q
         )
     ):
-        raw_u = unit_m.group(1)
-        norm_u = (
-            "đĩa"
-            if raw_u in ["đĩa", "dia"]
-            else (
-                "lon"
-                if raw_u == "lon"
-                else (
-                    "gói"
-                    if raw_u in ["gói", "goi"]
-                    else (
-                        "tô"
-                        if raw_u in ["tô", "to"]
-                        else (
-                            "chai"
-                            if raw_u == "chai"
-                            else ("ly" if raw_u in ["ly", "cốc", "coc"] else raw_u)
-                        )
-                    )
-                )
-            )
-        )
-        qty_col = _find_qty_col(context, tbl)
-        unit_col = _find_unit_col(context, tbl)
+        canon_u = _RAW_TO_CANON_UNIT.get(unit_m.group(1), unit_m.group(1))
+        u_patterns = _UNIT_VARIANTS.get(canon_u, (canon_u,))
 
-        # If unit column is present directly in table
-        if qty_col and unit_col:
+        def _unit_like_sql(expr: str) -> str:
+            clauses = " OR ".join(f"lower(CAST({expr} AS VARCHAR)) LIKE '%{u}%'" for u in u_patterns)
+            return f"({clauses})"
+
+        def _pick_base_qty_col(cols: list[str]) -> str | None:
+            return next(
+                (
+                    c
+                    for c in (
+                        "sl_quy_doi",
+                        "so_luong_quy_doi",
+                        "so_luong_le",
+                        "sl_le",
+                        "quy_ra_dv_le",
+                        "sl_dv_co_ban",
+                    )
+                    if c in cols
+                ),
+                None,
+            )
+
+        tbl_cols = list(context.tables[tbl].columns)
+        qty_col = find_qty_col(context, tbl)
+        base_qty_col = _pick_base_qty_col(tbl_cols)
+        unit_col = _find_unit_col(context, tbl)
+        item_col = find_item_name_col(context, tbl)
+
+        # Flat table unit count: prefer precomputed base_qty_col when matching catalog base unit, or raw qty when row unit directly matches
+        if (qty_col or base_qty_col) and unit_col:
+            raw_first = (
+                f"COALESCE(NULLIF(TRY_CAST(t.{qty_col} AS DOUBLE), 'NaN'::DOUBLE), NULLIF(TRY_CAST(t.{base_qty_col} AS DOUBLE), 'NaN'::DOUBLE))"
+                if (base_qty_col and qty_col)
+                else f"NULLIF(TRY_CAST(t.{qty_col or base_qty_col} AS DOUBLE), 'NaN'::DOUBLE)"
+            )
+            base_first = (
+                f"COALESCE(NULLIF(TRY_CAST(t.{base_qty_col} AS DOUBLE), 'NaN'::DOUBLE), NULLIF(TRY_CAST(t.{qty_col} AS DOUBLE), 'NaN'::DOUBLE))"
+                if (base_qty_col and qty_col)
+                else f"NULLIF(TRY_CAST(t.{base_qty_col or qty_col} AS DOUBLE), 'NaN'::DOUBLE)"
+            )
+            flat_date_where = build_date_where_clause(f"t.{date_col}", period)
+            flat_status_clause = get_valid_sales_status_clause(
+                status_col, order_col=order_col, table=tbl, table_alias="t"
+            )
+            cat_join_sql = ""
+            if base_qty_col and item_col:
+                for cat_t, cat_df in context.tables.items():
+                    if cat_t.endswith("_sheet1") or not any(
+                        k in cat_t for k in ("danh_sach_hang", "danh_s_ich_h_ang", "danh_sach_san_pham", "san_pham")
+                    ):
+                        continue
+                    cat_cols = list(cat_df.columns)
+                    cat_name = next((c for c in ("ten_hang_hoa", "ten_hang", "ten_san_pham", "ten_sp", "ten_goi") if c in cat_cols), None)
+                    cat_u = next((c for c in ("don_vi_co_ban", "don_vi_co_so", "don_vi_tinh", "don_vi", "dvt") if c in cat_cols), None)
+                    if cat_name and cat_u:
+                        cat_join_sql = f"LEFT JOIN (SELECT lower(trim({cat_name})) AS k, max({cat_u}) AS u FROM {cat_t} GROUP BY 1) cat ON lower(trim(t.{item_col})) = cat.k"
+                        break
+            if cat_join_sql and base_qty_col:
+                eff_qty_expr = f"CASE WHEN {_unit_like_sql(f't.{unit_col}')} THEN {raw_first} ELSE {base_first} END"
+                unit_filter_sql = f"({_unit_like_sql(f't.{unit_col}')} OR (cat.u IS NOT NULL AND {_unit_like_sql('cat.u')}))"
+            else:
+                eff_qty_expr = (
+                    f"CASE WHEN {_unit_like_sql(f't.{unit_col}')} THEN {raw_first} ELSE {base_first} END"
+                    if base_qty_col
+                    else raw_first
+                )
+                unit_filter_sql = _unit_like_sql(f"t.{unit_col}")
             sql = f"""
-                SELECT sum(TRY_CAST({qty_col} AS DOUBLE)) as total_qty
-                FROM {tbl}
-                WHERE {date_where}
-                  AND lower({unit_col}) LIKE '%{norm_u}%'
-                  {status_clause}
+                SELECT sum({eff_qty_expr}) as total_qty
+                FROM {tbl} t
+                {cat_join_sql}
+                WHERE {flat_date_where}
+                  AND {unit_filter_sql}
+                  {flat_status_clause}
             """
             try:
                 res = context.query(sql)
@@ -346,21 +418,30 @@ def resolve_rolling_window_query(
             except Exception:
                 pass
 
-        # If dev_007 where unit is in danh_muc_hang
-        if "danh_muc_hang" in context.tables and qty_col:
+        # If unit is in danh_muc_hang (join sales table as c)
+        if "danh_muc_hang" in context.tables and (base_qty_col or qty_col):
             dm_cols = list(context.tables["danh_muc_hang"].columns)
-            item_col = _find_item_name_col(context, tbl) or "mat_hang"
+            item_col_dm = item_col or "mat_hang"
             dm_item = next(
                 (c for c in ["hang_ban", "ten_hang", "ten_sp"] if c in dm_cols), None
             )
             dm_unit = next((c for c in ["dvt", "don_vi_tinh"] if c in dm_cols), None)
-            if item_col and dm_item and dm_unit:
+            if item_col_dm and dm_item and dm_unit:
+                status_clause_c = get_valid_sales_status_clause(
+                    status_col, order_col=order_col, table=tbl, table_alias="c"
+                )
+                eff_dm_qty = (
+                    f"COALESCE(NULLIF(TRY_CAST(c.{base_qty_col} AS DOUBLE), 'NaN'::DOUBLE), NULLIF(TRY_CAST(c.{qty_col} AS DOUBLE), 'NaN'::DOUBLE))"
+                    if (base_qty_col and qty_col)
+                    else f"NULLIF(TRY_CAST(c.{base_qty_col or qty_col} AS DOUBLE), 'NaN'::DOUBLE)"
+                )
                 sql = f"""
-                    SELECT sum(TRY_CAST(c.{qty_col} AS DOUBLE)) as total_qty
+                    SELECT sum({eff_dm_qty}) as total_qty
                     FROM {tbl} c
-                    JOIN danh_muc_hang d ON lower(trim(c.{item_col})) = lower(trim(d.{dm_item}))
+                    JOIN danh_muc_hang d ON lower(trim(c.{item_col_dm})) = lower(trim(d.{dm_item}))
                     WHERE {build_date_where_clause(f"c.{date_col}", period)}
-                      AND lower(d.{dm_unit}) LIKE '%{norm_u}%'
+                      AND {_unit_like_sql(f"d.{dm_unit}")}
+                      {status_clause_c}
                 """
                 try:
                     res = context.query(sql)
@@ -370,18 +451,76 @@ def resolve_rolling_window_query(
                 except Exception:
                     pass
 
-        # If dev_010 where unit is in chi_tiet_don and date is in don_hang
-        if "chi_tiet_don" in context.tables and tbl == "don_hang":
-            ct_cols = list(context.tables["chi_tiet_don"].columns)
-            ct_qty = next((c for c in ["so_luong", "sl"] if c in ct_cols), None)
-            ct_unit = next((c for c in ["dvt", "don_vi_tinh"] if c in ct_cols), None)
-            if ct_qty and ct_unit:
+        # Header + detail schema (don_hang+chi_tiet_don or danh_sach_hoa_don+danh_sach_hoa_don_chi_tiet)
+        if order_col:
+            detail_candidates = [
+                t
+                for t in ("chi_tiet_don", f"{tbl}_chi_tiet")
+                if t in context.tables
+            ] + [
+                t
+                for t in context.tables
+                if "chi_tiet" in t and "nhap" not in t and not t.endswith("_sheet1")
+            ]
+            for ct_tbl in detail_candidates:
+                ct_cols = list(context.tables[ct_tbl].columns)
+                ct_join = next(
+                    (
+                        c
+                        for c in (order_col, "ma_bill", "ma_don_hang", "ma_hoa_don", "ma_don", "so_ct")
+                        if c in ct_cols
+                    ),
+                    None,
+                )
+                ct_raw_qty = next(
+                    (
+                        c
+                        for c in ("so_luong", "sl", "s", "so_luong_san_pham", "so_luong_ban", "sl_ban")
+                        if c in ct_cols
+                    ),
+                    None,
+                )
+                ct_base_qty = _pick_base_qty_col(ct_cols)
+                ct_unit = next((c for c in ("dvt", "don_vi_tinh", "dv_tinh") if c in ct_cols), None)
+                if not (ct_join and (ct_raw_qty or ct_base_qty) and ct_unit):
+                    continue
+
+                raw_first_expr = (
+                    f"COALESCE(NULLIF(TRY_CAST(c.{ct_raw_qty} AS DOUBLE), 'NaN'::DOUBLE), NULLIF(TRY_CAST(c.{ct_base_qty} AS DOUBLE), 'NaN'::DOUBLE))"
+                    if (ct_base_qty and ct_raw_qty)
+                    else f"NULLIF(TRY_CAST(c.{ct_raw_qty or ct_base_qty} AS DOUBLE), 'NaN'::DOUBLE)"
+                )
+                base_first_expr = (
+                    f"COALESCE(NULLIF(TRY_CAST(c.{ct_base_qty} AS DOUBLE), 'NaN'::DOUBLE), NULLIF(TRY_CAST(c.{ct_raw_qty} AS DOUBLE), 'NaN'::DOUBLE))"
+                    if (ct_base_qty and ct_raw_qty)
+                    else f"NULLIF(TRY_CAST(c.{ct_base_qty or ct_raw_qty} AS DOUBLE), 'NaN'::DOUBLE)"
+                )
+                sp_join_sql = ""
+                unit_where_sql = _unit_like_sql(f"c.{ct_unit}")
+                qty_expr = raw_first_expr
+                ct_sku = next((c for c in ("ma_hang_hoa", "ma_mat_hang", "ma_hang_ban", "ma_hang", "ma_sp", "ma_sku") if c in ct_cols), None)
+                if ct_base_qty and ct_sku:
+                    for sp_t in ("san_pham", "danh_sach_san_pham", "danh_sach_hang_hoa"):
+                        if sp_t in context.tables:
+                            sp_cols = list(context.tables[sp_t].columns)
+                            sp_sku = next((c for c in ("ma_san_pham_ban", "ma_hang_hoa", "ma_hh", "ma_hang", "ma_sku", "ma_sp") if c in sp_cols), None)
+                            sp_u = next((c for c in ("don_vi_co_ban", "don_vi_co_so", "don_vi_tinh", "don_vi", "dvt") if c in sp_cols), None)
+                            if sp_sku and sp_u:
+                                sp_join_sql = f"LEFT JOIN (SELECT {sp_sku} AS sku, max({sp_u}) AS u FROM {sp_t} GROUP BY 1) sp ON c.{ct_sku} = sp.sku"
+                                unit_where_sql = f"({_unit_like_sql(f'c.{ct_unit}')} OR {_unit_like_sql('sp.u')})"
+                                qty_expr = f"CASE WHEN {_unit_like_sql(f'c.{ct_unit}')} THEN {raw_first_expr} ELSE {base_first_expr} END"
+                                break
+                status_clause_d = get_valid_sales_status_clause(
+                    status_col, order_col=order_col, table=tbl, table_alias="d"
+                )
                 sql = f"""
-                    SELECT sum(TRY_CAST(c.{ct_qty} AS DOUBLE)) as total_qty
-                    FROM chi_tiet_don c
-                    JOIN {tbl} d ON c.ma_bill = d.{order_col}
+                    SELECT sum({qty_expr}) as total_qty
+                    FROM {ct_tbl} c
+                    JOIN {tbl} d ON c.{ct_join} = d.{order_col}
+                    {sp_join_sql}
                     WHERE {build_date_where_clause(f"d.{date_col}", period)}
-                      AND lower(c.{ct_unit}) LIKE '%{norm_u}%'
+                      AND {unit_where_sql}
+                      {status_clause_d}
                 """
                 try:
                     res = context.query(sql)
@@ -390,6 +529,7 @@ def resolve_rolling_window_query(
                         return "number", int(round(val)), None
                 except Exception:
                     pass
+            return None
 
     # -------------------------------------------------------------------------
     # CASE C: Pure Order Count (Số đơn hàng thành công)
@@ -451,7 +591,7 @@ def resolve_rolling_window_query(
             "ban duoc bao nhieu",
         ]
     )
-    if has_rev_kw and not any(
+    if has_rev_kw and not unit_m and not any(
         k in q
         for k in [
             "mấy đơn",
@@ -464,6 +604,28 @@ def resolve_rolling_window_query(
             "bình quân",
         ]
     ):
+        hd_spec = find_header_detail_revenue_spec(context, tbl, order_col)
+        if hd_spec:
+            ct_order_col, ct_rev_col = hd_spec
+            d_date_where = build_date_where_clause(f"d.{date_col}", period)
+            d_status_clause = get_valid_sales_status_clause(
+                status_col, order_col=order_col, table=tbl, table_alias="d"
+            )
+            sql = f"""
+                SELECT sum(c.{ct_rev_col}) as rev
+                FROM chi_tiet_don c
+                JOIN {tbl} d ON c.{ct_order_col} = d.{order_col}
+                WHERE {d_date_where}
+                  {d_status_clause}
+            """
+            try:
+                res = context.query(sql)
+                val = res["rev"][0]
+                if val is not None:
+                    return "number", int(round(val)), None
+            except Exception:
+                pass
+
         rev_col = find_revenue_column(context, tbl)
         if rev_col:
             sql = f"""

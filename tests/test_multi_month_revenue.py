@@ -1,9 +1,32 @@
-import pytest
-from zaic_2026_datamate.data_loader import DataLoader
+from pathlib import Path
+import duckdb
+import pandas as pd
+from zaic_2026_datamate.data_loader import BusinessContext
 from zaic_2026_datamate.multi_month_revenue import (
     extract_consecutive_months,
     resolve_multi_month_query,
 )
+
+
+def _make_mm_ctx() -> BusinessContext:
+    df = pd.DataFrame(
+        [
+            {"ngay": "2025-01-10", "thanh_tien": 1000000, "trang_thai": "Hoàn thành"},
+            {"ngay": "2025-02-10", "thanh_tien": 1500000, "trang_thai": "Hoàn thành"},
+            {"ngay": "2025-03-10", "thanh_tien": 2000000, "trang_thai": "Hoàn thành"},
+            {"ngay": "2025-04-10", "thanh_tien": 1200000, "trang_thai": "Hoàn thành"},
+            {"ngay": "2025-05-10", "thanh_tien": 1800000, "trang_thai": "Hoàn thành"},
+            {"ngay": "2025-06-10", "thanh_tien": 2400000, "trang_thai": "Hoàn thành"},
+        ]
+    )
+    conn = duckdb.connect()
+    conn.register("ban_hang", df)
+    return BusinessContext(
+        business_id="priv_mm_01",
+        data_dir=Path("."),
+        tables={"ban_hang": df},
+        duckdb_conn=conn,
+    )
 
 
 def test_extract_consecutive_months():
@@ -29,20 +52,15 @@ def test_extract_consecutive_months():
 
 
 def test_resolve_multi_month_query():
-    loader = DataLoader("data/public_test/public_test/data", "data/public_test/public_test/calendar.csv")
-    ctx = loader.load_business("dev_006")
+    ctx = _make_mm_ctx()
 
     # List query
     q = "Kể giúp dthu 3 tháng liền từ T4/2025 tới T6/2025, theo thứ tự thời gian."
     ans_type, ans_val, _ = resolve_multi_month_query(q, ctx, "2026-08-08")
     assert ans_type == "list"
-    assert isinstance(ans_val, list)
-    assert len(ans_val) == 3
-    assert all(isinstance(x, int) and x > 0 for x in ans_val)
+    assert ans_val == [1200000, 1800000, 2400000]
 
     # Boolean query
     q_bool = "Từ th 1/25 tới th 3/25, dthu tháng sau đều cao hơn tháng trước hả?"
-    ctx_005 = loader.load_business("dev_005")
-    ans_type, ans_val, _ = resolve_multi_month_query(q_bool, ctx_005, "2026-05-10")
-    assert ans_type == "boolean"
-    assert isinstance(ans_val, bool)
+    ans_type, ans_val, _ = resolve_multi_month_query(q_bool, ctx, "2026-05-10")
+    assert (ans_type, ans_val) == ("boolean", True)

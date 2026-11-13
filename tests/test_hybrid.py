@@ -11,7 +11,7 @@ import pytest
 from zaic_2026_datamate.data_loader import BusinessContext
 from zaic_2026_datamate.hybrid_agent import HybridAgent
 from zaic_2026_datamate.llm_client import MockLLMClient
-from zaic_2026_datamate.prompt_generator import generate_text_to_sql_prompt, build_schema_markdown
+from zaic_2026_datamate.prompt_generator import generate_text_to_sql_prompt
 from zaic_2026_datamate.slow_path import SlowPathEngine
 
 

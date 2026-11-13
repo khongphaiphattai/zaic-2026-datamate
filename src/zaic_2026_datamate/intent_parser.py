@@ -23,11 +23,56 @@ import logging
 import re
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from decimal import ROUND_HALF_UP, Decimal
 from typing import Any
 
 from zaic_2026_datamate.data_loader import BusinessContext
 
 logger = logging.getLogger(__name__)
+
+
+def _round_half_up(value: float) -> int:
+    """Round half up to the nearest integer per Rulebook Section 3."""
+    return int(Decimal(str(value)).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
+
+
+def find_header_detail_revenue_spec(
+    context: BusinessContext,
+    table: str | None,
+    order_col: str | None,
+) -> tuple[str, str] | None:
+    """Return (detail_order_col, detail_revenue_col) for split don_hang + chi_tiet_don schemas."""
+    if not order_col or table != "don_hang" or "chi_tiet_don" not in context.tables:
+        return None
+    ct_cols = list(context.tables["chi_tiet_don"].columns)
+    ct_order_col = next(
+        (
+            c
+            for c in (
+                order_col,
+                "ma_don_hang",
+                "ma_hoa_don",
+                "ma_phieu",
+                "so_phieu",
+                "ma_chung_tu",
+                "ma_don",
+                "so_ct",
+            )
+            if c in ct_cols
+        ),
+        None,
+    )
+    ct_rev_col = next(
+        (
+            c
+            for c in ("thanh_tien", "tri_gia", "amount", "tien_ban", "t", "cong")
+            if c in ct_cols
+        ),
+        None,
+    )
+    if ct_order_col and ct_rev_col:
+        return ct_order_col, ct_rev_col
+    return None
 
 
 @dataclass
@@ -115,7 +160,8 @@ def parse_time_expressions(text: str, as_of_date: str | None = None) -> ParsedPe
     ]
     if any(k in t for k in ytd_keywords) or bool(
         re.search(
-            r"\b(?:năm nay|nam nay|năm ni|nam ni)\s+tính\s+(?:tới|đến)\s+(?:hết\s+)?(?:hôm nay|hnay|bữa nay|hôm ni|chừ|nay)\b",
+            r"\b(?:năm nay|nam nay|năm ni|nam ni)\s+tính\s+(?:tới|đến)\s+(?:hết\s+)?(?:hôm nay|hnay|bữa nay|hôm ni|chừ|nay)\b"
+            r"|\b(?:từ|tu|tính\s+từ|tinh\s+tu)?\s*(?:đầu|dau)\s+n(?:ăm|am|awm|amw)\b(?!\s*202\d)",
             t,
         )
     ):
@@ -172,9 +218,9 @@ def parse_time_expressions(text: str, as_of_date: str | None = None) -> ParsedPe
             p.exact_date = (anchor - timedelta(days=1)).strftime("%Y-%m-%d")
         return p
 
-    # 5. Quarter: "quý 2/2026", "quý 4/2025", "q1/2026" (checked before month)
+    # 5. Quarter: "quý 2/2026", "quý 4/2025", "q1/2026", typo "quys 3/2025" (checked before month)
     quarter_match = re.search(
-        r"\b(?:quý|quy|q)\s*(\d)(?:/|\s*năm\s*|\s*nam\s*|\s*-\s*)(\d{4})\b", t
+        r"\b(?:quý|quys|quy|q)\s*(\d)(?:/|\s*năm\s*|\s*nam\s*|\s*-\s*)(\d{4})\b", t
     )
     if quarter_match:
         q, y = int(quarter_match.group(1)), int(quarter_match.group(2))
@@ -654,7 +700,10 @@ def build_shift_where_clause(time_col: str, shift: str | None) -> str:
 
 
 def get_valid_sales_status_clause(
-    status_col: str | None, order_col: str | None = None, table: str | None = None
+    status_col: str | None,
+    order_col: str | None = None,
+    table: str | None = None,
+    table_alias: str | None = None,
 ) -> str:
     """Build unified SQL filter for successful orders, strictly excluding cancellations and returns."""
     if not status_col:
@@ -678,20 +727,25 @@ def get_valid_sales_status_clause(
         "thất bại",
         "that bai",
     ]
+    prefix = f"{table_alias}." if table_alias else ""
     or_conds = " OR ".join(
         [f"TRY_CAST({status_col} AS VARCHAR) ILIKE '%{tok}%'" for tok in bad_tokens]
     )
     and_conds = " AND ".join(
-        [f"TRY_CAST({status_col} AS VARCHAR) NOT ILIKE '%{tok}%'" for tok in bad_tokens]
+        [f"TRY_CAST({prefix}{status_col} AS VARCHAR) NOT ILIKE '%{tok}%'" for tok in bad_tokens]
     )
 
     # Rulebook Section 1: Đơn có trả hàng, kể cả chỉ trả một phần, là đơn trả hàng: bỏ cả đơn.
     # Note: Handle SQL NULL semantics:
     # 1. Subquery must exclude NULL order_col so NOT IN doesn't evaluate to UNKNOWN for all rows.
     # 2. Outer row must allow NULL status_col (Rulebook Section 8: blank/unmentioned status means completed).
-    status_filter = f"({status_col} IS NULL OR ({and_conds}))"
+    status_filter = f"({prefix}{status_col} IS NULL OR ({and_conds}))"
     if order_col and table:
-        return f"AND ({order_col} IS NULL OR {order_col} NOT IN (SELECT {order_col} FROM {table} WHERE {order_col} IS NOT NULL AND ({or_conds}))) AND {status_filter}"
+        return (
+            f"AND ({prefix}{order_col} IS NULL OR {prefix}{order_col} NOT IN "
+            f"(SELECT {order_col} FROM {table} WHERE {order_col} IS NOT NULL AND ({or_conds}))) "
+            f"AND {status_filter}"
+        )
     return f"AND {status_filter}"
 
 
@@ -699,18 +753,15 @@ def find_revenue_column(context: BusinessContext, table: str) -> str | None:
     """Identify the line item revenue column for the table. Returns None if no revenue column found."""
     cols = list(context.tables[table].columns)
 
-    # dev_013 (Mẹ và bé): 'tt' already cleaned to VND, exclude Voucher/Phí ship rows
-    if (
-        context.business_id == "dev_013"
-        or "dev_013" in str(context.data_dir)
-        or ("tt" in cols and "dg" in cols and "hd" in cols)
-    ):
-        return "(CASE WHEN ten_hang NOT IN ('Voucher', 'Phí ship') AND ten_hang NOT LIKE 'Dùng %' THEN tt ELSE 0 END)"
+    # Mother-and-baby schema ('tt', 'dg', 'hd'): 'tt' is VND line revenue excluding adjustment rows
+    if "tt" in cols and "dg" in cols and "hd" in cols:
+        if "ten_hang" in cols:
+            return "(CASE WHEN ten_hang NOT IN ('Voucher', 'Phí ship') AND ten_hang NOT LIKE 'Dùng %' THEN tt ELSE 0 END)"
+        return "tt"
 
-    # dev_010: don_hang revenue according to Rulebook Section 1 (thanh_tien + tien_giam - phi_van_chuyen)
-    if context.business_id == "dev_010" or "dev_010" in str(context.data_dir):
-        if "thanh_tien" in cols and "tien_giam" in cols and "phi_van_chuyen" in cols:
-            return "(thanh_tien + COALESCE(tien_giam, 0) - COALESCE(phi_van_chuyen, 0))"
+    # Order header schema with explicit gross/discount/shipping breakdown (Rulebook Section 1)
+    if "thanh_tien" in cols and "tien_giam" in cols and "phi_van_chuyen" in cols:
+        return "(thanh_tien + COALESCE(tien_giam, 0) - COALESCE(phi_van_chuyen, 0))"
 
     # Rulebook Section 8: tien_hang / thanh_tien is standard revenue
     # When a line-item table repeats order-header totals ('tien_hang_truoc_giam') alongside
@@ -787,7 +838,7 @@ def get_all_product_names(context: BusinessContext) -> list[tuple[str, str, str]
 
     # Search tables with product names
     for tname, df in context.tables.items():
-        if tname == "calendar":
+        if tname == "calendar" or "khach" in tname:
             continue
         for col in df.columns:
             if (
@@ -803,7 +854,7 @@ def get_all_product_names(context: BusinessContext) -> list[tuple[str, str, str]
                         "mat_hang",
                     ]
                 )
-                or col == "hang"
+                or col in ("hang", "san_pham")
             ):
                 vals = df[col].dropna().unique()
                 for v in vals:
@@ -1058,30 +1109,42 @@ def resolve_query(
     ):
         return "abstain", None, "Multi-month range query abstained"
 
-    # 5. Item quantities (units sold, bowl, roll, package count)
+    # 5. Item quantities (units sold, bowl, roll, package, set, weight count)
+    _qty_units = (
+        r"(?:hộp|hop|chai|lon|gói|goi|cái|cai|cuộn|cuon|bịch|bich|thùng|thung|vé|ve|"
+        r"đĩa|dia|ly|cốc|coc|tô|to|bát|bat|suất|suat|chiếc|chiec|viên|vien|kg|nồi|noi|"
+        r"bộ|bo|tuýp|tuyp|bình|binh|cây|cay|mét|met|tấn|tan|lít|lit|lốc|loc|vỉ|vi|"
+        r"liều|lieu|con|bánh|banh|túi|tui|hũ|hu|tách|tach|phần(?!\s+trăm)|phan(?!\s+tram))"
+    )
     has_item_qty = (
         bool(
             re.search(
-                r"\b(?:mấy|may|bao nhiêu|bao nhieu|bnhiu|bn|tong so|tổng số|đếm|dem)\s+(?:hộp|chai|lon|gói|cái|cuộn|bịch|thùng|vé|đĩa|ly|tô|bát|suất|chiếc|viên|kg|nồi|noi)\b",
+                rf"\b(?:mấy|may|bao nhiêu|bao nhieu|bao nhiu|bnhiu|bn|tong so|tổng số|đếm|dem)\s+{_qty_units}\b",
                 q,
             )
         )
         or bool(
             re.search(
-                r"\bso\s+(?:ly|hop|chai|lon|goi|bich|cai|cuon|vien|kg|to|bat|chiec|thung|ve|dia|suat|noi)\b.*?\b(?:la\s+bao\s+nhieu|bao\s+nhieu|bnhiu|bn)\b",
+                rf"\b(?:số|so)\s+{_qty_units}\b.*?\b(?:là\s+bao\s+nhiêu|la\s+bao\s+nhieu|bao\s+nhiêu|bao\s+nhieu|bao\s+nhiu|bnhiu|bn|nhiêu|nhieu|mấy|may)\b",
                 q,
             )
         )
         or bool(
             re.search(
-                r"\bban\s+(?:duoc|dc)\s+(?:tong\s+cong\s+)?(?:bao\s+nhieu|may)\s+(?:ly|hop|chai|lon|goi|bich|cai|cuon|vien|kg|to|bat|chiec|thung|ve|dia|suat|noi)\b",
+                rf"\bb(?:án|an)\s+(?:ra\s+)?(?:được|duoc|dc)\s+(?:tổng\s+cộng\s+|tong\s+cong\s+)?(?:bao\s+nhiêu|bao\s+nhieu|bao\s+nhiu|bnhiu|bn|mấy|may)\s+{_qty_units}\b",
                 q,
             )
         )
-        or bool(re.search(r"\b(?:mấy|may|bao nhiêu|bao nhieu|bnhiu|bn)\s+ly\b", q))
         or bool(
             re.search(
-                r"\b(?:quan|cua hang)\s+ban\s+(?:duoc|dc)\s+(?:bao nhieu|may)\s+ly\b", q
+                r"\b(?:mấy|may|bao nhiêu|bao nhieu|bao nhiu|bnhiu|bn)\s+(?:ly|cốc|coc)\b",
+                q,
+            )
+        )
+        or bool(
+            re.search(
+                r"\b(?:quan|quán|cua hang|cửa hàng)\s+b(?:án|an)\s+(?:được|duoc|dc)\s+(?:bao nhiêu|bao nhieu|bao nhiu|bnhiu|bn|mấy|may)\s+(?:ly|cốc|coc)\b",
+                q,
             )
         )
     )
@@ -1876,6 +1939,27 @@ def resolve_query(
                 "Không xác định được khoảng thời gian rõ ràng để tính AOV",
             )
 
+        hd_spec = find_header_detail_revenue_spec(context, table, order_col)
+        if hd_spec:
+            ct_order_col, ct_rev_col = hd_spec
+            d_date_where = build_date_where_clause(f"d.{date_col}", period)
+            d_status_clause = get_valid_sales_status_clause(
+                status_col, order_col=order_col, table=table, table_alias="d"
+            )
+            sql = f"""
+                SELECT SUM(COALESCE(c.{ct_rev_col}, 0)) * 1.0 / NULLIF(COUNT(DISTINCT d.{order_col}), 0)
+                FROM {table} d
+                LEFT JOIN chi_tiet_don c ON d.{order_col} = c.{ct_order_col}
+                WHERE {d_date_where}
+                  {d_status_clause}
+            """
+            try:
+                val = context.scalar(sql)
+                if val is not None and val > 0:
+                    return "number", _round_half_up(float(val)), None
+            except Exception as e:
+                return "abstain", None, str(e)
+
         rev_c = find_revenue_column(context, table)
         if rev_c:
             date_where = build_date_where_clause(date_col, period)
@@ -1891,9 +1975,7 @@ def resolve_query(
             try:
                 val = context.scalar(sql)
                 if val is not None and val > 0:
-                    val_float = float(val)
-                    res = int(round(val_float))
-                    return "number", res, None
+                    return "number", _round_half_up(float(val)), None
             except Exception as e:
                 return "abstain", None, str(e)
 
@@ -2517,52 +2599,26 @@ def resolve_query(
             status_col, order_col=order_col, table=table
         )
 
-        # If chi_tiet_don exists alongside don_hang (e.g. biz_127, biz_129), compute line items for exact revenue
-        if "chi_tiet_don" in context.tables and table == "don_hang":
-            ct_cols = list(context.tables["chi_tiet_don"].columns)
-            ct_order_col = next(
-                (
-                    c
-                    for c in [
-                        "ma_don_hang",
-                        "ma_hoa_don",
-                        "ma_phieu",
-                        "so_phieu",
-                        "ma_chung_tu",
-                    ]
-                    if c in ct_cols
-                ),
-                None,
+        hd_spec = find_header_detail_revenue_spec(context, table, order_col)
+        if hd_spec:
+            ct_order_col, ct_rev = hd_spec
+            d_date_where = build_date_where_clause(
+                f"d.{effective_date_col}", period
             )
-            ct_rev = next((c for c in ["amount", "tien_ban"] if c in ct_cols), None)
-            if ct_order_col and ct_rev and order_col:
-                d_date_where = build_date_where_clause(
-                    f"d.{effective_date_col}", period
-                )
-                d_status_cond = (
-                    f"AND d.{status_col} = 'completed'"
-                    if (
-                        status_col
-                        and "completed"
-                        in context.tables[table][status_col].dropna().values
-                    )
-                    else ""
-                )
-                sql = f"""
-                    SELECT ROUND(SUM(c.{ct_rev}))
-                    FROM chi_tiet_don c
-                    JOIN {table} d ON c.{ct_order_col} = d.{order_col}
-                    WHERE {d_date_where}
-                      {d_status_cond}
-                """
-            else:
-                sql = f"""
-                    SELECT ROUND(SUM({rev_col}))
-                    FROM {table}
-                    WHERE {date_where}
-                      {shift_where}
-                      {status_clause}
-                """
+            d_shift_where = build_shift_where_clause(
+                f"d.{effective_date_col}", period.shift
+            )
+            d_status_cond = get_valid_sales_status_clause(
+                status_col, order_col=order_col, table=table, table_alias="d"
+            )
+            sql = f"""
+                SELECT ROUND(SUM(c.{ct_rev}))
+                FROM chi_tiet_don c
+                JOIN {table} d ON c.{ct_order_col} = d.{order_col}
+                WHERE {d_date_where}
+                  {d_shift_where}
+                  {d_status_cond}
+            """
         else:
             sql = f"""
                 SELECT ROUND(SUM({rev_col}))

@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from zaic_2026_datamate.cleaner import clean_vietnamese_currency, sniff_and_clean_dataframe
+from zaic_2026_datamate.cleaner import clean_vietnamese_currency
 from zaic_2026_datamate.engine import DuckDBAgentEngine
 from zaic_2026_datamate.schema_linker import SchemaLinker
 
@@ -85,6 +85,7 @@ def test_datamate_agent_end_to_end():
     assert ans_valid.answer_value == 590000.0
 
 
+@pytest.mark.slow
 def test_datamate_agent_from_business_context():
     from zaic_2026_datamate.agent import DataMateAgent
     from zaic_2026_datamate.data_loader import DataLoader

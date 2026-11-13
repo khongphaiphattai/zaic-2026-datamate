@@ -24,7 +24,7 @@ from zaic_2026_datamate.sales_status import (
 )
 
 
-def _text(value):
+def norm_text(value):
     text = unicodedata.normalize("NFD", value.lower().replace("đ", "d"))
     return " ".join(
         "".join(c for c in text if not unicodedata.combining(c)).strip(" ?!.").split()
@@ -102,7 +102,7 @@ def monthly_growth_period(question, as_of_date):
     try:
         anchor = date.fromisoformat(as_of_date)
         match = next(
-            (m for p in _PATTERNS if (m := p.fullmatch(_text(question)))), None
+            (m for p in _PATTERNS if (m := p.fullmatch(norm_text(question)))), None
         )
         if match is None:
             return None
@@ -130,7 +130,7 @@ def _documented_columns(context, table):
         entry = re.match(r"^\s*-\s+\*\*([^*]+)\*\*\s*:\s*(.+)$", line)
         if selected and entry:
             definitions.setdefault(normalize_identifier(entry[1]), set()).add(
-                _text(entry[2])
+                norm_text(entry[2])
             )
     return definitions
 
@@ -178,7 +178,8 @@ def resolve_growth_intent(intent: GrowthIntent, context, as_of_date: str, audit=
         ]:
             if definitions.get(column) != {meaning}:
                 raise ValueError(f"Unverified README role: {column}")
-        quote = lambda identifier: '"' + identifier.replace('"', '""') + '"'
+        def quote(identifier):
+            return '"' + identifier.replace('"', '""') + '"'
         qt, qo, qd, qs, qr = map(quote, [table, order, day, status, revenue])
         metric = verify_revenue_metric(context, f"SELECT SUM({qr}) FROM {qt}")
         if not metric.allowed:
@@ -191,7 +192,7 @@ def resolve_growth_intent(intent: GrowthIntent, context, as_of_date: str, audit=
             raise ValueError("Missing order/date/status/revenue values")
         dates = pd.to_datetime(frame[day], errors="coerce").dt.normalize()
         money = pd.to_numeric(frame[revenue], errors="coerce")
-        statuses = frame[status].astype(str).map(_text)
+        statuses = frame[status].astype(str).map(norm_text)
         if (
             dates.isna().any()
             or not money.map(lambda v: math.isfinite(v) and v >= 0).all()

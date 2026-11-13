@@ -14,7 +14,7 @@ from zaic_2026_datamate.evaluation import evaluate_match
 from zaic_2026_datamate.intent_parser import find_primary_sales_table, find_revenue_column
 from zaic_2026_datamate.intent_probe import parse_intent
 from zaic_2026_datamate.monthly_growth import (
-    _documented_columns, _STATUSES, _text, resolve_monthly_growth,
+    _documented_columns, _STATUSES, norm_text, resolve_monthly_growth,
 )
 from zaic_2026_datamate.revenue_metric import verify_revenue_metric
 
@@ -55,7 +55,7 @@ def check_data(frame, order, day, status, revenue):
         return {'valid':False,'reason':'Empty data or missing columns','min_date':None,'max_date':None}
     dates = pd.to_datetime(frame[day],errors='coerce').dt.normalize()
     money = pd.to_numeric(frame[revenue],errors='coerce')
-    statuses = frame[status].astype(str).map(_text)
+    statuses = frame[status].astype(str).map(norm_text)
     contracts = pd.DataFrame({'order':frame[order],'day':dates,'status':statuses})
     issues = {
         'null_values':int(frame[columns].isna().sum().sum()),

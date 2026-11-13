@@ -74,3 +74,36 @@ def test_generator_rejects_provenance_before_inference_or_output(tmp_path, monke
         generate_public_submission.generate_submission(questions_path=questions,
             output_path=output,enable_slow_path=True)
     assert not output.exists()
+
+
+def test_production_pipeline_config_and_gate_exit_codes(tmp_path):
+    from zaic_2026_datamate.pipeline import production_pipeline_config
+
+    cfg = production_pipeline_config()
+    assert cfg.enable_slow_path is False
+    assert cfg.order_paraphrases is True
+    assert cfg.monthly_growth is True
+    assert cfg.mtd_growth is True
+
+    agent = build_agent(cfg)
+    assert hasattr(agent, "answer_query")
+
+    # Script CLI smoke check: verify_holdout --max-wrong and audit_train_errors --max-wrong exist
+    import subprocess
+    import sys
+
+    for script_path in (
+        "scripts/verify_holdout.py",
+        "scripts/audit_train_errors.py",
+        "scripts/generate_public_submission.py",
+    ):
+        proc = subprocess.run(
+            [sys.executable, script_path, "--help"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        if "generate_public_submission" in script_path:
+            assert "--no-production" in proc.stdout
+        else:
+            assert "--max-wrong" in proc.stdout

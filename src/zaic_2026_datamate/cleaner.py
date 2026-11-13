@@ -146,3 +146,73 @@ def sniff_and_clean_dataframe(
     ]
 
     return df.reset_index(drop=True)
+
+
+def split_inline_toppings(
+    item_name: str,
+    line_revenue: float | None = None,
+    line_qty: float = 1.0,
+    line_base_qty: float | None = None,
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    """Split F&B items with inline `+ Topping (price)` suffixes into base and topping lines.
+
+    Handles single or multiple inline toppings, e.g.:
+    'Trà đào cam sả (M) + Trân châu đen (7.000đ)'
+    'Trà sữa (L) + 2 Trân châu trắng (10.000đ) + Pudding trứng (8.000đ)'
+    """
+    raw_name = str(item_name or "").strip()
+    if line_base_qty is None:
+        line_base_qty = line_qty
+
+    if " + " not in raw_name:
+        return {
+            "name": re.sub(r"\s+", " ", raw_name).strip(),
+            "amount": float(line_revenue) if line_revenue is not None else 0.0,
+            "qty": float(line_qty),
+            "base_qty": float(line_base_qty),
+        }, []
+
+    parts = [re.sub(r"\s+", " ", p).strip() for p in raw_name.split(" + ")]
+    base_name = parts[0]
+    toppings: list[dict[str, Any]] = []
+    topping_total_amt = 0.0
+
+    for seg in parts[1:]:
+        if not seg:
+            continue
+        m_seg = re.match(
+            r"^(?:(\d+(?:\.\d+)?)\s+)?(.+?)(?:\s*\(([\d.,]+)\s*(?:đ|d|đồng)?\))?\s*$",
+            seg,
+            flags=re.IGNORECASE,
+        )
+        if not m_seg:
+            continue
+        top_qty = float(m_seg.group(1)) if m_seg.group(1) else 1.0
+        top_name = re.sub(r"\s+", " ", m_seg.group(2)).strip()
+        top_amt = 0.0
+        if m_seg.group(3):
+            amt_digits = m_seg.group(3).replace(".", "").replace(",", "")
+            if amt_digits.isdigit():
+                top_amt = float(amt_digits)
+        topping_total_amt += top_amt
+        toppings.append(
+            {
+                "name": f"Topping {top_name}",
+                "raw_name": top_name,
+                "amount": top_amt,
+                "qty": top_qty,
+                "base_qty": top_qty,
+            }
+        )
+
+    base_amt = (
+        max(0.0, float(line_revenue) - topping_total_amt)
+        if line_revenue is not None
+        else 0.0
+    )
+    return {
+        "name": base_name,
+        "amount": base_amt,
+        "qty": float(line_qty),
+        "base_qty": float(line_base_qty),
+    }, toppings
