@@ -5,6 +5,7 @@ import re
 import unicodedata
 from datetime import date
 
+from zaic_2026_datamate.cleaner import normalize_query_telex
 from zaic_2026_datamate.hybrid_agent import HybridAgent
 from zaic_2026_datamate.intent_parser import parse_time_expressions, resolve_query
 
@@ -15,15 +16,16 @@ _PERIOD = (
     r"quy [1-4](?:/| nam )\d{4}|tuan (?:truoc|roi|nay)|"
     rf"(?:tinh )?tu (?:dau nam(?: nay)?|1/1 nam nay) (?:toi|den) het {_TODAY})"
 )
-_AMOUNT = r"(?:bao nhi(?:eu|u)|bn|bnhiu|nhieu)"
-_PREFIX = r"(?:(?:cho minh biet|cho toi biet|cho minh hoi|cho hoi)\s+)?"
-_SUFFIX = r"(?:\s+(?:a|nhi|ta|do))?"
+_AMOUNT = r"(?:bao nhi(?:eu|u)|nhieu|bn|bnhiu)"
+_UNIT = r"(?:don(?:\s+hang)?|bill)"
+_PREFIX = r"(?:(?:e|cho minh biet|cho toi biet|cho minh hoi|cho hoi|check gium|coi gium|xem giup)\s+)?"
+_SUFFIX = r"(?:\s+(?:a|nhi|ta|do|ha|vay|z))?"
 _PATTERNS = tuple(
     re.compile(_PREFIX + body + _SUFFIX)
     for body in (
-        rf"so don(?: hang)?\s+{_PERIOD}(?:\s+(?:la\s+)?{_AMOUNT})?",
-        rf"{_PERIOD}(?:\s*,\s*|\s+)(?:cua hang\s+)?(?:da\s+)?(?:co|ban duoc|ban dc)\s+(?:tong cong\s+)?{_AMOUNT}\s+don(?: hang)?",
-        rf"cua hang ban duoc\s+{_AMOUNT}\s+don(?: hang)?\s+trong\s+{_PERIOD}",
+        rf"so {_UNIT}\s+{_PERIOD}(?:\s+(?:la\s+)?{_AMOUNT})?",
+        rf"{_PERIOD}(?:\s*,\s*|\s+)(?:cua hang\s+)?(?:da\s+)?(?:co|ban duoc|ban dc)\s+(?:tong cong\s+)?{_AMOUNT}\s+{_UNIT}",
+        rf"cua hang ban duoc\s+{_AMOUNT}\s+{_UNIT}\s+trong\s+{_PERIOD}",
     )
 )
 _TELEX = {"quys": "quy", "nawm": "nam", "hoom": "hom", "tooi": "toi", "bieets": "biet"}
@@ -35,7 +37,8 @@ def canonical_daily_order_count(question, as_of_date):
         anchor = date.fromisoformat(as_of_date)
     except TypeError, ValueError:
         return None
-    text = unicodedata.normalize("NFD", question.lower()).replace("đ", "d")
+    normalized_q = normalize_query_telex(question)
+    text = unicodedata.normalize("NFD", normalized_q.lower()).replace("đ", "d")
     text = "".join(c for c in text if unicodedata.category(c) != "Mn")
     text = " ".join(text.strip(" ?!.").split())
     text = re.sub(r"\b\w+\b", lambda m: _TELEX.get(m.group(0), m.group(0)), text)

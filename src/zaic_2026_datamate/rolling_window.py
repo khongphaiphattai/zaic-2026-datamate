@@ -15,11 +15,14 @@ from __future__ import annotations
 import re
 from typing import Any, Tuple
 
+from zaic_2026_datamate.cleaner import normalize_query_telex
 from zaic_2026_datamate.data_loader import BusinessContext
 from zaic_2026_datamate.intent_parser import (
+    check_date_out_of_domain,
     find_header_detail_revenue_spec,
     find_primary_sales_table,
     find_revenue_column,
+    get_all_product_names,
     get_valid_sales_status_clause,
     build_date_where_clause,
     parse_time_expressions,
@@ -89,7 +92,8 @@ def resolve_rolling_window_query(
     if not as_of_date:
         return None
 
-    q = question.lower()
+    question_clean = normalize_query_telex(question)
+    q = question_clean.lower()
 
     # 1. Detect rolling window / relative temporal signals
     has_rolling_signal = any(
@@ -150,37 +154,57 @@ def resolve_rolling_window_query(
         return None
 
     # Guard: Submissions asking about debt, loans, warranty, returns, or current inventory
-    if any(
-        k in q
-        for k in [
-            "công nợ",
-            "cong no",
-            "trả nợ",
-            "tra no",
-            "bảo hành",
-            "bao hanh",
-            "lô tồn",
-            "hết hạn",
-            "tuổi nợ",
-            "tồn kho",
-            "ton kho",
-            "trong kho",
-            "tồn cuối",
-            "ton cuoi",
-            "hộp chẵn",
-            "hop chan",
-            "viên lẻ",
-            "vien le",
-            "cái lẻ",
-            "cai le",
-        ]
-    ) or bool(
-        re.search(r"\b(?:hàng\s+tồn|hang\s+ton|còn\s+tồn|con\s+ton)\b", q)
-    ) or (
-        bool(re.search(r"\b(?:còn|con)\s+(?:lại|lai|tồn|ton)?\s*(?:mấy|may|bao nhiêu|bao nhieu|bnhiu|bn)\b", q))
-        and not any(k in q for k in ["nợ", "no", "phải thu", "phai thu", "phải trả", "phai tra", "đơn", "don", "ngày", "ngay"])
-    ) or (
-        bool(re.search(r"\bkho\b.*\b(?:tồn|ton)\b|\b(?:tồn|ton)\b.*\bkho\b", q))
+    if (
+        any(
+            k in q
+            for k in [
+                "công nợ",
+                "cong no",
+                "trả nợ",
+                "tra no",
+                "bảo hành",
+                "bao hanh",
+                "lô tồn",
+                "hết hạn",
+                "tuổi nợ",
+                "tồn kho",
+                "ton kho",
+                "trong kho",
+                "tồn cuối",
+                "ton cuoi",
+                "hộp chẵn",
+                "hop chan",
+                "viên lẻ",
+                "vien le",
+                "cái lẻ",
+                "cai le",
+            ]
+        )
+        or bool(re.search(r"\b(?:hàng\s+tồn|hang\s+ton|còn\s+tồn|con\s+ton)\b", q))
+        or (
+            bool(
+                re.search(
+                    r"\b(?:còn|con)\s+(?:lại|lai|tồn|ton)?\s*(?:mấy|may|bao nhiêu|bao nhieu|bnhiu|bn)\b",
+                    q,
+                )
+            )
+            and not any(
+                k in q
+                for k in [
+                    "nợ",
+                    "no",
+                    "phải thu",
+                    "phai thu",
+                    "phải trả",
+                    "phai tra",
+                    "đơn",
+                    "don",
+                    "ngày",
+                    "ngay",
+                ]
+            )
+        )
+        or (bool(re.search(r"\bkho\b.*\b(?:tồn|ton)\b|\b(?:tồn|ton)\b.*\bkho\b", q)))
     ):
         return None
 
@@ -248,7 +272,7 @@ def resolve_rolling_window_query(
     ):
         return None
 
-    period = parse_time_expressions(question, as_of_date)
+    period = parse_time_expressions(question_clean, as_of_date)
     has_valid_window = bool(
         period.exact_date or (period.start_date and period.end_date)
     )
@@ -286,12 +310,25 @@ def resolve_rolling_window_query(
             ]
         )
         and not is_top_k
-        and any(k in q for k in ["mặt hàng", "mat hang", "sp", "món", "san pham", "sản phẩm", "mặt hangf"])
+        and any(
+            k in q
+            for k in [
+                "mặt hàng",
+                "mat hang",
+                "sp",
+                "món",
+                "san pham",
+                "sản phẩm",
+                "mặt hangf",
+            ]
+        )
     )
     if is_top_k or is_top_1:
         from zaic_2026_datamate.semantic_contract import resolve_semantic_plan
 
-        sem_type, sem_val, sem_reason = resolve_semantic_plan(question, context, as_of_date)
+        sem_type, sem_val, sem_reason = resolve_semantic_plan(
+            question_clean, context, as_of_date
+        )
         if sem_type != "abstain":
             return sem_type, sem_val, sem_reason
         return None
@@ -318,7 +355,9 @@ def resolve_rolling_window_query(
         "viên": ("viên", "vien"),
         "vỉ": ("vỉ", "vi"),
     }
-    _RAW_TO_CANON_UNIT = {v: canon for canon, variants in _UNIT_VARIANTS.items() for v in variants}
+    _RAW_TO_CANON_UNIT = {
+        v: canon for canon, variants in _UNIT_VARIANTS.items() for v in variants
+    }
 
     unit_m = re.search(
         r"\b(?:mấy|may|bao nhiêu|bao nhieu|bnhiu|bn|nhiêu|nhieu|tổng\s+bnhiu|tổng\s+bao\s+nhiêu|tổng cộng bao nhiêu)\s+(đĩa|dia|lon|gói|goi|tô|to|bát|bat|chai|ly|cốc|coc|bình|binh|hộp|hop|bịch|bich|thùng|thung|chiếc|chiec|cái|cai|nồi|noi|con|viên|vien|vỉ|vi)\b",
@@ -337,7 +376,9 @@ def resolve_rolling_window_query(
         u_patterns = _UNIT_VARIANTS.get(canon_u, (canon_u,))
 
         def _unit_like_sql(expr: str) -> str:
-            clauses = " OR ".join(f"lower(CAST({expr} AS VARCHAR)) LIKE '%{u}%'" for u in u_patterns)
+            clauses = " OR ".join(
+                f"lower(CAST({expr} AS VARCHAR)) LIKE '%{u}%'" for u in u_patterns
+            )
             return f"({clauses})"
 
         def _pick_base_qty_col(cols: list[str]) -> str | None:
@@ -383,12 +424,44 @@ def resolve_rolling_window_query(
             if base_qty_col and item_col:
                 for cat_t, cat_df in context.tables.items():
                     if cat_t.endswith("_sheet1") or not any(
-                        k in cat_t for k in ("danh_sach_hang", "danh_s_ich_h_ang", "danh_sach_san_pham", "san_pham")
+                        k in cat_t
+                        for k in (
+                            "danh_sach_hang",
+                            "danh_s_ich_h_ang",
+                            "danh_sach_san_pham",
+                            "san_pham",
+                        )
                     ):
                         continue
                     cat_cols = list(cat_df.columns)
-                    cat_name = next((c for c in ("ten_hang_hoa", "ten_hang", "ten_san_pham", "ten_sp", "ten_goi") if c in cat_cols), None)
-                    cat_u = next((c for c in ("don_vi_co_ban", "don_vi_co_so", "don_vi_tinh", "don_vi", "dvt") if c in cat_cols), None)
+                    cat_name = next(
+                        (
+                            c
+                            for c in (
+                                "ten_hang_hoa",
+                                "ten_hang",
+                                "ten_san_pham",
+                                "ten_sp",
+                                "ten_goi",
+                            )
+                            if c in cat_cols
+                        ),
+                        None,
+                    )
+                    cat_u = next(
+                        (
+                            c
+                            for c in (
+                                "don_vi_co_ban",
+                                "don_vi_co_so",
+                                "don_vi_tinh",
+                                "don_vi",
+                                "dvt",
+                            )
+                            if c in cat_cols
+                        ),
+                        None,
+                    )
                     if cat_name and cat_u:
                         cat_join_sql = f"LEFT JOIN (SELECT lower(trim({cat_name})) AS k, max({cat_u}) AS u FROM {cat_t} GROUP BY 1) cat ON lower(trim(t.{item_col})) = cat.k"
                         break
@@ -454,9 +527,7 @@ def resolve_rolling_window_query(
         # Header + detail schema (don_hang+chi_tiet_don or danh_sach_hoa_don+danh_sach_hoa_don_chi_tiet)
         if order_col:
             detail_candidates = [
-                t
-                for t in ("chi_tiet_don", f"{tbl}_chi_tiet")
-                if t in context.tables
+                t for t in ("chi_tiet_don", f"{tbl}_chi_tiet") if t in context.tables
             ] + [
                 t
                 for t in context.tables
@@ -467,7 +538,14 @@ def resolve_rolling_window_query(
                 ct_join = next(
                     (
                         c
-                        for c in (order_col, "ma_bill", "ma_don_hang", "ma_hoa_don", "ma_don", "so_ct")
+                        for c in (
+                            order_col,
+                            "ma_bill",
+                            "ma_don_hang",
+                            "ma_hoa_don",
+                            "ma_don",
+                            "so_ct",
+                        )
                         if c in ct_cols
                     ),
                     None,
@@ -475,13 +553,22 @@ def resolve_rolling_window_query(
                 ct_raw_qty = next(
                     (
                         c
-                        for c in ("so_luong", "sl", "s", "so_luong_san_pham", "so_luong_ban", "sl_ban")
+                        for c in (
+                            "so_luong",
+                            "sl",
+                            "s",
+                            "so_luong_san_pham",
+                            "so_luong_ban",
+                            "sl_ban",
+                        )
                         if c in ct_cols
                     ),
                     None,
                 )
                 ct_base_qty = _pick_base_qty_col(ct_cols)
-                ct_unit = next((c for c in ("dvt", "don_vi_tinh", "dv_tinh") if c in ct_cols), None)
+                ct_unit = next(
+                    (c for c in ("dvt", "don_vi_tinh", "dv_tinh") if c in ct_cols), None
+                )
                 if not (ct_join and (ct_raw_qty or ct_base_qty) and ct_unit):
                     continue
 
@@ -498,13 +585,58 @@ def resolve_rolling_window_query(
                 sp_join_sql = ""
                 unit_where_sql = _unit_like_sql(f"c.{ct_unit}")
                 qty_expr = raw_first_expr
-                ct_sku = next((c for c in ("ma_hang_hoa", "ma_mat_hang", "ma_hang_ban", "ma_hang", "ma_sp", "ma_sku") if c in ct_cols), None)
+                ct_sku = next(
+                    (
+                        c
+                        for c in (
+                            "ma_hang_hoa",
+                            "ma_mat_hang",
+                            "ma_hang_ban",
+                            "ma_hang",
+                            "ma_sp",
+                            "ma_sku",
+                        )
+                        if c in ct_cols
+                    ),
+                    None,
+                )
                 if ct_base_qty and ct_sku:
-                    for sp_t in ("san_pham", "danh_sach_san_pham", "danh_sach_hang_hoa"):
+                    for sp_t in (
+                        "san_pham",
+                        "danh_sach_san_pham",
+                        "danh_sach_hang_hoa",
+                    ):
                         if sp_t in context.tables:
                             sp_cols = list(context.tables[sp_t].columns)
-                            sp_sku = next((c for c in ("ma_san_pham_ban", "ma_hang_hoa", "ma_hh", "ma_hang", "ma_sku", "ma_sp") if c in sp_cols), None)
-                            sp_u = next((c for c in ("don_vi_co_ban", "don_vi_co_so", "don_vi_tinh", "don_vi", "dvt") if c in sp_cols), None)
+                            sp_sku = next(
+                                (
+                                    c
+                                    for c in (
+                                        "ma_san_pham_ban",
+                                        "ma_hang_hoa",
+                                        "ma_hh",
+                                        "ma_hang",
+                                        "ma_sku",
+                                        "ma_sp",
+                                    )
+                                    if c in sp_cols
+                                ),
+                                None,
+                            )
+                            sp_u = next(
+                                (
+                                    c
+                                    for c in (
+                                        "don_vi_co_ban",
+                                        "don_vi_co_so",
+                                        "don_vi_tinh",
+                                        "don_vi",
+                                        "dvt",
+                                    )
+                                    if c in sp_cols
+                                ),
+                                None,
+                            )
                             if sp_sku and sp_u:
                                 sp_join_sql = f"LEFT JOIN (SELECT {sp_sku} AS sku, max({sp_u}) AS u FROM {sp_t} GROUP BY 1) sp ON c.{ct_sku} = sp.sku"
                                 unit_where_sql = f"({_unit_like_sql(f'c.{ct_unit}')} OR {_unit_like_sql('sp.u')})"
@@ -577,32 +709,73 @@ def resolve_rolling_window_query(
     # -------------------------------------------------------------------------
     # CASE D: Total Store Revenue in Rolling Window
     # -------------------------------------------------------------------------
-    has_rev_kw = any(
-        k in q
-        for k in [
-            "doanh thu",
-            "doanhthu",
-            "dthu",
-            "tiền bán",
-            "tien ban",
-            "bán được bao nhiêu tiền",
-            "thu về bao nhiêu",
-            "bán được bao nhiêu",
-            "ban duoc bao nhieu",
-        ]
+    has_rev_kw = (
+        any(
+            k in q
+            for k in [
+                "doanh thu",
+                "doanhthu",
+                "dthu",
+                "revenue",
+                "tiền bán",
+                "tien ban",
+                "bán được bao nhiêu tiền",
+                "thu về bao nhiêu",
+            ]
+        )
+        or bool(re.search(r"\b(?:bán|ban)\s+(?:được|duoc)\b.*?\b(?:tiền|tien)\b", q))
+        or bool(
+            re.search(
+                r"\b(?:bán|ban)\s+(?:được|duoc)\s+(?:tổng\s+cộng\s+)?bao\s+nhi[êe]u\s*(?:[?!.,]|$)",
+                q,
+            )
+        )
     )
-    if has_rev_kw and not unit_m and not any(
-        k in q
-        for k in [
-            "mấy đơn",
-            "bao nhiêu đơn",
-            "bao nhiêu đh",
-            "mấy đĩa",
-            "mấy lon",
-            "mấy gói",
-            "trung bình",
-            "bình quân",
-        ]
+    has_non_store_rev_guard = (
+        bool(
+            re.search(
+                r"\b(?:đơn|don|đh|dh|bill|hóa đơn|hoa don|order|số lượng|so luong|món|mon|sp|nhiều nhất|nhieu nhat|cao nhất|cao nhat|bán chạy|ban chay|là gì|la gi|là chi|la chi|mấy đĩa|mấy lon|mấy gói|ly|cốc|gói|goi|chai|lon|hộp|hop|viên|vien|đĩa|dia|tô|bát|chiếc|chiec|bình|binh|thùng|thung|bịch|bich|kg|lít|lit|m3|cục|cuc|tuýp|tuyp|cái|cai|lượt|luot|chuyến|chuyen|đợt|dot)\b",
+                q,
+            )
+        )
+        or any(
+            k in q
+            for k in [
+                "trung bình",
+                "bình quân",
+                "mặt hàng",
+                "mat hang",
+                "sản phẩm",
+                "san pham",
+                "hoạt chất",
+                "hoat chat",
+                "thuốc",
+                "thuoc",
+                "khách",
+                "khach",
+                "nhân viên",
+                "nhan vien",
+                "kênh",
+                "kenh",
+                "chi nhánh",
+                "chi nhanh",
+                "giá",
+                "gia",
+                "nhóm",
+                "nhom",
+                "danh mục",
+                "danh muc",
+                "nếu",
+                "neu",
+            ]
+        )
+        or any(p_name in q for p_name, _, _ in get_all_product_names(context))
+    )
+    if (
+        has_rev_kw
+        and not unit_m
+        and not has_non_store_rev_guard
+        and not check_date_out_of_domain(context, period, date_col, tbl)
     ):
         hd_spec = find_header_detail_revenue_spec(context, tbl, order_col)
         if hd_spec:
@@ -621,7 +794,7 @@ def resolve_rolling_window_query(
             try:
                 res = context.query(sql)
                 val = res["rev"][0]
-                if val is not None:
+                if val is not None and float(val) > 0:
                     return "number", int(round(val)), None
             except Exception:
                 pass
@@ -637,7 +810,7 @@ def resolve_rolling_window_query(
             try:
                 res = context.query(sql)
                 val = res["rev"][0]
-                if val is not None:
+                if val is not None and float(val) > 0:
                     return "number", int(round(val)), None
             except Exception:
                 pass

@@ -11,6 +11,7 @@ from typing import Literal
 
 import pandas as pd
 
+from zaic_2026_datamate.cleaner import normalize_query_telex
 from zaic_2026_datamate.data_loader import get_base_table_stem, normalize_identifier
 from zaic_2026_datamate.intent_parser import (
     find_primary_sales_table,
@@ -101,8 +102,9 @@ def compile_growth_windows(intent: GrowthIntent, as_of_date: str) -> GrowthWindo
 def monthly_growth_period(question, as_of_date):
     try:
         anchor = date.fromisoformat(as_of_date)
+        cleaned = normalize_query_telex(question)
         match = next(
-            (m for p in _PATTERNS if (m := p.fullmatch(norm_text(question)))), None
+            (m for p in _PATTERNS if (m := p.fullmatch(norm_text(cleaned)))), None
         )
         if match is None:
             return None
@@ -178,8 +180,10 @@ def resolve_growth_intent(intent: GrowthIntent, context, as_of_date: str, audit=
         ]:
             if definitions.get(column) != {meaning}:
                 raise ValueError(f"Unverified README role: {column}")
+
         def quote(identifier):
             return '"' + identifier.replace('"', '""') + '"'
+
         qt, qo, qd, qs, qr = map(quote, [table, order, day, status, revenue])
         metric = verify_revenue_metric(context, f"SELECT SUM({qr}) FROM {qt}")
         if not metric.allowed:

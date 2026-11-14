@@ -302,7 +302,7 @@
 {"id": "q_4d7022ecbc52", "type": "percent", "answer": 7.82}
 {"id": "q_4df5a9b089cd", "type": "number", "answer": 7146}
 {"id": "q_4df64734eb4d", "type": "number", "answer": 846}
-{"id": "q_4dff582efe40", "type": "abstain"}
+{"id": "q_4dff582efe40", "type": "list", "answer": ["Smecta hộp 30 gói", "Khẩu trang y tế 4 lớp Khánh An hộp 50 cái", "Salonpas cao dán hộp 24 gói x 10 miếng", "Hapacol 250 hộp 24 gói", "Phosphalugel hộp 26 gói"]}
 {"id": "q_4e1c4ca89508", "type": "string", "answer": "CL 9D"}
 {"id": "q_4e280a1755de", "type": "number", "answer": 26}
 {"id": "q_4e331ce1a042", "type": "number", "answer": 72476500}
@@ -337,7 +337,7 @@
 {"id": "q_54e2a0754e8b", "type": "number", "answer": 2507}
 {"id": "q_5529c849e209", "type": "percent", "answer": 33.84}
 {"id": "q_55929bed8ced", "type": "number", "answer": 501}
-{"id": "q_5598af728eea", "type": "abstain"}
+{"id": "q_5598af728eea", "type": "list", "answer": ["Băng cá nhân Urgo Transparent hộp 100 miếng", "Tiffy Dey hộp 25 vỉ x 4 viên", "Panadol 500mg hộp 10 vỉ x 12 viên"]}
 {"id": "q_5599ff7c9e28", "type": "number", "answer": 2740224000}
 {"id": "q_55cfcde4c03f", "type": "number", "answer": 116}
 {"id": "q_55e2e56d2787", "type": "date", "answer": "2026-05-30"}
@@ -357,7 +357,7 @@
 {"id": "q_588a7c489b8e", "type": "percent", "answer": -6.26}
 {"id": "q_5896bf2cce00", "type": "percent", "answer": 1.87}
 {"id": "q_596f5cfa121c", "type": "number", "answer": 6288000}
-{"id": "q_5971d8343cc7", "type": "abstain"}
+{"id": "q_5971d8343cc7", "type": "number", "answer": 1057}
 {"id": "q_599716cf226a", "type": "number", "answer": 158517500}
 {"id": "q_599dbed4790f", "type": "number", "answer": 39}
 {"id": "q_59b28582f30e", "type": "abstain"}
@@ -396,7 +396,7 @@
 {"id": "q_605c59254c52", "type": "list", "answer": [62390000, 7123000]}
 {"id": "q_6066d5e1f466", "type": "number", "answer": 92}
 {"id": "q_60f97553a06e", "type": "number", "answer": 1117431900}
-{"id": "q_611bf24dd2f9", "type": "unanswerable", "reason": "Không có tiêu chí khách quan xác định mức độ uy tín"}
+{"id": "q_611bf24dd2f9", "type": "unanswerable", "reason": "Dữ liệu chỉ chứa thông tin nhập hàng, không có tiêu chí đánh giá độ uy tín hay nhà cung cấp tốt nhất."}
 {"id": "q_6172ede181a5", "type": "list", "answer": [41119000, 41361000]}
 {"id": "q_617cccfd98d1", "type": "number", "answer": 12}
 {"id": "q_618001244985", "type": "number", "answer": 9}
@@ -408,7 +408,7 @@
 {"id": "q_625ec1abde64", "type": "number", "answer": 10056100}
 {"id": "q_62cb89435b45", "type": "number", "answer": 7260700}
 {"id": "q_62ec9b7dc79b", "type": "list", "answer": ["Xi măng Hà Tiên PCB40 bao 50kg", "Gạch ống 8x8x18 Tuynel", "Xi măng INSEE Power-S bao 50kg", "Nước khoáng Lavie 19L", "Thép cuộn phi 8 Hòa Phát"]}
-{"id": "q_632bc2910cb3", "type": "abstain"}
+{"id": "q_632bc2910cb3", "type": "number", "answer": 7255000}
 {"id": "q_6396e1b202a6", "type": "list", "answer": [231948500, 239084500, 243796000]}
 {"id": "q_63cf15f33b1c", "type": "string", "answer": "Sinh tố xoài (M)"}
 {"id": "q_64045044c253", "type": "number", "answer": 112}
@@ -424,7 +424,7 @@
 {"id": "q_67412073e116", "type": "abstain"}
 {"id": "q_6779a7bd2b29", "type": "percent", "answer": 24.09}
 {"id": "q_682e548226be", "type": "list", "answer": [242091500, 234440500, 258096500]}
-{"id": "q_6830bf77b8c5", "type": "unanswerable", "reason": "Không có tiêu chí khách quan xác định mức độ uy tín"}
+{"id": "q_6830bf77b8c5", "type": "unanswerable", "reason": "Dữ liệu chỉ chứa thông tin nhập hàng, không có tiêu chí đánh giá độ uy tín hay nhà cung cấp tốt nhất."}
 {"id": "q_68d46c34c960", "type": "list", "answer": [278868200, 264574100, 279109500]}
 {"id": "q_690a98214478", "type": "percent", "answer": 7.29}
 {"id": "q_693e2a329c10", "type": "abstain"}
@@ -453,7 +453,7 @@
 {"id": "q_6cd986ac9717", "type": "number", "answer": 20}
 {"id": "q_6d42e3d7b79b", "type": "abstain"}
 {"id": "q_6d9ad1c46242", "type": "number", "answer": 122462500}
-{"id": "q_6dc8a5070da6", "type": "abstain"}
+{"id": "q_6dc8a5070da6", "type": "number", "answer": 167}
 {"id": "q_6dd1a1921d60", "type": "abstain"}
 {"id": "q_6e929cf36203", "type": "unanswerable", "reason": "Doanh nghiệp không có tiêu chí định lượng đo lường cảm tính theo Rulebook Mục 7"}
 {"id": "q_6eb11974483f", "type": "number", "answer": 817879400}
@@ -516,7 +516,7 @@
 {"id": "q_7de8d58e315c", "type": "number", "answer": 13}
 {"id": "q_7dff48b107f0", "type": "number", "answer": 9763000}
 {"id": "q_7e293cd1013a", "type": "number", "answer": 14923000}
-{"id": "q_7e5199bfe720", "type": "number", "answer": 392811100}
+{"id": "q_7e5199bfe720", "type": "abstain"}
 {"id": "q_7e7b3dc1de86", "type": "list", "answer": [941477700, 44454500]}
 {"id": "q_7f61dbb4d934", "type": "number", "answer": 1210}
 {"id": "q_7f7b0eab2ab3", "type": "number", "answer": 20023000}
@@ -541,7 +541,7 @@
 {"id": "q_856d8521b9ea", "type": "number", "answer": 9640}
 {"id": "q_859861209455", "type": "abstain"}
 {"id": "q_85b3a96e689b", "type": "number", "answer": 63664000}
-{"id": "q_86198c3c128b", "type": "abstain"}
+{"id": "q_86198c3c128b", "type": "list", "answer": ["Prednisolon 5mg Boston chai 500 viên", "Băng cá nhân Urgo Transparent hộp 100 miếng", "Panadol 500mg hộp 10 vỉ x 12 viên", "Panadol Extra hộp 15 vỉ x 12 viên", "Smecta hộp 30 gói"]}
 {"id": "q_8620011d3670", "type": "number", "answer": 611276000}
 {"id": "q_8694ac4443ef", "type": "number", "answer": 265}
 {"id": "q_86a32a09633a", "type": "number", "answer": 117000000}
@@ -551,13 +551,13 @@
 {"id": "q_8865baf2a84d", "type": "percent", "answer": 36.68}
 {"id": "q_88aeb2f7b1a7", "type": "number", "answer": 17912000}
 {"id": "q_8960949c2614", "type": "number", "answer": 7}
-{"id": "q_89d88aa1eae8", "type": "abstain"}
+{"id": "q_89d88aa1eae8", "type": "string", "answer": "Tạ Nhung Loan"}
 {"id": "q_8a1878ffe6e6", "type": "number", "answer": 6}
 {"id": "q_8a85aa9be5ef", "type": "abstain"}
 {"id": "q_8ab2403c8c80", "type": "number", "answer": 837243500}
 {"id": "q_8c680cbcf6b0", "type": "date", "answer": "2025-05"}
 {"id": "q_8c88fcb609eb", "type": "percent", "answer": -41.61}
-{"id": "q_8caa49a3fc7d", "type": "abstain"}
+{"id": "q_8caa49a3fc7d", "type": "number", "answer": 702100}
 {"id": "q_8cb214a6bdcd", "type": "number", "answer": 85}
 {"id": "q_8ce765944937", "type": "number", "answer": 14}
 {"id": "q_8d52a75f3314", "type": "abstain"}
@@ -723,7 +723,7 @@
 {"id": "q_b88ec465ade3", "type": "number", "answer": 12}
 {"id": "q_b963dcade0d3", "type": "number", "answer": 56}
 {"id": "q_b9aab5c81568", "type": "list", "answer": [1991699500, 1551523500, 1628303500]}
-{"id": "q_b9c6ed02f53d", "type": "abstain"}
+{"id": "q_b9c6ed02f53d", "type": "number", "answer": 291328400}
 {"id": "q_b9de131bae7d", "type": "string", "answer": "Lâm Mai Hiếu"}
 {"id": "q_ba1f08439ec8", "type": "date", "answer": "2026-03"}
 {"id": "q_ba2c318fc2be", "type": "percent", "answer": 58.08}
@@ -735,7 +735,7 @@
 {"id": "q_bb4017bc0666", "type": "percent", "answer": 1.04}
 {"id": "q_bbfddbd1d363", "type": "number", "answer": 587068}
 {"id": "q_bc879c2a6de5", "type": "abstain"}
-{"id": "q_bd0fbda87c14", "type": "abstain"}
+{"id": "q_bd0fbda87c14", "type": "number", "answer": 2036700}
 {"id": "q_bdbe8ca608ce", "type": "date", "answer": "2026-03"}
 {"id": "q_be3f968523bf", "type": "percent", "answer": 48.92}
 {"id": "q_be4ad5df428d", "type": "number", "answer": 3102552000}
@@ -783,7 +783,7 @@
 {"id": "q_c788ebe0ce0b", "type": "abstain"}
 {"id": "q_c78fdf218577", "type": "abstain"}
 {"id": "q_c803650fe803", "type": "number", "answer": 39}
-{"id": "q_c810dcd56aa3", "type": "abstain"}
+{"id": "q_c810dcd56aa3", "type": "percent", "answer": 8.6}
 {"id": "q_c8c553b90c18", "type": "number", "answer": 1246}
 {"id": "q_c8f95328ca75", "type": "percent", "answer": 5.26}
 {"id": "q_c8fde55544b6", "type": "number", "answer": 671}
@@ -812,7 +812,7 @@
 {"id": "q_cf2c969d8471", "type": "number", "answer": 1}
 {"id": "q_cf5c5dac1b20", "type": "number", "answer": 1295000}
 {"id": "q_cfa36137a14a", "type": "percent", "answer": 16.57}
-{"id": "q_cfcb5f8a241f", "type": "number", "answer": 1350}
+{"id": "q_cfcb5f8a241f", "type": "abstain"}
 {"id": "q_d08785ea5577", "type": "number", "answer": 11025908}
 {"id": "q_d0c41c37777e", "type": "number", "answer": 1849}
 {"id": "q_d0fb06a1ebb2", "type": "unanswerable", "reason": "Hệ thống không thu thập thông tin giới tính của khách hàng"}
@@ -886,7 +886,7 @@
 {"id": "q_e39bf5fd32c6", "type": "string", "answer": "Phùng Thắng Bảo"}
 {"id": "q_e3f5a85b72b4", "type": "list", "answer": [313077600, 300911000, 305639200]}
 {"id": "q_e4641e459f38", "type": "abstain"}
-{"id": "q_e47610290a38", "type": "abstain"}
+{"id": "q_e47610290a38", "type": "list", "answer": ["Trà đào cam sả (M)", "Cà phê sữa (M)", "Trà sữa trân châu (M)", "Cà phê đen (M)", "Nước ép cam (M)"]}
 {"id": "q_e4f0a9bdf74b", "type": "string", "answer": "Cà phê sữa (M)"}
 {"id": "q_e4fc0d18d409", "type": "number", "answer": 11}
 {"id": "q_e4fd11ebbadf", "type": "number", "answer": 106139500}
@@ -939,7 +939,7 @@
 {"id": "q_f1772e835811", "type": "number", "answer": 65110500}
 {"id": "q_f18a6235b749", "type": "string", "answer": "Phùng Ngọc Thu"}
 {"id": "q_f1c0ff1d2330", "type": "number", "answer": 102100783}
-{"id": "q_f20f4f3ec923", "type": "abstain"}
+{"id": "q_f20f4f3ec923", "type": "number", "answer": 949}
 {"id": "q_f264ab49a2c8", "type": "number", "answer": 64}
 {"id": "q_f274c9241995", "type": "percent", "answer": 0.98}
 {"id": "q_f30748b72898", "type": "number", "answer": 3702376}
@@ -988,7 +988,7 @@
 {"id": "q_fc8cdf9ab156", "type": "number", "answer": 239}
 {"id": "q_fcc5aeef7f8d", "type": "number", "answer": 272}
 {"id": "q_fd38dda74f47", "type": "number", "answer": 1823098500}
-{"id": "q_fda16d2c768c", "type": "abstain"}
+{"id": "q_fda16d2c768c", "type": "number", "answer": 1461800}
 {"id": "q_fe2a9de157ee", "type": "number", "answer": 7}
 {"id": "q_fe36c469e9f8", "type": "list", "answer": [45854500, 95689000]}
 {"id": "q_fe5788dae82e", "type": "number", "answer": 224943500}

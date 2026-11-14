@@ -17,8 +17,10 @@ import re
 import unicodedata
 from typing import Any
 
+from zaic_2026_datamate.cleaner import normalize_query_telex
 from zaic_2026_datamate.data_loader import BusinessContext
 from zaic_2026_datamate.intent_parser import (
+    find_header_detail_revenue_spec,
     find_primary_sales_table,
     find_revenue_column,
     get_valid_sales_status_clause,
@@ -27,9 +29,11 @@ from zaic_2026_datamate.intent_parser import (
 logger = logging.getLogger(__name__)
 
 
-def extract_consecutive_months(text: str, as_of_date: str | None = None) -> list[str] | None:
+def extract_consecutive_months(
+    text: str, as_of_date: str | None = None
+) -> list[str] | None:
     """Extract exactly 3 consecutive months from query text."""
-    t = text.lower()
+    t = normalize_query_telex(text).lower()
 
     # 1. Range: 'từ th12/2025 đến th2/2026' or 'từ T4/2025 tới T6/2025' or 'T3/2026 tới T5/2026'
     m_range = re.search(
@@ -54,9 +58,9 @@ def extract_consecutive_months(text: str, as_of_date: str | None = None) -> list
         if len(months) == 3:
             return months
 
-    # 2. Ending: 'tính toi 3-2026' or 'tính tới 3/2026' or 'tinh toi 3-2026'
+    # 2. Ending: 'tính tới 3-2026', 'kết thúc ở tháng 6/2025', etc.
     m_ending = re.search(
-        r"t(?:ính|inh)\s*t(?:ới|oi)\s*(?:tháng|thang|th|t)?\s*(\d{1,2})[/.-](\d{2,4})",
+        r"(?:t(?:ính|inh)\s*t(?:ới|oi)|(?:kết|ket)\s*th[úu]c\s*(?:ở|o|tại|tai|vào|vao)?)\s*(?:tháng|thang|th|t)?\s*(\d{1,2})[/.-](\d{2,4})",
         t,
     )
     if m_ending:
@@ -125,19 +129,33 @@ def get_month_clean_revenue(context: BusinessContext, month_str: str) -> int | N
     table, order_col, date_col, status_col = find_primary_sales_table(context)
     if not table or not date_col:
         return None
-    rev_col = find_revenue_column(context, table)
-    if not rev_col:
-        return None
+    hd_spec = find_header_detail_revenue_spec(context, table, order_col)
+    if hd_spec:
+        ct_order_col, ct_rev = hd_spec
+        d_status_clause = get_valid_sales_status_clause(
+            status_col, order_col=order_col, table=table, table_alias="d"
+        )
+        sql = f"""
+            SELECT SUM(c.{ct_rev})
+            FROM chi_tiet_don c
+            JOIN {table} d ON c.{ct_order_col} = d.{order_col}
+            WHERE strftime(TRY_CAST(d.{date_col} AS DATE), '%Y-%m') = '{month_str}'
+              {d_status_clause}
+        """
+    else:
+        rev_col = find_revenue_column(context, table)
+        if not rev_col:
+            return None
 
-    status_clause = get_valid_sales_status_clause(
-        status_col, order_col=order_col, table=table
-    )
-    sql = f"""
-        SELECT SUM({rev_col})
-        FROM {table}
-        WHERE strftime(TRY_CAST({date_col} AS DATE), '%Y-%m') = '{month_str}'
-          {status_clause}
-    """
+        status_clause = get_valid_sales_status_clause(
+            status_col, order_col=order_col, table=table
+        )
+        sql = f"""
+            SELECT SUM({rev_col})
+            FROM {table}
+            WHERE strftime(TRY_CAST({date_col} AS DATE), '%Y-%m') = '{month_str}'
+              {status_clause}
+        """
     try:
         val = context.scalar(sql)
         return int(round(val)) if val is not None else 0
@@ -152,12 +170,21 @@ def resolve_multi_month_query(
     as_of_date: str | None = None,
 ) -> tuple[str, Any, str | None]:
     """Resolve queries asking about 3 consecutive months revenue."""
-    q_lower = question.lower()
+    question_clean = normalize_query_telex(question)
+    q_lower = question_clean.lower()
 
     # Guard: must be asking for revenue / sales
     has_rev = any(
         k in q_lower
-        for k in ["dthu", "doanh thu", "thu về", "bán được", "ban duoc", "tiền"]
+        for k in [
+            "dthu",
+            "doanh thu",
+            "revenue",
+            "thu về",
+            "bán được",
+            "ban duoc",
+            "tiền",
+        ]
     )
     if not has_rev:
         return "abstain", None, "Not a multi-month revenue query"
@@ -251,7 +278,9 @@ def resolve_multi_month_query(
             "deu cao hon",
         ]
     ):
-        is_decreasing = bool(re.search(r"\bgiam\s+lien\s+tuc\b|\blien\s+tuc\s+giam\b", q_norm))
+        is_decreasing = bool(
+            re.search(r"\bgiam\s+lien\s+tuc\b|\blien\s+tuc\s+giam\b", q_norm)
+        )
         return "boolean", (r1 > r2 > r3) if is_decreasing else (r1 < r2 < r3), None
 
     # 2. Highest / Peak month

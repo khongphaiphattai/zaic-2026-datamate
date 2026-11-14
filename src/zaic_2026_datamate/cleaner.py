@@ -5,6 +5,7 @@ cleaner.py: Physical unmerging and Vietnamese commercial data normalization.
 from __future__ import annotations
 
 import re
+from decimal import ROUND_HALF_UP, Decimal
 from pathlib import Path
 from typing import Any
 
@@ -216,3 +217,129 @@ def split_inline_toppings(
         "qty": float(line_qty),
         "base_qty": float(line_base_qty),
     }, toppings
+
+
+_QUERY_TELEX_WORDS: dict[str, str] = {
+    "bnhiu": "bao nhiêu",
+    "nhiu": "nhiều",
+    "nhìu": "nhiều",
+    "nhieeu": "nhiều",
+    "nhieeuf": "nhiều",
+    "nhieuf": "nhiều",
+    "nhiuf": "nhiều",
+    "nhìuf": "nhiều",
+    "dduwowcj": "được",
+    "dduowcj": "được",
+    "dduowjc": "được",
+    "duwowcj": "được",
+    "duocj": "được",
+    "đươc": "được",
+    "đươcj": "được",
+    "đc": "được",
+    "cuwar": "của",
+    "naof": "nào",
+    "nhaats": "nhất",
+    "nhaat": "nhất",
+    "nhta": "nhất",
+    "ddown": "đơn",
+    "mooix": "mỗi",
+    "mổi": "mỗi",
+    "mội": "mỗi",
+    "hown": "hơn",
+    "cungf": "cùng",
+    "thangs": "tháng",
+    "ngayf": "ngày",
+    "hangf": "hàng",
+    "mawtj": "mặt",
+    "chayj": "chạy",
+    "nhuwngx": "những",
+    "sanr": "sản",
+    "phaamr": "phẩm",
+    "mootj": "một",
+    "hoom": "hôm",
+    "nawm": "năm",
+    "quys": "quý",
+    "khoong": "không",
+    "nhaf": "nhà",
+    "nhaapj": "nhập",
+    "toongr": "tổng",
+    "vaof": "vào",
+    "heets": "hết",
+    "bieets": "biết",
+    "vaayj": "vậy",
+    "laf": "là",
+    "tooi": "tôi",
+    "hoir": "hỏi",
+    "trawm": "trăm",
+    "ptram": "phần trăm",
+    "tieenf": "tiền",
+    "soos": "số",
+    "toonf": "tồn",
+    "cko": "cho",
+    "ees": "ế",
+}
+_QUERY_TELEX_RE = re.compile(
+    r"\b(" + "|".join(re.escape(k) for k in _QUERY_TELEX_WORDS) + r")\b",
+    re.IGNORECASE,
+)
+
+
+def round_half_up(value: float) -> int:
+    """Round half up to the nearest integer per benchmark rounding rules."""
+    return int(Decimal(str(value)).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
+
+
+def normalize_query_telex(text: Any) -> str:
+    """Repair unambiguous Vietnamese Telex typos and colloquial variants on query text only."""
+    if text is None:
+        return ""
+    s = str(text)
+    s = re.sub(
+        r"\b(?:bán|ban)\s+(?:dc|đc|đươc)\b",
+        "bán được",
+        s,
+        flags=re.IGNORECASE,
+    )
+    s = re.sub(
+        r"\b(giao|nhập|nhap|mua|thu|làm|lam|đặt|dat|chốt|chot|ko|không|khong)\s+dc\b(?!\s*\d+\s*(?:v|w|a)\b)",
+        r"\1 được",
+        s,
+        flags=re.IGNORECASE,
+    )
+    s = re.sub(
+        r"\b(?:bao|b\.?)\s*nh(?:[iì]u|ieeu|ieeuf|ieuf|iuf|ìuf)\b",
+        "bao nhiêu",
+        s,
+        flags=re.IGNORECASE,
+    )
+    s = re.sub(
+        r"\bcos\s+(?=(?:tăng|tang|giảm|giam|tổng|tong|bao|bnhiu|bn|mấy|may|không|khong|ko|phải|phai|đúng|dung|ai)\b)",
+        "có ",
+        s,
+        flags=re.IGNORECASE,
+    )
+    s = re.sub(r"\btoor?g\s+coor?g\b", "tổng cộng", s, flags=re.IGNORECASE)
+    s = re.sub(r"\b(?:toor?g|toongr)\b", "tổng", s, flags=re.IGNORECASE)
+    s = re.sub(r"\bcoor?g\b", "cộng", s, flags=re.IGNORECASE)
+    s = re.sub(
+        r"\bbans\s+(?=(?:được|duoc|dc|đc|ra|trong|tháng|thang|ngày|ngay)\b)",
+        "bán ",
+        s,
+        flags=re.IGNORECASE,
+    )
+    s = re.sub(
+        r"\bmi\s+(?=(?:đơn|don|cuốn|cuon|cây|cay|ly|cái|cai|món|mon|trăm|tram|triệu|trieu|nghìn|nghin|k\b|ngày|ngay|tháng|thang|hộp|hop|chai|lon|phần|phan|khách|khach)\b)",
+        "mấy ",
+        s,
+        flags=re.IGNORECASE,
+    )
+    return _QUERY_TELEX_RE.sub(lambda m: _QUERY_TELEX_WORDS[m.group(0).lower()], s)
+
+
+def compact_digit_unit_spaces(text: str) -> str:
+    """Compact spaces between numbers and measurement units (e.g. '100 ml' -> '100ml')."""
+    return re.sub(
+        r"\b(\d+(?:\s+\d+)?)\s+(ml|mg|mcg|g|kg|l|lit|v|w|a|mah|cm|mm|m|gb|tb|oz)\b",
+        lambda m: m.group(1).replace(" ", "") + m.group(2),
+        text,
+    )

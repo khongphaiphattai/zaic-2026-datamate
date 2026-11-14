@@ -19,10 +19,14 @@ def compare(
     out_summary_path: str = "artifacts/v33-replay/summary.json",
 ):
     with open(v32_path, "r", encoding="utf-8") as f:
-        v32_rows = {r["id"]: r for r in (json.loads(line) for line in f if line.strip())}
+        v32_rows = {
+            r["id"]: r for r in (json.loads(line) for line in f if line.strip())
+        }
 
     with open(v33_path, "r", encoding="utf-8") as f:
-        v33_rows = {r["id"]: r for r in (json.loads(line) for line in f if line.strip())}
+        v33_rows = {
+            r["id"]: r for r in (json.loads(line) for line in f if line.strip())
+        }
 
     questions = {}
     with open(questions_path, "r", encoding="utf-8") as f:
@@ -61,39 +65,47 @@ def compare(
         if not is_32_ans and is_33_ans:
             new_unlocked += 1
             by_biz[bid]["new_ans"] += 1
-            diffs.append({
-                "id": qid,
-                "business_id": bid,
-                "question": q["question"],
-                "as_of_date": q.get("as_of_date"),
-                "change_type": "new_unlocked",
-                "v32": r32,
-                "v33": r33,
-            })
-        elif is_32_ans and not is_33_ans:
-            new_abstained += 1
-            diffs.append({
-                "id": qid,
-                "business_id": bid,
-                "question": q["question"],
-                "as_of_date": q.get("as_of_date"),
-                "change_type": "new_abstained",
-                "v32": r32,
-                "v33": r33,
-            })
-        elif is_32_ans and is_33_ans:
-            if r32.get("type") != r33.get("type") or r32.get("answer") != r33.get("answer"):
-                value_changed += 1
-                by_biz[bid]["val_changed"] += 1
-                diffs.append({
+            diffs.append(
+                {
                     "id": qid,
                     "business_id": bid,
                     "question": q["question"],
                     "as_of_date": q.get("as_of_date"),
-                    "change_type": "value_changed",
+                    "change_type": "new_unlocked",
                     "v32": r32,
                     "v33": r33,
-                })
+                }
+            )
+        elif is_32_ans and not is_33_ans:
+            new_abstained += 1
+            diffs.append(
+                {
+                    "id": qid,
+                    "business_id": bid,
+                    "question": q["question"],
+                    "as_of_date": q.get("as_of_date"),
+                    "change_type": "new_abstained",
+                    "v32": r32,
+                    "v33": r33,
+                }
+            )
+        elif is_32_ans and is_33_ans:
+            if r32.get("type") != r33.get("type") or r32.get("answer") != r33.get(
+                "answer"
+            ):
+                value_changed += 1
+                by_biz[bid]["val_changed"] += 1
+                diffs.append(
+                    {
+                        "id": qid,
+                        "business_id": bid,
+                        "question": q["question"],
+                        "as_of_date": q.get("as_of_date"),
+                        "change_type": "value_changed",
+                        "v32": r32,
+                        "v33": r33,
+                    }
+                )
 
     summary = {
         "v32_answered": v32_answered,
@@ -124,10 +136,28 @@ def compare(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--v32", default="submission.jsonl")
-    parser.add_argument("--v33", default="artifacts/v33-replay/submission.jsonl")
-    parser.add_argument("--questions", default="data/public_test/public_test/questions.jsonl")
+    parser.add_argument("--v32", "--baseline", dest="v32", default="submission.jsonl")
+    parser.add_argument(
+        "--v33",
+        "--candidate",
+        dest="v33",
+        default="artifacts/v33-replay/submission.jsonl",
+    )
+    parser.add_argument(
+        "--questions", default="data/public_test/public_test/questions.jsonl"
+    )
+    parser.add_argument(
+        "--out-dir", default=None, help="Directory to save diffs and summary"
+    )
     parser.add_argument("--out-diff", default="artifacts/v33-replay/public-diffs.json")
     parser.add_argument("--out-summary", default="artifacts/v33-replay/summary.json")
     args = parser.parse_args()
-    compare(args.v32, args.v33, args.questions, args.out_diff, args.out_summary)
+
+    out_diff = args.out_diff
+    out_summary = args.out_summary
+    if args.out_dir:
+        out_dir = Path(args.out_dir)
+        out_diff = str(out_dir / "public-diffs.json")
+        out_summary = str(out_dir / "summary.json")
+
+    compare(args.v32, args.v33, args.questions, out_diff, out_summary)

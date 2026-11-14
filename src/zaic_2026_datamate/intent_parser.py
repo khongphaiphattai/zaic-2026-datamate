@@ -23,17 +23,12 @@ import logging
 import re
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from decimal import ROUND_HALF_UP, Decimal
 from typing import Any
 
+from zaic_2026_datamate.cleaner import normalize_query_telex, round_half_up
 from zaic_2026_datamate.data_loader import BusinessContext
 
 logger = logging.getLogger(__name__)
-
-
-def _round_half_up(value: float) -> int:
-    """Round half up to the nearest integer per Rulebook Section 3."""
-    return int(Decimal(str(value)).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
 
 
 def find_header_detail_revenue_spec(
@@ -902,16 +897,9 @@ def resolve_query(
             return ans_type, ans_val, reason
 
     # Specialized engine for purchase and supplier analytics
+    q_tl = normalize_query_telex(question).lower()
     if any(
-        t in context.tables
-        for t in [
-            "so_tay_nhap_hang",
-            "so_nhap_hang",
-            "phieu_nhap",
-            "chi_tiet_nhap_hang",
-        ]
-    ) or any(
-        k in question.lower()
+        k in q_tl
         for k in [
             "dang tin cay",
             "đáng tin cậy",
@@ -919,6 +907,13 @@ def resolve_query(
             "uy tín",
             "nha cung cap tot nhat",
             "nhà cung cấp tốt nhất",
+            "nhập",
+            "nhap",
+            "ncc",
+            "cung cấp",
+            "cung cap",
+            "nhà cc",
+            "nha cc",
         ]
     ):
         from zaic_2026_datamate.purchase_analytics import resolve_purchase_query
@@ -985,8 +980,11 @@ def resolve_query(
             context.last_code_path = "rolling_window.resolve_rolling_window_query"
             return rw_type, rw_val, rw_reason
 
-    # Specialized engine for price change impact comparisons
-    from zaic_2026_datamate.price_change import resolve_price_change_query
+    # Specialized engine for price change impact comparisons & single-date unit price
+    from zaic_2026_datamate.price_change import (
+        resolve_price_change_query,
+        resolve_unit_price_on_date,
+    )
 
     pc_res = resolve_price_change_query(question, context, as_of_date)
     if pc_res is not None:
@@ -995,8 +993,16 @@ def resolve_query(
             context.last_code_path = "price_change.resolve_price_change_query"
             return pc_type, pc_val, pc_reason
 
+    up_res = resolve_unit_price_on_date(question, context, as_of_date)
+    if up_res is not None:
+        up_type, up_val, up_reason = up_res
+        if up_type != "abstain":
+            context.last_code_path = "price_change.resolve_unit_price_on_date"
+            return up_type, up_val, up_reason
+
     context.last_code_path = "intent_parser.resolve_query"
 
+    question = normalize_query_telex(question)
     q = question.lower()
     period = parse_time_expressions(question, as_of_date)
     table, order_col, date_col, status_col = find_primary_sales_table(context)
@@ -1780,12 +1786,15 @@ def resolve_query(
             "tổng dthu",
             "doanh thu",
             "dthu",
+            "revenue",
             "tiền bán",
             "tien ban",
             "thu về",
+            "thu ve",
             "bán đc",
             "bán được",
             "ban duoc",
+            "ban dc",
         ]
     )
     has_valid_period = bool(
@@ -1954,6 +1963,14 @@ def resolve_query(
             "moi dh",
             "mỗi hoá đơn",
             "mỗi hóa đơn",
+            "mỗi bill",
+            "moi bill",
+            "1 bill",
+            "một bill",
+            "mot bill",
+            "trên mỗi bill",
+            "trên 1 bill",
+            "trên một bill",
         ]
     )
     has_aov_guards = (
@@ -2040,7 +2057,7 @@ def resolve_query(
             try:
                 val = context.scalar(sql)
                 if val is not None and val > 0:
-                    return "number", _round_half_up(float(val)), None
+                    return "number", round_half_up(float(val)), None
             except Exception as e:
                 return "abstain", None, str(e)
 
@@ -2059,7 +2076,7 @@ def resolve_query(
             try:
                 val = context.scalar(sql)
                 if val is not None and val > 0:
-                    return "number", _round_half_up(float(val)), None
+                    return "number", round_half_up(float(val)), None
             except Exception as e:
                 return "abstain", None, str(e)
 
@@ -2185,6 +2202,18 @@ def resolve_query(
             "nhân viên nào",
             "nhiều nhất",
             "nhieu nhat",
+            "nhìu nhất",
+            "nhiu nhat",
+            "nhìu nhứt",
+            "nhiu nhut",
+            "là chi",
+            "la chi",
+            "là gì",
+            "la gi",
+            "là ai",
+            "la ai",
+            "bán chạy",
+            "ban chay",
             "cao nhất",
             "cao nhat",
             "cao nhaats",
@@ -2504,6 +2533,9 @@ def resolve_query(
         "đĩa",
         "mấy đĩa",
         "may dia",
+        "sp",
+        "món",
+        "mon",
         "tết nguyên đán",
     ]
     has_specific_product_or_group = any(
@@ -2516,9 +2548,155 @@ def resolve_query(
         q,
         re.IGNORECASE,
     )
+    m_subject_pre = re.search(
+        r"(?:^|\b\d{4}|tháng\s+\d+[/.-]\d+|thang\s+\d+[/.-]\d+|quý\s+\d[/.-]\d+|quy\s+\d[/.-]\d+|hôm\s+nay|hom\s+nay|hnay|hôm\s+qua|hom\s+qua|bữa\s+qua|bua\s+qua|hqua|tuần\s+\w+|tuan\s+\w+|ngày\s+gần\s+nhất|ngay\s+gan\s+nhat)[,\s]+([^,?]+?)\s+(?:thu\s+về|thu\s+ve|bán\s+được|ban\s+duoc)\b",
+        q,
+        re.IGNORECASE,
+    )
     has_unrecognized_product_subject = False
-    if m_subject:
-        subj = m_subject.group(1).strip()
+    STORE_STOP_WORDS = {
+        "cua",
+        "hang",
+        "quan",
+        "tiem",
+        "shop",
+        "sop",
+        "tat",
+        "ca",
+        "tong",
+        "cong",
+        "mik",
+        "minh",
+        "duoc",
+        "dc",
+        "dat",
+        "trong",
+        "la",
+        "t",
+        "th",
+        "thang",
+        "quy",
+        "nam",
+        "cửa",
+        "hàng",
+        "quán",
+        "tiệm",
+        "sốp",
+        "tất",
+        "cả",
+        "tổng",
+        "cộng",
+        "mình",
+        "được",
+        "đc",
+        "đạt",
+        "tháng",
+        "quý",
+        "năm",
+        "ở",
+        "tại",
+        "vào",
+        "kủa",
+        "của",
+        "là",
+        "chi nhánh",
+        "toàn bộ",
+        "toan bo",
+        "cả quán",
+        "ca quan",
+        "cả tiệm",
+        "ca tiem",
+        "nay",
+        "này",
+        "ni",
+        "hom",
+        "hôm",
+        "bua",
+        "bữa",
+        "tuan",
+        "tuần",
+        "qua",
+        "chừ",
+        "chu",
+        "đầu",
+        "dau",
+        "hết",
+        "het",
+        "hnay",
+        "hqua",
+        "ngay",
+        "ngày",
+        "ngayf",
+        "từ",
+        "tu",
+        "tới",
+        "toi",
+        "đến",
+        "den",
+        "tính",
+        "tinh",
+        "riêng",
+        "rieng",
+        "bây",
+        "bay",
+        "giờ",
+        "gio",
+        "gan",
+        "gần",
+        "nhat",
+        "nhất",
+        "nhứt",
+        "nhaats",
+        "moi",
+        "mỗi",
+        "wán",
+        "trog",
+        "revenue",
+        "total",
+        "ban",
+        "bán",
+        "tien",
+        "tiền",
+        "bao",
+        "nhieu",
+        "nhiêu",
+        "bn",
+        "bnhiu",
+        "vay",
+        "vậy",
+        "z",
+        "ta",
+        "ha",
+        "hả",
+        "do",
+        "đó",
+        "a",
+        "ạ",
+        "nhi",
+        "nhỉ",
+        "cho",
+        "tôi",
+        "biết",
+        "biet",
+        "hỏi",
+        "hoi",
+        "xem",
+        "giúp",
+        "giup",
+        "coi",
+        "giùm",
+        "gium",
+        "check",
+        "em",
+        "e",
+        "ê",
+        "với",
+        "voi",
+    }
+    for subj_match in (m_subject, m_subject_pre):
+        if not subj_match:
+            continue
+        subj = subj_match.group(1).strip()
         # Clean temporal tokens (e.g. th3/2025, 7/26, 7 ngay gan nhat)
         clean_subj = re.sub(
             r"\b(?:th|t|tháng|thang|quý|quy|năm|nam)?\s*\d{1,2}(?:[/.-]\d{2,4})?\b",
@@ -2535,104 +2713,9 @@ def resolve_query(
             r"^(?:t\d{1,2}[/.-]\d{2,4}|\d{1,2}[/.-]\d{2,4}|\d{4}|q\d)$", subj
         ):
             words = set(re.findall(r"[a-zA-Z_À-ỹ]+", clean_subj.lower()))
-            STORE_STOP_WORDS = {
-                "cua",
-                "hang",
-                "quan",
-                "tiem",
-                "shop",
-                "sop",
-                "tat",
-                "ca",
-                "tong",
-                "cong",
-                "mik",
-                "minh",
-                "duoc",
-                "dc",
-                "dat",
-                "trong",
-                "la",
-                "t",
-                "th",
-                "thang",
-                "quy",
-                "nam",
-                "cửa",
-                "hàng",
-                "quán",
-                "tiệm",
-                "sốp",
-                "tất",
-                "cả",
-                "tổng",
-                "cộng",
-                "mình",
-                "được",
-                "đc",
-                "đạt",
-                "tháng",
-                "quý",
-                "năm",
-                "ở",
-                "tại",
-                "vào",
-                "kủa",
-                "của",
-                "là",
-                "chi nhánh",
-                "toàn bộ",
-                "toan bo",
-                "cả quán",
-                "ca quan",
-                "cả tiệm",
-                "ca tiem",
-                "nay",
-                "này",
-                "ni",
-                "hom",
-                "hôm",
-                "bua",
-                "bữa",
-                "tuan",
-                "tuần",
-                "qua",
-                "chừ",
-                "chu",
-                "đầu",
-                "dau",
-                "hết",
-                "het",
-                "hnay",
-                "hqua",
-                "ngay",
-                "ngày",
-                "ngayf",
-                "từ",
-                "tu",
-                "tới",
-                "toi",
-                "đến",
-                "den",
-                "tính",
-                "tinh",
-                "bây",
-                "bay",
-                "giờ",
-                "gio",
-                "gan",
-                "gần",
-                "nhat",
-                "nhất",
-                "nhứt",
-                "nhaats",
-                "moi",
-                "mỗi",
-                "wán",
-                "trog",
-            }
             if not words.issubset(STORE_STOP_WORDS) and not matched_product:
                 has_unrecognized_product_subject = True
+                break
 
     is_overall_rev_query = (
         has_rev_keyword
@@ -2669,8 +2752,9 @@ def resolve_query(
         if not table or not date_col:
             return "abstain", None, "Thiếu bảng bán hàng"
 
-        rev_col = find_revenue_column(context, table)
-        if not rev_col:
+        hd_spec = find_header_detail_revenue_spec(context, table, order_col)
+        rev_col = None if hd_spec else find_revenue_column(context, table)
+        if not hd_spec and not rev_col:
             return "abstain", None, "Không tìm thấy cột doanh thu hợp lệ"
 
         cols = list(context.tables[table].columns)
@@ -2683,7 +2767,6 @@ def resolve_query(
             status_col, order_col=order_col, table=table
         )
 
-        hd_spec = find_header_detail_revenue_spec(context, table, order_col)
         if hd_spec:
             ct_order_col, ct_rev = hd_spec
             d_date_where = build_date_where_clause(f"d.{effective_date_col}", period)
