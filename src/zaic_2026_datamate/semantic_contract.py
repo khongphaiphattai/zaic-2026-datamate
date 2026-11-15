@@ -55,7 +55,11 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from zaic_2026_datamate.cleaner import normalize_query_telex
+from zaic_2026_datamate.cleaner import (
+    clean_vietnamese_currency,
+    normalize_query_telex,
+    strip_customer_phone,
+)
 from zaic_2026_datamate.data_loader import BusinessContext
 from zaic_2026_datamate.intent_parser import (
     ParsedPeriod,
@@ -338,16 +342,69 @@ def normalize_customer_key(val: Any) -> str | None:
     return s
 
 
-def is_bad_status(val: Any) -> bool:
-    """Return True if status value indicates cancellation or return."""
+def is_canceled_status(val: Any) -> bool:
+    """Return True if status value indicates order cancellation per Rulebook §1 (excludes returns)."""
     s = norm_vn(val)
     if not s:
         return False
-    # Guard: 'đang vận chuyển' ('dang van chuyen') contains substring 'huy' in 'chuyen'!
-    # Also support English 'cancelled' and 'returned'.
+    if s == "huy":
+        return True
     return bool(
         re.search(
-            r"\b(?:huy|cancel|cancelled|canceled|tra|return|returned|hoan hang|hoan tra|hang tra|doi tra|khong giao|that bai)\b",
+            r"\b(?:huy|cancel|cancelled|canceled|khong giao|khong giao duoc|that bai|giao that bai|bom hang|tu choi nhan)\b",
+            s,
+        )
+    )
+
+
+def pick_order_status_col(df: pd.DataFrame) -> str | None:
+    """Return the primary order status column in a sales table, or None if absent."""
+    cols = list(df.columns)
+    col = next(
+        (
+            c
+            for c in (
+                "trang_thai_don_hang",
+                "trang_thai",
+                "status",
+                "ghi_chu_tt",
+                "trang_thai_xu_ly",
+                "tinh_trang_don",
+                "trang_thai_don",
+                "tinh_trang",
+                "trang_thai_giao",
+                "tt_don",
+                "tien_do",
+                "xu_ly",
+                "ket_qua",
+            )
+            if c in cols and df[c].notna().any()
+        ),
+        None,
+    )
+    if col is not None:
+        return col
+    for c in ("ghi_chu", "note", "luu_y"):
+        if c in cols and df[c].notna().any():
+            s_lower = df[c].dropna().astype(str).str.lower()
+            if s_lower.str.contains(r"hủy|huỷ|cancel|trả|return", regex=True).any():
+                return c
+    return None
+
+
+def is_bad_status(val: Any) -> bool:
+    """Return True if status value indicates cancellation or return."""
+    if is_canceled_status(val):
+        return True
+    s = norm_vn(val)
+    if not s:
+        return False
+    if s == "tra":
+        return True
+    # Match explicit return phrases so valid payment statuses ('da tra', 'tra du', 'tra gop', 'chua tra') remain valid.
+    return bool(
+        re.search(
+            r"\b(?:return|returned|refund|refunded|tra hang|tra lai|tra mon|tra don|hang tra|khach tra|doi tra|hoan hang|hoan tra|hoan tien)\b",
             s,
         )
     )
@@ -455,9 +512,18 @@ _PRICE_COLS = (
     "gia_ban",
     "gia_niem_yet",
     "gia_1_dv",
+    "gia_don_vi",
     "gia",
     "gia_san_pham",
     "gia_le",
+)
+_LINE_DISCOUNT_COLS = (
+    "giam_gia",
+    "khuyen_mai",
+    "chiet_khau",
+    "tien_giam",
+    "ck_dong",
+    "giam_gia_dong",
 )
 
 
@@ -495,6 +561,8 @@ class QueryPlan:
     # - 'repeat_customer_share_pct'
     # - 'shift_diff_pct'
     # - 'period_growth_pct'
+    # - 'cancel_count'
+    # - 'cancel_rate_pct'
     metric: str  # 'revenue' | 'order_count' | 'customer_count' | 'day_count' | 'item_count' | 'aov' | 'quantity' | 'base_quantity'
     period: ParsedPeriod
     prior_period: ParsedPeriod | None = None
@@ -527,6 +595,8 @@ class BusinessSemanticContract:
     has_prescription: bool = False
     has_active_ingredient: bool = False
     has_staff: bool = False
+    has_order_status: bool = False
+    has_canceled_events: bool = False
     staff_id_to_name: dict[str, str] = field(default_factory=dict)
     staff_name_to_id: dict[str, str] = field(default_factory=dict)
     available_categories: set[str] = field(default_factory=set)
@@ -604,6 +674,11 @@ class BusinessSemanticContract:
                         c
                         for c in (
                             "ten_goi",
+                            "ho_ten_khach",
+                            "ho_ten_khach_hang",
+                            "ten_khach",
+                            "ten_nguoi_mua",
+                            "nguoi_mua",
                             "khach_hang_ten",
                             "ten_khach_hang",
                             "ten_kh",
@@ -628,8 +703,9 @@ class BusinessSemanticContract:
                     if name_col:
                         for k_val, n_val in zip(df[id_col], df[name_col]):
                             k_norm = norm_vn(k_val)
-                            if k_norm and pd.notna(n_val) and str(n_val).strip():
-                                cust_name_map[k_norm] = str(n_val).strip()
+                            cleaned_nm = strip_customer_phone(n_val)
+                            if k_norm and cleaned_nm:
+                                cust_name_map[k_norm] = cleaned_nm
 
         # Staff table lookup (Staff code <-> Staff name)
         staff_id_to_name: dict[str, str] = {}
@@ -932,6 +1008,7 @@ class BusinessSemanticContract:
                     "order_date",
                     "order_hour",
                     "is_valid_sale",
+                    "is_canceled",
                     "order_revenue",
                     "channel",
                     "payment_method",
@@ -953,6 +1030,7 @@ class BusinessSemanticContract:
                     "active_ingredient",
                     "is_service_fee",
                     "line_revenue",
+                    "pre_discount_line_revenue",
                     "quantity",
                     "base_quantity",
                     "base_unit",
@@ -984,15 +1062,23 @@ class BusinessSemanticContract:
             staff_name_to_id=staff_name_to_id,
         )
 
-        # Attach base_unit per line item from catalog/unit-conversion metadata
+        # Attach base_unit per line item from catalog/unit-conversion metadata (falling back to 1:1 sales unit)
         if len(lines_df) > 0:
+            existing_bu = (
+                list(lines_df["base_unit"])
+                if "base_unit" in lines_df.columns
+                else [None] * len(lines_df)
+            )
             lines_df["base_unit"] = pd.Series(
                 [
                     id_to_base_unit.get(norm_vn(k))
                     or name_to_base_unit.get(norm_vn(n))
                     or id_to_base_unit.get(_item_norm_key(k))
                     or name_to_base_unit.get(_item_norm_key(n))
-                    for k, n in zip(lines_df["item_key"], lines_df["item_name"])
+                    or (str(fb) if pd.notna(fb) and str(fb) else None)
+                    for k, n, fb in zip(
+                        lines_df["item_key"], lines_df["item_name"], existing_bu
+                    )
                 ],
                 index=lines_df.index,
                 dtype="object",
@@ -1048,6 +1134,8 @@ class BusinessSemanticContract:
         ) - {""}
         has_active_ingredient = len(avail_hcs) > 0
 
+        # Flush any open query result before registering views in DuckDB
+        context.duckdb_conn.execute("SELECT 1").fetchall()
         # Register both views in DuckDB
         context.duckdb_conn.register("canonical_orders", orders_df)
         context.duckdb_conn.register("canonical_order_lines", lines_df)
@@ -1055,6 +1143,23 @@ class BusinessSemanticContract:
         has_staff = (
             bool(orders_df["staff_key"].dropna().ne("").any())
             if "staff_key" in orders_df.columns and len(orders_df) > 0
+            else False
+        )
+        has_order_status = bool(
+            (
+                header_table is not None
+                and header_table in context.tables
+                and pick_order_status_col(context.tables[header_table]) is not None
+            )
+            or (
+                detail_table is not None
+                and detail_table in context.tables
+                and pick_order_status_col(context.tables[detail_table]) is not None
+            )
+        )
+        has_canceled_events = (
+            bool(orders_df["is_canceled"].any())
+            if "is_canceled" in orders_df.columns and len(orders_df) > 0
             else False
         )
 
@@ -1127,6 +1232,8 @@ class BusinessSemanticContract:
             has_prescription=has_rx_table,
             has_active_ingredient=has_active_ingredient,
             has_staff=has_staff,
+            has_order_status=has_order_status,
+            has_canceled_events=has_canceled_events,
             staff_id_to_name=staff_id_to_name,
             staff_name_to_id=staff_name_to_id,
             available_categories=avail_cats,
@@ -1410,6 +1517,68 @@ class BusinessSemanticContract:
         return raw_qtys, base_qtys
 
     @staticmethod
+    def _compute_pre_discount_line_revs(
+        df: pd.DataFrame,
+        line_revs: pd.Series,
+        raw_qtys: pd.Series,
+        price_col: str | None,
+    ) -> pd.Series:
+        """Recover pre-line-discount revenue only when an explicit line-discount column exists."""
+        disc_col = next((c for c in _LINE_DISCOUNT_COLS if c in df.columns), None)
+        if disc_col is None:
+            return line_revs.astype("float64")
+
+        prices = (
+            pd.to_numeric(df[price_col], errors="coerce")
+            if price_col and price_col in df.columns
+            else pd.Series(np.nan, index=df.index, dtype="float64")
+        )
+        out: list[float] = []
+        for lrev, raw_d, rqty, p_val in zip(line_revs, df[disc_col], raw_qtys, prices):
+            lv = float(lrev)
+            disc_amt = 0.0
+            if pd.notna(raw_d):
+                if isinstance(raw_d, (int, float)):
+                    dv = float(raw_d)
+                    if math.isfinite(dv) and dv > 0:
+                        disc_amt = dv
+                else:
+                    s = str(raw_d).strip().lower()
+                    if "%" in s:
+                        m_pct = re.match(r"^\s*(\d+(?:[.,]\d+)?)\s*%", s)
+                        if m_pct:
+                            pct = float(m_pct.group(1).replace(",", ".")) / 100.0
+                            if 0.0 < pct < 1.0 and lv > 0:
+                                disc_amt = lv * pct / (1.0 - pct)
+                    elif re.fullmatch(r"[\d.,\sđdvnkrt]+", s):
+                        if re.fullmatch(r"\d+(?:,\d{3})+", s):
+                            disc_amt = float(s.replace(",", ""))
+                        else:
+                            parsed = clean_vietnamese_currency(s)
+                            if (
+                                parsed is not None
+                                and math.isfinite(parsed)
+                                and parsed > 0
+                            ):
+                                disc_amt = float(parsed)
+            if disc_amt > 0:
+                pv = float(p_val) if pd.notna(p_val) else float("nan")
+                qv = float(rqty)
+                if (
+                    math.isfinite(pv)
+                    and pv > 0
+                    and math.isfinite(qv)
+                    and qv > 0
+                    and abs((pv * qv) - (lv + disc_amt)) <= 1.0
+                ):
+                    out.append(pv * qv)
+                else:
+                    out.append(lv + disc_amt)
+            else:
+                out.append(lv)
+        return pd.Series(out, index=df.index, dtype="float64")
+
+    @staticmethod
     def _identify_header_and_detail_tables(
         context: BusinessContext,
     ) -> tuple[str | None, str | None]:
@@ -1432,6 +1601,56 @@ class BusinessSemanticContract:
         if primary_table:
             return None, primary_table
         return None, None
+
+    @staticmethod
+    def _canonicalize_customer_names(
+        orders_df: pd.DataFrame,
+        cust_name_map: dict[str, str],
+    ) -> pd.DataFrame:
+        """Canonicalize customer display names per customer_key across whole shop."""
+        if orders_df.empty or "customer_name" not in orders_df.columns:
+            return orders_df
+        cleaned_names = [
+            strip_customer_phone(v) or None if pd.notna(v) else None
+            for v in orders_df["customer_name"]
+        ]
+        orders_df = orders_df.copy()
+        orders_df["customer_name"] = pd.Series(
+            cleaned_names, index=orders_df.index, dtype="object"
+        )
+
+        def _score(cand: str, is_catalog: bool, freq: int) -> tuple[int, int, int, str]:
+            diacritic_cnt = sum(1 for ch in cand if ord(ch) > 127)
+            return (diacritic_cnt, 1 if is_catalog else 0, freq, cand)
+
+        counts: dict[tuple[str, str], int] = {}
+        for ck, cname in zip(orders_df["customer_key"], orders_df["customer_name"]):
+            if ck and cname:
+                pair = (str(ck), str(cname))
+                counts[pair] = counts.get(pair, 0) + 1
+
+        best_by_key: dict[str, tuple[tuple[int, int, int, str], str]] = {}
+        for (ck, cname), cnt in counts.items():
+            sc = _score(cname, False, cnt)
+            if ck not in best_by_key or sc > best_by_key[ck][0]:
+                best_by_key[ck] = (sc, cname)
+
+        for ck, cat_name in cust_name_map.items():
+            if not cat_name or ck not in best_by_key:
+                continue
+            cur_score, cur_name = best_by_key[ck]
+            cat_score = _score(cat_name, True, cur_score[2])
+            if norm_vn(cur_name) == norm_vn(ck) or (
+                norm_vn(cat_name) == norm_vn(cur_name) and cat_score > cur_score
+            ):
+                best_by_key[ck] = (cat_score, cat_name)
+
+        canon_map = {ck: val[1] for ck, val in best_by_key.items()}
+        orders_df["customer_name"] = [
+            canon_map.get(str(ck), cname) if ck else cname
+            for ck, cname in zip(orders_df["customer_key"], orders_df["customer_name"])
+        ]
+        return orders_df
 
     @classmethod
     def _construct_canonical_frames(
@@ -1456,7 +1675,7 @@ class BusinessSemanticContract:
         staff_name_to_id = staff_name_to_id or {}
 
         if header_table is not None and detail_table is not None:
-            return cls._build_from_separate_header_detail(
+            orders_df, lines_df = cls._build_from_separate_header_detail(
                 context=context,
                 header_df=tables[header_table],
                 detail_df=tables[detail_table],
@@ -1472,9 +1691,10 @@ class BusinessSemanticContract:
                 staff_id_to_name=staff_id_to_name,
                 staff_name_to_id=staff_name_to_id,
             )
+            return cls._canonicalize_customer_names(orders_df, cust_name_map), lines_df
 
         assert detail_table is not None
-        return cls._build_from_combined_table(
+        orders_df, lines_df = cls._build_from_combined_table(
             context=context,
             table_name=detail_table,
             df=tables[detail_table],
@@ -1490,6 +1710,7 @@ class BusinessSemanticContract:
             staff_id_to_name=staff_id_to_name,
             staff_name_to_id=staff_name_to_id,
         )
+        return cls._canonicalize_customer_names(orders_df, cust_name_map), lines_df
 
     @classmethod
     def _build_from_separate_header_detail(
@@ -1589,20 +1810,7 @@ class BusinessSemanticContract:
         )
 
         # Status on header
-        h_status_col = next(
-            (
-                c
-                for c in (
-                    "trang_thai",
-                    "xu_ly",
-                    "tinh_trang",
-                    "tinh_trang_don",
-                    "status",
-                )
-                if c in h_cols
-            ),
-            None,
-        )
+        h_status_col = pick_order_status_col(header_df)
 
         # Channel & Payment on header (Rulebook §1: payment method is strictly from the order, NOT from debt payments)
         h_chan_col = next(
@@ -1641,12 +1849,14 @@ class BusinessSemanticContract:
             (
                 c
                 for c in (
+                    "ma_khach_hang",
+                    "ma_khach",
+                    "ma_khach_mua",
+                    "ma_kh_mua",
+                    "ma_nguoi_mua",
                     "ma_kh",
                     "so_kh",
-                    "ma_khach_hang",
-                    "ma_kh_mua",
                     "customer_id",
-                    "ma_khach_mua",
                     "ma_the",
                 )
                 if c in h_cols
@@ -1657,6 +1867,11 @@ class BusinessSemanticContract:
             (
                 c
                 for c in (
+                    "ho_ten_khach",
+                    "ho_ten_khach_hang",
+                    "ten_khach",
+                    "ten_nguoi_mua",
+                    "nguoi_mua",
                     "ten_khach_hang",
                     "khach_hang_ten",
                     "ten_kh",
@@ -1769,6 +1984,25 @@ class BusinessSemanticContract:
             raw_item_ids,
             context,
         )
+        pre_discount_line_revs = cls._compute_pre_discount_line_revs(
+            detail_df, line_revs, raw_qtys, d_price_col
+        )
+        raw_d_units = (
+            detail_df[d_unit_col]
+            if d_unit_col
+            else pd.Series(None, index=detail_df.index, dtype="object")
+        )
+        fb_base_units = [
+            norm_vn(u)
+            if (
+                pd.notna(u)
+                and norm_vn(u) not in ("", "nan", "none")
+                and abs(float(b) - float(r)) <= 1e-6
+                and float(r) > 0
+            )
+            else None
+            for u, b, r in zip(raw_d_units, base_qtys, raw_qtys)
+        ]
 
         # Map item_key, category, is_prescription, is_service_fee
         item_keys: list[str] = []
@@ -1828,8 +2062,10 @@ class BusinessSemanticContract:
 
         if h_status_col:
             valid_flags = ~header_df[h_status_col].map(is_bad_status)
+            canceled_flags = header_df[h_status_col].map(is_canceled_status)
         else:
             valid_flags = pd.Series(True, index=header_df.index)
+            canceled_flags = pd.Series(False, index=header_df.index)
 
         # Revenue: prefer sum of detail line_revenue (which is guaranteed to be post-line-discount and pre-order-discount/shipping)
         # Fallback to header merchandise revenue if detail has no rows for an order
@@ -1897,10 +2133,10 @@ class BusinessSemanticContract:
             if (
                 pd.notna(cname)
                 and str(cname).strip()
-                and norm_vn(cname) not in ("le", "khach le", "ban le", "vang lai")
+                and normalize_customer_key(cname) is not None
             ):
                 resolved_cname = str(cname).strip()
-            elif pd.notna(cid):
+            elif ck is not None and pd.notna(cid):
                 cid_norm = norm_vn(cid)
                 resolved_cname = cust_name_map.get(cid_norm) or str(cid).strip()
             cust_names.append(resolved_cname)
@@ -1942,6 +2178,7 @@ class BusinessSemanticContract:
                 "order_date": pd.to_datetime(order_dates),
                 "order_hour": order_hours,
                 "is_valid_sale": valid_flags.astype(bool),
+                "is_canceled": canceled_flags.astype(bool),
                 "order_revenue": pd.Series(order_revs, dtype="float64"),
                 "channel": channels,
                 "payment_method": payments,
@@ -1960,6 +2197,7 @@ class BusinessSemanticContract:
                     "order_date": "min",
                     "order_hour": "min",
                     "is_valid_sale": "all",
+                    "is_canceled": "any",
                     "order_revenue": "first",
                     "channel": "first",
                     "payment_method": "first",
@@ -1987,8 +2225,10 @@ class BusinessSemanticContract:
                 "is_prescription": pd.Series(is_rx_list, dtype=bool),
                 "is_service_fee": pd.Series(is_svc_list, dtype=bool),
                 "line_revenue": line_revs.astype("float64"),
+                "pre_discount_line_revenue": pre_discount_line_revs.astype("float64"),
                 "quantity": raw_qtys.astype("float64"),
                 "base_quantity": base_qtys.astype("float64"),
+                "base_unit": pd.Series(fb_base_units, dtype="object"),
             }
         )
 
@@ -2024,9 +2264,14 @@ class BusinessSemanticContract:
                     "id_don",
                     "ma_don_hang",
                     "ma_hoa_don",
+                    "ma_giao_dich",
                     "ma_phieu",
                     "ma_bill",
                     "so_phieu",
+                    "so_don_hang",
+                    "so_hoa_don",
+                    "id_hoa_don",
+                    "so_don",
                     "ma_gd",
                     "ma_chung_tu",
                     "don_so",
@@ -2085,37 +2330,7 @@ class BusinessSemanticContract:
         )
 
         # Status column
-        status_col = next(
-            (
-                c
-                for c in (
-                    "trang_thai_don_hang",
-                    "trang_thai",
-                    "status",
-                    "ghi_chu_tt",
-                    "trang_thai_xu_ly",
-                    "tinh_trang_don",
-                    "trang_thai_don",
-                    "tinh_trang",
-                    "trang_thai_giao",
-                    "tt_don",
-                    "tien_do",
-                    "xu_ly",
-                    "ket_qua",
-                )
-                if c in cols and df[c].notna().any()
-            ),
-            None,
-        )
-        if not status_col:
-            for c in ("ghi_chu", "note", "luu_y"):
-                if c in cols and df[c].notna().any():
-                    s_lower = df[c].dropna().astype(str).str.lower()
-                    if s_lower.str.contains(
-                        r"hủy|huỷ|cancel|trả|return", regex=True
-                    ).any():
-                        status_col = c
-                        break
+        status_col = pick_order_status_col(df)
 
         # Channel & Payment columns
         chan_col = next(
@@ -2147,11 +2362,15 @@ class BusinessSemanticContract:
             (
                 c
                 for c in (
+                    "ma_khach_hang",
                     "ma_khach",
                     "ma_khach_mua",
+                    "ma_kh_mua",
                     "ma_nguoi_mua",
                     "ma_kh",
+                    "so_kh",
                     "customer_id",
+                    "ma_the",
                 )
                 if c in cols
             ),
@@ -2161,6 +2380,11 @@ class BusinessSemanticContract:
             (
                 c
                 for c in (
+                    "ho_ten_khach",
+                    "ho_ten_khach_hang",
+                    "ten_khach",
+                    "ten_nguoi_mua",
+                    "nguoi_mua",
                     "khach_hang",
                     "ten_khach_hang",
                     "khach_hang_ten",
@@ -2278,7 +2502,41 @@ class BusinessSemanticContract:
             )
 
         if order_col:
-            order_ids = df[order_col].fillna("").astype(str).str.strip()
+            raw_ord = df[order_col].fillna("").astype(str).str.strip()
+            if order_col == "stt":
+                sheet_col = (
+                    "sheet_name"
+                    if "sheet_name" in cols
+                    else ("_sheet_name" if "_sheet_name" in cols else None)
+                )
+                if sheet_col:
+                    order_ids = (
+                        df[sheet_col].fillna("").astype(str).str.strip()
+                        + "__"
+                        + raw_ord
+                    )
+                elif date_col and raw_ord.ne("").any():
+                    tmp_dates = (
+                        pd.to_datetime(df[date_col], errors="coerce")
+                        .dt.strftime("%Y-%m-%d")
+                        .fillna("")
+                    )
+                    valid_mask = raw_ord.ne("") & tmp_dates.ne("")
+                    if (
+                        valid_mask.any()
+                        and tmp_dates[valid_mask]
+                        .groupby(raw_ord[valid_mask])
+                        .nunique()
+                        .max()
+                        > 1
+                    ):
+                        order_ids = tmp_dates + "__" + raw_ord
+                    else:
+                        order_ids = raw_ord
+                else:
+                    order_ids = raw_ord
+            else:
+                order_ids = raw_ord
         else:
             order_ids = pd.Series([f"row_{i}" for i in range(len(df))], index=df.index)
         raw_dates = (
@@ -2295,8 +2553,10 @@ class BusinessSemanticContract:
         # Row-level bad status check (if any row in an order has a bad status, the whole order is invalid per Rulebook §1)
         if status_col:
             row_bad_status = df[status_col].map(is_bad_status)
+            row_canceled_status = df[status_col].map(is_canceled_status)
         else:
             row_bad_status = pd.Series(False, index=df.index)
+            row_canceled_status = pd.Series(False, index=df.index)
 
         raw_revs = (
             pd.to_numeric(df[rev_col], errors="coerce").fillna(0.0)
@@ -2341,6 +2601,17 @@ class BusinessSemanticContract:
             ["Voucher", "Phí ship"]
         ) | raw_item_names.str.startswith("Dùng ", na=False)
         effective_line_revs = raw_revs.where(~is_adjustment_row, 0.0)
+        raw_pre_discount_revs = cls._compute_pre_discount_line_revs(
+            df, raw_revs, raw_qtys, price_col
+        )
+        effective_pre_discount_revs = raw_pre_discount_revs.where(
+            ~is_adjustment_row, 0.0
+        )
+        raw_units = (
+            df[unit_col]
+            if unit_col
+            else pd.Series(None, index=df.index, dtype="object")
+        )
 
         # Build order-level aggregations
         chan_series = (
@@ -2372,10 +2643,10 @@ class BusinessSemanticContract:
             if (
                 pd.notna(cname)
                 and str(cname).strip()
-                and norm_vn(cname) not in ("le", "khach le", "ban le", "vang lai")
+                and normalize_customer_key(cname) is not None
             ):
                 resolved_cname = str(cname).strip()
-            elif pd.notna(cid):
+            elif ck is not None and pd.notna(cid):
                 cid_norm = norm_vn(cid)
                 resolved_cname = cust_name_map.get(cid_norm) or str(cid).strip()
             cust_names.append(resolved_cname)
@@ -2414,6 +2685,7 @@ class BusinessSemanticContract:
                 "raw_date": raw_dates,
                 "raw_hour": raw_hours,
                 "row_bad": row_bad_status,
+                "row_canceled": row_canceled_status,
                 "line_rev": effective_line_revs,
                 "channel": chan_series,
                 "payment_method": pay_series,
@@ -2430,6 +2702,7 @@ class BusinessSemanticContract:
             order_date=("raw_date", "min"),
             order_hour=("raw_hour", "first"),
             any_bad=("row_bad", "any"),
+            any_canceled=("row_canceled", "any"),
             order_revenue=("line_rev", "sum"),
             channel=("channel", "first"),
             payment_method=("payment_method", "first"),
@@ -2440,7 +2713,8 @@ class BusinessSemanticContract:
             staff_name=("staff_name", "first"),
         )
         orders_df["is_valid_sale"] = ~orders_df["any_bad"]
-        orders_df = orders_df.drop(columns=["any_bad"])
+        orders_df["is_canceled"] = orders_df["any_canceled"].astype(bool)
+        orders_df = orders_df.drop(columns=["any_bad", "any_canceled"])
 
         # Build canonical_order_lines (excluding adjustment rows like Voucher/Phí ship)
         order_meta = orders_df.set_index("order_id")
@@ -2452,22 +2726,37 @@ class BusinessSemanticContract:
         line_rx: list[bool] = []
         line_svc: list[bool] = []
         line_amounts: list[float] = []
+        line_pre_amounts: list[float] = []
         line_qtys: list[float] = []
         line_base_qtys: list[float] = []
+        line_fb_bus: list[str | None] = []
 
-        for oid, iid, iname, icat, irx, rev, rqty, bqty, is_adj in zip(
+        for oid, iid, iname, icat, irx, rev, p_rev, rqty, bqty, u_val, is_adj in zip(
             order_ids,
             raw_item_ids,
             raw_item_names,
             raw_inline_cats,
             raw_inline_rx,
             effective_line_revs,
+            effective_pre_discount_revs,
             raw_qtys,
             base_qtys,
+            raw_units,
             is_adjustment_row,
         ):
             if is_adj:
                 continue
+
+            u_norm = norm_vn(u_val) if pd.notna(u_val) else ""
+            fb_bu = (
+                u_norm
+                if (
+                    u_norm not in ("", "nan", "none")
+                    and abs(float(bqty) - float(rqty)) <= 1e-6
+                    and float(rqty) > 0
+                )
+                else None
+            )
 
             # Special handling for inline topping in cafe tables via shared cleaner helper
             if " + " in iname:
@@ -2479,6 +2768,7 @@ class BusinessSemanticContract:
                     line_qty=float(rqty),
                     line_base_qty=float(bqty),
                 )
+                pre_scale = (float(p_rev) / float(rev)) if float(rev) > 0 else 1.0
                 base_canon = canon_by_key.get(
                     _item_norm_key(base_part["name"]), base_part["name"]
                 )
@@ -2500,8 +2790,10 @@ class BusinessSemanticContract:
                 line_rx.append(False)
                 line_svc.append(False)
                 line_amounts.append(base_part["amount"])
+                line_pre_amounts.append(base_part["amount"] * pre_scale)
                 line_qtys.append(base_part["qty"])
                 line_base_qtys.append(base_part["base_qty"])
+                line_fb_bus.append(fb_bu)
 
                 for tp in top_parts:
                     if tp["amount"] > 0:
@@ -2513,8 +2805,10 @@ class BusinessSemanticContract:
                         line_rx.append(False)
                         line_svc.append(False)
                         line_amounts.append(tp["amount"])
+                        line_pre_amounts.append(tp["amount"] * pre_scale)
                         line_qtys.append(tp["qty"])
                         line_base_qtys.append(tp["base_qty"])
+                        line_fb_bus.append(None)
                 continue
 
             inorm = norm_vn(iid)
@@ -2553,8 +2847,10 @@ class BusinessSemanticContract:
             line_rx.append(bool(rx_val))
             line_svc.append(bool(is_svc))
             line_amounts.append(float(rev))
+            line_pre_amounts.append(float(p_rev))
             line_qtys.append(float(rqty))
             line_base_qtys.append(float(bqty))
+            line_fb_bus.append(fb_bu)
 
         lo_series = pd.Series(line_order_ids, dtype="object")
         lines_df = pd.DataFrame(
@@ -2571,8 +2867,12 @@ class BusinessSemanticContract:
                 "is_prescription": pd.Series(line_rx, dtype=bool),
                 "is_service_fee": pd.Series(line_svc, dtype=bool),
                 "line_revenue": pd.Series(line_amounts, dtype="float64"),
+                "pre_discount_line_revenue": pd.Series(
+                    line_pre_amounts, dtype="float64"
+                ),
                 "quantity": pd.Series(line_qtys, dtype="float64"),
                 "base_quantity": pd.Series(line_base_qtys, dtype="float64"),
+                "base_unit": pd.Series(line_fb_bus, dtype="object"),
             }
         )
 
@@ -2587,6 +2887,28 @@ class BusinessSemanticContract:
 def parse_enhanced_period(question: str, as_of_date: str | None) -> ParsedPeriod:
     """Parse temporal expressions with full dialect & Rulebook §2 relative month support."""
     cleaned = normalize_query_telex(question)
+    t_norm = norm_vn(cleaned)
+    m_mspan = re.search(
+        r"\btu\s+dau\s+(?:thang|th|t)\s*(\d{1,2})\s*[/.-]\s*(\d{2,4})\s*(?:den|toi)\s*het\s+(?:thang|th|t)\s*(\d{1,2})\s*[/.-]\s*(\d{2,4})\b",
+        t_norm,
+    )
+    if m_mspan:
+        m1, y1, m2, y2 = (int(m_mspan.group(i)) for i in range(1, 5))
+        if y1 < 100:
+            y1 += 2000
+        if y2 < 100:
+            y2 += 2000
+        if (
+            1 <= m1 <= 12
+            and 1 <= m2 <= 12
+            and 2024 <= y1 <= 2027
+            and 2024 <= y2 <= 2027
+        ):
+            last_day = calendar.monthrange(y2, m2)[1]
+            return ParsedPeriod(
+                start_date=f"{y1:04d}-{m1:02d}-01",
+                end_date=f"{y2:04d}-{m2:02d}-{last_day:02d}",
+            )
     p = parse_time_expressions(cleaned, as_of_date)
     t = cleaned.lower()
     anchor = datetime.strptime(as_of_date, "%Y-%m-%d").date() if as_of_date else None
@@ -2764,21 +3086,31 @@ def _extract_item_from_query(
     """
     if not contract.available_products:
         return None
+    q_clean = " ".join(re.sub(r"[^a-z0-9\s]", " ", q_norm).split())
+
+    def _matches(p_norm: str, target_q: str, clean_q: str) -> bool:
+        if p_norm in target_q:
+            return True
+        p_clean = " ".join(re.sub(r"[^a-z0-9\s]", " ", p_norm).split())
+        if len(p_clean) < 3 or p_clean == p_norm:
+            return False
+        return bool(re.search(rf"(?<!\w){re.escape(p_clean)}(?!\w)", clean_q))
+
     for p_norm, p_orig, p_key in contract.available_products:
         if not p_norm or len(p_norm) < 3:
             continue
-        if p_norm in q_norm:
+        if _matches(p_norm, q_norm, q_clean):
             return p_orig, p_key
 
     # North-South regional synonyms fallback
-    q_norm_syn = re.sub(r"\bcoc\s+sac\b", "cu sac", q_norm)
+    q_norm_syn = re.sub(r"\bcoc\s+sac\b", "cu sac", q_clean)
     q_norm_syn = re.sub(r"\bgang\s+tay\s+tat\s+chan\b", "bao tay bao chan", q_norm_syn)
     q_norm_syn = re.sub(r"\blavie\b", "la vie", q_norm_syn)
-    if q_norm_syn != q_norm:
+    if q_norm_syn != q_clean:
         for p_norm, p_orig, p_key in contract.available_products:
             if not p_norm or len(p_norm) < 3:
                 continue
-            if p_norm in q_norm_syn:
+            if _matches(p_norm, q_norm_syn, q_norm_syn):
                 return p_orig, p_key
     return None
 
@@ -2871,8 +3203,12 @@ def _parse_growth_periods(
     if not has_growth_kw:
         return None
 
-    # Form 1: Two explicit months (e.g. 'th 3/26 so th 3/25' or 'thang 5/2026 so voi thang 4/2026')
-    m_all = re.findall(r"\b(?:thang|th|t)?\s*(\d{1,2})\s*[/.-]\s*(\d{2,4})\b", q_norm)
+    # Form 1: Two explicit months (e.g. 'th 3/26 so th 3/25', 'thang 5/2026 so voi thang 4/2026', 'thang 4 nam 2026 so voi thang 4 nam 2025')
+    m_pairs = re.findall(
+        r"\b(?:(?:thang|th|t)\s*(\d{1,2})(?:\s*[/.-]\s*|\s+nam\s+)(\d{2,4})|(?<!quy\s)(?<![/.-])(\d{1,2})\s*[/.-]\s*(\d{2,4}))\b",
+        q_norm,
+    )
+    m_all = [(a or c, b or d) for a, b, c, d in m_pairs]
     if len(m_all) >= 2:
         m1, y1 = int(m_all[0][0]), int(m_all[0][1])
         m2, y2 = int(m_all[1][0]), int(m_all[1][1])
@@ -2941,12 +3277,15 @@ def _parse_growth_periods(
         for k in (
             "cung ky nam ngoai",
             "cung ky nam truoc",
+            "cung ky nam trc",
             "cung ky nam roi",
             "nam ngoai",
             "nam truoc",
+            "nam trc",
             "nam roi",
             "cung thang nam ngoai",
             "cung thang nam truoc",
+            "cung thang nam trc",
             "cung thang nam roi",
         )
     )
@@ -3396,6 +3735,9 @@ def build_query_plan(
         q_lower,
     ):
         return None
+    q_norm_mrange = re.sub(
+        r"\b(?:(?:vi\s+)?dien\s+tu|vat\s+tu|ca\s+phe\s+den)\b", " _x_ ", q_norm
+    )
     if (
         any(
             k in q_norm
@@ -3407,7 +3749,6 @@ def build_query_plan(
                 "nha cung cap",
                 "ncc",
                 "bao hanh",
-                "sua tu",
                 "dot tro len",
                 "giao tu",
                 "cho thanh",
@@ -3423,15 +3764,11 @@ def build_query_plan(
                 "khau tru",
                 "giam tru",
                 # Multi-month range queries
-                "tu thang",
-                "từ tháng",
-                "toi thang",
-                "tới tháng",
-                "den thang",
-                "đến tháng",
                 "qua cac thang",
             )
         )
+        or bool(re.search(r"\b(?:tu|toi|den)\s+thang\b", q_norm_mrange))
+        or bool(re.search(r"\bsua\s+tu\b", q_norm))
         or bool(re.search(r"\btra\s+gop\b", q_norm))
         or bool(re.search(r"\b(?:tang\s+gia|doi\s+gia|len\s+gia)\b", q_norm))
         or bool(re.search(r"\btru\s+(?:chi\s+phi|tien|khoan)\b", q_norm))
@@ -3584,6 +3921,9 @@ def build_query_plan(
             "hot nhat",
             "sp ban nhieu nhat",
             "hang ban nhieu nhat",
+            "best seller",
+            "bestseller",
+            "top seller",
         )
     ) or bool(
         re.search(
@@ -3606,7 +3946,7 @@ def build_query_plan(
             q_norm_ranked = re.sub(rf"\btop\s+{w_vn}\b", f"top {d_vn}", q_norm_ranked)
         m_top = re.search(r"\btop\s*(\d{1,2})\b", q_norm_ranked)
         m_count = re.search(
-            r"\b(\d{1,2})\s+(?:mat hangf?|hang hoa|san pham|sp|mon|hang)\b",
+            r"\b(\d{1,2})\s+(?:mat hangf?|hang hoa|san pham|sp|mon|hang|best\s*sellers?|top\s*sellers?)\b",
             q_norm_ranked,
         )
         if m_top:
@@ -3839,18 +4179,25 @@ def build_query_plan(
             output_type="string",
         )
 
-    is_top_customer_orders = any(
-        k in q_norm
-        for k in (
-            "ai la khach co so don mua nhieu nhat",
-            "khach co so don mua nhieu nhat",
-            "khach nao mua nhieu don nhat",
-            "ai mua nhieu don nhat",
-            "khach mua nhieu don nhat",
-            "khach nao co nhieu don nhat",
-            "ai co nhieu don nhat",
+    is_top_customer_orders = (
+        any(
+            k in q_norm
+            for k in (
+                "ai la khach co so don mua nhieu nhat",
+                "khach co so don mua nhieu nhat",
+                "khach nao mua nhieu don nhat",
+                "ai mua nhieu don nhat",
+                "khach mua nhieu don nhat",
+                "khach nao co nhieu don nhat",
+                "ai co nhieu don nhat",
+            )
         )
-    ) or bool(re.search(r"\b(?:khach|ai)\b.*?\b(?:mua|co)\s*nhieu\s*don\b", q_norm))
+        or bool(re.search(r"\b(?:khach|ai)\b.*?\b(?:mua|co)\s*nhieu\s*don\b", q_norm))
+        or (
+            bool(re.search(r"\b(?:khach|ai)\b.*?\bmua\s*nhieu\s*lan\b", q_norm))
+            and not any(t in q_norm for t in ("nhieu tien", "chi tieu"))
+        )
+    )
     if is_top_customer_orders and has_valid_period:
         return QueryPlan(
             operation="ranking_top_k",
@@ -3868,8 +4215,11 @@ def build_query_plan(
             "chi nhieu tien nhat",
             "chi tieu nhieu nhat",
             "mua nhieu tien nhat",
+            "mua hang nhieu tien nhat",
             "tong tien mua hang cao nhut",
             "tong tien mua hang cao nhat",
+            "tong tien mua cao nhut",
+            "tong tien mua cao nhat",
             "chi nhieu tien nhut",
             "mua nhieu tien nhut",
             "chi tieu nhieu",
@@ -3877,7 +4227,13 @@ def build_query_plan(
     ) or (
         any(k in q_norm for k in ("khach", "khach hang", "ai"))
         and any(
-            k in q_norm for k in ("chi nhieu tien", "mua nhieu tien", "chi tieu nhieu")
+            k in q_norm
+            for k in (
+                "chi nhieu tien",
+                "mua nhieu tien",
+                "mua hang nhieu tien",
+                "chi tieu nhieu",
+            )
         )
     )
     if is_top_customer_revenue and has_valid_period:
@@ -3900,21 +4256,26 @@ def build_query_plan(
         is_singular_cust = any(
             k in q_norm for k in ("khach nao", "ai", "khach hang nao", "khach mo")
         )
+        has_plural_unbounded = any(
+            k in q_norm for k in ("cac khach", "nhung khach", "nhung ai")
+        )
         if m_cust:
             limit_k_cust = int(m_cust.group(1))
         elif m_cust_cnt and not is_singular_cust:
             limit_k_cust = int(m_cust_cnt.group(1))
+        elif has_plural_unbounded:
+            limit_k_cust = 0
         else:
             limit_k_cust = 1
 
-        if limit_k_cust == 1:
+        if 1 <= limit_k_cust <= 20:
             return QueryPlan(
                 operation="ranking_top_k",
                 metric="revenue",
                 period=period,
                 target_dimension="customer",
-                limit_k=1,
-                output_type="string",
+                limit_k=limit_k_cust,
+                output_type="string" if limit_k_cust == 1 else "list",
             )
 
     # Popular item (Rulebook Mục 9: mặt hàng được ưa chuộng nhất = có mặt trong nhiều đơn nhất)
@@ -4031,7 +4392,7 @@ def build_query_plan(
         )
     )
 
-    units_regex = r"(?:ly|coc|hộp|hop|lon|bịch|bich|chai|cái|cai|cuộn|cuon|viên|vien|kg|gói|goi|tô|to|bát|bat|chiếc|chiec|thùng|thung|vé|ve|đĩa|dia|suất|suat|nồi|noi|cây|cay|ống|ong|bộ|bo|can|thanh|tấm|tam|ram|tờ|to|mét|met|m|phần|phan|bình|binh|tuýp|tuyp|lọ|lo|vỉ|vi|lốc|loc|miếng|mieng)"
+    units_regex = r"(?:ly|coc|hộp|hop|lon|bịch|bich|chai|cái|cai|cuộn|cuon|cục|cuc|bao(?!\s+(?:nhieu|nhiu|hanh|cao|gom|bi))|viên|vien|kg|gói|goi|tô|to|bát|bat|chiếc|chiec|thùng|thung|vé|ve|đĩa|dia|suất|suat|nồi|noi|cây|cay|ống|ong|bộ|bo|can|thanh|tấm|tam|ram|tờ|to|m3|m2|m³|m²|mét|met|m|phần|phan|bình|binh|tuýp|tuyp|lọ|lo|vỉ|vi|lốc|loc|miếng|mieng)"
     qty_ask_pat = r"(?:mấy|may|maays|mays|bao nhiêu|bao nhieu|bao nhiu|baonhieu|bnhiu|bn|nhiêu|nhieu|nhiu)"
     has_qty_q = (
         bool(
@@ -4158,20 +4519,101 @@ def build_query_plan(
         )
 
     # -------------------------------------------------------------------------
+    # 0.1B ORDER CANCELLATION COUNT & RATE % (Rulebook §1)
+    # -------------------------------------------------------------------------
+    is_cancel_kw = bool(
+        re.search(r"\b(?:huy|cancel|cancelled|canceled)\b", q_norm)
+    ) or any(k in q_norm for k in ("khong giao duoc", "bom hang"))
+    cancel_rate_kw = has_pct_kw or ("ti ne" in q_norm)
+    cancel_guards = (
+        (matched_item_early is not None)
+        or has_purchase_kw
+        or any(
+            k in q_norm
+            for k in (
+                "ly do",
+                "vi sao",
+                "tai sao",
+                "nguyen nhan",
+                "chuyen khoan",
+                "tien mat",
+                "tra bang",
+                "doanh thu",
+                "dthu",
+                "tien ban",
+                "tien hang",
+                "ca sang",
+                "ca chieu",
+                "khach nao",
+                "khach hang nao",
+            )
+        )
+        or bool(re.search(r"\bai\s+(?:bi\s+)?huy\b", q_norm))
+    )
+    if is_cancel_kw and has_order_kw and not cancel_guards and has_valid_period:
+        if cancel_rate_kw:
+            return QueryPlan(
+                operation="cancel_rate_pct",
+                metric="cancel_rate",
+                period=period,
+                output_type="percent",
+            )
+        if any(
+            k in q_norm
+            for k in (
+                "may",
+                "bao nhieu",
+                "bao nhiu",
+                "baonhieu",
+                "bnhiu",
+                "bn",
+                "so don",
+                "so dh",
+                "so bill",
+                "so hoa don",
+                "dem",
+                "tong so",
+            )
+        ):
+            return QueryPlan(
+                operation="cancel_count",
+                metric="cancel_count",
+                period=period,
+                output_type="number",
+            )
+
+    # -------------------------------------------------------------------------
     # 0.2 ITEM / CATEGORY / STORE QUANTITY SOLD (number)
     # -------------------------------------------------------------------------
-    is_clinical_dosage = bool(re.search(r"\b(?:uong|lieu\s+dung)\b", q_norm)) or any(
-        k in q_norm
-        for k in (
-            "nguoi lon",
-            "tre em",
-            "moi lan",
-            "moi ngay",
-            "hoat chat",
-            "thanh phan",
-            "ke don",
-            "khong ke don",
-            "don bac si",
+    has_drink_phrase = bool(
+        re.search(r"\b(?:do|thuc|nuoc|moi\s+loai)\s+uong\b", q_norm)
+    )
+    has_dosage_uong = (
+        bool(re.search(r"\buong\b", q_norm))
+        and not has_drink_phrase
+        and (
+            contract.has_prescription
+            or contract.has_active_ingredient
+            or any("thuoc" in t for t in context.tables)
+            or bool(re.search(r"\b(?:moi\s+lan|moi\s+ngay|vien|thuoc|lieu)\b", q_norm))
+        )
+    )
+    is_clinical_dosage = (
+        bool(re.search(r"\blieu\s+dung\b", q_norm))
+        or has_dosage_uong
+        or any(
+            k in q_norm
+            for k in (
+                "nguoi lon",
+                "tre em",
+                "moi lan",
+                "moi ngay",
+                "hoat chat",
+                "thanh phan",
+                "ke don",
+                "khong ke don",
+                "don bac si",
+            )
         )
     )
     if (
@@ -4234,7 +4676,10 @@ def build_query_plan(
                 operation="filtered_quantity",
                 metric="quantity",
                 period=period,
-                numerator_filter=DimensionFilter(size=size_filter),
+                numerator_filter=DimensionFilter(
+                    size=size_filter,
+                    drink_only=bool(is_ly or has_drink_phrase),
+                ),
                 output_type="number",
             )
         elif is_ly or any(
@@ -4338,14 +4783,14 @@ def build_query_plan(
             )
         ):
             return None
-        # Guard against unit quantity queries ("bao nhiêu ly", "tổng số đĩa", "mấy chiếc")
+        # Guard against unit quantity queries ("bao nhiêu ly", "tổng số đĩa", "mấy chiếc", "mấy cục/bao/m3")
         has_unit_qty = bool(
             re.search(
-                r"\b(?:bao nhieu|bnhiu|bn|may|tong so|so luong)\s+(?:ly|dia|to|bat|chai|lon|hop|goi|bich|thung|cai|chiec|vien|may|kg)\b",
+                r"\b(?:bao nhieu|bao nhiu|bnhiu|bn|may|tong so|so luong)\s+(?:ly|dia|to|bat|chai|lon|hop|goi|bich|thung|cai|chiec|vien|may|kg|cuc|m3|m2|bao(?!\s+(?:nhieu|nhiu|hanh|cao|gom|bi)))\b",
                 q_norm,
             )
             or re.search(
-                r"\b(?:bao nhieu|bnhiu|bn|may|tong so|so luong)\s+phan(?!\s+tram)\b",
+                r"\b(?:bao nhieu|bao nhiu|bnhiu|bn|may|tong so|so luong)\s+phan(?!\s+tram)\b",
                 q_norm,
             )
         )
@@ -4666,11 +5111,16 @@ def build_query_plan(
         for k in (
             "may ngay",
             "bao nhieu ngay",
+            "bao nhiu ngay",
+            "co nhieu ngay",
+            "duoc nhieu ngay",
+            "dc nhieu ngay",
             "bnhiu ngay",
             "bn ngay",
             "so ngay",
             "may bua",
             "bao nhieu bua",
+            "co nhieu bua",
         )
     ):
         if any(
@@ -4810,6 +5260,11 @@ def _check_missing_capability(
         return "Doanh nghiệp không ghi nhận thông tin khách hàng"
     if plan.target_dimension == "staff" and not contract.has_staff:
         return "Doanh nghiệp không ghi nhận thông tin nhân viên trên đơn hàng"
+    if (
+        plan.operation in ("cancel_count", "cancel_rate_pct")
+        and not contract.has_order_status
+    ):
+        return "Doanh nghiệp không ghi nhận trạng thái đơn hàng"
 
     for df in (plan.numerator_filter, plan.denominator_filter, plan.secondary_filter):
         if df is None:
@@ -5129,65 +5584,42 @@ def execute_query_plan(
                     return "list", [str(r[0]) for r in top_rows], None
 
             if plan.target_dimension == "customer":
-                if plan.metric == "order_count":
-                    order_clause = "COUNT(DISTINCT order_id) DESC, customer_name ASC"
-                    metric_expr = "COUNT(DISTINCT order_id)"
-                elif plan.metric == "order_date_count":
-                    order_clause = "COUNT(DISTINCT order_date) DESC, customer_name ASC"
-                    metric_expr = "COUNT(DISTINCT order_date)"
-                elif plan.metric == "aov":
-                    order_clause = "AVG(order_revenue) DESC, customer_name ASC"
-                    metric_expr = "AVG(order_revenue)"
-                elif plan.metric == "canceled_orders":
-                    order_clause = "COUNT(DISTINCT order_id) DESC, customer_name ASC"
-                    metric_expr = "COUNT(DISTINCT order_id)"
-                else:
-                    order_clause = "SUM(order_revenue) DESC, customer_name ASC"
-                    metric_expr = "SUM(order_revenue)"
-
+                cust_metric_map = {
+                    "order_count": "COUNT(DISTINCT order_id)",
+                    "order_date_count": "COUNT(DISTINCT order_date)",
+                    "aov": "AVG(order_revenue)",
+                    "canceled_orders": "COUNT(DISTINCT order_id)",
+                    "revenue": "SUM(order_revenue)",
+                }
+                metric_expr = cust_metric_map.get(plan.metric, "SUM(order_revenue)")
                 having_clause = (
                     "HAVING COUNT(DISTINCT order_id) >= 3"
                     if plan.metric == "aov"
                     else ""
                 )
                 val_filter = (
-                    "is_valid_sale = FALSE"
+                    "is_canceled = TRUE"
                     if plan.metric == "canceled_orders"
                     else "is_valid_sale = TRUE"
                 )
-
-                fetch_limit = (
-                    max(plan.limit_k, 2) if plan.limit_k == 1 else plan.limit_k
-                )
                 sql = f"""
-                    SELECT customer_name, {metric_expr} AS metric_val
+                    SELECT MODE(customer_name) AS customer_name, {metric_expr} AS metric_val
                     FROM canonical_orders
                     WHERE {date_where} AND {val_filter}
                       AND customer_key IS NOT NULL AND customer_key != ''
                       AND customer_name IS NOT NULL AND customer_name != ''
-                    GROUP BY customer_key, customer_name
+                    GROUP BY customer_key
                     {having_clause}
-                    ORDER BY {order_clause}
-                    LIMIT {fetch_limit}
+                    ORDER BY metric_val DESC, customer_key ASC, customer_name ASC
+                    LIMIT {plan.limit_k}
                 """
                 context.last_sql = sql
                 rows = conn.execute(sql).fetchall()
                 if not rows:
                     return "abstain", None, "Không có khách hàng nào trong kỳ"
                 if plan.limit_k == 1:
-                    if (
-                        len(rows) >= 2
-                        and rows[0][1] is not None
-                        and rows[0][1] == rows[1][1]
-                    ):
-                        return (
-                            "abstain",
-                            None,
-                            "Đồng hạng khách hàng top 1 (TIE) không thể xác định duy nhất",
-                        )
                     return "string", str(rows[0][0]), None
-                else:
-                    return "list", [str(r[0]) for r in rows], None
+                return "list", [str(r[0]) for r in rows], None
 
         # Operation 1: Filtered Revenue (number)
         if plan.operation == "filtered_revenue":
@@ -5432,6 +5864,39 @@ def execute_query_plan(
                     "Số mặt hàng xuất hiện từ K đơn trở lên bằng 0 hoặc NULL",
                 )
             return "number", int(val), None
+
+        # Operation 13: Cancellation Count & Cancel Rate % (Rulebook §1)
+        if plan.operation == "cancel_count":
+            if not contract.has_canceled_events:
+                return "abstain", None, "Dữ liệu không có trạng thái huỷ được nhận diện"
+            sql = f"""
+                SELECT COUNT(DISTINCT CASE WHEN is_canceled = TRUE THEN order_id END)
+                FROM canonical_orders
+                WHERE {date_where}
+            """
+            context.last_sql = sql
+            val = conn.execute(sql).fetchall()[0][0]
+            if val is None or int(val) <= 0:
+                return "abstain", None, "Số đơn huỷ bằng 0 hoặc NULL"
+            return "number", int(val), None
+
+        if plan.operation == "cancel_rate_pct":
+            if not contract.has_canceled_events:
+                return "abstain", None, "Dữ liệu không có trạng thái huỷ được nhận diện"
+            sql = f"""
+                SELECT ROUND(
+                    COUNT(DISTINCT CASE WHEN is_canceled = TRUE THEN order_id END) * 100.0 /
+                    NULLIF(COUNT(DISTINCT order_id), 0),
+                    2
+                )
+                FROM canonical_orders
+                WHERE {date_where}
+            """
+            context.last_sql = sql
+            val = conn.execute(sql).fetchall()[0][0]
+            if val is None or math.isnan(float(val)) or float(val) <= 0.0:
+                return "abstain", None, "Tỉ lệ huỷ bằng 0 hoặc NULL"
+            return "percent", float(val), None
 
     except Exception as e:
         logger.warning("Error executing QueryPlan (%s): %s", plan.operation, e)

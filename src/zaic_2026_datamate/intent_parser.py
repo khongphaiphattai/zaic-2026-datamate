@@ -99,6 +99,19 @@ def parse_time_expressions(text: str, as_of_date: str | None = None) -> ParsedPe
     elif "ca chiều" in t or "ca chieu" in t:
         p.shift = "afternoon"
 
+    # 1.5. Explicit date range: "từ (ngày) D1/M1/Y1 đến/tới (hết) (ngày) D2/M2/Y2"
+    range_match = re.search(
+        r"\bt[ừu]\s+(?:ng[àa]y\s+)?(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})\s+"
+        r"(?:[dđ][ếe]n|t[ớo]i)\s+(?:h[ếe]t\s+)?(?:ng[àa]y\s+)?(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})\b",
+        t,
+    )
+    if range_match:
+        d1, m1, y1, d2, m2, y2 = (int(g) for g in range_match.groups())
+        if 1 <= m1 <= 12 and 1 <= d1 <= 31 and 1 <= m2 <= 12 and 1 <= d2 <= 31:
+            p.start_date = f"{y1:04d}-{m1:02d}-{d1:02d}"
+            p.end_date = f"{y2:04d}-{m2:02d}-{d2:02d}"
+            return p
+
     # 2. Specific date: "ngày 14/07/2025", "ngày 01/12/2025", "19/08/2026"
     date_match = re.search(r"(?:ngày\s+)?(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})", t)
     if date_match:
@@ -478,16 +491,22 @@ def find_primary_sales_table(
 
     cols = list(tables[selected_table].columns)
 
-    # Order ID column (note: 'hang' excluded because it is product name, not order id)
+    # Order ID column (note: 'hang' excluded because it is product name, not order id;
+    # 'stt' excluded so monthly/daily resetting line numbers never collide across sheets)
     order_col = None
     for c in [
         "order_id",
         "id_don",
         "ma_don_hang",
         "ma_hoa_don",
+        "ma_giao_dich",
         "ma_phieu",
         "ma_bill",
         "so_phieu",
+        "so_don_hang",
+        "so_hoa_don",
+        "id_hoa_don",
+        "so_don",
         "ma_gd",
         "ma_chung_tu",
         "don_so",
@@ -495,7 +514,6 @@ def find_primary_sales_table(
         "so_ct",
         "hd",
         "ma_don",
-        "stt",
     ]:
         if c in cols:
             order_col = c
@@ -706,31 +724,49 @@ def get_valid_sales_status_clause(
     bad_tokens = [
         "hủy",
         "huỷ",
+        "khach huy",
+        "da huy",
+        "huy don",
         "cancel",
-        "trả",
         "return",
-        "hoàn hàng",
-        "hoan hang",
-        "hoàn trả",
-        "hoan tra",
+        "refund",
+        "trả hàng",
+        "tra hang",
+        "trả lại",
+        "tra lai",
+        "trả món",
+        "tra mon",
+        "trả đơn",
+        "tra don",
         "hàng trả",
         "hang tra",
+        "khách trả",
+        "khach tra",
         "đổi trả",
         "doi tra",
+        "hoàn trả",
+        "hoan tra",
+        "hoàn hàng",
+        "hoan hang",
+        "hoàn tiền",
+        "hoan tien",
         "không giao",
         "khong giao",
         "thất bại",
         "that bai",
     ]
     prefix = f"{table_alias}." if table_alias else ""
+    exact_bad = "IN ('trả', 'tra', 'hủy', 'huỷ', 'huy')"
     or_conds = " OR ".join(
         [f"TRY_CAST({status_col} AS VARCHAR) ILIKE '%{tok}%'" for tok in bad_tokens]
+        + [f"lower(trim(TRY_CAST({status_col} AS VARCHAR))) {exact_bad}"]
     )
     and_conds = " AND ".join(
         [
             f"TRY_CAST({prefix}{status_col} AS VARCHAR) NOT ILIKE '%{tok}%'"
             for tok in bad_tokens
         ]
+        + [f"lower(trim(TRY_CAST({prefix}{status_col} AS VARCHAR))) NOT {exact_bad}"]
     )
 
     # Rulebook Section 1: Đơn có trả hàng, kể cả chỉ trả một phần, là đơn trả hàng: bỏ cả đơn.
@@ -1007,6 +1043,17 @@ def resolve_query(
     period = parse_time_expressions(question, as_of_date)
     table, order_col, date_col, status_col = find_primary_sales_table(context)
 
+    def _semantic_or_abstain(fallback_reason: str) -> tuple[str, Any, str | None]:
+        from zaic_2026_datamate import semantic_contract
+
+        sem_t, sem_v, sem_r = semantic_contract.resolve_semantic_plan(
+            question, context, as_of_date
+        )
+        if sem_t != "abstain":
+            context.last_code_path = "semantic_contract.resolve_semantic_plan"
+            return sem_t, sem_v, sem_r
+        return "abstain", None, fallback_reason
+
     # Detect if query mentions a specific product name in this business
     product_list = get_all_product_names(context)
     matched_product: tuple[str, str, str] | None = None
@@ -1087,6 +1134,17 @@ def resolve_query(
         "",
         q_no_ewallet,
     )
+    is_slow_unsold_q = any(
+        k in q
+        for k in (
+            "bán chậm",
+            "ban cham",
+            "không bán được",
+            "khong ban duoc",
+            "ko bán được",
+            "ko ban dc",
+        )
+    )
     is_reason_q = bool(
         re.search(
             r"\b(?:vì\s+sao|vi\s+sao|lý\s+do|ly\s+do|tại\s+sao|tai\s+sao|nguyên\s+nhân|nguyen\s+nhan)\b",
@@ -1096,7 +1154,10 @@ def resolve_query(
             r"\b(?:huỷ|huy|trả\s+món|tra\s+mon|trả\s+hàng|tra\s+hang|trả\s+lại|tra\s+lai|bị|bi)\s+.*?\b(?:vì|vi)\b",
             q_no_blister,
         )
-        or re.search(r"\b(?:trễ|chậm|tre|cham)\b", q_no_blister)
+        or (
+            not is_slow_unsold_q
+            and re.search(r"\b(?:trễ|chậm|tre|cham)\b", q_no_blister)
+        )
         or re.search(
             r"\b(?:vì|vi)\s+(?:món|mon|lỗi|loi|sao|lý|ly|kẹt|giao)\b",
             q_no_blister,
@@ -1195,14 +1256,17 @@ def resolve_query(
         )
     )
     if has_item_qty:
-        from zaic_2026_datamate.semantic_contract import resolve_semantic_plan
-
-        sem_type, sem_val, sem_reason = resolve_semantic_plan(
-            question, context, as_of_date
-        )
-        if sem_type != "abstain":
-            return sem_type, sem_val, sem_reason
-        return "abstain", None, "Item quantity query abstained"
+        if (
+            date_col
+            and table
+            and check_date_out_of_domain(context, period, date_col, table)
+        ):
+            return (
+                "unanswerable",
+                None,
+                "Khoảng thời gian nằm hoàn toàn ngoài dữ liệu của doanh nghiệp",
+            )
+        return _semantic_or_abstain("Item quantity query abstained")
 
     # -------------------------------------------------------------------------
     # 0.1 Out of Domain / Missing Entity Check -> Unanswerable
@@ -1465,49 +1529,9 @@ def resolve_query(
     )
 
     if is_cancel_rate_query:
-        if not table or not order_col or not date_col or not status_col:
-            return "abstain", None, "Thiếu cột trạng thái hoặc mã đơn để tính tỉ lệ huỷ"
-
-        date_where = build_date_where_clause("_order_date", period)
-        cancel_check = f"(TRY_CAST({status_col} AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST({status_col} AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST({status_col} AS VARCHAR) ILIKE '%cancel%')"
-
-        # Guard: verify if status column actually contains cancellation events
-        has_cancel_events = context.scalar(
-            f"SELECT COUNT(*) FROM {table} WHERE {cancel_check}"
+        return _semantic_or_abstain(
+            "Ủy quyền tính tỉ lệ huỷ đơn về BusinessSemanticContract"
         )
-        if not has_cancel_events or has_cancel_events == 0:
-            unique_status = context.tables[table][status_col].dropna().unique()
-            if not any(
-                k in str(v).lower()
-                for v in unique_status
-                for k in ["hủy", "huỷ", "cancel"]
-            ):
-                return "abstain", None, "Cột trạng thái không chứa thông tin huỷ đơn"
-
-        sql = f"""
-            SELECT ROUND(
-                COUNT(DISTINCT CASE WHEN _is_cancel = 1 THEN {order_col} END) * 100.0 /
-                NULLIF(COUNT(DISTINCT {order_col}), 0), 2
-            )
-            FROM (
-                SELECT
-                    {order_col},
-                    MIN(TRY_CAST({date_col} AS DATE)) AS _order_date,
-                    MAX(CASE WHEN {cancel_check} THEN 1 ELSE 0 END) AS _is_cancel
-                FROM {table}
-                WHERE {order_col} IS NOT NULL
-                GROUP BY {order_col}
-            ) _orders
-            WHERE {date_where}
-        """
-        try:
-            val = context.scalar(sql)
-            if val is None or float(val) == 0.0:
-                return "abstain", None, "Tỉ lệ huỷ là 0.0% hoặc không có đơn hàng"
-            return "percent", float(val), None
-        except Exception as e:
-            logger.warning("Error computing cancel rate: %s", e)
-            return "abstain", None, str(e)
 
     # -------------------------------------------------------------------------
     # 3. INTENT: CANCEL COUNT (Số đơn đã huỷ)
@@ -1525,21 +1549,30 @@ def resolve_query(
                 "mấy đh",
                 "may dh",
                 "bao nhiêu đơn",
+                "bao nhiêu don",
                 "bao nhieu don",
                 "bao nhiu don",
                 "bnhiu don",
                 "bnhiu đơn",
+                "bn đơn",
+                "bn don",
                 "bao nhiêu đh",
                 "bao nhieu dh",
                 "bnhiu đh",
                 "bnhiu dh",
+                "bn đh",
+                "bn dh",
                 "mấy bill",
+                "may bill",
                 "bao nhiêu bill",
                 "bao nhieu bill",
+                "bn bill",
                 "đếm đh",
                 "đếm đơn",
                 "mấy hoá đơn",
                 "mấy hóa đơn",
+                "bao nhiêu hoá đơn",
+                "bao nhiêu hóa đơn",
             ]
         )
         or bool(
@@ -1570,32 +1603,9 @@ def resolve_query(
     )
 
     if is_cancel_count_query:
-        if not table or not order_col or not date_col or not status_col:
-            return "abstain", None, "Thiếu bảng bán hàng"
-
-        has_valid_period = bool(
-            period.month_str
-            or period.exact_date
-            or (period.start_date and period.end_date)
+        return _semantic_or_abstain(
+            "Ủy quyền tính số đơn huỷ về BusinessSemanticContract"
         )
-        if not has_valid_period:
-            return "abstain", None, "Không xác định được khoảng thời gian rõ ràng"
-
-        date_where = build_date_where_clause(date_col, period)
-        cancel_check = f"(TRY_CAST({status_col} AS VARCHAR) ILIKE '%hủy%' OR TRY_CAST({status_col} AS VARCHAR) ILIKE '%huỷ%' OR TRY_CAST({status_col} AS VARCHAR) ILIKE '%cancel%')"
-        sql = f"""
-            SELECT COUNT(DISTINCT {order_col})
-            FROM {table}
-            WHERE {date_where}
-              AND {cancel_check}
-        """
-        try:
-            val = context.scalar(sql)
-            if val is None or int(val) == 0:
-                return "abstain", None, "Số đơn huỷ là 0 hoặc NULL"
-            return "number", int(val), None
-        except Exception as e:
-            return "abstain", None, str(e)
 
     # -------------------------------------------------------------------------
     # 4. INTENT: PURE ORDER COUNT (Số đơn hàng thành công)
@@ -1603,13 +1613,13 @@ def resolve_query(
     has_order_count_kw = (
         bool(
             re.search(
-                r"(?:bao nhiêu|bao nhieu|bao nhiu|bnhiu|mấy|may|co bao nhieu|có bao nhiêu|co bao nhiu|có bao nhiu|tổng cộng mấy|tổng mấy|được mấy|duoc may|được bao nhiêu|duoc bao nhieu)\s+(?:đơn|don|đh|dh|bill|hóa đơn|hoa don|o\s*đờ|o\s*do|order)\b",
+                r"(?:bao nhiêu|bao nhieu|bao nhiu|bnhiu|mấy|may|co bao nhieu|có bao nhiêu|co bao nhiu|có bao nhiu|tổng cộng mấy|tổng mấy|được mấy|duoc may|được bao nhiêu|duoc bao nhieu|có bn|co bn)\s+(?:đơn|don|đh|dh|bill|hóa đơn|hoa don|o\s*đờ|o\s*do|order)\b",
                 q,
             )
         )
         or bool(
             re.search(
-                r"\b(?:được|chốt được|lên được|co|có)\s+(?:mấy|may|bao nhiêu|bao nhieu|bnhiu)\s+(?:đơn|don|đh|dh|bill|o\s*đờ|o\s*do|order)\b",
+                r"\b(?:được|chốt được|lên được|co|có)\s+(?:mấy|may|bao nhiêu|bao nhieu|bnhiu|bn)\s+(?:đơn|don|đh|dh|bill|o\s*đờ|o\s*do|order)\b",
                 q,
             )
         )
@@ -1650,7 +1660,7 @@ def resolve_query(
         ]
     )
     has_order_items = (matched_product is not None) or any(
-        k in q
+        bool(re.search(rf"\b{re.escape(k)}\b", q))
         for k in [
             "mặt hàng",
             "mat hang",
@@ -1670,7 +1680,7 @@ def resolve_query(
         ]
     )
     has_order_cust = any(
-        k in q
+        bool(re.search(rf"\b{re.escape(k)}\b", q))
         for k in [
             "khách",
             "khach",
@@ -1738,43 +1748,103 @@ def resolve_query(
         and not has_order_rev
         and not has_order_channel
     )
-    if is_pure_order_count and table and order_col and date_col:
-        has_valid_period = bool(
-            period.month_str
-            or period.exact_date
-            or (period.start_date and period.end_date)
-        )
-        if not has_valid_period:
-            return (
-                "abstain",
-                None,
-                "Không xác định được khoảng thời gian rõ ràng để đếm số đơn",
+    if is_pure_order_count and table and date_col:
+        cols = list(context.tables[table].columns)
+        if order_col:
+            has_valid_period = bool(
+                period.month_str
+                or period.exact_date
+                or (period.start_date and period.end_date)
+            )
+            if not has_valid_period:
+                return _semantic_or_abstain(
+                    "Không xác định được khoảng thời gian rõ ràng để đếm số đơn"
+                )
+
+            effective_date_col = (
+                "thoi_gian_tao"
+                if period.shift and "thoi_gian_tao" in cols
+                else date_col
+            )
+            date_where = build_date_where_clause(effective_date_col, period)
+            shift_where = build_shift_where_clause(effective_date_col, period.shift)
+            status_clause = get_valid_sales_status_clause(
+                status_col, order_col=order_col, table=table
             )
 
-        cols = list(context.tables[table].columns)
-        effective_date_col = (
-            "thoi_gian_tao" if period.shift and "thoi_gian_tao" in cols else date_col
-        )
-        date_where = build_date_where_clause(effective_date_col, period)
-        shift_where = build_shift_where_clause(effective_date_col, period.shift)
-        status_clause = get_valid_sales_status_clause(
-            status_col, order_col=order_col, table=table
-        )
+            sql = f"""
+                SELECT COUNT(DISTINCT {order_col})
+                FROM {table}
+                WHERE {date_where}
+                  {shift_where}
+                  {status_clause}
+            """
+            try:
+                val = context.scalar(sql)
+                if val is None or int(val) == 0 or int(val) > 500000:
+                    return _semantic_or_abstain(
+                        "Số lượng đơn hàng bất thường (0 hoặc > 500k)"
+                    )
+                return "number", int(val), None
+            except Exception as e:
+                return _semantic_or_abstain(str(e))
+        elif "stt" in cols:
+            from zaic_2026_datamate.semantic_contract import (
+                BusinessSemanticContract,
+                parse_enhanced_period,
+            )
 
-        sql = f"""
-            SELECT COUNT(DISTINCT {order_col})
-            FROM {table}
-            WHERE {date_where}
-              {shift_where}
-              {status_clause}
-        """
-        try:
-            val = context.scalar(sql)
-            if val is None or int(val) == 0 or int(val) > 500000:
-                return "abstain", None, "Số lượng đơn hàng bất thường (0 hoặc > 500k)"
-            return "number", int(val), None
-        except Exception as e:
-            return "abstain", None, str(e)
+            eff_period = period
+            has_valid_period = bool(
+                eff_period.month_str
+                or eff_period.exact_date
+                or (eff_period.start_date and eff_period.end_date)
+            )
+            if not has_valid_period:
+                eff_period = parse_enhanced_period(question, as_of_date)
+                has_valid_period = bool(
+                    eff_period.month_str
+                    or eff_period.exact_date
+                    or (eff_period.start_date and eff_period.end_date)
+                )
+            if not has_valid_period:
+                return _semantic_or_abstain(
+                    "Không xác định được khoảng thời gian rõ ràng để đếm số đơn"
+                )
+
+            BusinessSemanticContract.from_context(context)
+            if check_date_out_of_domain(
+                context, eff_period, "order_date", "canonical_orders"
+            ):
+                return (
+                    "unanswerable",
+                    None,
+                    "Khoảng thời gian nằm hoàn toàn ngoài dữ liệu của doanh nghiệp",
+                )
+            date_where = build_date_where_clause("order_date", eff_period)
+            shift_where = ""
+            if eff_period.shift == "morning":
+                shift_where = " AND order_hour >= 6 AND order_hour < 14"
+            elif eff_period.shift == "afternoon":
+                shift_where = " AND order_hour >= 14 AND order_hour < 22"
+            sql = f"""
+                SELECT COUNT(DISTINCT order_id)
+                FROM canonical_orders
+                WHERE {date_where}
+                  AND is_valid_sale = TRUE
+                  AND COALESCE(order_id, '') != ''
+                  AND RIGHT(order_id, 2) != '__'
+                  {shift_where}
+            """
+            try:
+                val = context.scalar(sql)
+                if val is None or int(val) == 0 or int(val) > 500000:
+                    return _semantic_or_abstain(
+                        "Số lượng đơn hàng bất thường (0 hoặc > 500k)"
+                    )
+                return "number", int(val), None
+            except Exception as e:
+                return _semantic_or_abstain(str(e))
 
     # -------------------------------------------------------------------------
     # 5. INTENT: PRODUCT-SPECIFIC REVENUE (Doanh thu của 1 mặt hàng cụ thể)
@@ -1804,51 +1874,52 @@ def resolve_query(
     # (matched_product is already extracted at top of resolve_query)
 
     # Block item quantity queries (e.g. "bán được mấy hộp X", "bao nhiêu chai Y", "total bn ly", "nhiêu bình", "số tuýp", "số kg")
-    has_item_qty_kw = (not has_rev_keyword) and (
-        bool(
-            re.search(
-                r"\b(?:bn|bnhiu|mấy|may|bao nhiêu|bao nhieu|nhiêu|nhieu|số lượng|so luong|số|so|đếm|dem)\s+(?:ly|kg|cây|cay|cuộn|cuon|mét|m\b|bao|phần(?!\s+trăm)|phan(?!\s+tram)|chai|hộp|hop|gói|goi|lon|bịch|bich|thùng|thung|cái|cai|chiếc|chiec|viên|vien|bình|binh|tuýp|tuyp|đĩa|dia|tô|bát|bộ|bo)\b",
-                q,
-            )
+    is_unit_price_kw = bool(
+        re.search(
+            r"\b(?:giá\s+bán|gia\s+ban|giá\s+bao\s+nhiêu|gia\s+bao\s+nhieu|đơn\s+giá|don\s+gia|bao\s+nhiêu\s+một|bao\s+nhieu\s+mot)\b",
+            q,
         )
-        or (
-            any(k in q for k in ["mấy", "may", "bao nhiêu", "bao nhieu", "bnhiu"])
-            and any(
-                re.search(rf"\b{k}\b", q)
-                for k in [
-                    "hộp",
-                    "chai",
-                    "lon",
-                    "gói",
-                    "bịch",
-                    "thùng",
-                    "vé",
-                    "đĩa",
-                    "tô",
-                    "bát",
-                    "cuốn",
-                    "suất",
-                    "viên",
-                    "tuýp",
-                    "bộ",
-                    "bo",
-                    "kg",
-                ]
+    )
+    has_item_qty_kw = (
+        (not has_rev_keyword)
+        and (not is_unit_price_kw)
+        and (
+            bool(
+                re.search(
+                    r"\b(?:bn|bnhiu|mấy|may|bao nhiêu|bao nhieu|nhiêu|nhieu|số lượng|so luong|số|so|đếm|dem)\s+(?:ly|kg|cây|cay|cuộn|cuon|mét|m\b|bao|phần(?!\s+trăm)|phan(?!\s+tram)|chai|hộp|hop|gói|goi|lon|bịch|bich|thùng|thung|cái|cai|chiếc|chiec|viên|vien|bình|binh|tuýp|tuyp|đĩa|dia|tô|bát|bộ|bo)\b",
+                    q,
+                )
+            )
+            or (
+                any(k in q for k in ["mấy", "may", "bao nhiêu", "bao nhieu", "bnhiu"])
+                and any(
+                    re.search(rf"\b{k}\b", q)
+                    for k in [
+                        "hộp",
+                        "chai",
+                        "lon",
+                        "gói",
+                        "bịch",
+                        "thùng",
+                        "vé",
+                        "đĩa",
+                        "tô",
+                        "bát",
+                        "cuốn",
+                        "suất",
+                        "viên",
+                        "tuýp",
+                        "bộ",
+                        "bo",
+                        "kg",
+                    ]
+                )
             )
         )
     )
     if has_item_qty_kw:
-        from zaic_2026_datamate.semantic_contract import resolve_semantic_plan
-
-        sem_type, sem_val, sem_reason = resolve_semantic_plan(
-            question, context, as_of_date
-        )
-        if sem_type != "abstain":
-            return sem_type, sem_val, sem_reason
-        return (
-            "abstain",
-            None,
-            "Câu hỏi đếm số lượng mặt hàng - từ chối an toàn để tránh -1 điểm",
+        return _semantic_or_abstain(
+            "Câu hỏi đếm số lượng mặt hàng - từ chối an toàn để tránh -1 điểm"
         )
 
     # If product matched and query asks for its revenue — ưu tiên resolve_semantic_plan trước khi abstain
@@ -1907,14 +1978,9 @@ def resolve_query(
             ]
         )
     ):
-        from zaic_2026_datamate.semantic_contract import resolve_semantic_plan
-
-        sem_type, sem_val, sem_reason = resolve_semantic_plan(
-            question, context, as_of_date
+        return _semantic_or_abstain(
+            "Doanh thu mặt hàng cụ thể chưa đạt ngưỡng tin cậy 95%"
         )
-        if sem_type != "abstain":
-            return sem_type, sem_val, sem_reason
-        return "abstain", None, "Doanh thu mặt hàng cụ thể chưa đạt ngưỡng tin cậy 95%"
 
     # -------------------------------------------------------------------------
     # 5.1 INTENT: AVERAGE ORDER VALUE (AOV - Doanh thu bình quân mỗi đơn)
@@ -1971,6 +2037,16 @@ def resolve_query(
             "trên mỗi bill",
             "trên 1 bill",
             "trên một bill",
+            "mỗi order",
+            "moi order",
+            "1 order",
+            "một order",
+            "mot order",
+            "trên mỗi order",
+            "trên 1 order",
+            "trên một order",
+            "mỗi o đờ",
+            "moi o do",
         ]
     )
     has_aov_guards = (
@@ -2034,10 +2110,8 @@ def resolve_query(
             or (period.start_date and period.end_date)
         )
         if not has_valid_period:
-            return (
-                "abstain",
-                None,
-                "Không xác định được khoảng thời gian rõ ràng để tính AOV",
+            return _semantic_or_abstain(
+                "Không xác định được khoảng thời gian rõ ràng để tính AOV"
             )
 
         hd_spec = find_header_detail_revenue_spec(context, table, order_col)
@@ -2059,7 +2133,7 @@ def resolve_query(
                 if val is not None and val > 0:
                     return "number", round_half_up(float(val)), None
             except Exception as e:
-                return "abstain", None, str(e)
+                return _semantic_or_abstain(str(e))
 
         rev_c = find_revenue_column(context, table)
         if rev_c:
@@ -2078,7 +2152,7 @@ def resolve_query(
                 if val is not None and val > 0:
                     return "number", round_half_up(float(val)), None
             except Exception as e:
-                return "abstain", None, str(e)
+                return _semantic_or_abstain(str(e))
 
     # -------------------------------------------------------------------------
     # 6. INTENT: OVERALL STORE REVENUE (Tổng doanh thu toàn cửa hàng)
@@ -2434,7 +2508,7 @@ def resolve_query(
         ]
     )
     has_debt_kw = any(
-        k in q
+        bool(re.search(rf"\b{re.escape(k)}\b", q))
         for k in [
             "bán chịu",
             "ban chiu",

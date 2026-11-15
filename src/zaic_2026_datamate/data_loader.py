@@ -19,6 +19,41 @@ import duckdb
 import pandas as pd
 
 
+def repair_mojibake_utf8(text: str) -> str:
+    """Repair UTF-8 text mis-decoded as CP437 (e.g. ZIP filenames) or Latin-1."""
+    if not text or text.isascii():
+        return text
+    if any(
+        ch == "ß"
+        or ch in "ƒ¬²"
+        or "\u2500" <= ch <= "\u257f"
+        or "\u0370" <= ch <= "\u03ff"
+        for ch in text
+    ):
+        try:
+            return text.encode("cp437").decode("utf-8")
+        except (UnicodeEncodeError, UnicodeDecodeError):
+            parts = re.split(r"([_\s-]+)", text)
+            fixed_parts: list[str] = []
+            for part in parts:
+                if part and not part.isascii():
+                    try:
+                        fixed_parts.append(part.encode("cp437").decode("utf-8"))
+                        continue
+                    except (UnicodeEncodeError, UnicodeDecodeError):
+                        pass
+                fixed_parts.append(part)
+            return "".join(fixed_parts)
+    if "\u00c3" in text or ("\u00e1" in text and ("\u00ba" in text or "\u00bb" in text)):
+        try:
+            decoded = text.encode("latin1").decode("utf-8")
+            if decoded != text:
+                return decoded
+        except (UnicodeEncodeError, UnicodeDecodeError):
+            pass
+    return text
+
+
 def normalize_identifier(text: str) -> str:
     """Convert arbitrary Vietnamese text / PascalCase / CamelCase to clean ASCII snake_case.
 
@@ -29,7 +64,12 @@ def normalize_identifier(text: str) -> str:
         'Nhóm hàng(3 Cấp)' -> 'nhom_hang_3_cap'
         'DanhSachHoaDon.xlsx' -> 'danh_sach_hoa_don'
     """
-    stem = Path(text).stem if ("." in text and not text.startswith(".")) else text
+    repaired = repair_mojibake_utf8(text)
+    stem = (
+        Path(repaired).stem
+        if ("." in repaired and not repaired.startswith("."))
+        else repaired
+    )
     # Convert PascalCase / CamelCase to snake_case before accent stripping
     s = re.sub(r"([A-Z]+)([A-Z][a-z])", r"\1_\2", stem)
     s = re.sub(r"([a-z\d])([A-Z])", r"\1_\2", s)
@@ -511,7 +551,10 @@ def clean_dataframe(df: pd.DataFrame) -> tuple[pd.DataFrame, dict[str, str]]:
     ]
     present_order_cols = [c for c in order_id_cols if c in cleaned_df.columns]
     for c in present_order_cols:
-        cleaned_df[c] = cleaned_df[c].ffill()
+        if c == "stt" and sheet_col:
+            cleaned_df[c] = cleaned_df.groupby(sheet_col, sort=False)[c].ffill()
+        else:
+            cleaned_df[c] = cleaned_df[c].ffill()
     order_key = present_order_cols[0] if present_order_cols else None
     order_scoped_headers = {
         "trang_thai_don_hang",
@@ -534,10 +577,18 @@ def clean_dataframe(df: pd.DataFrame) -> tuple[pd.DataFrame, dict[str, str]]:
     for c in order_header_cols:
         if c in cleaned_df.columns and c not in present_order_cols:
             if order_key is None or c not in order_scoped_headers:
-                cleaned_df[c] = cleaned_df[c].ffill()
+                if sheet_col:
+                    cleaned_df[c] = cleaned_df.groupby(sheet_col, sort=False)[c].ffill()
+                else:
+                    cleaned_df[c] = cleaned_df[c].ffill()
             else:
-                # Rulebook §8: blank headers inherit only within the same order.
-                filled = cleaned_df.groupby(order_key, sort=False)[c].ffill()
+                # Rulebook §8: blank headers inherit only within the same order (and sheet when keyed by STT).
+                group_cols = (
+                    [sheet_col, order_key]
+                    if (order_key == "stt" and sheet_col)
+                    else order_key
+                )
+                filled = cleaned_df.groupby(group_cols, sort=False)[c].ffill()
                 cleaned_df[c] = filled.where(
                     cleaned_df[order_key].notna(), cleaned_df[c]
                 )

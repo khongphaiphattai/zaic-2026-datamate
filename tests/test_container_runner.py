@@ -265,6 +265,8 @@ def test_p0_2_read_only_data_sqlite_logs_and_sha256_reproducibility(tmp_path):
         sub1 = res1 / "submission.jsonl"
         sub2 = res2 / "submission.jsonl"
         assert sub1.is_file() and sub2.is_file()
+        assert stat.S_IMODE(sub1.stat().st_mode) == 0o644
+        assert stat.S_IMODE(sub2.stat().st_mode) == 0o644
         sha1 = hashlib.sha256(sub1.read_bytes()).hexdigest()
         sha2 = hashlib.sha256(sub2.read_bytes()).hexdigest()
         assert sha1 == sha2
@@ -374,5 +376,21 @@ def test_p0_3_direct_layout_cli_and_docker_packaging_contract(tmp_path):
     di_lines = {line.strip() for line in dockerignore.read_text(encoding="utf-8").splitlines()}
     for ignored in ("data", ".venv", ".git", "artifacts", "submission.jsonl", "*.zip"):
         assert any(ignored in ln for ln in di_lines), f".dockerignore missing {ignored}"
+
+
+def test_write_submission_sets_world_readable_0644(tmp_path):
+    import stat
+
+    from zaic_2026_datamate.submission import write_submission
+
+    out_path = tmp_path / "submission.jsonl"
+    rows = [{"id": "q1", "type": "abstain"}]
+    write_submission(out_path, rows, expected_ids=["q1"], overwrite=False)
+    assert stat.S_IMODE(out_path.stat().st_mode) == 0o644
+
+    rows2 = [{"id": "q1", "type": "number", "answer": 42}]
+    write_submission(out_path, rows2, expected_ids=["q1"], overwrite=True)
+    assert stat.S_IMODE(out_path.stat().st_mode) == 0o644
+
 
 

@@ -35,7 +35,7 @@ def test_invalid_confidence_rejected(threshold):
 
 def test_generator_matches_diagnostic_agent_and_counts_routes(tmp_path, monkeypatch):
     question = {'id': 'one', 'business_id': 'biz_test',
-                'question': 'Cho tôi biết số đơn hôm qua.', 'as_of_date': '2025-06-03'}
+                'question': 'Hôm qua cửa hàng có nhiều đơn?', 'as_of_date': '2025-06-03'}
     questions = tmp_path/'questions.jsonl'
     questions.write_text(json.dumps(question)+'\n')
     config = PipelineConfig(order_paraphrases=True)

@@ -517,6 +517,7 @@ def _find_product_name_col(df: pd.DataFrame) -> str | None:
         "ten_mon",
         "ten_thuoc",
         "hang_ban",
+        "mat_hang",
         "san_pham",
         "hang_hoa",
         "item",
@@ -963,8 +964,11 @@ def _resolve_abbreviated_price_change(
         (c for c in ("trang_thai", "trang_thai_xu_ly", "ghi_chu") if c in s_cols), None
     )
     order_col = next(
-        (c for c in ("ma_don_hang", "ma_hoa_don", "ma_don", "stt") if c in s_cols), None
+        (c for c in ("ma_don_hang", "ma_hoa_don", "ma_giao_dich", "ma_don") if c in s_cols),
+        None,
     )
+    if order_col is None and "stt" in s_cols and "sheet_name" not in s_cols:
+        order_col = "stt"
     if not (qty_col and date_col):
         return None
 
@@ -1706,7 +1710,14 @@ def _build_canonical_unit_factors(
             if not u_col:
                 continue
             c_col = _find_product_code_col(df)
-            n_col = _find_product_name_col(df)
+            n_col = _find_product_name_col(df) or next(
+                (
+                    c
+                    for c in df.columns
+                    if c.lower() in {"noi_dung", "chi_tiet_hang", "dien_giai"}
+                ),
+                None,
+            )
             if not (c_col or n_col):
                 continue
             mask = pd.Series(False, index=df.index)
@@ -1717,36 +1728,44 @@ def _build_canonical_unit_factors(
             sub = df[mask]
             if sub.empty:
                 continue
+            cols_l = {c.lower(): c for c in df.columns}
             q_col = next(
                 (
-                    c
-                    for c in df.columns
-                    if c.lower()
-                    in {
+                    cols_l[k]
+                    for k in (
                         "so_luong_san_pham",
                         "so_luong_hang",
+                        "so_luong_ban",
                         "so_luong",
+                        "sluong",
+                        "soluong",
+                        "sl_thuc",
                         "sl_ban",
                         "slg",
                         "sl",
+                        "s",
+                        "quantity",
                         "qty",
-                    }
+                    )
+                    if k in cols_l
                 ),
                 None,
             )
             bq_col = next(
                 (
-                    c
-                    for c in df.columns
-                    if c.lower()
-                    in {
+                    cols_l[k]
+                    for k in (
+                        "quy_ra_dv_le",
+                        "sl_quy_ra_le",
                         "so_luong_quy_doi",
                         "sl_quy_doi",
                         "so_luong_le",
                         "sl_le",
                         "so_luong_co_ban",
+                        "sl_dv_co_ban",
                         "sl_co_ban",
-                    }
+                    )
+                    if k in cols_l
                 ),
                 None,
             )
@@ -2133,7 +2152,7 @@ def resolve_unit_price_on_date(
 
     rows = context.duckdb_conn.execute(
         """
-        SELECT item_key, item_name, line_revenue, base_quantity, quantity
+        SELECT item_key, item_name, COALESCE(pre_discount_line_revenue, line_revenue), base_quantity, quantity
         FROM canonical_order_lines
         WHERE is_valid_sale = TRUE
           AND order_date = ?

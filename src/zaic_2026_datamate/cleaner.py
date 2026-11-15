@@ -4,6 +4,7 @@ cleaner.py: Physical unmerging and Vietnamese commercial data normalization.
 
 from __future__ import annotations
 
+import math
 import re
 from decimal import ROUND_HALF_UP, Decimal
 from pathlib import Path
@@ -111,11 +112,20 @@ def sniff_and_clean_dataframe(
         return raw_df
 
     # 1. Detect header row by finding the row with high non-null density
+    # Require >= 2 cells on multi-column sheets so a 1-cell banner title is never picked.
     non_null_counts = raw_df.notna().sum(axis=1)
-    threshold = int(raw_df.shape[1] * non_null_ratio)
+    threshold = (
+        max(2, math.ceil(raw_df.shape[1] * non_null_ratio))
+        if raw_df.shape[1] >= 2
+        else 1
+    )
     header_candidates = non_null_counts[non_null_counts >= threshold]
 
-    header_idx = header_candidates.index[0] if not header_candidates.empty else 0
+    header_idx = (
+        header_candidates.index[0]
+        if not header_candidates.empty
+        else int(non_null_counts.idxmax())
+    )
 
     df = raw_df.iloc[header_idx + 1 :].copy()
     raw_headers = raw_df.iloc[header_idx].tolist()
@@ -236,7 +246,7 @@ _QUERY_TELEX_WORDS: dict[str, str] = {
     "đươc": "được",
     "đươcj": "được",
     "đc": "được",
-    "cuwar": "của",
+    "cuwar": "cửa",
     "naof": "nào",
     "nhaats": "nhất",
     "nhaat": "nhất",
@@ -263,9 +273,11 @@ _QUERY_TELEX_WORDS: dict[str, str] = {
     "nhaf": "nhà",
     "nhaapj": "nhập",
     "toongr": "tổng",
+    "coongj": "cộng",
     "vaof": "vào",
     "heets": "hết",
     "bieets": "biết",
+    "bieet": "biết",
     "vaayj": "vậy",
     "laf": "là",
     "tooi": "tôi",
@@ -277,6 +289,57 @@ _QUERY_TELEX_WORDS: dict[str, str] = {
     "toonf": "tồn",
     "cko": "cho",
     "ees": "ế",
+    "cuar": "của",
+    "gaanf": "gần",
+    "ganf": "gần",
+    "nayf": "này",
+    "nafy": "này",
+    "quaan": "quân",
+    "xuaats": "xuất",
+    "its": "ít",
+    "trowr": "trở",
+    "leen": "lên",
+    "tuwf": "từ",
+    "ddos": "đó",
+    "đos": "đó",
+    "ddax": "đã",
+    "đax": "đã",
+    "ddoof": "đồ",
+    "đoof": "đồ",
+    "ddoor": "đồ",
+    "đown": "đơn",
+    "bij": "bị",
+    "huyr": "huỷ",
+    "huyx": "huỷ",
+    "tir": "tỉ",
+    "giups": "giúp",
+    "giumf": "giùm",
+    "muooi": "mười",
+    "bans": "bán",
+    "khachs": "khách",
+    "nhoms": "nhóm",
+    "gias": "giá",
+    "maays": "mấy",
+    "giamr": "giảm",
+    "sangs": "sáng",
+    "nowj": "nợ",
+    "veef": "về",
+    "binhf": "bình",
+    "leej": "lệ",
+    "vowis": "với",
+    "bawngf": "bằng",
+    "nhir": "nhỉ",
+    "ddieenj": "điện",
+    "vaf": "và",
+    "luwowtj": "lượt",
+    "cuoois": "cuối",
+    "thuoocs": "thuốc",
+    "trar": "trả",
+    "thoaij": "thoại",
+    "nguwowif": "người",
+    "ddeems": "đếm",
+    "thuoocj": "thuộc",
+    "tieeu": "tiêu",
 }
 _QUERY_TELEX_RE = re.compile(
     r"\b(" + "|".join(re.escape(k) for k in _QUERY_TELEX_WORDS) + r")\b",
@@ -293,7 +356,7 @@ def normalize_query_telex(text: Any) -> str:
     """Repair unambiguous Vietnamese Telex typos and colloquial variants on query text only."""
     if text is None:
         return ""
-    s = str(text)
+    s = re.sub(r"\bbans\b", "bán", str(text), flags=re.IGNORECASE)
     s = re.sub(
         r"\b(?:bán|ban)\s+(?:dc|đc|đươc)\b",
         "bán được",
@@ -343,3 +406,19 @@ def compact_digit_unit_spaces(text: str) -> str:
         lambda m: m.group(1).replace(" ", "") + m.group(2),
         text,
     )
+
+
+PHONE_SUFFIX_RE = re.compile(
+    r"\s*[-–(]?\s*(?:(?:\+84|0)[\d\s.-]{8,14}|\d{3,4}[\s.-]*\d{3}[\s.-]*\d{3,4})\s*\)?$"
+)
+
+
+def strip_customer_phone(val: Any) -> str:
+    """Strip trailing phone number suffixes from customer display names."""
+    if val is None:
+        return ""
+    raw = str(val).strip()
+    if not raw or raw.lower() in ("nan", "none", "null", "nat"):
+        return ""
+    cleaned = PHONE_SUFFIX_RE.sub("", raw).strip()
+    return cleaned if cleaned else raw

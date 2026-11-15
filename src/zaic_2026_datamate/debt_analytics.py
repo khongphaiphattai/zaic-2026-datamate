@@ -18,14 +18,11 @@ from typing import Any
 
 import pandas as pd
 
-from zaic_2026_datamate.cleaner import clean_vietnamese_currency
+from zaic_2026_datamate.cleaner import PHONE_SUFFIX_RE, clean_vietnamese_currency
 from zaic_2026_datamate.data_loader import BusinessContext, parse_mixed_excel_dates
 
 _CANCEL_PATTERN = r"hủy|huỷ|huy|cancel"
 _CREDIT_METHOD_PATTERN = r"\b(?:ghi\s*no|no|debt|mua\s*chiu|cong\s*no)\b"
-_PHONE_SUFFIX_RE = re.compile(
-    r"\s*[-–(]?\s*(?:(?:\+84|0)[\d\s.-]{8,14}|\d{3,4}[\s.-]*\d{3}[\s.-]*\d{3,4})\s*\)?$"
-)
 
 _TELEX_DEBT_REPLACEMENTS: tuple[tuple[str, str], ...] = (
     (r"\btrar\b", "tra"),
@@ -269,7 +266,7 @@ def _build_customer_directory(
                 or snm.lower() in ("nan", "none")
             ):
                 continue
-            clean_nm = _PHONE_SUFFIX_RE.sub("", snm).strip()
+            clean_nm = PHONE_SUFFIX_RE.sub("", snm).strip()
             if not clean_nm:
                 continue
             cid_to_name[sid] = clean_nm
@@ -687,7 +684,7 @@ def calculate_debt_snapshot_metric(
         active["_resolved_name"] = (
             active["_resolved_name"]
             .astype(str)
-            .str.replace(_PHONE_SUFFIX_RE, "", regex=True)
+            .str.replace(PHONE_SUFFIX_RE, "", regex=True)
             .str.strip()
         )
         active = active[~active["_resolved_name"].str.lower().isin(_GUEST_NAMES)]

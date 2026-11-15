@@ -22,7 +22,13 @@ RUN uv sync --frozen --no-dev --no-editable \
     && rm -rf /tmp/uv-cache
 
 # 3. Runtime environment for offline (--network none), read-only /data, /tmp scratch, /result output
-RUN mkdir -p /data /result /tmp && chmod 1777 /tmp
+RUN mkdir -p /code /data /result /tmp && chmod 1777 /tmp \
+    && printf '#!/usr/bin/env bash\nset -euo pipefail\numask 0022\nRESULT_DIR="${ZAIC_RESULT_DIR:-/result}"\n/app/.venv/bin/python /app/scripts/run_container.py "$@"\nif [ -f "$RESULT_DIR/submission.jsonl" ] && [ ! -L "$RESULT_DIR/submission.jsonl" ]; then\n    chmod 0644 "$RESULT_DIR/submission.jsonl" || true\nfi\nif [ -d "$RESULT_DIR/logs" ]; then\n    chmod -R a+rX "$RESULT_DIR/logs" || true\nfi\n' > /code/predict.sh \
+    && chmod 0755 /code/predict.sh \
+    && ln -sf /code/predict.sh /predict.sh \
+    && ln -sf /app/src /code/src \
+    && ln -sf /app/scripts /code/scripts \
+    && ln -sf /app/README.md /code/README.md
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -38,4 +44,5 @@ ENV PYTHONUNBUFFERED=1 \
     ZAIC_RESULT_DIR=/result \
     ZAIC_TEMP_DIR=/tmp
 
-ENTRYPOINT ["/app/.venv/bin/python", "/app/scripts/run_container.py"]
+WORKDIR /code
+CMD ["/code/predict.sh"]

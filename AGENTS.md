@@ -18,10 +18,11 @@ $$PA = \frac{1}{N} \sum_{i=1}^N s_i, \quad s_i = \begin{cases} +1 & \text{answer
    - **`type: "abstain"`:** When query execution fails or fails technical validation $\rightarrow$ Abstain cleanly to secure **0 points** and avoid negative penalty.
 3. **Zero Hardcoding & General Schema Logic (ZAIC Rule §6.2):**
    - Derive every business rule (merged `Sổ nợ + Trả góp`, ` + ` topping split, Excel serial date `45xxx`, base-unit conversion, cancelled/returned order filter, `"đến hết"`/`"tới cuối"` month-range grammar) generically from schema and calendar bounds. Never branch on `business_id` (`dev_*`/`biz_*`/`priv_*`), hardcode specific month/date routing literals (`"th9/2025"`, `"th4/2026"`), import cross-module `_private` helpers, leave dead helpers, or read `public_test` paths in core logic (locked via `tests/test_phase1_dehardcode_and_rules.py`).
-4. **Three Golden Regression Gates (Mandatory Pre-Submission Checklist):**
+4. **Three Golden Regression Gates (Mandatory Pre-Submission Checklist — 15x Speedup Protocol):**
    - Run all gates with **identical production config** via `build_agent(production_pipeline_config())` and `evaluate_match` (`scripts/generate_public_submission.py` defaults to production parity unless `--no-production` is passed):
-   - **Gate 1 (Train 3,000 Qs):** `scripts/audit_train_errors.py --max-wrong 0` must show zero new errors on any business; lock resolved bugs in `tests/test_regression_train_bugs.py`.
-   - **Gate 2 (Holdout Guard):** `scripts/verify_holdout.py --max-wrong 0` across 6 holdout businesses (`Wrong == 0`, exits non-zero on regression).
+   - **Between Slices (Fast Gate ~25s):** Run `uv run ruff check` + `uv run python -m pytest -m "not slow"` (~10s) + targeted business check `uv run python scripts/audit_train_errors.py --businesses biz_117,biz_118 --max-wrong 0` (~10–15s).
+   - **Gate 1 + Gate 2 Combined (Train 3,000 Qs + Holdout 710 Qs in ~2 min):** `uv run python scripts/audit_train_errors.py --workers 8 --max-wrong 0` runs multi-process across all 30 businesses and automatically prints/validates **Gate 2 (Holdout 710 Qs across 6 businesses)** from `artifacts/v34-holdout/holdout.json` without needing a separate `scripts/verify_holdout.py` run! Run after each batch of slices.
+   - **Slow Pytest Suite (`pytest -m slow`):** Uses session-cached `BusinessContext` (`tests/conftest.py`); run **once at the end of the session** before packaging.
    - **Gate 3 (Twin Verification vs Baseline `7fc0c7d`):** `scripts/compare_submissions.py` — every `abstain -> answer` or value change must map to schema-general logic verified on training twins (`biz_*`); otherwise abstain (*Break-Even Precision* $P \ge 50\%$).
 5. **Technical Abstain Gate (Real Output Signals Only):**
    - `HybridAgent.answer_query` enforces finite, schema-valid outputs via `_technical_abstain_gate`: coerce `NaN`/`Inf`, `bool` in `number`/`percent`, empty strings/lists/tables, invalid calendar dates, or question-vs-`ans_type` mismatches (`list` on `boolean`/peak period) to `abstain`. Rely on deterministic execution signals rather than heuristic confidence thresholds.
@@ -84,8 +85,9 @@ Inspect live modules directly rather than caching signatures; core orchestration
 ### 5.1. Adding New Data Pipelines, Fixes or Regression Locks
 1. Follow TDD (red-before-green): add a minimal failing test in `tests/` using synthetic schema fixtures or verified training bugs (`tests/test_regression_train_bugs.py`), never `data/public_test`.
 2. Promote reusable normalization/matching logic to public functions; remove dead `_private` helpers in the same edit.
-3. Run fast checks (`./.git/hooks/pre-commit`: `uv run ruff check` + `uv run python -m pytest -m "not slow"`, ~9s; `pyproject.toml` sets `pythonpath = ["."]`) before `pytest -m slow` and the Three Golden Gates.
+3. Between individual slices, run only the Fast Gate (`./.git/hooks/pre-commit`: `uv run ruff check` + `uv run python -m pytest -m "not slow"`, ~10s, plus `uv run python scripts/audit_train_errors.py --businesses ... --max-wrong 0`, ~15s). Run full `uv run python scripts/audit_train_errors.py --workers 8 --max-wrong 0` (covering both Gate 1 Train 3,000 Qs and Gate 2 Holdout 710 Qs in ~2 min) after each slice cluster, and run `uv run python -m pytest -m slow` (session-cached via `tests/conftest.py`) once at the end of the session.
 4. Keep both `duckdb-data-agent/SKILL.md` mirrors byte-identical after discovering new data patterns.
+5. **Portal "Test Solution" & Freeze Packaging:** Before 23:59 GMT+7 on Nov 15, 2026 (max 1 test run/day), use `scripts/package_freeze_solution.sh` to build `zaic2026-datamate:freeze`, verify offline parity (`--network none`), export `.tar.gz`, and output both **MD5** (for Portal `Test Solution`) and **SHA256** (for Nov 16 Freeze).
 
 ### 5.2. Tool & MCP Orchestration
 - **`context7`:** Luôn tra cứu tài liệu mới nhất của DuckDB, Polars, và LangGraph khi cần viết các hàm phức tạp hoặc nâng cấp cú pháp.

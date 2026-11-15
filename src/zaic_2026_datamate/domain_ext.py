@@ -22,12 +22,19 @@ from typing import Any, Tuple
 
 import pandas as pd
 
-from zaic_2026_datamate.cleaner import clean_vietnamese_currency
+from zaic_2026_datamate.cleaner import clean_vietnamese_currency, normalize_query_telex
 from zaic_2026_datamate.data_loader import BusinessContext
 from zaic_2026_datamate.intent_parser import (
     get_valid_sales_status_clause,
     parse_time_expressions,
 )
+
+
+def _fetch_one_row(conn: Any, sql: str) -> tuple[Any, ...] | None:
+    """Execute SQL and drain the result set cleanly so DuckDB never keeps an open cursor."""
+    rows = conn.execute(sql).fetchall()
+    return rows[0] if rows else None
+
 
 _REASON_COL_KEYWORDS = (
     "ly_do",
@@ -208,7 +215,9 @@ def _check_schema_ood(
     q_norm: str, context: BusinessContext
 ) -> Tuple[str, Any, str | None] | None:
     """Gate 1 schema checks for unanswerable questions without business_id hardcodes."""
-    if ("ba bau dung" in q_norm or "phu nu mang thai" in q_norm) and not _has_clinical_columns(context):
+    if (
+        "ba bau dung" in q_norm or "phu nu mang thai" in q_norm
+    ) and not _has_clinical_columns(context):
         return (
             "unanswerable",
             None,
@@ -223,21 +232,37 @@ def _check_schema_ood(
         "ngon nhut",
         "kho tinh nhat",
         "kho tinh nhut",
+        "tan tam",
+        "le phep",
+        "chu dao",
+        "quy men",
     )
-    if any(k in q_norm for k in subjective_phrases) and not _has_rating_columns(context):
+    if any(k in q_norm for k in subjective_phrases) and not _has_rating_columns(
+        context
+    ):
         return (
             "unanswerable",
             None,
             "Doanh nghiệp không có tiêu chí định lượng đo lường cảm tính theo Rulebook Mục 7",
         )
 
-    asks_delay = any(k in q_norm for k in ("vi giao tre", "do giao tre", "giao tre", "cham giao"))
-    asks_wrong_dish = any(k in q_norm for k in ("goi nham mon", "goi nham", "mon bi loi"))
+    asks_delay = any(
+        k in q_norm for k in ("vi giao tre", "do giao tre", "giao tre", "cham giao")
+    )
+    asks_wrong_dish = any(
+        k in q_norm for k in ("goi nham mon", "goi nham", "mon bi loi")
+    )
     asks_reason_why = any(
         k in q_norm for k in ("chu yeu vi sao", "ly do chu yeu", "vi sao z")
     ) and any(k in q_norm for k in ("huy don", "tra don", "tra mon"))
+    asks_return_reason = (
+        any(k in q_norm for k in ("vi loi", "mua nham", "ly do tra", "nguyen nhan tra"))
+        or bool(re.search(r"\btra(?:\s+hang)?\s+vi\b(?!\s+dien\s+tu)", q_norm))
+    ) and not any(k in q_norm for k in ("vi dien tu", "tien mat"))
 
-    if (asks_delay or asks_wrong_dish or asks_reason_why) and not _has_reason_tracking(context):
+    if (
+        asks_delay or asks_wrong_dish or asks_reason_why or asks_return_reason
+    ) and not _has_reason_tracking(context):
         return (
             "unanswerable",
             None,
@@ -250,39 +275,70 @@ def _resolve_delivery_rounds(
     q_norm: str, question: str, context: BusinessContext, as_of_date: str | None
 ) -> Tuple[str, Any, str | None] | None:
     """Count distinct order-delivery rounds across delivery tables."""
-    triggers = (
-        "dot giao hang",
-        "luot giao hang",
-        "chuyen giao hang",
-        "may dot giao",
-        "giao hang tong cong may dot",
+    has_delivery_round_phrase = bool(
+        re.search(
+            r"\b(?:"
+            r"(?:dot|luot|chuyen)\s+(?:giao(?:\s+hang)?|hang)"
+            r"|(?:may|bao\s+nhieu|bnhiu|bn)\s+(?:dot|luot|chuyen)\b"
+            r"|tong\s+cong\s+(?:may|bao\s+nhieu|bnhiu|bn)\s+(?:dot|luot|chuyen)\b"
+            r")\b",
+            q_norm,
+        )
     )
-    if not any(k in q_norm for k in triggers):
+    has_delivery_actor = bool(re.search(r"\b(?:giao|cho|xe|van\s+chuyen)\b", q_norm))
+    if not (has_delivery_round_phrase and has_delivery_actor):
         return None
-    t_month = extract_explicit_month(question, as_of_date)
-    if not t_month:
+    if re.search(r"\bnhap\b", q_norm):
+        return None
+
+    from zaic_2026_datamate.semantic_contract import parse_enhanced_period
+
+    period = parse_enhanced_period(question, as_of_date)
+    if period.start_date and period.end_date:
+        date_filter_tpl = f"try_cast({{date_c}} as date) BETWEEN DATE '{period.start_date}' AND DATE '{period.end_date}'"
+    elif period.exact_date:
+        date_filter_tpl = f"try_cast({{date_c}} as date) = DATE '{period.exact_date}'"
+    elif period.month_str:
+        date_filter_tpl = (
+            f"(strftime(try_cast({{date_c}} as date), '%Y-%m') = '{period.month_str}' "
+            f"OR cast({{date_c}} as varchar) LIKE '{period.month_str}%')"
+        )
+    else:
         return None
 
     for tname, tbl in context.tables.items():
         if "giao_hang" not in tname or tname.endswith("_sheet1"):
             continue
         date_c = next(
-            (c for c in ("thoi_gian_giao", "ngay_giao_hang", "ngay_cho", "ngay_giao") if c in tbl.columns),
+            (
+                c
+                for c in ("thoi_gian_giao", "ngay_giao_hang", "ngay_cho", "ngay_giao")
+                if c in tbl.columns
+            ),
             None,
         )
         order_c = next(
-            (c for c in ("so_don", "ma_don_hang", "ma_bill", "ma_don") if c in tbl.columns),
+            (
+                c
+                for c in ("so_don", "ma_don_hang", "ma_bill", "ma_don")
+                if c in tbl.columns
+            ),
             None,
         )
         round_c = next(
-            (c for c in ("luot_giao", "lan_giao", "so_luot", "dot") if c in tbl.columns),
+            (
+                c
+                for c in ("luot_giao", "lan_giao", "so_luot", "dot")
+                if c in tbl.columns
+            ),
             None,
         )
         if date_c and order_c and round_c:
+            date_filter = date_filter_tpl.format(date_c=date_c)
             sql = f"""
                 SELECT count(distinct concat({order_c}, '_', cast({round_c} as varchar)))
                 FROM {tname}
-                WHERE cast({date_c} as varchar) LIKE '{t_month}%'
+                WHERE {date_filter} AND {order_c} IS NOT NULL AND {round_c} IS NOT NULL
             """
             try:
                 res = context.query(sql)
@@ -296,63 +352,189 @@ def _resolve_delivery_rounds(
 def _resolve_unsold_items(
     q_norm: str, question: str, context: BusinessContext, as_of_date: str | None
 ) -> Tuple[str, Any, str | None] | None:
-    """Count catalog products with zero sales inside the requested period."""
-    triggers = (
-        "mat hang e",
-        "hang e",
-        "khong ban duoc cai nao",
-        "hok ban ra dc cai nao",
-        "khong ai mua cai nao",
-        "khong ban dc cai nao",
+    """Count items with zero valid sales inside the requested period per Rulebook §5."""
+    import calendar as _py_calendar
+
+    from zaic_2026_datamate.semantic_contract import BusinessSemanticContract
+
+    q_u = re.sub(r"\b(?:ko|k)\s+(?=(?:ban|ai\s+mua)\b)", "khong ", q_norm)
+    q_u = re.sub(r"\b(?:dc|đc)\b", "duoc", q_u)
+    if any(k in q_u for k in ("liet ke", "top ", "mat hang nao", "mon nao e")):
+        return None
+    unsold_patterns = (
+        r"\b(?:mat hang|hang|mon)\s+e\b",
+        r"\bbi\s+e\b",
+        r"\be\s+han\b",
+        r"\bkhong\s+ban\s+(?:ra\s+)?duoc\s+(?:cai|mon|lan)\s+nao\b",
+        r"\bhok\s+ban\s+ra\s+duoc\s+(?:cai|mon|lan)\s+nao\b",
+        r"\bkhong\s+ai\s+mua\b",
+        r"\bchua\s+ban\s+duoc\b",
     )
-    if not any(k in q_norm for k in triggers):
+    has_slow_zero = "ban cham" in q_u and any(
+        k in q_u for k in ("khong ban", "chua ban", "lan nao", "cai nao", "mon nao")
+    )
+    if not (has_slow_zero or any(re.search(pat, q_u) for pat in unsold_patterns)):
         return None
 
-    cat_table = cat_col = None
+    period = parse_time_expressions(question, as_of_date)
+    start_date, end_date = period.start_date, period.end_date
+    if not (start_date and end_date) and period.month_str:
+        y, m = int(period.month_str[:4]), int(period.month_str[5:7])
+        last_d = _py_calendar.monthrange(y, m)[1]
+        start_date = f"{y:04d}-{m:02d}-01"
+        end_date = f"{y:04d}-{m:02d}-{last_d:02d}"
+    if not (start_date and end_date):
+        return None
+
+    # Primary Rulebook §5 path: items validly sold before start_date minus valid sales in [start_date, end_date]
+    try:
+        contract = BusinessSemanticContract.from_context(context)
+        if contract.lines_df is not None and not contract.lines_df.empty:
+            valid_l = contract.lines_df[
+                contract.lines_df["is_valid_sale"]
+                & (~contract.lines_df["is_service_fee"])
+            ]
+            dates = pd.to_datetime(valid_l["order_date"], errors="coerce")
+            pre_items = set(
+                valid_l.loc[dates < pd.Timestamp(start_date), "item_key"]
+                .dropna()
+                .astype(str)
+            )
+            if pre_items:
+                in_items = set(
+                    valid_l.loc[
+                        (dates >= pd.Timestamp(start_date))
+                        & (dates <= pd.Timestamp(end_date)),
+                        "item_key",
+                    ]
+                    .dropna()
+                    .astype(str)
+                )
+                return "number", len(pre_items - in_items), None
+    except Exception:
+        pass
+
+    # Fallback when no pre-period sales exist (e.g., synthetic initial-window tests with catalog table)
+    cat_table = cat_col = cat_filter = None
     for tname, df in context.tables.items():
         if tname.endswith("_sheet1"):
             continue
-        if any(k in tname for k in ("danh_muc", "danh_sach_hang", "hang_hoa", "san_pham")):
+        if any(
+            k in tname for k in ("danh_muc", "danh_sach_hang", "hang_hoa", "san_pham")
+        ):
+            if any(c in df.columns for c in ("he_so_qd", "ti_le_quy_doi")):
+                continue
             cat_col = next(
-                (col for col in ("ten_hang", "ten_hang_hoa", "ten_san_pham", "hang") if col in df.columns),
+                (
+                    col
+                    for col in ("ten_hang", "ten_hang_hoa", "ten_san_pham", "hang")
+                    if col in df.columns
+                ),
                 None,
             )
             if cat_col:
                 cat_table = tname
+                cat_filter = (
+                    "AND COALESCE(TRY_CAST(duoc_ban_truc_tiep AS INT), 1) = 1"
+                    if "duoc_ban_truc_tiep" in df.columns
+                    else ""
+                )
                 break
 
-    sales_table = sales_col = sales_date_col = None
+    sales_table = sales_col = sales_date_col = sales_status_col = sales_ord_col = None
     for tname, df in context.tables.items():
         if tname.endswith("_sheet1"):
             continue
         if any(k in tname for k in ("so_ban_hang", "ban_hang", "chi_tiet_ban_hang")):
             sales_col = next(
-                (col for col in ("ten_hang", "ten_hang_hoa", "ten_san_pham", "mat_hang", "hang_ban", "hang") if col in df.columns),
+                (
+                    col
+                    for col in (
+                        "ten_hang",
+                        "ten_hang_hoa",
+                        "ten_san_pham",
+                        "mat_hang",
+                        "hang_ban",
+                        "hang",
+                    )
+                    if col in df.columns
+                ),
                 None,
             )
             sales_date_col = next(
-                (dcol for dcol in ("thoi_gian", "ngay", "ngay_lap", "ngay_ban") if dcol in df.columns),
+                (
+                    dcol
+                    for dcol in ("thoi_gian", "ngay", "ngay_lap", "ngay_ban")
+                    if dcol in df.columns
+                ),
                 None,
             )
             if sales_col and sales_date_col:
                 sales_table = tname
+                sales_status_col = next(
+                    (
+                        scol
+                        for scol in (
+                            "trang_thai_don_hang",
+                            "trang_thai",
+                            "status",
+                            "ghi_chu_tt",
+                            "trang_thai_xu_ly",
+                            "tinh_trang_don",
+                            "trang_thai_don",
+                            "tinh_trang",
+                            "xu_ly",
+                            "ket_qua",
+                        )
+                        if scol in df.columns
+                    ),
+                    None,
+                )
+                sales_ord_col = next(
+                    (
+                        ocol
+                        for ocol in (
+                            "order_id",
+                            "id_don",
+                            "ma_don_hang",
+                            "ma_hoa_don",
+                            "ma_giao_dich",
+                            "ma_phieu",
+                            "ma_bill",
+                            "so_phieu",
+                            "ma_don",
+                        )
+                        if ocol in df.columns
+                    ),
+                    None,
+                )
                 break
 
     if not (cat_table and cat_col and sales_table and sales_col and sales_date_col):
         return None
 
-    period = parse_time_expressions(question, as_of_date)
-    if not (period.start_date and period.end_date):
-        return None
+    status_clause = (
+        get_valid_sales_status_clause(
+            sales_status_col, order_col=sales_ord_col, table=sales_table
+        )
+        if sales_status_col
+        else ""
+    )
 
     sql = f"""
         WITH catalog AS (
-            SELECT DISTINCT {cat_col} AS item FROM {cat_table} WHERE {cat_col} IS NOT NULL
+            SELECT DISTINCT lower(trim(CAST({cat_col} AS VARCHAR))) AS item
+            FROM {cat_table}
+            WHERE {cat_col} IS NOT NULL
+              {cat_filter}
         ),
         sold AS (
-            SELECT DISTINCT {sales_col} AS item FROM {sales_table}
-            WHERE {sales_date_col} >= '{period.start_date}' AND {sales_date_col} <= '{period.end_date}'
+            SELECT DISTINCT lower(trim(CAST({sales_col} AS VARCHAR))) AS item
+            FROM {sales_table}
+            WHERE CAST({sales_date_col} AS DATE) >= DATE '{start_date}'
+              AND CAST({sales_date_col} AS DATE) <= DATE '{end_date}'
               AND {sales_col} IS NOT NULL
+              {status_clause}
         )
         SELECT count(*) FROM catalog WHERE item NOT IN (SELECT item FROM sold)
     """
@@ -386,7 +568,10 @@ def _resolve_phone_store_analytics(
     q_norm: str, question: str, context: BusinessContext, as_of_date: str | None
 ) -> Tuple[str, Any, str | None] | None:
     """Schema-driven phone store analytics for `so_ban_hang` + `so_ban_hang_ghi_tat`."""
-    if "so_ban_hang" not in context.tables or "so_ban_hang_ghi_tat" not in context.tables:
+    if (
+        "so_ban_hang" not in context.tables
+        or "so_ban_hang_ghi_tat" not in context.tables
+    ):
         return None
 
     sbh_name = "so_ban_hang"
@@ -399,7 +584,9 @@ def _resolve_phone_store_analytics(
     if (
         "thu_may_cu" in sbh_cols
         and t_month
-        and any(k in q_norm for k in ("thu may cu", "thu mua may cu", "tien thu may cu"))
+        and any(
+            k in q_norm for k in ("thu may cu", "thu mua may cu", "tien thu may cu")
+        )
     ):
         sql = f"""
             SELECT sum(TRY_CAST(thu_may_cu AS DOUBLE))
@@ -419,7 +606,16 @@ def _resolve_phone_store_analytics(
         and t_month
         and not any(
             k in q_norm
-            for k in ("tra gop", "may khach", "bao nhieu khach", "bn khach", "nguoi", "trung binh", "binh quan", "moi may")
+            for k in (
+                "tra gop",
+                "may khach",
+                "bao nhieu khach",
+                "bn khach",
+                "nguoi",
+                "trung binh",
+                "binh quan",
+                "moi may",
+            )
         )
         and any(
             k in q_norm
@@ -527,7 +723,19 @@ def _resolve_phone_store_analytics(
         t_month
         and any(k in q_norm for k in ("dien thoai cu", "may cu"))
         and any(k in q_norm for k in ("may may", "may chiec", "bao nhieu"))
-        and not any(k in q_norm for k in ("gop ca may moi", "ca may moi", "khong ke phu kien", "%", "phan tram"))
+        and not any(
+            k in q_norm
+            for k in (
+                "gop ca may moi",
+                "ca may moi",
+                "khong ke phu kien",
+                "tien",
+                "doanh thu",
+                "dthu",
+                "%",
+                "phan tram",
+            )
+        )
     ):
         sql = f"""
             SELECT sum(TRY_CAST(b.sl AS BIGINT))
@@ -580,18 +788,22 @@ def _resolve_phone_store_analytics(
         "bao nhiu may",
         "bn may",
     )
-    if t_month and "ten_hang" in context.tables[gt_name].columns and any(k in q_norm for k in qty_triggers):
+    if (
+        t_month
+        and "ten_hang" in context.tables[gt_name].columns
+        and any(k in q_norm for k in qty_triggers)
+    ):
         names = (
-            context.tables[gt_name]["ten_hang"]
-            .dropna()
-            .astype(str)
-            .unique()
-            .tolist()
+            context.tables[gt_name]["ten_hang"].dropna().astype(str).unique().tolist()
         )
         matched_raw_names: list[str] = []
         # Pass 1: exact normalized product name match (longest first)
         full_candidates = sorted(
-            ((strip_accents(name), name) for name in names if len(strip_accents(name)) >= 4),
+            (
+                (strip_accents(name), name)
+                for name in names
+                if len(strip_accents(name)) >= 4
+            ),
             key=lambda x: len(x[0]),
             reverse=True,
         )
@@ -619,7 +831,9 @@ def _resolve_phone_store_analytics(
                     break
 
         if matched_raw_names:
-            in_list = ", ".join("'" + n.replace("'", "''") + "'" for n in matched_raw_names)
+            in_list = ", ".join(
+                "'" + n.replace("'", "''") + "'" for n in matched_raw_names
+            )
             sql = f"""
                 SELECT sum(TRY_CAST(b.sl AS BIGINT))
                 FROM {sbh_name} b
@@ -664,9 +878,13 @@ def _resolve_warranty_and_tradein(
                     pass
 
     if "so_no_bao_hanh" in context.tables and "so_ban_hang" in context.tables:
-        if "bao hanh" in q_norm and any(k in q_norm for k in ("%", "phan tram", "chiem bnhiu")):
+        if "bao hanh" in q_norm and any(
+            k in q_norm for k in ("%", "phan tram", "chiem bnhiu")
+        ):
             period = parse_time_expressions(question, as_of_date)
-            q_bounds = _quarter_to_bounds(period.quarter_str) if period.quarter_str else None
+            q_bounds = (
+                _quarter_to_bounds(period.quarter_str) if period.quarter_str else None
+            )
             if q_bounds and "so_ban_hang_ghi_tat" in context.tables:
                 sql = f"""
                     WITH bh AS (
@@ -689,7 +907,10 @@ def _resolve_warranty_and_tradein(
                 except Exception:
                     pass
 
-        if any(k in q_norm for k in ("may ban ra", "may ban thang", "ban thang")) and "bao hanh" in q_norm:
+        if (
+            any(k in q_norm for k in ("may ban ra", "may ban thang", "ban thang"))
+            and "bao hanh" in q_norm
+        ):
             t_month = extract_explicit_month(question, as_of_date)
             if t_month and as_of_date:
                 sql = f"""
@@ -721,11 +942,19 @@ def _resolve_top_supplier(
         if tname.endswith("_sheet1") or "nha_cung_cap" not in df.columns:
             continue
         amt_col = next(
-            (c for c in ("thanh_tien", "tong_tien_phieu", "tong_tien", "tri_gia") if c in df.columns),
+            (
+                c
+                for c in ("thanh_tien", "tong_tien_phieu", "tong_tien", "tri_gia")
+                if c in df.columns
+            ),
             None,
         )
         date_col = next(
-            (c for c in ("ngay_nhap", "ngay", "thoi_gian", "ngay_lap") if c in df.columns),
+            (
+                c
+                for c in ("ngay_nhap", "ngay", "thoi_gian", "ngay_lap")
+                if c in df.columns
+            ),
             None,
         )
         if not (amt_col and date_col):
@@ -740,7 +969,7 @@ def _resolve_top_supplier(
             LIMIT 1
         """
         try:
-            row = context.duckdb_conn.execute(sql).fetchone()
+            row = _fetch_one_row(context.duckdb_conn, sql)
             if row and row[0]:
                 return "string", str(row[0]), None
         except Exception:
@@ -760,22 +989,43 @@ def _resolve_orders_above_threshold(
         return None
 
     preferred_tables = [
-        t for t in context.tables if not t.endswith("_sheet1") and not re.search(r"_(?:202[4-9]|[0-9]+)$", t)
+        t
+        for t in context.tables
+        if not t.endswith("_sheet1") and not re.search(r"_(?:202[4-9]|[0-9]+)$", t)
     ]
     for tname in preferred_tables:
         df = context.tables[tname]
         if not any(k in tname for k in ("ban_hang", "don_hang", "chi_tiet")):
             continue
         ord_col = next(
-            (c for c in ("hd", "ma_don_hang", "ma_hoa_don", "ma_bill", "ma_don", "so_ct") if c in df.columns),
+            (
+                c
+                for c in (
+                    "hd",
+                    "ma_don_hang",
+                    "ma_hoa_don",
+                    "ma_bill",
+                    "ma_don",
+                    "so_ct",
+                )
+                if c in df.columns
+            ),
             None,
         )
         amt_col = next(
-            (c for c in ("tt", "thanh_tien", "tong_tien", "tri_gia", "amount") if c in df.columns),
+            (
+                c
+                for c in ("tt", "thanh_tien", "tong_tien", "tri_gia", "amount")
+                if c in df.columns
+            ),
             None,
         )
         date_col = next(
-            (c for c in ("ngay", "ngay_dat_hang", "ngay_lap", "ngay_ban", "thoi_gian") if c in df.columns),
+            (
+                c
+                for c in ("ngay", "ngay_dat_hang", "ngay_lap", "ngay_ban", "thoi_gian")
+                if c in df.columns
+            ),
             None,
         )
         status_col = next(
@@ -811,7 +1061,7 @@ def _resolve_orders_above_threshold(
             )
         """
         try:
-            row = context.duckdb_conn.execute(sql).fetchone()
+            row = _fetch_one_row(context.duckdb_conn, sql)
             if row and row[0] is not None:
                 return "number", int(row[0]), None
         except Exception:
@@ -822,41 +1072,178 @@ def _resolve_orders_above_threshold(
 def _resolve_the_kho_stockouts(
     q_norm: str, question: str, context: BusinessContext, as_of_date: str | None
 ) -> Tuple[str, Any, str | None] | None:
-    """Count out-of-stock SKUs (`ton_cuoi == 0`) from `the_kho` ledger as of target date."""
-    if "the_kho" not in context.tables:
-        return None
+    """Count out-of-stock SKUs (`ton_cuoi <= 0`) from `the_kho` ledger or `as_of_date` snapshot table."""
     if not any(k in q_norm for k in ("chay hang", "dut hang", "het hang")):
         return None
-    cols = set(context.tables["the_kho"].columns)
-    if not {"ma_hang_hoa", "ton_cuoi", "ngay_gio_phat_sinh"} <= cols:
+
+    explicit_date = _extract_explicit_iso_date(question)
+    if "the_kho" in context.tables:
+        cols = set(context.tables["the_kho"].columns)
+        if {"ma_hang_hoa", "ton_cuoi", "ngay_gio_phat_sinh"} <= cols:
+            target_date = explicit_date or as_of_date
+            if not target_date:
+                return None
+
+            order_expr = (
+                "ngay_gio_phat_sinh DESC, ma_giao_dich_kho DESC"
+                if "ma_giao_dich_kho" in cols
+                else "ngay_gio_phat_sinh DESC"
+            )
+            sql = f"""
+                WITH ranked AS (
+                    SELECT ma_hang_hoa, ton_cuoi,
+                           ROW_NUMBER() OVER (PARTITION BY ma_hang_hoa ORDER BY {order_expr}) as rn
+                    FROM the_kho
+                    WHERE ngay_gio_phat_sinh <= '{target_date} 23:59:59'
+                )
+                SELECT count(CASE WHEN TRY_CAST(ton_cuoi AS DOUBLE) = 0 THEN 1 END)
+                FROM ranked
+                WHERE rn = 1
+            """
+            try:
+                row = _fetch_one_row(context.duckdb_conn, sql)
+                if row and row[0] is not None:
+                    return "number", int(row[0]), None
+            except Exception:
+                pass
         return None
 
-    target_date = _extract_explicit_iso_date(question) or as_of_date
-    if not target_date:
+    # Snapshot closing-balance fallback (`bao_cao_ton_kho` / `ton_kho`): only valid at `as_of_date`
+    if not as_of_date or (
+        explicit_date is not None and explicit_date != as_of_date[:10]
+    ):
         return None
 
-    order_expr = (
-        "ngay_gio_phat_sinh DESC, ma_giao_dich_kho DESC"
-        if "ma_giao_dich_kho" in cols
-        else "ngay_gio_phat_sinh DESC"
-    )
-    sql = f"""
-        WITH ranked AS (
-            SELECT ma_hang_hoa, ton_cuoi,
-                   ROW_NUMBER() OVER (PARTITION BY ma_hang_hoa ORDER BY {order_expr}) as rn
-            FROM the_kho
-            WHERE ngay_gio_phat_sinh <= '{target_date} 23:59:59'
+    excluded_codes: set[str] = set()
+    excluded_names: set[str] = set()
+    for ctname, cdf in context.tables.items():
+        if ctname.endswith("_sheet1") or ctname == "calendar":
+            continue
+        if not any(
+            k in ctname for k in ("danh_sach", "danh_muc", "hang_hoa", "san_pham")
+        ):
+            continue
+        c_cols = {c.lower(): c for c in cdf.columns}
+        cat_type_c = next(
+            (
+                c_cols[k]
+                for k in ("loai_hang_hoa", "loai_sp", "loai", "phan_loai")
+                if k in c_cols
+            ),
+            None,
         )
-        SELECT count(CASE WHEN TRY_CAST(ton_cuoi AS DOUBLE) = 0 THEN 1 END)
-        FROM ranked
-        WHERE rn = 1
-    """
-    try:
-        row = context.duckdb_conn.execute(sql).fetchone()
-        if row and row[0] is not None:
-            return "number", int(row[0]), None
-    except Exception:
-        pass
+        cid_c = next(
+            (
+                c_cols[k]
+                for k in ("ma_hang", "ma_hang_hoa", "ma_sp", "ma_sku")
+                if k in c_cols
+            ),
+            None,
+        )
+        cname_c = next(
+            (
+                c_cols[k]
+                for k in ("ten_hang", "ten_hang_hoa", "ten_san_pham", "san_pham")
+                if k in c_cols
+            ),
+            None,
+        )
+        if not (cat_type_c and (cid_c or cname_c)):
+            continue
+        for _, crow in cdf.iterrows():
+            cval = (
+                strip_accents(str(crow[cat_type_c]))
+                if pd.notna(crow[cat_type_c])
+                else ""
+            )
+            if any(
+                tok in cval for tok in ("che bien", "pha che", "dich vu", "khong ton")
+            ):
+                if cid_c and pd.notna(crow[cid_c]):
+                    excluded_codes.add(strip_accents(str(crow[cid_c]).strip()))
+                if cname_c and pd.notna(crow[cname_c]):
+                    excluded_names.add(strip_accents(str(crow[cname_c]).strip()))
+
+    snap_candidates = [
+        tname
+        for tname in (
+            ["bao_cao_ton_kho"]
+            + [
+                t
+                for t in context.tables
+                if t != "bao_cao_ton_kho"
+                and "ton_kho" in t
+                and not t.endswith("_sheet1")
+            ]
+        )
+        if tname in context.tables
+    ]
+    for tname in snap_candidates:
+        df = context.tables[tname]
+        cols = {c.lower(): c for c in df.columns}
+        val_c = next(
+            (
+                cols[k]
+                for k in (
+                    "ton_cuoi_ky",
+                    "ton_thuc",
+                    "ton_cuoi",
+                    "ton_kho",
+                    "so_luong_ton",
+                )
+                if k in cols
+            ),
+            None,
+        )
+        if not val_c:
+            continue
+        sku_c = next(
+            (
+                cols[k]
+                for k in ("ma_hang", "ma_hang_hoa", "ma_sp", "ma_sku")
+                if k in cols
+            ),
+            None,
+        )
+        name_c = next(
+            (
+                cols[k]
+                for k in ("ten_hang", "ten_hang_hoa", "ten_san_pham", "hang_hoa")
+                if k in cols
+            ),
+            None,
+        )
+        if not (sku_c or name_c):
+            continue
+        stockout_count = 0
+        valid_rows = 0
+        for _, row in df.iterrows():
+            sku_s = (
+                strip_accents(str(row[sku_c]).strip())
+                if (sku_c and pd.notna(row[sku_c]))
+                else ""
+            )
+            name_s = (
+                strip_accents(str(row[name_c]).strip())
+                if (name_c and pd.notna(row[name_c]))
+                else ""
+            )
+            if sku_c and not sku_s:
+                continue
+            if name_s in ("tong", "tong cong", "total"):
+                continue
+            if (sku_s and sku_s in excluded_codes) or (
+                name_s and name_s in excluded_names
+            ):
+                continue
+            val = pd.to_numeric(row[val_c], errors="coerce")
+            if pd.isna(val):
+                continue
+            valid_rows += 1
+            if float(val) <= 0:
+                stockout_count += 1
+        if valid_rows > 0:
+            return "number", stockout_count, None
     return None
 
 
@@ -899,11 +1286,15 @@ def _is_inventory_stock_query(q_norm: str) -> bool:
     ) or bool(re.search(r"\bkho\b.*\bton\b|\bton\b.*\bkho\b", q_norm))
     remaining_stock = bool(
         re.search(r"\bcon\s+(?:lai\s+|ton\s+)?(?:may|bao\s+nhieu|bnhiu|bn)\b", q_norm)
-    ) and any(k in q_norm for k in ("cuoi ngay", "het hom nay", "kho", "trong kho", "ton"))
+    ) and any(
+        k in q_norm for k in ("cuoi ngay", "het hom nay", "kho", "trong kho", "ton")
+    )
     return explicit_stock or remaining_stock
 
 
-def _collect_inventory_candidates(context: BusinessContext) -> list[tuple[str, str, str]]:
+def _collect_inventory_candidates(
+    context: BusinessContext,
+) -> list[tuple[str, str, str]]:
     """Collect (product_name_lower, table, column) candidates across catalog and inventory tables."""
     from zaic_2026_datamate.intent_parser import get_all_product_names
 
@@ -936,11 +1327,34 @@ def _lookup_sku_for_product(
             continue
         cols = {c.lower(): c for c in df.columns}
         code_c = next(
-            (cols[k] for k in ("ma_sku", "ma_hang_hoa", "ma_san_pham_ban", "ma_hang", "ma_sp", "id_sp") if k in cols),
+            (
+                cols[k]
+                for k in (
+                    "ma_sku",
+                    "ma_hang_hoa",
+                    "ma_san_pham_ban",
+                    "ma_hang",
+                    "ma_sp",
+                    "id_sp",
+                )
+                if k in cols
+            ),
             None,
         )
         name_c = next(
-            (cols[k] for k in ("ten_san_pham", "ten_goi", "ten_hang_hoa", "ten_hang", "ten_sp", "hang_hoa", "product") if k in cols),
+            (
+                cols[k]
+                for k in (
+                    "ten_san_pham",
+                    "ten_goi",
+                    "ten_hang_hoa",
+                    "ten_hang",
+                    "ten_sp",
+                    "hang_hoa",
+                    "product",
+                )
+                if k in cols
+            ),
             None,
         )
         if not (code_c and name_c):
@@ -1009,7 +1423,11 @@ def _format_inventory_answer(
     """Format scalar or [boxes, pieces] stock quantity cleanly."""
     import math
 
-    from zaic_2026_datamate.price_change import alnum_phrase, build_product_unit_conversions, norm_vn
+    from zaic_2026_datamate.price_change import (
+        alnum_phrase,
+        build_product_unit_conversions,
+        norm_vn,
+    )
 
     if not math.isfinite(rem_qty) or rem_qty < 0:
         return None
@@ -1053,7 +1471,11 @@ def _format_inventory_answer(
 
     factor = factors.get("hop")
     if (factor is None or factor <= 1) and factors:
-        large = [v for k, v in factors.items() if v > 1 and (k in norm_vn(q_norm) or k in ("thung", "hop", "loc"))]
+        large = [
+            v
+            for k, v in factors.items()
+            if v > 1 and (k in norm_vn(q_norm) or k in ("thung", "hop", "loc"))
+        ]
         factor = max(large) if large else max(factors.values())
     if factor and factor > 1:
         f_int = int(round(factor))
@@ -1086,7 +1508,7 @@ def _resolve_the_kho_item_stock(
         SELECT SUM(TRY_CAST(ton_cuoi AS DOUBLE)) FROM ranked WHERE rn = 1
     """
     try:
-        row = context.duckdb_conn.execute(sql).fetchone()
+        row = _fetch_one_row(context.duckdb_conn, sql)
         if row and row[0] is not None:
             return float(row[0])
     except Exception:
@@ -1119,7 +1541,11 @@ def _resolve_lot_ledger_stock(
     for t in tbls:
         tc = set(context.tables[t].columns)
         st_c = next(
-            (c for c in ("trang_thai", "tinh_trang", "tinh_trang_don", "xu_ly") if c in tc),
+            (
+                c
+                for c in ("trang_thai", "tinh_trang", "tinh_trang_don", "xu_ly")
+                if c in tc
+            ),
             None,
         )
         if "don_hang" in t and "ma_don_hang" in tc and "ngay_dat_hang" in tc:
@@ -1140,7 +1566,11 @@ def _resolve_lot_ledger_stock(
         return None
 
     order_cte = " UNION ".join(order_date_selects)
-    ret_expr = "COALESCE(TRY_CAST(ls.so_luong_tra AS DOUBLE), 0.0)" if "so_luong_tra" in lot_cols else "0.0"
+    ret_expr = (
+        "COALESCE(TRY_CAST(ls.so_luong_tra AS DOUBLE), 0.0)"
+        if "so_luong_tra" in lot_cols
+        else "0.0"
+    )
     sku_esc = sku.replace("'", "''")
     sql = f"""
         WITH sku_lots AS (
@@ -1168,7 +1598,7 @@ def _resolve_lot_ledger_stock(
         LEFT JOIN lot_out lo ON sl.ma_lo = lo.ma_lo
     """
     try:
-        row = context.duckdb_conn.execute(sql).fetchone()
+        row = _fetch_one_row(context.duckdb_conn, sql)
         if row and row[0] is not None:
             return float(row[0])
     except Exception:
@@ -1186,11 +1616,19 @@ def _resolve_snapshot_ton_kho(
             continue
         cols = {c.lower(): c for c in df.columns}
         item_c = next(
-            (cols[k] for k in ("ten_hang", "hang_hoa", "product", "ten_sp", "ten_san_pham") if k in cols),
+            (
+                cols[k]
+                for k in ("ten_hang", "hang_hoa", "product", "ten_sp", "ten_san_pham")
+                if k in cols
+            ),
             None,
         )
         val_c = next(
-            (cols[k] for k in ("ton_thuc", "ton_cuoi_ky", "ton_cuoi", "ton_kho") if k in cols),
+            (
+                cols[k]
+                for k in ("ton_thuc", "ton_cuoi_ky", "ton_cuoi", "ton_kho")
+                if k in cols
+            ),
             None,
         )
         if not (item_c and val_c):
@@ -1213,8 +1651,21 @@ def _resolve_inventory_stock(
     has_stock_schema = any(
         (not tname.endswith("_sheet1") and tname != "calendar")
         and (
-            any(k in tname for k in ("ton_kho", "the_kho", "lo_hang", "don_hang_lo", "chi_tiet_don_lo"))
-            or any(k in col.lower() for col in df.columns for k in ("ton_cuoi", "ton_thuc", "ton_kho", "so_luong_ton"))
+            any(
+                k in tname
+                for k in (
+                    "ton_kho",
+                    "the_kho",
+                    "lo_hang",
+                    "don_hang_lo",
+                    "chi_tiet_don_lo",
+                )
+            )
+            or any(
+                k in col.lower()
+                for col in df.columns
+                for k in ("ton_cuoi", "ton_thuc", "ton_kho", "so_luong_ton")
+            )
         )
         for tname, df in context.tables.items()
     )
@@ -1260,6 +1711,7 @@ def resolve_domain_extensions(
 
     Returns (type, answer, reason) or None if not handled.
     """
+    question = normalize_query_telex(question)
     q_norm = strip_accents(question).replace("–", "-").replace("—", "-")
     q_norm = re.sub(r"\btoonf\b", "ton", q_norm, flags=re.IGNORECASE)
 

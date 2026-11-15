@@ -36,6 +36,7 @@ def write_submission(path, rows, expected_ids, *, overwrite=False):
                 f.write(json.dumps(r, ensure_ascii=False, allow_nan=False) + "\n")
             f.flush()
             os.fsync(f.fileno())
+        os.chmod(tmp, 0o644)
         if overwrite:
             os.replace(tmp, path)
         else:
