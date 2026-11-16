@@ -1696,6 +1696,25 @@
     * **Gate 2 (Holdout):** **`710 / 710 Correct (100.00%)`**, **`0 Wrong`**, **`0 Abstain`** (`PA = 1.00000`).
     * **Gate 3 (Public Test):** **`993 / 1.000 Answered`**, **`7 Abstain`**, **`0` new abstained**, **`12 Value Changed`** (toàn bộ 12 câu thay đổi đã được verify khớp 100% ground truth).
     * **File nộp bài & Backup:** File [`submission.jsonl`](file:///home/pt/AI%20Challenge/submission.jsonl) (SHA256: `76b33a45349f183aac8c778b19c3f95966b90fd2af12e7badf4c0f60c33b924d`), đã sao lưu an toàn tại [`artifacts/sub35-backup/submission.jsonl`](file:///home/pt/AI%20Challenge/artifacts/sub35-backup/submission.jsonl) và chép vào `C:\Users\PT\Downloads\submission.jsonl`.
+    * **Sao lưu Source Code & Git Tag:** Git tag `v35-score-0.825-candidate`, branch `backup/sub35`, archive [`artifacts/sub35-backup/source-v35.tar.gz`](file:///home/pt/AI%20Challenge/artifacts/sub35-backup/source-v35.tar.gz) (SHA256: `8ca1e9829a0158fded68685efca676e921d8b0525405ca9f3e9b95631b75057d`).
+
+---
+
+### Mũi 14: Phiên Bản Sub #36 — Universal SQL Whitespace Normalization & Robust Status Detection — HOÀN TẤT (16/11/2026)
+- **Mục tiêu:** Nâng cấp độ bền trên toàn bộ các câu truy vấn SQL JOIN và nhận diện trạng thái đơn hàng lạ cho Private Test, bảo toàn 100% độ chính xác của Sub #35.
+- **Triển khai kỹ thuật (Zero-Hardcoding, Rule §6.2):**
+  1. **Universal Whitespace Normalization (`ws_norm_sql`):** Xuất hàm công khai `ws_norm_sql` tại [`cleaner.py`](file:///home/pt/AI%20Challenge/src/zaic_2026_datamate/cleaner.py), áp dụng đồng bộ trên [`domain_ext.py`](file:///home/pt/AI%20Challenge/src/zaic_2026_datamate/domain_ext.py) (các mệnh đề JOIN `so_ban_hang` và `so_ban_hang_ghi_tat`) và [`rolling_window.py`](file:///home/pt/AI%20Challenge/src/zaic_2026_datamate/rolling_window.py). Hàm tự động ép kiểu VARCHAR, trim khoảng trắng đầu/cuối, chuyển chữ thường và thu gọn khoảng trắng thừa/tab thành 1 dấu cách đơn, miễn nhiễm với dữ liệu gõ tay sai lệch khoảng trắng.
+  2. **Robust Order Status Detection:** Bổ sung cơ chế fallback tự động trong [`semantic_contract.py`](file:///home/pt/AI%20Challenge/src/zaic_2026_datamate/semantic_contract.py) và [`intent_parser.py`](file:///home/pt/AI%20Challenge/src/zaic_2026_datamate/intent_parser.py) nhận diện các cột trạng thái mang tên biến thể (`tinh_trang_giao`, `trang_thai_dh`,...) nếu không khớp danh sách từ khóa tiêu chuẩn.
+  3. **TDD Unit Testing:** Khóa bằng bộ test [`tests/test_v36_features.py`](file:///home/pt/AI%20Challenge/tests/test_v36_features.py) (3 passed in 0.08s).
+- **Kết quả 4 Cổng Kiểm chứng (All Pass 100%):**
+  - **Gate 0:** `ruff check src/ tests/` 100% pass; Fast pytest **`501 passed, 1 skipped`** (`17.91s`).
+  - **Gate 1 (Train 3.000 câu):** **`3.000 / 3.000 Correct (100.00%)`**, **`0 Wrong`**, **`0 Abstain`** (`PA = 1.00000`, hoàn thành trong `119.0s`).
+  - **Gate 2 (Holdout 710 câu / 6 businesses):** **`710 / 710 Correct (100.00%)`**, **`0 Wrong`**, **`0 Abstain`** (`PA = 1.00000`).
+  - **Gate 3 (Public Test 1.000 câu):** **`993 / 1.000 Answered`**, **`7 Abstain`**, **`0` new abstained**, **`0` diffs** so với Sub #35 (bảo toàn 100% kết quả Public Test, SHA256: `76b33a45349f183aac8c778b19c3f95966b90fd2af12e7badf4c0f60c33b924d`).
+- **Chiến lược Freeze Cuối:**
+  - Nếu điểm Public của Sub #35 / #36 > 0.82500 $\implies$ Tiến hành đóng gói Docker Freeze mới trước 22:30.
+  - Nếu điểm Public của Sub #35 / #36 $\le$ 0.82500 $\implies$ Giữ bản Docker Freeze an toàn đã đóng gói của Sub #33 (`c4d120daade17538b09c31ad36b58706f1c47cf13c4650abfac4e5a85ac08ed6`).
+
 
 
 

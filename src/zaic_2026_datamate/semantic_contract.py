@@ -416,6 +416,13 @@ def pick_order_status_col(df: pd.DataFrame) -> str | None:
     )
     if col is not None:
         return col
+    for c in cols:
+        if (
+            ("trang_thai" in c or "tinh_trang" in c)
+            and not c.startswith("so_")
+            and df[c].notna().any()
+        ):
+            return c
     for c in ("ghi_chu", "note", "luu_y"):
         if c in cols and df[c].notna().any():
             s_lower = df[c].dropna().astype(str).str.lower()

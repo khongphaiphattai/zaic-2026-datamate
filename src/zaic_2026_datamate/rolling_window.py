@@ -15,7 +15,7 @@ from __future__ import annotations
 import re
 from typing import Any, Tuple
 
-from zaic_2026_datamate.cleaner import normalize_query_telex
+from zaic_2026_datamate.cleaner import normalize_query_telex, ws_norm_sql
 from zaic_2026_datamate.data_loader import BusinessContext
 from zaic_2026_datamate.intent_parser import (
     check_date_out_of_domain,
@@ -80,9 +80,7 @@ def _find_unit_col(context: BusinessContext, table: str) -> str | None:
     return None
 
 
-def _ws_norm_sql(expr: str) -> str:
-    """SQL expression normalizing string keys (lowercase, trimmed, collapsed spaces)."""
-    return rf"regexp_replace(lower(trim(CAST({expr} AS VARCHAR))), '\s+', ' ', 'g')"
+_ws_norm_sql = ws_norm_sql
 
 
 def resolve_rolling_window_query(

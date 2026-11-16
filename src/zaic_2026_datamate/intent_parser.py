@@ -607,6 +607,13 @@ def find_primary_sales_table(
             break
 
     if not status_col:
+        for c in cols:
+            if ("trang_thai" in c or "tinh_trang" in c) and not c.startswith("so_"):
+                if tables[selected_table][c].notna().sum() > 0:
+                    status_col = c
+                    break
+
+    if not status_col:
         # Check if ghi_chu or note contains cancellation/return keywords (Rulebook Section 8)
         for c in ["ghi_chu", "note", "luu_y"]:
             if c in cols and tables[selected_table][c].notna().sum() > 0:

@@ -22,7 +22,11 @@ from typing import Any, Tuple
 
 import pandas as pd
 
-from zaic_2026_datamate.cleaner import clean_vietnamese_currency, normalize_query_telex
+from zaic_2026_datamate.cleaner import (
+    clean_vietnamese_currency,
+    normalize_query_telex,
+    ws_norm_sql,
+)
 from zaic_2026_datamate.data_loader import BusinessContext
 from zaic_2026_datamate.semantic_contract import (
     is_bad_status,
@@ -986,7 +990,7 @@ def _resolve_phone_store_analytics(
         sql = f"""
             SELECT sum(TRY_CAST(b.sl AS BIGINT))
             FROM {sbh_name} b
-            JOIN {gt_name} g ON b.hang = g.ghi_tat
+            JOIN {gt_name} g ON {ws_norm_sql("b.hang")} = {ws_norm_sql("g.ghi_tat")}
             WHERE g.loai = 'máy cũ'
               AND cast(b.ngay as varchar) LIKE '{t_month}%'
         """
@@ -1027,7 +1031,7 @@ def _resolve_phone_store_analytics(
         sql = f"""
             SELECT sum(TRY_CAST(b.sl AS BIGINT))
             FROM {sbh_name} b
-            JOIN {gt_name} g ON b.hang = g.ghi_tat
+            JOIN {gt_name} g ON {ws_norm_sql("b.hang")} = {ws_norm_sql("g.ghi_tat")}
             WHERE g.loai IN ('máy mới', 'máy cũ')
               AND cast(b.ngay as varchar) LIKE '{t_month}%'
         """
@@ -1098,7 +1102,7 @@ def _resolve_phone_store_analytics(
             sql = f"""
                 SELECT sum(TRY_CAST(b.sl AS BIGINT))
                 FROM {sbh_name} b
-                JOIN {gt_name} g ON b.hang = g.ghi_tat
+                JOIN {gt_name} g ON {ws_norm_sql("b.hang")} = {ws_norm_sql("g.ghi_tat")}
                 WHERE g.ten_hang IN ({in_list})
                   AND cast(b.ngay as varchar) LIKE '{t_month}%'
             """
@@ -1156,7 +1160,7 @@ def _resolve_warranty_and_tradein(
                     phones AS (
                         SELECT sum(TRY_CAST(b.sl AS BIGINT)) as c
                         FROM __m12_clean_sbh b
-                        JOIN __m12_clean_gt g ON b.hang = g.ghi_tat
+                        JOIN __m12_clean_gt g ON {ws_norm_sql("b.hang")} = {ws_norm_sql("g.ghi_tat")}
                         WHERE g.loai IN ('máy mới', 'máy cũ')
                           AND b.ngay >= '{q_bounds[0]}' AND b.ngay <= '{q_bounds[1]}'
                     )

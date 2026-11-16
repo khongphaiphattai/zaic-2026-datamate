@@ -474,3 +474,8 @@ def strip_customer_phone(val: Any) -> str:
         return ""
     cleaned = PHONE_SUFFIX_RE.sub("", raw).strip()
     return cleaned if cleaned else raw
+
+
+def ws_norm_sql(expr: str) -> str:
+    """Return SQL expression that casts to VARCHAR, trims, lowercases, and collapses multiple whitespace characters."""
+    return rf"regexp_replace(lower(trim(CAST({expr} AS VARCHAR))), '\s+', ' ', 'g')"
