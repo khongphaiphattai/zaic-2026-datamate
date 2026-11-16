@@ -1514,40 +1514,52 @@ class BusinessSemanticContract:
                 val = r[ratio_col]
                 if not item and not item_id:
                     continue
-                factor: float | None = None
-                explicit_u = ""
+                entries: list[tuple[float, str]] = []
                 if isinstance(val, (int, float)) and val > 0:
-                    factor = float(val)
+                    entries.append((float(val), ""))
                 elif isinstance(val, str):
-                    val_norm = norm_vn(val)
-                    m_lhs = re.search(r"\b1\s+([a-z0-9\s]+?)\s*=", val_norm)
-                    if m_lhs:
-                        explicit_u = m_lhs.group(1).strip()
-                    m = re.search(r"=\s*(\d+(?:[.,]\d+)?)\s*\w+", val)
-                    if m:
-                        factor = float(m.group(1).replace(",", "."))
+                    parts = [p.strip() for p in val.split(";") if p.strip()]
+                    if not parts:
+                        parts = [val.strip()]
+                    for part in parts:
+                        val_norm = norm_vn(part)
+                        explicit_u_part = ""
+                        m_lhs = re.search(r"\b1\s+([a-z0-9\s]+?)\s*=", val_norm)
+                        if m_lhs:
+                            explicit_u_part = m_lhs.group(1).strip()
+                        m = re.search(r"=\s*(\d+(?:[.,]\d+)?)\s*\w+", part)
+                        if m:
+                            entries.append(
+                                (float(m.group(1).replace(",", ".")), explicit_u_part)
+                            )
+                        else:
+                            m2 = re.search(r"^\d+(?:[.,]\d+)?$", part.strip())
+                            if m2:
+                                entries.append(
+                                    (
+                                        float(m2.group(0).replace(",", ".")),
+                                        explicit_u_part,
+                                    )
+                                )
+                for factor, explicit_u in entries:
+                    if factor <= 0:
+                        continue
+                    if not explicit_u and big_unit_col and pd.notna(r[big_unit_col]):
+                        bu = norm_vn(r[big_unit_col])
+                        if bu:
+                            explicit_u = bu
+                    if explicit_u:
+                        if item:
+                            unit_conv[(item, explicit_u)] = factor
+                            has_explicit_unit.add(item)
+                        if item_id:
+                            unit_conv[(item_id, explicit_u)] = factor
+                            has_explicit_unit.add(item_id)
                     else:
-                        m2 = re.search(r"^\d+(?:[.,]\d+)?$", val.strip())
-                        if m2:
-                            factor = float(m2.group(0).replace(",", "."))
-                if factor is None or factor <= 0:
-                    continue
-                if big_unit_col and pd.notna(r[big_unit_col]):
-                    bu = norm_vn(r[big_unit_col])
-                    if bu:
-                        explicit_u = bu
-                if explicit_u:
-                    if item:
-                        unit_conv[(item, explicit_u)] = factor
-                        has_explicit_unit.add(item)
-                    if item_id:
-                        unit_conv[(item_id, explicit_u)] = factor
-                        has_explicit_unit.add(item_id)
-                else:
-                    if item:
-                        fallback_conv[item] = factor
-                    if item_id:
-                        fallback_conv[item_id] = factor
+                        if item:
+                            fallback_conv[item] = factor
+                        if item_id:
+                            fallback_conv[item_id] = factor
 
         for item_key, big_u, factor, _small_u in parse_readme_unit_rules(
             getattr(context, "readme", "") or ""
@@ -6137,6 +6149,13 @@ def execute_query_plan(
         return "abstain", None, str(e)
 
     return "abstain", None, "Không khớp operation trong QueryPlan"
+
+
+def build_unit_conversion_map(
+    context: BusinessContext,
+) -> tuple[dict[tuple[str, str], float], dict[str, float], set[str]]:
+    """Public accessor for schema-driven `(item_key, unit_norm) -> factor` conversion maps."""
+    return BusinessSemanticContract._build_unit_conversion_map(context)
 
 
 def resolve_semantic_plan(

@@ -19,6 +19,50 @@ import pandas as pd
 
 from zaic_2026_datamate.data_loader import BusinessContext
 from zaic_2026_datamate.intent_parser import parse_time_expressions
+from zaic_2026_datamate.semantic_contract import (
+    build_unit_conversion_map,
+    item_norm_key,
+    norm_vn,
+)
+
+
+def _non_adjustment_sales_mask(df: pd.DataFrame) -> pd.Series:
+    """Exclude non-merchandise adjustment rows (Voucher, Phí ship, Dùng điểm)."""
+    items = df["ten_hang"].astype(str)
+    return ~items.isin(["Voucher", "Phí ship"]) & ~items.str.contains(
+        r"Dùng \d+ điểm", regex=True, na=False
+    )
+
+
+def _compute_converted_qty(df: pd.DataFrame, context: BusinessContext) -> pd.Series:
+    """Convert line quantities from transaction `dvt` into catalog base `dvt` via `quy_doi`."""
+    unit_conv, fallback_conv, has_explicit = build_unit_conversion_map(context)
+    has_raw_dvt = "dvt" in df.columns
+    has_base_dvt = "_dm_dvt" in df.columns
+    raw_qty = pd.to_numeric(df["sl"], errors="coerce").fillna(0.0)
+    out: list[float] = []
+    for idx, q in zip(df.index, raw_qty):
+        if q == 0.0:
+            out.append(0.0)
+            continue
+        ikey = df.at[idx, "_item_key"] if "_item_key" in df.columns else ""
+        u_raw = norm_vn(df.at[idx, "dvt"]) if has_raw_dvt else ""
+        u_base = norm_vn(df.at[idx, "_dm_dvt"]) if has_base_dvt else ""
+        if u_raw and u_base and u_raw == u_base:
+            factor = 1.0
+        elif ikey and u_raw and (ikey, u_raw) in unit_conv:
+            factor = unit_conv[(ikey, u_raw)]
+        elif (
+            ikey
+            and ikey not in has_explicit
+            and ikey in fallback_conv
+            and u_raw != u_base
+        ):
+            factor = fallback_conv[ikey]
+        else:
+            factor = 1.0
+        out.append(float(q) * float(factor))
+    return pd.Series(out, index=df.index, dtype="float64")
 
 
 def strip_accents(s: str) -> str:
@@ -188,12 +232,23 @@ def resolve_mother_baby_query(
     # -------------------------------------------------------------------------
     if "quan_ly_danh_muc" in context.tables:
         dm = context.tables["quan_ly_danh_muc"].copy()
+        dm["_item_key"] = dm["ten_hang"].map(item_norm_key)
+        dm_cols = ["_item_key", "nhom", "hang", "so_size"]
+        if "dvt" in dm.columns:
+            dm = dm.rename(columns={"dvt": "_dm_dvt"})
+            dm_cols.append("_dm_dvt")
+        dm_dedup = dm[dm["_item_key"] != ""][dm_cols].drop_duplicates(
+            subset=["_item_key"], keep="first"
+        )
+        bh_prepped = bh_valid.copy()
+        bh_prepped["_item_key"] = bh_prepped["ten_hang"].map(item_norm_key)
         merged = pd.merge(
-            bh_valid,
-            dm[["ten_hang", "nhom", "hang", "so_size"]],
-            on="ten_hang",
+            bh_prepped,
+            dm_dedup,
+            on="_item_key",
             how="left",
         )
+        merged["qty_base"] = _compute_converted_qty(merged, context)
         sub = get_period_sub(merged)
 
         # E1. Milk powder size counts: 'sua bot so 4', 'sua bot so 2'
@@ -207,6 +262,11 @@ def resolve_mother_baby_query(
                 ("so 4", "Số 4"),
             ]:
                 if s_num in t_norm:
+                    milk_sub = sub[
+                        (sub["nhom"] == "sữa bột") & (sub["so_size"] == s_label)
+                    ]
+                    if milk_sub.empty:
+                        milk_sub = sub[sub["so_size"] == s_label]
                     # Top brand for milk powder size
                     if any(
                         k in t_norm for k in ["hang nao", "nhan nao", "thuong hieu nao"]
@@ -214,22 +274,21 @@ def resolve_mother_baby_query(
                         k in t_norm
                         for k in ["nhieu nhat", "nhieu lon nhat", "chay nhat"]
                     ):
-                        m_sub = sub[sub["so_size"] == s_label]
-                        if not m_sub.empty:
-                            top_b = m_sub.groupby("hang")["sl"].sum().idxmax()
+                        if not milk_sub.empty:
+                            top_b = milk_sub.groupby("hang")["qty_base"].sum().idxmax()
                             return "string", top_b, None
                     # Total volume of milk powder size
                     if any(
                         k in t_norm
                         for k in ["may lon", "bnhiu lon", "bao nhieu lon", "so lon"]
                     ):
-                        m_sub = sub[sub["so_size"] == s_label]
-                        return "number", int(m_sub["sl"].sum()), None
+                        return "number", int(round(milk_sub["qty_base"].sum())), None
 
         # E2. Diaper size volume: 'bim size xl', 'bim size l', 'bim size m', 'bim size nb'
         if any(k in t_norm for k in ["bim", "ta"]) and any(
             k in t_norm for k in ["size nb", "size m", "size l", "size xl", "size xxl"]
         ):
+            b_sub = sub[sub["nhom"] == "bỉm tã"]
             for sz_kw, sz_label in [
                 ("size nb", "Size NB"),
                 ("size m", "Size M"),
@@ -240,23 +299,23 @@ def resolve_mother_baby_query(
                 if sz_kw in t_norm:
                     # Percentage of total diapers
                     if any(k in t_norm for k in ["%", "phan tram"]):
-                        b_sub = sub[sub["nhom"] == "bỉm tã"]
-                        sz_sl = b_sub[b_sub["so_size"] == sz_label]["sl"].sum()
-                        tot_sl = b_sub["sl"].sum()
+                        sz_sl = b_sub[b_sub["so_size"] == sz_label]["qty_base"].sum()
+                        tot_sl = b_sub["qty_base"].sum()
                         if tot_sl > 0:
                             return "percent", round(sz_sl / tot_sl * 100, 2), None
-                    # Total volume of diaper size
+                    # Total volume of diaper size (must remain restricted to 'bỉm tã')
                     if any(
                         k in t_norm
                         for k in ["may bich", "bnhiu bich", "bao nhieu bich"]
                     ):
-                        sz_sub = sub[sub["so_size"] == sz_label]
-                        return "number", int(sz_sub["sl"].sum()), None
+                        sz_sub = b_sub[b_sub["so_size"] == sz_label]
+                        return "number", int(round(sz_sub["qty_base"].sum())), None
 
         # E3. Diaper brand share: 'bim bobby', 'bim moony', 'bim huggies', 'bim merries'
         if any(k in t_norm for k in ["bim", "ta"]) and any(
             k in t_norm for k in ["%", "phan tram"]
         ):
+            b_sub = sub[sub["nhom"] == "bỉm tã"]
             for b_kw, b_label in [
                 ("bobby", "Bobby"),
                 ("moony", "Moony"),
@@ -265,9 +324,8 @@ def resolve_mother_baby_query(
                 ("pampers", "Pampers"),
             ]:
                 if b_kw in t_norm:
-                    b_sub = sub[sub["nhom"] == "bỉm tã"]
-                    brand_sl = b_sub[b_sub["hang"] == b_label]["sl"].sum()
-                    tot_sl = b_sub["sl"].sum()
+                    brand_sl = b_sub[b_sub["hang"] == b_label]["qty_base"].sum()
+                    tot_sl = b_sub["qty_base"].sum()
                     if tot_sl > 0:
                         return "percent", round(brand_sl / tot_sl * 100, 2), None
 
@@ -280,12 +338,7 @@ def resolve_mother_baby_query(
         ]:
             if cat_kw in t_norm:
                 if any(k in t_norm for k in ["%", "phan tram"]):
-                    tot_rev = sub[
-                        ~sub["ten_hang"].isin(["Voucher", "Phí ship"])
-                        & ~sub["ten_hang"]
-                        .astype(str)
-                        .str.contains(r"Dùng \d+ điểm", regex=True, na=False)
-                    ]["tt"].sum()
+                    tot_rev = sub[_non_adjustment_sales_mask(sub)]["tt"].sum()
                     cat_rev = sub[sub["nhom"] == cat_label]["tt"].sum()
                     if tot_rev > 0:
                         return "percent", round(cat_rev / tot_rev * 100, 2), None
@@ -303,8 +356,9 @@ def resolve_mother_baby_query(
     ):
         sub = get_period_sub(bh_valid)
         if not sub.empty:
-            t_rev = sub["tt"].sum()
-            tai_tiem_rev = sub[sub["kenh"] == "Tại tiệm"]["tt"].sum()
+            merch_sub = sub[_non_adjustment_sales_mask(sub)]
+            t_rev = merch_sub["tt"].sum()
+            tai_tiem_rev = merch_sub[merch_sub["kenh"] == "Tại tiệm"]["tt"].sum()
             if t_rev > 0:
                 return "percent", round(tai_tiem_rev / t_rev * 100, 2), None
 

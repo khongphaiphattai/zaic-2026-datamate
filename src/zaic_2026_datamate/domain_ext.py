@@ -694,13 +694,13 @@ def _resolve_unsold_items(
 
     sql = f"""
         WITH catalog AS (
-            SELECT DISTINCT lower(trim(CAST({cat_col} AS VARCHAR))) AS item
+            SELECT DISTINCT regexp_replace(lower(trim(CAST({cat_col} AS VARCHAR))), '\\s+', ' ', 'g') AS item
             FROM {cat_table}
             WHERE {cat_col} IS NOT NULL
               {cat_filter}
         ),
         sold AS (
-            SELECT DISTINCT lower(trim(CAST({sales_col} AS VARCHAR))) AS item
+            SELECT DISTINCT regexp_replace(lower(trim(CAST({sales_col} AS VARCHAR))), '\\s+', ' ', 'g') AS item
             FROM {sales_table}
             WHERE CAST({sales_date_col} AS DATE) >= DATE '{start_date}'
               AND CAST({sales_date_col} AS DATE) <= DATE '{end_date}'

@@ -80,6 +80,11 @@ def _find_unit_col(context: BusinessContext, table: str) -> str | None:
     return None
 
 
+def _ws_norm_sql(expr: str) -> str:
+    """SQL expression normalizing string keys (lowercase, trimmed, collapsed spaces)."""
+    return rf"regexp_replace(lower(trim(CAST({expr} AS VARCHAR))), '\s+', ' ', 'g')"
+
+
 def resolve_rolling_window_query(
     question: str,
     context: BusinessContext,
@@ -463,7 +468,10 @@ def resolve_rolling_window_query(
                         None,
                     )
                     if cat_name and cat_u:
-                        cat_join_sql = f"LEFT JOIN (SELECT lower(trim({cat_name})) AS k, max({cat_u}) AS u FROM {cat_t} GROUP BY 1) cat ON lower(trim(t.{item_col})) = cat.k"
+                        cat_join_sql = (
+                            f"LEFT JOIN (SELECT {_ws_norm_sql(cat_name)} AS k, max({cat_u}) AS u "
+                            f"FROM {cat_t} GROUP BY 1) cat ON {_ws_norm_sql(f't.{item_col}')} = cat.k"
+                        )
                         break
             if cat_join_sql and base_qty_col:
                 eff_qty_expr = f"CASE WHEN {_unit_like_sql(f't.{unit_col}')} THEN {raw_first} ELSE {base_first} END"
@@ -511,7 +519,7 @@ def resolve_rolling_window_query(
                 sql = f"""
                     SELECT sum({eff_dm_qty}) as total_qty
                     FROM {tbl} c
-                    JOIN danh_muc_hang d ON lower(trim(c.{item_col_dm})) = lower(trim(d.{dm_item}))
+                    JOIN danh_muc_hang d ON {_ws_norm_sql(f"c.{item_col_dm}")} = {_ws_norm_sql(f"d.{dm_item}")}
                     WHERE {build_date_where_clause(f"c.{date_col}", period)}
                       AND {_unit_like_sql(f"d.{dm_unit}")}
                       {status_clause_c}

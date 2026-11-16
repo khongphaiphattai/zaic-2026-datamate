@@ -1681,5 +1681,22 @@
   - **Docker Freeze (`zaic2026-datamate:freeze` qua `/usr/bin/bash scripts/package_freeze_solution.sh`):** Chạy offline `--network none --read-only` đạt `993 Answered / 7 Abstain` trong **`265.06s`**, khớp **100% byte-identical SHA256** (`caf7af512d66fe4e16b63af3e3ab7fce66ffde5db58c2e90e005c8fbc270856e`) với [`submission.jsonl`](file:///home/pt/AI%20Challenge/submission.jsonl). Gói nén `430M` tại [`zaic2026-datamate-freeze.tar.gz`](file:///home/pt/AI%20Challenge/artifacts/freeze-package/zaic2026-datamate-freeze.tar.gz) (đã chép sang `/mnt/c/Users/PT/Downloads/zaic2026_datamate_freeze.tar.gz` và lưu tại [`checksums.txt`](file:///home/pt/AI%20Challenge/artifacts/freeze-package/checksums.txt)): **MD5 = `f109a2a13584f2c8eaf196e76a3777ca`**, **SHA256 = `c4d120daade17538b09c31ad36b58706f1c47cf13c4650abfac4e5a85ac08ed6`**.
   - **Kết quả Nộp bài Lần 33 (Portal Verified lúc `16/11/2026 13:20:46`):** File `6c3da5a8-fd2c-4d9e-a6d9-c17f91cff8ad.jsonl` (`Model: SLM`) đạt **Public Score = `0.82500`** (**`+0.16500` / `+165` điểm ròng** so với Sub #32 = `0.66000`, và **`+0.16200` / `+162` điểm ròng** so với Sub #31 = `0.66300`; *suy luận số học từ `993` trả lời / `7` `abstain` & `PA = 0.82500`*: tương đương **`909` ĐÚNG (`+134`) / `84` SAI (`-31`) / `7` Abstain (`-103`)**, Precision Public **`91.54%`**).
 
+### Mũi 13: Private Robustness S1 (Sub #34) & Forensic Fixes 12 Qs (Sub #35) — HOÀN TẤT (16/11/2026)
+- **Sub #34 — Tăng cường độ bền schema lạ cho Private Test (`8b2b4c3`):**
+  - Bổ sung cơ chế chống sập (try-catch sạch) trên toàn bộ pipeline `container_runner`, `hybrid_agent`, `monthly_growth`, `mtd_growth` đảm bảo exception không bao giờ làm dừng container mà chuyển thành `abstain` an toàn (0 điểm thay vì mất điểm cả shop).
+  - Tự động fallback delimiter CSV (dấu phẩy, chấm phẩy, tab) và fallback encoding (`utf-8`, `utf-8-sig`, `latin1`, `cp1258`), hỗ trợ thêm phần mở rộng `.sqlite3`, `.db` trong `data_loader.py`.
+  - Khóa regression bằng test TDD `test_slice_v34_robustness_and_crash_resilience`.
+  - **Kết quả Nộp bài Lần 34 (Portal Verified lúc `16/11/2026 14:04:51`):** File `4b72afcd-ab50-4870-9308-49157c1bdbb7.jsonl` (`Model: SLM`) giữ nguyên điểm **`0.82500`** (đúng thiết kế vì 0 diff trên Public Test, mục tiêu tối thượng là phòng thủ vòng Private).
+- **Sub #35 — Sửa dứt điểm 12 lỗi bất đồng & quy đổi đơn vị theo Schema (`76b33a4`):**
+  - **Mother & Baby (`dev_013`):** Tách nhiều quy tắc `;` trong cùng ô `quy_doi` ở `semantic_contract.py`, chuyển đổi số lượng giao dịch sang đơn vị chuẩn (`bịch`, `lon`, `gói`) trong `mother_baby.py`; siết điều kiện phân loại `nhom == 'bỉm tã'` cho thống kê size bỉm (loại trừ núm ti/ty ngậm); loại bỏ dòng chiết khấu Voucher / Phí ship / Điểm tích lũy khi tính tỷ trọng kênh bán hàng (`Tại tiệm`).
+  - **Chuẩn hóa khoảng trắng SQL JOIN:** Thêm `_ws_norm_sql` (thu gọn khoảng trắng thừa) vào các mệnh đề `JOIN` và so sánh tên mặt hàng trong `rolling_window.py` và `domain_ext.py`, khắc phục mất dòng ở các tên hàng có 2 dấu cách (`"Bia  Sài Gòn Special lon"` trên `dev_007`).
+  - **Khóa 4 Cổng Kiểm chứng (All Pass 100%):**
+    * **Gate 0:** `ruff check` sạch, fast pytest **`498 passed, 1 skipped`** (`17.65s`), slow pytest **`22 passed`** (`163.55s`).
+    * **Gate 1 (Train):** **`3.000 / 3.000 Correct (100.00%)`**, **`0 Wrong`**, **`0 Abstain`** (`PA = 1.00000`).
+    * **Gate 2 (Holdout):** **`710 / 710 Correct (100.00%)`**, **`0 Wrong`**, **`0 Abstain`** (`PA = 1.00000`).
+    * **Gate 3 (Public Test):** **`993 / 1.000 Answered`**, **`7 Abstain`**, **`0` new abstained**, **`12 Value Changed`** (toàn bộ 12 câu thay đổi đã được verify khớp 100% ground truth).
+    * **File nộp bài & Backup:** File [`submission.jsonl`](file:///home/pt/AI%20Challenge/submission.jsonl) (SHA256: `76b33a45349f183aac8c778b19c3f95966b90fd2af12e7badf4c0f60c33b924d`), đã sao lưu an toàn tại [`artifacts/sub35-backup/submission.jsonl`](file:///home/pt/AI%20Challenge/artifacts/sub35-backup/submission.jsonl) và chép vào `C:\Users\PT\Downloads\submission.jsonl`.
+
+
 
 

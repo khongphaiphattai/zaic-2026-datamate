@@ -2852,3 +2852,226 @@ def test_slice_v34_robustness_and_crash_resilience(monkeypatch, tmp_path) -> Non
     assert out_rows[0]["type"] == "abstain"
     assert out_rows[1]["type"] == "number"
     assert out_rows[1]["answer"] == 42
+
+
+def test_slice_v35_mother_baby_quy_doi_category_and_channel() -> None:
+    """v35: mother_baby must convert quy_doi units, guard nhom=='bỉm tã', and exclude adjustments in channel %."""
+    from zaic_2026_datamate.mother_baby import resolve_mother_baby_query
+    from zaic_2026_datamate.semantic_contract import build_unit_conversion_map
+
+    dm = pd.DataFrame(
+        [
+            {
+                "ten_hang": "Tã Bobby XL",
+                "ten_goi_khac": "bobby xl",
+                "nhom": "bỉm tã",
+                "hang": "Bobby",
+                "so_size": "Size XL",
+                "dvt": "bịch",
+                "quy_doi": "1 thùng = 4 bịch",
+            },
+            {
+                "ten_hang": "Tã Huggies M",
+                "ten_goi_khac": "huggies m",
+                "nhom": "bỉm tã",
+                "hang": "Huggies",
+                "so_size": "Size M",
+                "dvt": "bịch",
+                "quy_doi": "1 thùng = 4 bịch",
+            },
+            {
+                "ten_hang": "Núm ti Pigeon M",
+                "ten_goi_khac": "num ti",
+                "nhom": "bình sữa",
+                "hang": "Pigeon",
+                "so_size": "Size M",
+                "dvt": "vỉ",
+                "quy_doi": None,
+            },
+            {
+                "ten_hang": "Sữa Nan 2",
+                "ten_goi_khac": "nan 2",
+                "nhom": "sữa bột",
+                "hang": "Nan",
+                "so_size": "Số 2",
+                "dvt": "lon",
+                "quy_doi": "1 thùng = 6 lon",
+            },
+            {
+                "ten_hang": "Khăn ướt Gói",
+                "ten_goi_khac": "khan uot",
+                "nhom": "đồ dùng",
+                "hang": "Bobby",
+                "so_size": None,
+                "dvt": "gói",
+                "quy_doi": "1 lốc = 4 gói; 1 thùng = 24 gói",
+            },
+        ]
+    )
+    bh = pd.DataFrame(
+        [
+            {
+                "hd": "HD1",
+                "ngay": "2026-05-05",
+                "ten_hang": "Tã Bobby XL",
+                "sl": 2,
+                "dvt": "bịch",
+                "tt": 400000,
+                "kenh": "Tại tiệm",
+                "ghi_chu": None,
+            },
+            {
+                "hd": "HD2",
+                "ngay": "2026-05-06",
+                "ten_hang": "Tã  Bobby XL",
+                "sl": 1,
+                "dvt": "thùng",
+                "tt": 750000,
+                "kenh": "Tại tiệm",
+                "ghi_chu": None,
+            },
+            {
+                "hd": "HD3",
+                "ngay": "2026-05-07",
+                "ten_hang": "Tã Huggies M",
+                "sl": 3,
+                "dvt": "bịch",
+                "tt": 600000,
+                "kenh": "Zalo",
+                "ghi_chu": None,
+            },
+            {
+                "hd": "HD4",
+                "ngay": "2026-05-08",
+                "ten_hang": "Tã Huggies M",
+                "sl": 1,
+                "dvt": "thùng",
+                "tt": 750000,
+                "kenh": "Zalo",
+                "ghi_chu": None,
+            },
+            {
+                "hd": "HD5",
+                "ngay": "2026-05-09",
+                "ten_hang": "Núm ti Pigeon M",
+                "sl": 5,
+                "dvt": "vỉ",
+                "tt": 250000,
+                "kenh": "Tại tiệm",
+                "ghi_chu": None,
+            },
+            {
+                "hd": "HD6",
+                "ngay": "2026-05-10",
+                "ten_hang": "Sữa Nan 2",
+                "sl": 1,
+                "dvt": "thùng",
+                "tt": 1200000,
+                "kenh": "Tại tiệm",
+                "ghi_chu": None,
+            },
+            {
+                "hd": "HD1",
+                "ngay": "2026-05-05",
+                "ten_hang": "Voucher",
+                "sl": 1,
+                "dvt": "phiếu",
+                "tt": -50000,
+                "kenh": "Tại tiệm",
+                "ghi_chu": None,
+            },
+            {
+                "hd": "HD3",
+                "ngay": "2026-05-07",
+                "ten_hang": "Phí ship",
+                "sl": 1,
+                "dvt": "lần",
+                "tt": 25000,
+                "kenh": "Zalo",
+                "ghi_chu": None,
+            },
+        ]
+    )
+    ctx = _make_ctx("synth_mb_v35", {"ban_hang": bh, "quan_ly_danh_muc": dm})
+    try:
+        uconv, _, _ = build_unit_conversion_map(ctx)
+        assert uconv.get(("khan uot goi", "loc")) == 4.0
+        assert uconv.get(("khan uot goi", "thung")) == 24.0
+
+        # XL: 2 bich + 1 thung (4) = 6 bich (not 3, even with dirty double space)
+        r_xl = resolve_mother_baby_query(
+            "Tháng 5/2026 bỉm size XL bán được bao nhiêu bịch?", ctx, "2026-06-30"
+        )
+        assert r_xl[:2] == ("number", 6)
+
+        # M: 3 bich + 1 thung (4) = 7 bich (must exclude 5 Num ti Pigeon M!)
+        r_m = resolve_mother_baby_query(
+            "Tháng 5/2026 bỉm size M bán được mấy bịch?", ctx, "2026-06-30"
+        )
+        assert r_m[:2] == ("number", 7)
+
+        # Brand share Bobby: 6 / (6 + 7) = 46.15%
+        r_bobby = resolve_mother_baby_query(
+            "Tháng 5/2026 bỉm Bobby chiếm bao nhiêu % số bịch bỉm bán ra?",
+            ctx,
+            "2026-06-30",
+        )
+        assert r_bobby[:2] == ("percent", 46.15)
+
+        # Milk Nan 2: 1 thung = 6 lon
+        r_milk = resolve_mother_baby_query(
+            "Tháng 5/2026 bán được bao nhiêu lon sữa bột số 2?", ctx, "2026-06-30"
+        )
+        assert r_milk[:2] == ("number", 6)
+
+        # Channel % Tại tiệm excludes Voucher & Phí ship:
+        # Tại tiệm rev = 400k + 750k + 250k + 1200k = 2,600k
+        # Zalo rev = 600k + 750k = 1,350k -> total = 3,950k -> 65.82%
+        r_chan = resolve_mother_baby_query(
+            "Tháng 5/2026 tiền bán tại quầy chiếm mấy % tổng doanh thu?",
+            ctx,
+            "2026-06-30",
+        )
+        assert r_chan[:2] == ("percent", 65.82)
+    finally:
+        ctx.duckdb_conn.close()
+
+
+def test_slice_v35_rolling_window_dirty_whitespace_sql_join() -> None:
+    """v35: rolling_window SQL joins must collapse internal whitespace on item names."""
+    from zaic_2026_datamate.rolling_window import resolve_rolling_window_query
+
+    ct = pd.DataFrame(
+        [
+            {
+                "ma_bill": "B1",
+                "ngay_giao_dich": "2026-07-11",
+                "mat_hang": "Bia Tiger lon",
+                "sluong": 2,
+                "so_luong_le": 2,
+                "tien_do": "Xong",
+            },
+            {
+                "ma_bill": "B2",
+                "ngay_giao_dich": "2026-07-11",
+                "mat_hang": "Bia  Sài Gòn Special lon",
+                "sluong": 3,
+                "so_luong_le": 3,
+                "tien_do": "Xong",
+            },
+        ]
+    )
+    dm = pd.DataFrame(
+        [
+            {"hang_ban": "Bia Tiger lon", "dvt": "lon"},
+            {"hang_ban": "Bia Sài Gòn Special lon", "dvt": "lon"},
+        ]
+    )
+    ctx = _make_ctx("synth_rw_v35", {"chi_tiet_hoa_don": ct, "danh_muc_hang": dm})
+    try:
+        res = resolve_rolling_window_query(
+            "Hqua bán được tổng cộng mấy lon?", ctx, "2026-07-12"
+        )
+        assert res[:2] == ("number", 5)
+    finally:
+        ctx.duckdb_conn.close()
