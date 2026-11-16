@@ -200,20 +200,70 @@ def parse_time_expressions(text: str, as_of_date: str | None = None) -> ParsedPe
             return p
 
     # 4. Relative "Hôm nay", "hnay", "bữa nay", "hom ni", "bữa ni"
-    if any(
-        k in t
-        for k in [
-            "hôm nay",
-            "hom nay",
-            "hnay",
-            "bữa nay",
-            "bua nay",
-            "hom ni",
-            "hôm ni",
-            "bữa ni",
-            "bua ni",
-        ]
-    ):
+    # Defer single-day match when "hôm nay" is only an inclusive upper bound on a
+    # rolling window, current week, or explicit month/quarter cohort (e.g. "7 ngay qua tinh ca hom nay",
+    # "tuan nay tinh toi hom nay", "dat thang 3/2026, toi hom nay da cho").
+    _today_kws = (
+        "hôm nay",
+        "hom nay",
+        "hnay",
+        "bữa nay",
+        "bua nay",
+        "hom ni",
+        "hôm ni",
+        "bữa ni",
+        "bua ni",
+    )
+    _has_today_kw = any(k in t for k in _today_kws)
+    _today_is_cmp = bool(
+        re.search(
+            r"(?:\b(?:hôm nay|hom nay|hnay|bữa nay|bua nay|hôm ni|hom ni|bữa ni|bua ni)\s+(?:so với|so voi|so vs|hơn hay kém|hon hay kem)"
+            r"|(?:so với|so voi|so vs|hơn hay kém|hon hay kem)\s+(?:hôm nay|hom nay|hnay|bữa nay|bua nay|hôm ni|hom ni|bữa ni|bua ni)\b)",
+            t,
+        )
+    )
+    _defer_today = False
+    if _has_today_kw and not _today_is_cmp:
+        _has_rolling = bool(
+            re.search(
+                r"(\d+)\s*(?:ngày|ngay)\s*(?:gần nhất|gan nhat|qua|vừa qua|vua qua|gần đây|gan day|trở lại đây|tro lai day)\b",
+                t,
+            )
+        )
+        _has_this_week = any(
+            k in t
+            for k in (
+                "tuần này",
+                "tuan nay",
+                "tuần ni",
+                "tuan ni",
+                "tuần vừa qua",
+                "tuan vua qua",
+            )
+        )
+        _has_cutoff_today = bool(
+            re.search(
+                r"\b(?:tới|toi|đến|den|tính tới|tinh toi|tính đến|tinh den|tính cả|tinh ca|tính luôn|tinh luon|kể cả|ke ca)\s+"
+                r"(?:hết\s+|het\s+)?(?:hôm nay|hom nay|hnay|bữa nay|bua nay|hôm ni|hom ni|bữa ni|bua ni)\b",
+                t,
+            )
+        )
+        _has_explicit_period = bool(
+            re.search(
+                r"\b(?:tháng|thang|th|t)\s*\d{1,2}\b"
+                r"|\b\d{1,2}\s*[/.-]\s*202[4-7]\b"
+                r"|\b(?:quý|quys|quy|q)\s*\d\s*(?:/|\s*năm\s*|\s*nam\s*|\s*-\s*)\d{4}\b"
+                r"|\b(?:tuần|tuan)\s+(?:trước|truoc|rồi|roi|trc|này|nay|ni)\b"
+                r"|\b(?:tháng|thang)\s+(?:này|nay|ni|trước|truoc|rồi|roi|trc|một|mot|hai|ba|tư|tu|bốn|bon|năm|nam|sáu|sau|bảy|bay|tám|tam|chín|chin|mười|muoi|chạp|chap|giêng|gieng)\b",
+                t,
+            )
+        )
+        _defer_today = (
+            _has_rolling
+            or _has_this_week
+            or (_has_cutoff_today and _has_explicit_period)
+        )
+    if _has_today_kw and not _defer_today:
         p.is_today = True
         if anchor:
             p.exact_date = anchor.strftime("%Y-%m-%d")
@@ -398,6 +448,11 @@ def parse_time_expressions(text: str, as_of_date: str | None = None) -> ParsedPe
             p.end_date = anchor.strftime("%Y-%m-%d")
         return p
 
+    if _has_today_kw and _defer_today:
+        p.is_today = True
+        if anchor:
+            p.exact_date = anchor.strftime("%Y-%m-%d")
+
     return p
 
 
@@ -556,7 +611,10 @@ def find_primary_sales_table(
         for c in ["ghi_chu", "note", "luu_y"]:
             if c in cols and tables[selected_table][c].notna().sum() > 0:
                 s_lower = tables[selected_table][c].dropna().astype(str).str.lower()
-                if s_lower.str.contains(r"hủy|huỷ|cancel|trả|return", regex=True).any():
+                if s_lower.str.contains(
+                    r"hủy|huỷ|cancel|trả|return|mang tra|hoàn hàng|hoan hang|hoàn trả|hoan tra|bom hàng|bom hang",
+                    regex=True,
+                ).any():
                     status_col = c
                     break
 
@@ -742,18 +800,30 @@ def get_valid_sales_status_clause(
         "hang tra",
         "khách trả",
         "khach tra",
+        "mang trả",
+        "mang tra",
+        "trả về",
+        "tra ve",
         "đổi trả",
         "doi tra",
         "hoàn trả",
         "hoan tra",
         "hoàn hàng",
         "hoan hang",
+        "hoàn đơn",
+        "hoan don",
+        "hàng hoàn",
+        "hang hoan",
         "hoàn tiền",
         "hoan tien",
         "không giao",
         "khong giao",
         "thất bại",
         "that bai",
+        "bom hàng",
+        "bom hang",
+        "từ chối nhận",
+        "tu choi nhan",
     ]
     prefix = f"{table_alias}." if table_alias else ""
     exact_bad = "IN ('trả', 'tra', 'hủy', 'huỷ', 'huy')"
@@ -950,6 +1020,8 @@ def resolve_query(
             "cung cap",
             "nhà cc",
             "nha cc",
+            "cất hàng",
+            "cat hang",
         ]
     ):
         from zaic_2026_datamate.purchase_analytics import resolve_purchase_query
@@ -1223,35 +1295,41 @@ def resolve_query(
         r"bộ|bo|tuýp|tuyp|bình|binh|cây|cay|mét|met|tấn|tan|lít|lit|lốc|loc|vỉ|vi|"
         r"liều|lieu|con|bánh|banh|túi|tui|hũ|hu|tách|tach|phần(?!\s+trăm)|phan(?!\s+tram))"
     )
-    has_item_qty = (
+    # Guard "dem ve" / "đem về" (= bring in revenue, NOT count tickets) and AOV phrasing
+    _q_qty_clean = re.sub(r"\b(?:đem|dem)\s+v[ềe]\b", " ", q)
+    _is_aov_hint = bool(
+        re.search(r"\b(?:trung\s+b[ìi]nh|b[ìi]nh\s+qu[âa]n)\b", q)
+        and re.search(r"\b(?:1|m[ộo]t|m[ỗo]i|m[ổộ]i)\s*(?:đơn|don|đh|dh|bill)\b", q)
+    )
+    has_item_qty = (not _is_aov_hint) and (
         bool(
             re.search(
                 rf"\b(?:mấy|may|bao nhiêu|bao nhieu|bao nhiu|bnhiu|bn|tong so|tổng số|đếm|dem)\s+{_qty_units}\b",
-                q,
+                _q_qty_clean,
             )
         )
         or bool(
             re.search(
                 rf"\b(?:số|so)\s+{_qty_units}\b.*?\b(?:là\s+bao\s+nhiêu|la\s+bao\s+nhieu|bao\s+nhiêu|bao\s+nhieu|bao\s+nhiu|bnhiu|bn|nhiêu|nhieu|mấy|may)\b",
-                q,
+                _q_qty_clean,
             )
         )
         or bool(
             re.search(
                 rf"\bb(?:án|an)\s+(?:ra\s+)?(?:được|duoc|dc)\s+(?:tổng\s+cộng\s+|tong\s+cong\s+)?(?:bao\s+nhiêu|bao\s+nhieu|bao\s+nhiu|bnhiu|bn|mấy|may)\s+{_qty_units}\b",
-                q,
+                _q_qty_clean,
             )
         )
         or bool(
             re.search(
                 r"\b(?:mấy|may|bao nhiêu|bao nhieu|bao nhiu|bnhiu|bn)\s+(?:ly|cốc|coc)\b",
-                q,
+                _q_qty_clean,
             )
         )
         or bool(
             re.search(
                 r"\b(?:quan|quán|cua hang|cửa hàng)\s+b(?:án|an)\s+(?:được|duoc|dc)\s+(?:bao nhiêu|bao nhieu|bao nhiu|bnhiu|bn|mấy|may)\s+(?:ly|cốc|coc)\b",
-                q,
+                _q_qty_clean,
             )
         )
     )
@@ -1865,6 +1943,10 @@ def resolve_query(
             "bán được",
             "ban duoc",
             "ban dc",
+            "ban được",
+            "bán duoc",
+            "ban đc",
+            "bán dc",
         ]
     )
     has_valid_period = bool(
@@ -2024,9 +2106,22 @@ def resolve_query(
             "mổi đh",
             "mội đh",
             "1 đh",
+            "1 dh",
             "một đh",
             "mot dh",
             "moi dh",
+            "trên 1 đh",
+            "tren 1 dh",
+            "trên mỗi đh",
+            "tren moi dh",
+            "trên 1 đơn",
+            "tren 1 don",
+            "trên một đơn",
+            "tren mot don",
+            "bình quân đơn hàng",
+            "binh quan don hang",
+            "trung bình đơn hàng",
+            "trung binh don hang",
             "mỗi hoá đơn",
             "mỗi hóa đơn",
             "mỗi bill",
@@ -2065,7 +2160,22 @@ def resolve_query(
                 "gói",
                 "cái",
                 "viên",
-                "khách",
+                "khách nào",
+                "khach nao",
+                "khách hàng nào",
+                "khach hang nao",
+                "của khách",
+                "cua khach",
+                "cho khách",
+                "cho khach",
+                "mỗi khách",
+                "moi khach",
+                "từng khách",
+                "tung khach",
+                "khách quen",
+                "khach quen",
+                "khách mới",
+                "khach moi",
                 "ca sáng",
                 "ca chiều",
                 "tăng",

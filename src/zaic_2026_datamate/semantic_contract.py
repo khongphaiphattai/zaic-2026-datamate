@@ -50,12 +50,14 @@ import re
 import unicodedata
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+from functools import lru_cache
 from typing import Any
 
 import numpy as np
 import pandas as pd
 
 from zaic_2026_datamate.cleaner import (
+    canonicalize_regional_product,
     clean_vietnamese_currency,
     normalize_query_telex,
     strip_customer_phone,
@@ -71,38 +73,60 @@ from zaic_2026_datamate.intent_parser import (
 logger = logging.getLogger(__name__)
 
 
-def norm_vn(text: Any) -> str:
-    """Normalize Vietnamese text to lowercase ASCII with collapsed whitespace."""
-    if text is None or (isinstance(text, float) and np.isnan(text)):
-        return ""
-    s = str(text).strip().lower()
+_NORM_VN_SUBS: tuple[tuple[re.Pattern[str], str], ...] = (
+    (re.compile(r"\btrawm\b"), "tram"),
+    (re.compile(r"\bptram\b"), "phan tram"),
+    (re.compile(r"\bnhta\b"), "nhat"),
+    (re.compile(r"\bdduowcj\b"), "duoc"),
+    (re.compile(r"\bcko\b"), "cho"),
+    (re.compile(r"\btoor?g\s*coor?g\b"), "tong cong"),
+    (re.compile(r"\bsoos\b"), "so"),
+    (re.compile(r"\btoonf\b"), "ton"),
+    (re.compile(r"\bthangs\b"), "thang"),
+    (re.compile(r"\bngayf\b"), "ngay"),
+    (re.compile(r"\btieenf\b"), "tien"),
+    (
+        re.compile(
+            r"\bmi\s+(?=(?:don|cuon|cay|ly|cai|mon|tram|trieu|nghin|k\b|ngay|thang|hop|chai|lon|phan|khach))"
+        ),
+        "may ",
+    ),
+)
+_NORM_VN_WS_RE = re.compile(r"\s+")
+
+
+@lru_cache(maxsize=131072)
+def _norm_vn_cached(raw: str) -> str:
+    s = raw.strip().lower()
     if not s or s in ("nan", "none", "null", "nat"):
         return ""
     s = s.replace("đ", "d")
     s = "".join(
         c for c in unicodedata.normalize("NFD", s) if unicodedata.category(c) != "Mn"
     )
-    # Common telex and typo normalizations
-    s = re.sub(r"\btrawm\b", "tram", s)
-    s = re.sub(r"\bptram\b", "phan tram", s)
-    s = re.sub(r"\bnhta\b", "nhat", s)
-    s = re.sub(r"\bdduowcj\b", "duoc", s)
-    s = re.sub(r"\bcko\b", "cho", s)
-    s = re.sub(r"\btoor?g\s*coor?g\b", "tong cong", s)
-    s = re.sub(r"\bsoos\b", "so", s)
-    s = re.sub(r"\btoonf\b", "ton", s)
-    s = re.sub(r"\bthangs\b", "thang", s)
-    s = re.sub(r"\bngayf\b", "ngay", s)
-    s = re.sub(r"\btieenf\b", "tien", s)
-    s = re.sub(
-        r"\bmi\s+(?=(?:don|cuon|cay|ly|cai|mon|tram|trieu|nghin|k\b|ngay|thang|hop|chai|lon|phan|khach))",
-        "may ",
-        s,
-    )
-    return re.sub(r"\s+", " ", s).strip()
+    for pat, repl in _NORM_VN_SUBS:
+        s = pat.sub(repl, s)
+    return _NORM_VN_WS_RE.sub(" ", s).strip()
+
+
+def norm_vn(text: Any) -> str:
+    """Normalize Vietnamese text to lowercase ASCII with collapsed whitespace."""
+    if text is None or (isinstance(text, float) and np.isnan(text)):
+        return ""
+    if isinstance(text, str):
+        return _norm_vn_cached(text)
+    return _norm_vn_cached(str(text))
 
 
 _UNIT_SPACE_RE = re.compile(r"\b(\d+)\s+(ml|l|g|kg|mg|cm|mm|mcg|iu)\b")
+
+
+@lru_cache(maxsize=131072)
+def _item_norm_key_cached(raw: str) -> str:
+    s = _norm_vn_cached(raw)
+    if not s:
+        return ""
+    return _UNIT_SPACE_RE.sub(r"\1\2", s)
 
 
 def item_norm_key(text: Any) -> str:
@@ -112,10 +136,11 @@ def item_norm_key(text: Any) -> str:
 
 def _item_norm_key(text: Any) -> str:
     """Normalize an item name/ID for grouping, collapsing pack-unit spaces (e.g. '330 ml' -> '330ml')."""
-    s = norm_vn(text)
-    if not s:
+    if text is None or (isinstance(text, float) and np.isnan(text)):
         return ""
-    return _UNIT_SPACE_RE.sub(r"\1\2", s)
+    if isinstance(text, str):
+        return _item_norm_key_cached(text)
+    return _item_norm_key_cached(str(text))
 
 
 def _norm_active_ingredient(text: Any) -> str:
@@ -126,14 +151,21 @@ def _norm_active_ingredient(text: Any) -> str:
     return re.sub(r"\s*\+\s*", " + ", s).strip()
 
 
+@lru_cache(maxsize=65536)
+def _clean_spaces_lower_cached(raw: str) -> str:
+    s = raw.strip().lower()
+    if not s or s in ("nan", "none", "null", "nat"):
+        return ""
+    return _NORM_VN_WS_RE.sub(" ", s).strip()
+
+
 def clean_spaces_lower(text: Any) -> str:
     """Lowercase and collapse whitespace while preserving Vietnamese diacritics."""
     if text is None or (isinstance(text, float) and np.isnan(text)):
         return ""
-    s = str(text).strip().lower()
-    if not s or s in ("nan", "none", "null", "nat"):
-        return ""
-    return re.sub(r"\s+", " ", s).strip()
+    if isinstance(text, str):
+        return _clean_spaces_lower_cached(text)
+    return _clean_spaces_lower_cached(str(text))
 
 
 # Standardized domain product-to-category lookup tables for businesses without a separate catalog table
@@ -387,7 +419,10 @@ def pick_order_status_col(df: pd.DataFrame) -> str | None:
     for c in ("ghi_chu", "note", "luu_y"):
         if c in cols and df[c].notna().any():
             s_lower = df[c].dropna().astype(str).str.lower()
-            if s_lower.str.contains(r"hủy|huỷ|cancel|trả|return", regex=True).any():
+            if s_lower.str.contains(
+                r"hủy|huỷ|cancel|trả|return|mang tra|hoàn hàng|hoan hang|hoàn trả|hoan tra|bom hàng|bom hang",
+                regex=True,
+            ).any():
                 return c
     return None
 
@@ -401,10 +436,12 @@ def is_bad_status(val: Any) -> bool:
         return False
     if s == "tra":
         return True
-    # Match explicit return phrases so valid payment statuses ('da tra', 'tra du', 'tra gop', 'chua tra') remain valid.
+    # Match explicit return phrases so valid payment statuses ('da tra', 'tra du', 'tra gop', 'chua tra') remain valid,
+    # while guarding 'tra hang'/'tra lai'/... against inspection phrases ('kiem tra lai', 'kiem tra hang').
     return bool(
         re.search(
-            r"\b(?:return|returned|refund|refunded|tra hang|tra lai|tra mon|tra don|hang tra|khach tra|doi tra|hoan hang|hoan tra|hoan tien)\b",
+            r"\b(?:return|returned|refund|refunded|hang tra|khach tra|doi tra|hoan hang|hoan tra|hoan tien|hoan don|hang hoan|mang tra)\b"
+            r"|(?<!\bkiem )\b(?:tra hang|tra lai|tra mon|tra don|tra ve)\b",
             s,
         )
     )
@@ -576,6 +613,49 @@ class QueryPlan:
         None  # 'item' | 'date' | 'month' | 'customer' | 'category'
     )
     output_type: str = "number"  # 'number' | 'percent' | 'list' | 'date' | 'string' | 'unanswerable' | 'abstain'
+
+
+def parse_readme_unit_rules(readme: str) -> list[tuple[str, str, float, str]]:
+    """Extract explicit `1 <big_unit> = <factor> <small_unit>` bullet rules from README.md."""
+    rules: list[tuple[str, str, float, str]] = []
+    if not readme:
+        return rules
+    ratio_re = re.compile(
+        r"(?:bán\s+theo\s+[^\W\d_]+\s*,?\s*)?\b1\s+([^\W\d_]+)\s*=\s*(\d+(?:[.,]\d+)?)\s+([^\W\d_]+)\b",
+        re.IGNORECASE,
+    )
+    for raw_line in readme.splitlines():
+        line = raw_line.strip()
+        if not line.startswith(("-", "*", "•")):
+            continue
+        low = line.lower()
+        if (
+            any(ex in low for ex in ("vd ", "vd:", "ví dụ", "vi du", "chẳng hạn"))
+            or '"' in line
+        ):
+            continue
+        body = re.sub(r"^[-*•]\s*", "", line).strip()
+        m_ratio = ratio_re.search(body)
+        if not m_ratio:
+            continue
+        big_u = norm_vn(m_ratio.group(1))
+        factor = float(m_ratio.group(2).replace(",", "."))
+        small_u = norm_vn(m_ratio.group(3))
+        if not big_u or factor <= 0 or big_u == small_u:
+            continue
+        prefix = body[: m_ratio.start()].strip(" ,:;.-")
+        if not prefix:
+            continue
+        prefix = re.sub(r"^\*\*[^*]+\*\*\s*[:：]?\s*", "", prefix).strip()
+        prefix = re.sub(r"\*\*([^*]+)\*\*", r"\1", prefix).strip(" :;,-")
+        for part in re.split(r"[,;]", prefix):
+            part_clean = part.strip(" .:-")
+            if not part_clean:
+                continue
+            item_key = _item_norm_key(part_clean)
+            if len(item_key) >= 3:
+                rules.append((item_key, big_u, factor, small_u))
+    return rules
 
 
 @dataclass
@@ -899,7 +979,12 @@ class BusinessSemanticContract:
                     if "ghi_tat" in cols and pd.notna(row["ghi_tat"]):
                         name_to_cat[norm_vn(row["ghi_tat"])] = c_val
                         if name_col and pd.notna(row[name_col]):
-                            name_to_id[norm_vn(row["ghi_tat"])] = norm_vn(row[name_col])
+                            canon_nm = str(row[name_col]).strip()
+                            canon_norm = norm_vn(canon_nm)
+                            gt_norm = norm_vn(row["ghi_tat"])
+                            name_to_id[gt_norm] = canon_norm
+                            id_to_name[gt_norm] = canon_nm
+                            id_to_name[canon_norm] = canon_nm
                     if "ten_goi_khac" in cols and pd.notna(row["ten_goi_khac"]):
                         for alias in re.split(r"[;,/]", str(row["ten_goi_khac"])):
                             anorm = norm_vn(alias)
@@ -1061,6 +1146,11 @@ class BusinessSemanticContract:
             staff_id_to_name=staff_id_to_name,
             staff_name_to_id=staff_name_to_id,
         )
+
+        for item_key, _big_u, _factor, small_u in parse_readme_unit_rules(
+            getattr(context, "readme", "") or ""
+        ):
+            name_to_base_unit.setdefault(item_key, small_u)
 
         # Attach base_unit per line item from catalog/unit-conversion metadata (falling back to 1:1 sales unit)
         if len(lines_df) > 0:
@@ -1458,6 +1548,15 @@ class BusinessSemanticContract:
                         fallback_conv[item] = factor
                     if item_id:
                         fallback_conv[item_id] = factor
+
+        for item_key, big_u, factor, _small_u in parse_readme_unit_rules(
+            getattr(context, "readme", "") or ""
+        ):
+            if item_key in fallback_conv or (item_key, big_u) in unit_conv:
+                continue
+            unit_conv[(item_key, big_u)] = factor
+            has_explicit_unit.add(item_key)
+
         return unit_conv, fallback_conv, has_explicit_unit
 
     @classmethod
@@ -2970,6 +3069,39 @@ def parse_enhanced_period(question: str, as_of_date: str | None) -> ParsedPeriod
                 y = anchor.year if m <= anchor.month else anchor.year - 1
                 p.month_str = f"{y:04d}-{m:02d}"
                 return p
+        # Standalone Vietnamese text month (Rulebook §2): guard ambiguous 'tháng sau' (next month) and 'tháng năm nay' (year)
+        if not re.search(r"\b(?:tu|từ)\s+(?:tháng|thang|th)\b", t):
+            _text_month_map = {
+                "gieng": 1,
+                "mot": 1,
+                "hai": 2,
+                "ba": 3,
+                "tu": 4,
+                "bon": 4,
+                "nam": 5,
+                "sau": 6,
+                "bay": 7,
+                "tam": 8,
+                "chin": 9,
+                "muoi": 10,
+                "muoi mot": 11,
+                "chap": 12,
+                "muoi hai": 12,
+            }
+            m_txt = re.search(
+                r"\b(?:tháng|thang|th)\s+(mười\s+một|muoi\s+mot|mười\s+hai|muoi\s+hai|"
+                r"giêng|gieng|một|mot|hai|ba(?!\s+(?:mươi|muoi|ngay|ngày|trăm|tram|chục|chuc|giờ|gio))|"
+                r"tư(?!\s*(?:vấn|van|cách|cach|liệu|lieu))|tu(?!\s*(?:van|cach|lieu))|"
+                r"bốn|bon|năm(?!\s+(?:nay|ngoái|ngoai|trước|truoc|tới|toi|sau|đó|do|\d{4}))|"
+                r"sáu|bảy|bay|tám|tam|chín|chin|mười|muoi|chạp|chap)\b(?![/.-]\d)",
+                t,
+            )
+            if m_txt:
+                m_val = _text_month_map.get(norm_vn(m_txt.group(1)))
+                if m_val:
+                    y = anchor.year if m_val <= anchor.month else anchor.year - 1
+                    p.month_str = f"{y:04d}-{m_val:02d}"
+                    return p
 
     # 5. Whole year: "năm 2025", "nam 2025", "cả năm 2025", "nam 2026", "trong 2025", "trong năm 2025"
     if not (p.month_str or p.exact_date or (p.start_date and p.end_date)):
@@ -3103,15 +3235,15 @@ def _extract_item_from_query(
             return p_orig, p_key
 
     # North-South regional synonyms fallback
-    q_norm_syn = re.sub(r"\bcoc\s+sac\b", "cu sac", q_clean)
-    q_norm_syn = re.sub(r"\bgang\s+tay\s+tat\s+chan\b", "bao tay bao chan", q_norm_syn)
-    q_norm_syn = re.sub(r"\blavie\b", "la vie", q_norm_syn)
-    if q_norm_syn != q_clean:
-        for p_norm, p_orig, p_key in contract.available_products:
-            if not p_norm or len(p_norm) < 3:
-                continue
-            if _matches(p_norm, q_norm_syn, q_norm_syn):
-                return p_orig, p_key
+    q_norm_syn = canonicalize_regional_product(q_clean)
+    for p_norm, p_orig, p_key in contract.available_products:
+        if not p_norm or len(p_norm) < 3:
+            continue
+        p_canon = canonicalize_regional_product(p_norm)
+        if (q_norm_syn != q_clean or p_canon != p_norm) and _matches(
+            p_canon, q_norm_syn, q_norm_syn
+        ):
+            return p_orig, p_key
     return None
 
 
@@ -3227,28 +3359,40 @@ def _parse_growth_periods(
             )
 
     # Form 2: MTD (tháng này tới hôm nay vs cùng kỳ tháng trước)
-    if any(
-        k in q_norm
-        for k in (
-            "tu dau thang",
-            "thang nay toi",
-            "thang nay den",
-            "mung 1 thang nay",
-            "thang nay",
-            "thang ni",
+    if (
+        any(
+            k in q_norm
+            for k in (
+                "tu dau thang",
+                "tu dau th",
+                "thang nay toi",
+                "thang nay den",
+                "mung 1 thang nay",
+                "tu mung 1 toi",
+                "tu mung 1 den",
+                "mung 1 toi",
+                "mung 1 den",
+                "thang nay",
+                "thang ni",
+                "th nay",
+                "th ni",
+            )
         )
-    ) and any(
-        k in q_norm
-        for k in (
-            "cung ky thang",
-            "cung so ngay dau thang",
-            "cung ky th",
-            "thang truoc",
-            "thang trc",
-            "th truoc",
-            "th trc",
-            "thang roi",
-            "th roi",
+        and not re.search(r"\b(?:tu|từ)\s+mung\s+1\s+(?:thang|th)\s*\d", q_norm)
+        and any(
+            k in q_norm
+            for k in (
+                "cung ky thang",
+                "cung so ngay dau thang",
+                "cung so ngay dau th",
+                "cung ky th",
+                "thang truoc",
+                "thang trc",
+                "th truoc",
+                "th trc",
+                "thang roi",
+                "th roi",
+            )
         )
     ):
         if anchor:
@@ -3518,7 +3662,7 @@ def build_query_plan(
     if any(
         k in q_norm
         for k in ("nhan vien", "nguoi ban", "nv ban", "nv ", "ban hang xuat sac")
-    ) or bool(re.search(r"\bnv\s+nao\b", q_norm)):
+    ) or bool(re.search(r"\b(?:nv\s+nao|nv\d+)\b", q_norm)):
         # 1. Subjective gating
         if any(
             k in q_norm
@@ -3547,8 +3691,10 @@ def build_query_plan(
             for k in (
                 "ban gioi nhat",
                 "doanh thu cao nhat",
+                "dthu cao nhat",
                 "ban dc nhieu tien nhat",
                 "ban duoc nhieu tien nhat",
+                "cao nhat",
                 "cao nhut",
                 "cao nhaats",
                 "nhieu tien nhat",
@@ -3932,7 +4078,11 @@ def build_query_plan(
     )
 
     if is_bestseller and has_valid_period:
-        q_norm_ranked = q_norm
+        q_norm_ranked = re.sub(
+            r"\b\d{1,2}[/\-.]\d{1,2}(?:[/\-.]\d{2,4})?\b|\b\d{1,2}[/\-.]\d{2,4}\b",
+            " ",
+            q_norm,
+        )
         for w_vn, d_vn in [
             ("ba", "3"),
             ("bon", "4"),
@@ -4237,7 +4387,11 @@ def build_query_plan(
         )
     )
     if is_top_customer_revenue and has_valid_period:
-        q_norm_cust = q_norm
+        q_norm_cust = re.sub(
+            r"\b\d{1,2}[/\-.]\d{1,2}(?:[/\-.]\d{2,4})?\b|\b\d{1,2}[/\-.]\d{2,4}\b",
+            " ",
+            q_norm,
+        )
         for w_vn, d_vn in [
             ("ba", "3"),
             ("bon", "4"),
@@ -4297,31 +4451,64 @@ def build_query_plan(
             output_type="string",
         )
 
-    # Category top item: e.g. "nhóm trà có mặt hàng nào bán được nhiều ly nhất?"
+    # Category top item: e.g. "nhóm trà có mặt hàng nào bán được nhiều ly nhất?" or "mặt hàng có doanh thu cao nhất của nhóm sơn"
     matched_cat = _extract_category_from_query(q_lower, q_norm, contract)
-    is_cat_top_item = (
+    has_cat_item_kw = ("nao" in q_norm) and any(
+        k in q_norm
+        for k in (
+            "mat hang nao",
+            "mon nao",
+            "san pham nao",
+            "sp nao",
+            "hang nao",
+            "mat hang",
+        )
+    )
+    is_cat_top_rev = (
         matched_cat is not None
+        and has_cat_item_kw
         and any(
             k in q_norm
             for k in (
-                "ban chay nhat",
-                "ban nhieu nhat",
-                "ban dc nhieu nhat",
-                "ban duoc nhieu nhat",
-                "nhieu ly nhat",
-                "nhieu cai nhat",
-                "nhieu nhat",
+                "doanh thu cao nhat",
+                "dthu cao nhat",
+                "doanh thu lon nhat",
+                "dthu lon nhat",
+                "doanh so cao nhat",
+                "nhieu tien nhat",
+                "thu ve nhieu nhat",
+                "thu ve nhieu tien nhat",
+                "ban duoc nhieu tien nhat",
+                "ban dc nhieu tien nhat",
             )
         )
-        and any(
-            k in q_norm
-            for k in ("mat hang nao", "mon nao", "san pham nao", "sp nao", "hang nao")
+    )
+    is_cat_top_qty = (
+        matched_cat is not None
+        and not is_cat_top_rev
+        and has_cat_item_kw
+        and not any(k in q_norm for k in ("doanh thu", "dthu", "nhieu tien"))
+        and (
+            any(
+                k in q_norm
+                for k in (
+                    "ban chay nhat",
+                    "ban nhieu nhat",
+                    "ban dc nhieu nhat",
+                    "ban duoc nhieu nhat",
+                    "nhieu ly nhat",
+                    "nhieu cai nhat",
+                    "nhieu kg nhat",
+                    "nhieu nhat",
+                )
+            )
+            or bool(re.search(r"\bnhieu\s+[a-z0-9]+\s+nhat\b", q_norm))
         )
     )
-    if is_cat_top_item and has_valid_period:
+    if (is_cat_top_rev or is_cat_top_qty) and has_valid_period:
         return QueryPlan(
             operation="ranking_top_k",
-            metric="base_quantity",
+            metric="revenue" if is_cat_top_rev else "base_quantity",
             period=period,
             numerator_filter=DimensionFilter(category=matched_cat),
             target_dimension="item",
@@ -5170,6 +5357,51 @@ def build_query_plan(
                     output_type="number",
                 )
 
+    # -------------------------------------------------------------------------
+    # 12. STORE-WIDE AVERAGE ORDER VALUE (trung bình / bình quân mỗi đơn)
+    # -------------------------------------------------------------------------
+    aov_order_kw = has_order_kw or any(
+        k in q_norm
+        for k in (
+            "moi don",
+            "1 don",
+            "mot don",
+            "moi dh",
+            "1 dh",
+            "mot dh",
+            "moi bill",
+            "1 bill",
+            "don hang",
+        )
+    )
+    aov_guards = (
+        has_pct_kw
+        or has_purchase_kw
+        or ("thu_may_cu" in context.tables)
+        or (matched_item_early is not None)
+        or (_extract_category_from_query(q_lower, q_norm, contract) is not None)
+        or bool(_extract_ordered_channels(q_norm))
+        or bool(_extract_ordered_payments(q_norm))
+        or (_extract_customer_group(q_norm) is not None)
+        or bool(
+            re.search(
+                r"\b(?:khach\s+nao|khach\s+hang\s+nao|mon\s+nao|mat\s+hang\s+nao|"
+                r"thang\s+nao|ngay\s+nao|lai|loi\s+nhuan|giam\s+gia|chiet\s+khau|"
+                r"tra\s+gop|bao\s+hanh|huy|tra\s+hang|hoan\s+don|si|le|"
+                r"tang|giam|so\s+voi|nhom\s+khach|ca\s+sang|ca\s+chieu)\b",
+                q_norm,
+            )
+        )
+    )
+    if has_avg_kw and aov_order_kw and not aov_guards and has_valid_period:
+        return QueryPlan(
+            operation="filtered_aov",
+            metric="aov",
+            period=period,
+            numerator_filter=None,
+            output_type="number",
+        )
+
     return None
 
 
@@ -5193,9 +5425,11 @@ def _build_canonical_date_where(col_name: str, period: ParsedPeriod) -> str:
     return "1=1"
 
 
-def _build_dimension_where(dfilter: DimensionFilter) -> str:
+def _build_dimension_where(dfilter: DimensionFilter | None) -> str:
     """Build SQL filter clauses for DimensionFilter."""
     clauses: list[str] = ["is_valid_sale = TRUE"]
+    if dfilter is None:
+        return clauses[0]
     if dfilter.channel is not None:
         clauses.append(f"channel = '{dfilter.channel}'")
     if dfilter.payment_method is not None:

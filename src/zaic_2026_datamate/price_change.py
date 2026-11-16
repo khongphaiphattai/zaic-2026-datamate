@@ -168,6 +168,8 @@ def select_best_product(
     if not candidates:
         return None
 
+    from zaic_2026_datamate.cleaner import canonicalize_regional_product
+
     q_syn = q_lower
     for k, v in REGIONAL_SYNONYMS.items():
         if k in q_syn:
@@ -177,8 +179,9 @@ def select_best_product(
     q_syn_u = strip_accents(q_syn)
     q_alnum = alnum_phrase(q_u)
     q_syn_alnum = alnum_phrase(q_syn_u)
-    q_variants = (q_u, q_syn_u, q_alnum, q_syn_alnum)
-    q_toks = set(q_syn_alnum.split()) | set(q_alnum.split())
+    q_canon = canonicalize_regional_product(q_lower)
+    q_variants = tuple(dict.fromkeys((q_u, q_syn_u, q_alnum, q_syn_alnum, q_canon)))
+    q_toks = set(q_syn_alnum.split()) | set(q_alnum.split()) | set(q_canon.split())
     q_sizes = _extract_size_tags(q_syn_u)
 
     best_score: tuple[int, int, float, int] | None = None
@@ -200,14 +203,17 @@ def select_best_product(
         if q_sizes and p_sizes and not (p_sizes & q_sizes):
             continue
 
+        p_canon = canonicalize_regional_product(p_clean)
         is_exact = 0
-        for p_form in (p_u, p_alnum):
+        for p_form in (p_u, p_alnum, p_canon):
+            if not p_form:
+                continue
             pat = rf"(?<![a-z0-9]){re.escape(p_form)}(?![a-z0-9])"
             if any(re.search(pat, qv) for qv in q_variants):
                 is_exact = 1
                 break
 
-        p_toks = [t for t in p_alnum.split() if t not in _MATCH_STOPWORDS]
+        p_toks = [t for t in p_canon.split() if t not in _MATCH_STOPWORDS]
         matched = sum(1 for t in p_toks if t in q_toks)
         coverage = matched / len(p_toks) if p_toks else 0.0
 
@@ -924,6 +930,12 @@ def _resolve_abbreviated_price_change(
     as_of_date: str | None,
 ) -> Tuple[str, Any, str | None] | None:
     """Resolve price change when ledger uses abbreviation dictionary so_ban_hang_ghi_tat."""
+    from zaic_2026_datamate.semantic_contract import (
+        is_bad_status,
+        norm_vn,
+        pick_order_status_col,
+    )
+
     gt_df = context.tables["so_ban_hang_ghi_tat"]
     if not ({"ghi_tat", "ten_hang"} <= set(gt_df.columns)):
         return None
@@ -933,20 +945,37 @@ def _resolve_abbreviated_price_change(
         if str(r.get("ten_hang", "")).strip()
     ]
     picked = select_best_product(cands, q_lower)
-    matched_codes: list[str] = []
+    matched_norm_keys: set[str] = set()
     if picked:
-        matched_codes = [
-            str(r["ghi_tat"])
-            for _, r in gt_df.iterrows()
-            if str(r.get("ten_hang", "")).strip() == picked[0]
-        ]
+        picked_norm = norm_vn(picked[0])
+        if picked_norm:
+            matched_norm_keys.add(picked_norm)
+        for _, r in gt_df.iterrows():
+            if norm_vn(r.get("ten_hang", "")) == picked_norm:
+                code_n = norm_vn(r.get("ghi_tat", ""))
+                if code_n:
+                    matched_norm_keys.add(code_n)
     else:
         q_u = strip_accents(q_lower)
+        matched_ten_norms: set[str] = set()
         for _, r in gt_df.iterrows():
             code_raw = str(r.get("ghi_tat") or "").strip()
             if len(code_raw) >= 3 and strip_accents(code_raw.lower()) in q_u:
-                matched_codes.append(code_raw)
-    if not matched_codes:
+                code_n = norm_vn(code_raw)
+                if code_n:
+                    matched_norm_keys.add(code_n)
+                ten_n = norm_vn(r.get("ten_hang", ""))
+                if ten_n:
+                    matched_ten_norms.add(ten_n)
+        for _, r in gt_df.iterrows():
+            if norm_vn(r.get("ten_hang", "")) in matched_ten_norms:
+                ten_n = norm_vn(r.get("ten_hang", ""))
+                code_n = norm_vn(r.get("ghi_tat", ""))
+                if ten_n:
+                    matched_norm_keys.add(ten_n)
+                if code_n:
+                    matched_norm_keys.add(code_n)
+    if not matched_norm_keys:
         return None
 
     bounds = _compute_window_bounds(change_date, n_days, as_of_date)
@@ -960,46 +989,77 @@ def _resolve_abbreviated_price_change(
         (c for c in ("sl", "so_luong") if c in s_cols), None
     )
     date_col = next((c for c in ("ngay", "ngay_ban", "date") if c in s_cols), None)
-    status_col = next(
-        (c for c in ("trang_thai", "trang_thai_xu_ly", "ghi_chu") if c in s_cols), None
-    )
-    order_col = next(
-        (c for c in ("ma_don_hang", "ma_hoa_don", "ma_giao_dich", "ma_don") if c in s_cols),
+    item_col = next(
+        (c for c in ("hang", "ten_hang", "ten_hang_hoa", "hang_hoa") if c in s_cols),
         None,
     )
-    if order_col is None and "stt" in s_cols and "sheet_name" not in s_cols:
-        order_col = "stt"
-    if not (qty_col and date_col):
+    if not (qty_col and date_col and item_col):
         return None
 
-    in_codes = ", ".join(
-        "'" + c.replace("'", "''") + "'" for c in sorted(set(matched_codes))
+    work_df = s_df.copy()
+    work_df["_date_str"] = pd.to_datetime(
+        work_df[date_col], errors="coerce"
+    ).dt.strftime("%Y-%m-%d")
+
+    status_col = pick_order_status_col(work_df) or next(
+        (c for c in ("trang_thai", "trang_thai_xu_ly", "ghi_chu") if c in s_cols),
+        None,
     )
-    sc = (
-        get_valid_sales_status_clause(
-            status_col, order_col=order_col, table="so_ban_hang"
-        )
-        if status_col
-        else ""
+    if status_col is not None:
+        bad_mask = work_df[status_col].map(is_bad_status)
+        if bad_mask.any():
+            order_col = next(
+                (
+                    c
+                    for c in ("ma_don_hang", "ma_hoa_don", "ma_giao_dich", "ma_don")
+                    if c in s_cols
+                ),
+                None,
+            )
+            if order_col is not None:
+                bad_ids = set(work_df.loc[bad_mask, order_col].dropna().astype(str))
+                work_df = work_df[
+                    ~bad_mask & ~work_df[order_col].astype(str).isin(bad_ids)
+                ]
+            elif "stt" in s_cols:
+                bad_keys = set(
+                    zip(
+                        work_df.loc[bad_mask, "_date_str"].astype(str),
+                        work_df.loc[bad_mask, "stt"].astype(str),
+                        strict=False,
+                    )
+                )
+                row_keys = pd.Series(
+                    list(
+                        zip(
+                            work_df["_date_str"].astype(str),
+                            work_df["stt"].astype(str),
+                            strict=False,
+                        )
+                    ),
+                    index=work_df.index,
+                )
+                valid_stt = work_df["stt"].notna() & work_df["_date_str"].notna()
+                work_df = work_df[~bad_mask & ~(valid_stt & row_keys.isin(bad_keys))]
+            else:
+                work_df = work_df[~bad_mask]
+
+    item_match = work_df[item_col].map(norm_vn).isin(matched_norm_keys)
+    matched_df = work_df[item_match].copy()
+    matched_df["_qty"] = pd.to_numeric(matched_df[qty_col], errors="coerce").fillna(0.0)
+    b_val = float(
+        matched_df.loc[
+            (matched_df["_date_str"] >= start_b) & (matched_df["_date_str"] <= end_b),
+            "_qty",
+        ].sum()
     )
-    sql_b = f"""
-        SELECT COALESCE(SUM(NULLIF(TRY_CAST({qty_col} AS DOUBLE), 'NaN'::DOUBLE)), 0.0)
-        FROM so_ban_hang
-        WHERE hang IN ({in_codes})
-          AND strftime('%Y-%m-%d', {date_col}::TIMESTAMP) BETWEEN '{start_b}' AND '{end_b}'
-          {sc}
-    """
-    sql_a = f"""
-        SELECT COALESCE(SUM(NULLIF(TRY_CAST({qty_col} AS DOUBLE), 'NaN'::DOUBLE)), 0.0)
-        FROM so_ban_hang
-        WHERE hang IN ({in_codes})
-          AND strftime('%Y-%m-%d', {date_col}::TIMESTAMP) BETWEEN '{start_a}' AND '{end_a}'
-          {sc}
-    """
-    try:
-        return _finalize_pct(context.scalar(sql_b), context.scalar(sql_a))
-    except Exception:
-        return None
+    a_val = float(
+        matched_df.loc[
+            (matched_df["_date_str"] >= start_a) & (matched_df["_date_str"] <= end_a),
+            "_qty",
+        ].sum()
+    )
+    return _finalize_pct(b_val, a_val)
 
 
 def _compute_row_quantity(

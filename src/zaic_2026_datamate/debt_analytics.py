@@ -23,6 +23,20 @@ from zaic_2026_datamate.data_loader import BusinessContext, parse_mixed_excel_da
 
 _CANCEL_PATTERN = r"hủy|huỷ|huy|cancel"
 _CREDIT_METHOD_PATTERN = r"\b(?:ghi\s*no|no|debt|mua\s*chiu|cong\s*no)\b"
+_COD_MARKETPLACE_PATTERN = (
+    r"\b(?:shopee|lazada|tiki|tiktok|sendo|san\s*tmdt|tmdt|cod|thu\s*ho)\b"
+)
+
+_ACCENTED_TELEX_PRE_REPLACEMENTS: tuple[tuple[str, str], ...] = (
+    (r"\bkòn\b", "con"),
+    (r"\bkó\b", "co"),
+    (r"\btíh\b", "tinh"),
+    (r"\bđag\b", "dang"),
+    (r"\bngừi\b", "ngui"),
+    (r"\bnhìu\b", "nhieu"),
+    (r"\bnhứt\b", "nhat"),
+    (r"\bđc\b", "duoc"),
+)
 
 _TELEX_DEBT_REPLACEMENTS: tuple[tuple[str, str], ...] = (
     (r"\btrar\b", "tra"),
@@ -40,11 +54,23 @@ _TELEX_DEBT_REPLACEMENTS: tuple[tuple[str, str], ...] = (
     (r"\bbao\s+nhiu\b", "bao nhieu"),
     (r"\bnhiu\b", "nhieu"),
     (r"\bbnhiu\b", "bao nhieu"),
+    (r"\bbnh\b", "bao nhieu"),
     (r"\bbn\b", "bao nhieu"),
     (r"\bthangs\b", "thang"),
     (r"\bnawm\b", "nam"),
     (r"\bnaof\b", "nao"),
     (r"\btowis\b", "toi"),
+    (r"\bkon\b", "con"),
+    (r"\btih\b", "tinh"),
+    (r"\bdag\b", "dang"),
+    (r"\bnhug\b", "nhung"),
+    (r"\btug\b", "tung"),
+    (r"\bngui\b", "nguoi"),
+    (r"\bnhut\b", "nhat"),
+    (r"\bdc\b", "duoc"),
+    (r"\bwan\b", "quan"),
+    (r"\bmik\b", "minh"),
+    (r"\bhnay\b", "hom nay"),
 )
 
 _EXCLUDED_NON_DEBT_TERMS = (
@@ -87,7 +113,12 @@ def strip_accents_norm(text: Any) -> str:
 
 def normalize_debt_text(question: str) -> str:
     """Normalize accents and common Vietnamese Telex typos in debt questions."""
-    norm = strip_accents_norm(question)
+    pre = " ".join(
+        unicodedata.normalize("NFC", str(question or "")).strip().lower().split()
+    )
+    for pattern, repl in _ACCENTED_TELEX_PRE_REPLACEMENTS:
+        pre = re.sub(pattern, repl, pre)
+    norm = strip_accents_norm(pre)
     for pattern, repl in _TELEX_DEBT_REPLACEMENTS:
         norm = re.sub(pattern, repl, norm)
     return " ".join(norm.split())
@@ -143,12 +174,54 @@ def _select_primary_order_table(context: BusinessContext) -> tuple[str | None, b
         "danh_muc",
         "thuoc",
     )
+    lower_tables = {t.lower(): t for t in context.tables}
+    order_id_cols = {
+        "order_id",
+        "ma_hoa_don",
+        "ma_don_hang",
+        "ma_chung_tu",
+        "so_phieu",
+        "so_ct",
+        "so_hoa_don",
+        "bill",
+        "don_so",
+        "ma_bill",
+        "ma_don",
+    }
+    order_tot_cols = {
+        "tong_sau_giam_gia",
+        "tong_thanh_toan",
+        "tong_tien",
+        "tong_bill",
+        "tong_don",
+        "phai_thu",
+        "thanh_tien",
+        "tien_hang_truoc_giam",
+    }
+    order_debt_cols = {
+        "phuong_thuc_thanh_toan",
+        "phuong_thuc_tt",
+        "hinh_thuc_thanh_toan",
+        "tra_bang",
+        "thanh_toan_bang",
+        "con_no",
+        "du_no",
+        "cong_no",
+        "con_lai",
+        "con_phai_thu",
+        "khach_da_tra",
+        "da_tra",
+        "da_thu",
+    }
+
     candidates: list[str] = []
-    for tname in context.tables:
+    fnb_ambiguous_candidate: str | None = None
+    for tname, df in context.tables.items():
         tl = tname.lower()
-        if tl == "ban_hang_tong_hop" or tl.startswith("ban_hang_tong_hop_"):
-            return tname, True
-        if tl.endswith("_sheet1") and tl[:-7] in context.tables:
+        if tl.endswith("_sheet1") and tl[:-7] in lower_tables:
+            continue
+        m_year = re.match(r"^(.+)_(20\d{2})$", tl)
+        if m_year and m_year.group(1) in lower_tables:
             continue
         if any(k in tl for k in non_sales_doc_kw):
             continue
@@ -157,6 +230,17 @@ def _select_primary_order_table(context: BusinessContext) -> tuple[str | None, b
         )
         # Guard against cross-boundary false match like ban_hang + hoa_don -> hang_hoa
         if not has_explicit_order_doc and any(k in tl for k in entity_master_kw):
+            continue
+        if tl == "ban_hang_tong_hop" or tl.startswith("ban_hang_tong_hop_"):
+            cols_l = {c.lower() for c in df.columns}
+            if (
+                (cols_l & order_id_cols)
+                and (cols_l & order_tot_cols)
+                and (cols_l & order_debt_cols)
+            ):
+                candidates.append(tname)
+            elif fnb_ambiguous_candidate is None:
+                fnb_ambiguous_candidate = tname
             continue
         if any(
             k in tl
@@ -170,15 +254,18 @@ def _select_primary_order_table(context: BusinessContext) -> tuple[str | None, b
             candidates.append(tname)
 
     if not candidates:
+        if fnb_ambiguous_candidate is not None:
+            return fnb_ambiguous_candidate, True
         return None, False
 
-    def _score(tname: str) -> tuple[int, int, str]:
+    def _score(tname: str) -> tuple[int, int, int, int, str]:
         tl = tname.lower()
         is_detail = int("chi_tiet" in tl)
         has_header_kw = int(
             any(k in tl for k in ("hoa_don", "don_hang", "so_ban_hang"))
         )
-        return (is_detail, -has_header_kw, tname)
+        is_suffixed_bhth = int(tl.startswith("ban_hang_tong_hop_"))
+        return (is_detail, -has_header_kw, is_suffixed_bhth, len(tl), tname)
 
     candidates.sort(key=_score)
     return candidates[0], False
@@ -200,6 +287,7 @@ class DebtLedgerSchema:
     name_to_cids: dict[str, list[str]]
     has_debt_tracking: bool
     is_fnb_ambiguous: bool
+    note_col: str | None = None
 
 
 def _build_customer_directory(
@@ -213,6 +301,10 @@ def _build_customer_directory(
         "ma_kh",
         "customer_id",
         "ma_khach_le_si",
+        "ma_kh_mua",
+        "ma_khach_mua",
+        "ma_nguoi_mua",
+        "ma_the",
         "kh",
         "ma_khach",
         "makh",
@@ -224,6 +316,7 @@ def _build_customer_directory(
         "ho_ten",
         "ten_khach",
         "khach_hang_ten",
+        "khach_hang_mua",
         "khach_hang",
         "khach_le_si",
         "khach",
@@ -436,6 +529,7 @@ def extract_debt_ledger(context: BusinessContext) -> DebtLedgerSchema | None:
             "ngay_dat",
             "ngay_lap",
             "ngay_ban",
+            "ngay_xuat",
             "ngay_hd",
             "ngay_don_hang",
             "ngay_tao",
@@ -445,6 +539,8 @@ def extract_debt_ledger(context: BusinessContext) -> DebtLedgerSchema | None:
             "ngay_gio",
             "thoi_gian_tao",
             "ngay",
+            "date",
+            "gio_ban",
         ),
     )
     tot_col = find_col(
@@ -463,8 +559,12 @@ def extract_debt_ledger(context: BusinessContext) -> DebtLedgerSchema | None:
     if not ts_col or not tot_col:
         return None
 
-    if id_col and df_raw[id_col].duplicated().any():
-        df_raw = df_raw.groupby(id_col, as_index=False).first()
+    if id_col:
+        df_raw[id_col] = df_raw[id_col].map(
+            lambda v: v.strip() if isinstance(v, str) else v
+        )
+        if df_raw[id_col].duplicated().any():
+            df_raw = df_raw.groupby(id_col, as_index=False).first()
 
     df_raw["_order_ts"] = parse_mixed_excel_dates(df_raw[ts_col])
     df_raw["_order_day"] = df_raw["_order_ts"].dt.normalize()
@@ -495,11 +595,19 @@ def extract_debt_ledger(context: BusinessContext) -> DebtLedgerSchema | None:
         pay_norm = orders[pay_col].map(strip_accents_norm)
         credit_orders = orders[
             pay_norm.str.contains(_CREDIT_METHOD_PATTERN, regex=True, na=False)
+            & ~pay_norm.str.contains(_COD_MARKETPLACE_PATTERN, regex=True, na=False)
         ].copy()
     elif "cong_no" in cols:
         credit_orders = orders[to_numeric_series(orders[cols["cong_no"]]) > 0].copy()
     else:
         return None
+
+    channel_col = find_col(cols, ("kenh_ban", "kenh_dat", "kenh", "nguon", "san"))
+    if channel_col and not credit_orders.empty:
+        ch_norm = credit_orders[channel_col].map(strip_accents_norm)
+        credit_orders = credit_orders[
+            ~ch_norm.str.contains(_COD_MARKETPLACE_PATTERN, regex=True, na=False)
+        ].copy()
 
     cid_col = find_col(
         cols,
@@ -509,9 +617,12 @@ def extract_debt_ledger(context: BusinessContext) -> DebtLedgerSchema | None:
             "customer_id",
             "ma_kh_mua",
             "ma_khach_mua",
+            "ma_nguoi_mua",
+            "ma_the",
             "ma_khach",
             "makh",
             "so_kh",
+            "nguoi_mua",
             "kh",
         ),
     )
@@ -523,6 +634,7 @@ def extract_debt_ledger(context: BusinessContext) -> DebtLedgerSchema | None:
             "khach_hang",
             "ten_kh",
             "khach_hang_ten",
+            "khach_hang_mua",
             "khach_le_si",
             "khach",
         ),
@@ -530,6 +642,7 @@ def extract_debt_ledger(context: BusinessContext) -> DebtLedgerSchema | None:
     if cust_name_col == cid_col:
         cust_name_col = None
 
+    note_col = find_col(cols, ("note", "ghi_chu"))
     cid_to_name, name_to_cids = _build_customer_directory(context)
 
     return DebtLedgerSchema(
@@ -545,7 +658,79 @@ def extract_debt_ledger(context: BusinessContext) -> DebtLedgerSchema | None:
         name_to_cids=name_to_cids,
         has_debt_tracking=True,
         is_fnb_ambiguous=False,
+        note_col=note_col,
     )
+
+
+def parse_debt_note(note: Any, order_total: float) -> float | None:
+    """Parse customer debt balance remaining from Vietnamese end-of-data order notes."""
+    if note is None or (isinstance(note, float) and pd.isna(note)):
+        return None
+    raw = str(note).strip()
+    if not raw or raw.lower() in ("nan", "none"):
+        return None
+    norm = strip_accents_norm(raw)
+
+    settled_cues = (
+        "da tra du",
+        "tra het roi",
+        "da tra het",
+        "ck du roi",
+        "chuyen khoan du",
+        "thanh toan du",
+        "da thanh toan het",
+        "khach tra du",
+        "tra du roi",
+        "tra het",
+        "ck du",
+        "tra du",
+    )
+    if any(cue in norm for cue in settled_cues) and not re.search(
+        r"\b(?:con\s+thieu|thieu\s+lai|con\s+no)\b", norm
+    ):
+        return 0.0
+
+    if norm == "no ca don" or (
+        "no ca don" in norm
+        and not re.search(
+            r"\b(?:tra|ck|chuyen\s+khoan|con\s+thieu|thieu\s+lai)\b", norm
+        )
+    ):
+        return float(order_total)
+
+    amt_pat = r"([0-9][0-9.,]*(?:\s*(?:tr|trieu)\s*\d+|\s*k\s*\d+|\s*(?:trieu|tr|nghin|ngan|k|d|dong))?)"
+
+    m_rem = re.search(
+        rf"\b(?:con\s+thieu|thieu\s+lai|con\s+no)\s+{amt_pat}",
+        norm,
+    )
+    if m_rem:
+        amt = clean_vietnamese_currency(m_rem.group(1))
+        if amt is not None:
+            return float(amt)
+
+    m_debt = re.search(
+        rf"(?:^|,|;)\s*(?:ghi\s+no|ghi\s+so|no)\s+{amt_pat}\s*$",
+        norm,
+    )
+    if m_debt:
+        amt = clean_vietnamese_currency(m_debt.group(1))
+        if amt is not None:
+            return float(amt)
+
+    m_rem_so = re.search(r"\bcon\s+lai\s+(?:ghi\s+so|ghi\s+no|no)\b", norm)
+    if m_rem_so:
+        prefix = norm[: m_rem_so.start()]
+        adv_matches = re.findall(
+            rf"(?:dua\s+truoc|tra\s+truoc|ck|chuyen\s+khoan|tra)\s+{amt_pat}",
+            prefix,
+        )
+        if len(adv_matches) == 1:
+            adv = clean_vietnamese_currency(adv_matches[0])
+            if adv is not None:
+                return max(0.0, float(order_total) - float(adv))
+
+    return None
 
 
 def _compute_active_debt_orders(
@@ -572,14 +757,36 @@ def _compute_active_debt_orders(
             .map(paid_per_order)
             .fillna(0.0)
         )
+        orders["_debt"] = orders["_order_total"] - orders["_paid"]
     else:
         cols = {c.lower(): c for c in orders.columns}
         da_tra_col = find_col(cols, ("khach_da_tra", "da_tra", "da_thu"))
-        if da_tra_col is None:
+        if da_tra_col is not None:
+            orders["_paid"] = to_numeric_series(orders[da_tra_col])
+            orders["_debt"] = orders["_order_total"] - orders["_paid"]
+        elif ledger.note_col is not None:
+            max_order_day = ledger.orders_all["_order_day"].dropna().max()
+            if pd.isna(max_order_day) or cutoff_day < max_order_day:
+                return None, cutoff_day
+            if orders.empty:
+                orders["_paid"] = pd.Series(dtype=float)
+                orders["_debt"] = pd.Series(dtype=float)
+                return orders, cutoff_day
+            parsed_debts: list[float] = []
+            for nval, tot_val in zip(
+                orders[ledger.note_col], orders["_order_total"], strict=False
+            ):
+                if pd.isna(tot_val):
+                    return None, cutoff_day
+                d_val = parse_debt_note(nval, float(tot_val))
+                if d_val is None:
+                    return None, cutoff_day
+                parsed_debts.append(d_val)
+            orders["_debt"] = parsed_debts
+            orders["_paid"] = (orders["_order_total"] - orders["_debt"]).clip(lower=0.0)
+        else:
             return None, cutoff_day
-        orders["_paid"] = to_numeric_series(orders[da_tra_col])
 
-    orders["_debt"] = orders["_order_total"] - orders["_paid"]
     active = orders[orders["_debt"] > 0].copy()
     return active, cutoff_day
 
@@ -667,19 +874,27 @@ def calculate_debt_snapshot_metric(
                 None,
                 "Doanh nghiệp không ghi nhận thông tin khách hàng trên đơn",
             )
-        if ledger.cid_col and ledger.cust_name_map:
-            mapped = (
-                active[ledger.cid_col].astype(str).str.strip().map(ledger.cust_name_map)
-            )
-            if ledger.cust_name_col:
-                mapped = mapped.fillna(active[ledger.cust_name_col])
+        if ledger.cid_col:
+            active["_clean_cid"] = active[ledger.cid_col].astype(str).str.strip()
+            active = active[~active["_clean_cid"].str.lower().isin(_GUEST_NAMES)]
+            if ledger.cust_name_map:
+                mapped = active["_clean_cid"].map(ledger.cust_name_map)
+                if ledger.cust_name_col:
+                    fallback = active[ledger.cust_name_col].where(
+                        active[ledger.cust_name_col].notna(), active["_clean_cid"]
+                    )
+                    mapped = mapped.fillna(fallback)
+                else:
+                    mapped = mapped.fillna(active["_clean_cid"])
+                active["_resolved_name"] = mapped
+            elif ledger.cust_name_col:
+                active["_resolved_name"] = active[ledger.cust_name_col].where(
+                    active[ledger.cust_name_col].notna(), active["_clean_cid"]
+                )
             else:
-                mapped = mapped.fillna(active[ledger.cid_col])
-            active["_resolved_name"] = mapped
-        elif ledger.cust_name_col:
-            active["_resolved_name"] = active[ledger.cust_name_col]
+                active["_resolved_name"] = active["_clean_cid"]
         else:
-            active["_resolved_name"] = active[ledger.cid_col]
+            active["_resolved_name"] = active[ledger.cust_name_col]
 
         active["_resolved_name"] = (
             active["_resolved_name"]
@@ -688,13 +903,22 @@ def calculate_debt_snapshot_metric(
             .str.strip()
         )
         active = active[~active["_resolved_name"].str.lower().isin(_GUEST_NAMES)]
-        top = (
-            active.groupby("_resolved_name")["_debt"]
-            .sum()
-            .sort_values(ascending=False)
-            .head(top_k)
+        if ledger.cid_col:
+            active["_group_key"] = active["_clean_cid"]
+        else:
+            active["_group_key"] = active["_resolved_name"]
+
+        grouped = active.groupby("_group_key", as_index=False).agg(
+            _debt=("_debt", "sum"),
+            _name=("_resolved_name", "first"),
         )
-        rows = [[str(name), int(round(val))] for name, val in top.items()]
+        grouped = grouped.sort_values(
+            by=["_debt", "_group_key"], ascending=[False, True]
+        ).head(top_k)
+        rows = [
+            [str(row["_name"]), int(round(row["_debt"]))]
+            for _, row in grouped.iterrows()
+        ]
         return "table", {"columns": ["khach_hang", "so_tien_no"], "rows": rows}, None
 
     return "abstain", None, "Loại metric công nợ chưa hỗ trợ"
@@ -703,18 +927,39 @@ def calculate_debt_snapshot_metric(
 def _extract_cutoff_date_str(
     question: str, q_norm: str, as_of_date: str | None
 ) -> str | None:
-    """Extract DD/MM/YYYY or YYYY-MM-DD cutoff date for debt snapshots and aging."""
+    """Extract DD/MM/YY(YY) or YYYY-MM-DD cutoff date for debt snapshots and aging."""
     m_dmy = re.search(
-        r"\b(?:ngay|toi|den|tai|het)\s*(\d{1,2})[/-](\d{1,2})[/-](\d{4})\b",
+        r"\b(?:ngay|toi|den|tai|het)\s*(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})\b",
         q_norm,
     )
     if m_dmy:
-        return f"{int(m_dmy.group(3)):04d}-{int(m_dmy.group(2)):02d}-{int(m_dmy.group(1)):02d}"
+        day, month, year = (
+            int(m_dmy.group(1)),
+            int(m_dmy.group(2)),
+            int(m_dmy.group(3)),
+        )
+        if year < 100:
+            year += 2000
+        try:
+            pd.Timestamp(year=year, month=month, day=day)
+        except ValueError:
+            return None
+        return f"{year:04d}-{month:02d}-{day:02d}"
     m_ymd = re.search(r"\b(\d{4})-(\d{2})-(\d{2})\b", question)
     if m_ymd:
         return f"{m_ymd.group(1)}-{m_ymd.group(2)}-{m_ymd.group(3)}"
     if as_of_date and any(
-        k in q_norm for k in ("hien tai", "den nay", "tinh den nay", "toi nay")
+        k in q_norm
+        for k in (
+            "hien tai",
+            "den nay",
+            "tinh den nay",
+            "toi nay",
+            "hom nay",
+            "hnay",
+            "bua nay",
+            "bua ni",
+        )
     ):
         return as_of_date[:10]
     return None
@@ -722,13 +967,56 @@ def _extract_cutoff_date_str(
 
 def extract_month_ym(q_norm: str, as_of_date: str | None) -> str | None:
     """Extract YYYY-MM target month from question text or relative 'tháng này'."""
-    m_my = re.search(r"\bthang\s*(\d{1,2})(?:\s*[/\-]|\s+nam\s+)(\d{4})\b", q_norm)
-    if m_my:
-        month, year = int(m_my.group(1)), int(m_my.group(2))
+    cleaned = re.sub(r"\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b", " ", q_norm)
+    cleaned = re.sub(r"\b\d{4}-\d{2}-\d{2}\b", " ", cleaned)
+
+    m_pref = re.search(
+        r"\b(?:thang|th|t)\s*(\d{1,2})(?:\s*[/\-]\s*|\s+nam\s+)(\d{2,4})\b",
+        cleaned,
+    )
+    if m_pref:
+        month, yr = int(m_pref.group(1)), int(m_pref.group(2))
+        if yr < 100:
+            if not (20 <= yr <= 35):
+                return None
+            yr += 2000
         if 1 <= month <= 12:
-            return f"{year:04d}-{month:02d}"
-    if any(k in q_norm for k in ("thang nay", "thang ni", "th nay")) and as_of_date:
+            return f"{yr:04d}-{month:02d}"
+
+    m_bare4 = re.search(r"(?<![/\-\d.])(\d{1,2})\s*[/\-]\s*(\d{4})\b", cleaned)
+    if m_bare4:
+        month, yr = int(m_bare4.group(1)), int(m_bare4.group(2))
+        if 1 <= month <= 12:
+            return f"{yr:04d}-{month:02d}"
+
+    m_bare2 = re.search(r"(?<![/\-\d.])(\d{1,2})\s*/\s*(\d{2})\b", cleaned)
+    if m_bare2:
+        month, yr2 = int(m_bare2.group(1)), int(m_bare2.group(2))
+        if 1 <= month <= 12 and 20 <= yr2 <= 35:
+            return f"{2000 + yr2:04d}-{month:02d}"
+
+    if (
+        any(k in cleaned for k in ("thang nay", "thang ni", "th nay", "th ni"))
+        and as_of_date
+    ):
         return as_of_date[:7]
+
+    if as_of_date and len(as_of_date) >= 7:
+        no_dur = re.sub(r"\b(?:trong\s+)?\d+\s+thang\b", " ", cleaned)
+        yearless = [
+            int(m)
+            for m in re.findall(
+                r"\b(?:thang|th)\s*(\d{1,2})\b(?!\s*(?:%|ngay|tuan|[/\-]))", no_dur
+            )
+            if 1 <= int(m) <= 12
+        ]
+        if len(set(yearless)) == 1:
+            month = yearless[0]
+            ref_year = int(as_of_date[:4])
+            ref_month = int(as_of_date[5:7])
+            yr = ref_year if month <= ref_month else ref_year - 1
+            return f"{yr:04d}-{month:02d}"
+
     return None
 
 
@@ -925,9 +1213,10 @@ def resolve_debt_query(
         re.search(
             r"\b(?:tuoi\s+no|cong\s+no|du\s+no|con\s+no|con\s+thieu|thieu\s+tien|"
             r"mua\s+chiu|ghi\s+no|no\s+them|tra\s+(?:bot\s+)?no|thu\s+hoi|"
-            r"chua\s+tra\s+het|no\s+cua\s+hang|no\s+tiem|no\s+nhieu\s+nhat|no\s+nhut|"
-            r"no\s+lon\s+nhat|khach\s+no|khach\s+dang\s+no|dang\s+no|tien\s+no|"
-            r"so\s+no|khoan\s+no|kieu\s+no)\b",
+            r"chua\s+tra\s+het|chua\s+tra\s+xong|no\s+cua\s+hang|no\s+tiem|"
+            r"no\s+nhieu\s+nhat|no\s+nhut|no\s+lon\s+nhat|khach\s+no|khach\s+dang\s+no|"
+            r"dang\s+no|tien\s+no|so\s+no|khoan\s+no|kieu\s+no|"
+            r"(?:doi|thu)\s+(?:duoc|dc)\b.*\bno|khach\s+tra\s+(?:bot\s+)?no)\b",
             q_norm,
         )
     )
@@ -945,7 +1234,10 @@ def resolve_debt_query(
     # 1. Customer monthly [nợ thêm, trả được] delta
     asks_delta = bool(
         re.search(r"\b(?:no\s+them|ghi\s+no\s+them|mua\s+chiu\s+them)\b", q_norm)
-        and re.search(r"\b(?:tra\s+bot\s+no|tra\s+no|tra\s+duoc|tra\s+dc)\b", q_norm)
+        and re.search(
+            r"\b(?:tra\s+(?:bot\s+)?no(?:\s+lai)?|tra\s+(?:bot\s+|lai\s+)?(?:duoc|dc))\b",
+            q_norm,
+        )
     )
     if asks_delta:
         month_ym = extract_month_ym(q_norm, as_of_date)
@@ -965,11 +1257,22 @@ def resolve_debt_query(
             context.last_code_path = "debt_analytics.customer_monthly_delta"
         return res_t, res_v, res_r
 
-    # 2. Storewide monthly credit repayments
-    asks_repay = bool(
+    # 2. Storewide monthly credit repayments (only when NOT a point-in-time snapshot/aging query)
+    has_snapshot_cue = bool(
         re.search(
-            r"\b(?:tra\s+bot\s+no|thu\s+hoi\b.*\bno\b|khach\s+tra\s+no\b.*\bmua\s+chiu|"
-            r"thu\s+(?:duoc|dc)\b.*\bkhach\s+tra\s+no)\b",
+            r"\b(?:tuoi\s+no|con\s+no|con\s+thieu|chua\s+tra\s+het|chua\s+tra\s+xong|"
+            r"tinh\s+den|tinh\s+toi|den\s+het|toi\s+het|den\s+ngay|toi\s+ngay|"
+            r"tai\s+ngay|het\s+ngay)\b",
+            q_norm,
+        )
+        or re.search(r"\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b", q_norm)
+        or re.search(r"\b\d{4}-\d{2}-\d{2}\b", question)
+    )
+    asks_repay = (not has_snapshot_cue) and bool(
+        re.search(
+            r"\b(?:tra\s+bot\s+(?:duoc\s+)?no|"
+            r"(?:thu\s+hoi|thu\s+(?:duoc|dc)|doi\s+(?:duoc|dc))\b.*\bno\b|"
+            r"khach\s+tra\s+(?:bot\s+)?no)\b",
             q_norm,
         )
     )

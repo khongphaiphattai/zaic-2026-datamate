@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import math
 import re
+import unicodedata
 from decimal import ROUND_HALF_UP, Decimal
 from pathlib import Path
 from typing import Any
@@ -58,7 +59,7 @@ def clean_vietnamese_currency(val: Any) -> float | None:
     s = s.strip("() -")
 
     # 1. Compound Vietnamese patterns: 5tr520 -> 5,520,000; 1tr5 -> 1,500,000; 1tr580 -> 1,580,000
-    m_tr_comp = re.match(r"^(\d+)\s*(?:tr|triệu)\s*(\d+)$", s)
+    m_tr_comp = re.match(r"^(\d+)\s*(?:tr|triệu|trieu)\s*(\d+)$", s)
     if m_tr_comp:
         m1 = int(m_tr_comp.group(1))
         g2 = m_tr_comp.group(2)
@@ -75,10 +76,10 @@ def clean_vietnamese_currency(val: Any) -> float | None:
         res = float(m1 * 1_000 + m2)
         return -res if is_negative else res
 
-    if "tr" in s or "triệu" in s:
+    if re.search(r"(?:^|\d|\s)(?:tr|triệu|trieu)\b", s):
         nums = re.findall(r"[-+]?(?:\d*\.\d+|\d+)", s.replace(",", "."))
         res = float(nums[0]) * 1_000_000 if nums else None
-    elif "k" in s:
+    elif re.search(r"(?:^|\d|\s)(?:k|nghìn|nghin|ngàn|ngan)\b", s):
         nums = re.findall(r"[-+]?(?:\d*\.\d+|\d+)", s.replace(",", "."))
         res = float(nums[0]) * 1_000 if nums else None
     else:
@@ -233,9 +234,10 @@ _QUERY_TELEX_WORDS: dict[str, str] = {
     "bnhiu": "bao nhiêu",
     "nhiu": "nhiều",
     "nhìu": "nhiều",
-    "nhieeu": "nhiều",
+    "nhieeu": "nhiêu",
     "nhieeuf": "nhiều",
     "nhieuf": "nhiều",
+    "nhiêuf": "nhiều",
     "nhiuf": "nhiều",
     "nhìuf": "nhiều",
     "dduwowcj": "được",
@@ -243,14 +245,21 @@ _QUERY_TELEX_WORDS: dict[str, str] = {
     "dduowjc": "được",
     "duwowcj": "được",
     "duocj": "được",
+    "duco": "được",
     "đươc": "được",
     "đươcj": "được",
     "đc": "được",
+    "bna": "bán",
     "cuwar": "cửa",
     "naof": "nào",
     "nhaats": "nhất",
     "nhaat": "nhất",
+    "nhât": "nhất",
+    "nhut": "nhất",
+    "nhứt": "nhất",
     "nhta": "nhất",
+    "bìh": "bình",
+    "bih": "bình",
     "ddown": "đơn",
     "mooix": "mỗi",
     "mổi": "mỗi",
@@ -285,6 +294,8 @@ _QUERY_TELEX_WORDS: dict[str, str] = {
     "trawm": "trăm",
     "ptram": "phần trăm",
     "tieenf": "tiền",
+    "tiềng": "tiền",
+    "tiengf": "tiền",
     "soos": "số",
     "toonf": "tồn",
     "cko": "cho",
@@ -370,7 +381,7 @@ def normalize_query_telex(text: Any) -> str:
         flags=re.IGNORECASE,
     )
     s = re.sub(
-        r"\b(?:bao|b\.?)\s*nh(?:[iì]u|ieeu|ieeuf|ieuf|iuf|ìuf)\b",
+        r"\b(?:bao|b\.?)\s*nh(?:[iì]u|ieeu|ieeuf|ieuf|eiu|eiuf|eieu|iuf|ìuf)\b",
         "bao nhiêu",
         s,
         flags=re.IGNORECASE,
@@ -391,12 +402,53 @@ def normalize_query_telex(text: Any) -> str:
         flags=re.IGNORECASE,
     )
     s = re.sub(
+        r"\bbáng\s+(?=(?:bao|nhiêu|nhieu|nhiu|được|duoc|dc|đc|ra|mấy|may|bnhiu|bn|z)\b)",
+        "bán ",
+        s,
+        flags=re.IGNORECASE,
+    )
+    s = re.sub(r"\bnhân\s+diên\b", "nhân viên", s, flags=re.IGNORECASE)
+    s = re.sub(r"\bnhan\s+dien\b", "nhân viên", s, flags=re.IGNORECASE)
+    s = re.sub(
         r"\bmi\s+(?=(?:đơn|don|cuốn|cuon|cây|cay|ly|cái|cai|món|mon|trăm|tram|triệu|trieu|nghìn|nghin|k\b|ngày|ngay|tháng|thang|hộp|hop|chai|lon|phần|phan|khách|khach)\b)",
         "mấy ",
         s,
         flags=re.IGNORECASE,
     )
     return _QUERY_TELEX_RE.sub(lambda m: _QUERY_TELEX_WORDS[m.group(0).lower()], s)
+
+
+_REGIONAL_PRODUCT_REPLACEMENTS: tuple[tuple[str, str], ...] = (
+    (r"\bcoc\s+sac\b", "cu sac"),
+    (r"\bgang\s+tay\s+tat\s+chan\b", "bao tay bao chan"),
+    (r"\blavie\b", "la vie"),
+    (r"\bcat\s+xay\s+trat\b", "cat xay to"),
+    (r"\bdau\s+phu\s+ran\b", "dau hu chien"),
+    (r"\bdau\s+phu\b", "dau hu"),
+    (r"\bran\s+gion\b", "chien gion"),
+    (r"\bmuc\s+ran\b", "muc chien"),
+    (r"\bca\s+trau\b", "ca loc"),
+    (r"\bhoa\s+qua\b", "trai cay"),
+    (r"\bke\s+dien\s+thoai\b", "gia do dien thoai"),
+    (r"\bthit\s+lon\b", "thit heo"),
+    (r"\bma\s+lon\b", "ma heo"),
+)
+
+
+def canonicalize_regional_product(text: str) -> str:
+    """Normalize Vietnamese accents and map regional product synonyms to canonical unaccented tokens."""
+    if not text:
+        return ""
+    s = "".join(
+        c
+        for c in unicodedata.normalize("NFD", str(text).lower().replace("đ", "d"))
+        if unicodedata.category(c) != "Mn"
+    )
+    s = re.sub(r"[^a-z0-9\s]", " ", s)
+    s = re.sub(r"\s+", " ", s).strip()
+    for pat, repl in _REGIONAL_PRODUCT_REPLACEMENTS:
+        s = re.sub(pat, repl, s)
+    return re.sub(r"\s+", " ", s).strip()
 
 
 def compact_digit_unit_spaces(text: str) -> str:

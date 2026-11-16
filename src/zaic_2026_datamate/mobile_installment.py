@@ -21,7 +21,15 @@ import pandas as pd
 
 from zaic_2026_datamate.cleaner import clean_vietnamese_currency
 from zaic_2026_datamate.data_loader import BusinessContext
+from zaic_2026_datamate.debt_analytics import normalize_debt_text
 from zaic_2026_datamate.intent_parser import parse_time_expressions
+
+
+def _normalize_mobile_text(question: str) -> str:
+    """Normalize Vietnamese accents, regional forms, and Telex typos for mobile store queries."""
+    pre = unicodedata.normalize("NFC", str(question or "")).strip().lower()
+    pre = re.sub(r"\bmí\b", "may", pre)
+    return normalize_debt_text(pre)
 
 
 def strip_accents(s: str) -> str:
@@ -140,7 +148,12 @@ def unify_debt_and_installment_ledgers(
             debt_amt = clean_vietnamese_currency(r.get("no"))
             ngay_val = pd.to_datetime(r.get("ngay"), errors="coerce")
             khach_val = str(r.get("khach") or "").strip()
-            if debt_amt is not None and debt_amt > 0 and khach_val and khach_val.lower() != "nan":
+            if (
+                debt_amt is not None
+                and debt_amt > 0
+                and khach_val
+                and khach_val.lower() != "nan"
+            ):
                 curr = {
                     "source": "so_no",
                     "khach": khach_val,
@@ -157,7 +170,11 @@ def unify_debt_and_installment_ledgers(
                     curr["payments"].append(float(paid_amt))
 
         for entry in entries:
-            if as_of is not None and pd.notna(entry["orig_date"]) and entry["orig_date"] > as_of:
+            if (
+                as_of is not None
+                and pd.notna(entry["orig_date"])
+                and entry["orig_date"] > as_of
+            ):
                 continue
             paid = sum(entry["payments"])
             rows.append(
@@ -218,7 +235,9 @@ def _resolve_installment_as_of(
     if as_of_date:
         return pd.to_datetime(as_of_date)
     if context.calendar_df is not None and "date" in context.calendar_df.columns:
-        cal_dates = pd.to_datetime(context.calendar_df["date"], errors="coerce").dropna()
+        cal_dates = pd.to_datetime(
+            context.calendar_df["date"], errors="coerce"
+        ).dropna()
         if not cal_dates.empty:
             return cal_dates.max()
     candidates = [
@@ -230,6 +249,44 @@ def _resolve_installment_as_of(
     return max(valid) if valid else pd.Timestamp.max
 
 
+def _extract_cutoff_day(
+    question: str,
+    t_norm: str,
+    as_of_date: str | None,
+    context: BusinessContext,
+    *date_series: pd.Series | None,
+) -> pd.Timestamp | None:
+    """Extract normalized cutoff date from explicit DMY/YMD text or as_of fallback."""
+    m_dmy = re.search(
+        r"\b(?:ngay|toi|den|tai|het)\s*(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})\b",
+        t_norm,
+    )
+    if m_dmy:
+        day, month, year = (
+            int(m_dmy.group(1)),
+            int(m_dmy.group(2)),
+            int(m_dmy.group(3)),
+        )
+        if year < 100:
+            year += 2000
+        try:
+            return pd.Timestamp(year=year, month=month, day=day).normalize()
+        except ValueError:
+            return None
+    m_ymd = re.search(r"\b(\d{4})-(\d{2})-(\d{2})\b", question)
+    if m_ymd:
+        try:
+            return pd.Timestamp(
+                year=int(m_ymd.group(1)),
+                month=int(m_ymd.group(2)),
+                day=int(m_ymd.group(3)),
+            ).normalize()
+        except ValueError:
+            return None
+    ts = _resolve_installment_as_of(as_of_date, context, *date_series)
+    return ts if ts == pd.Timestamp.max else ts.normalize()
+
+
 def resolve_unified_debt_query(
     question: str,
     context: BusinessContext,
@@ -239,7 +296,7 @@ def resolve_unified_debt_query(
     if "so_no_so_no" not in context.tables and "so_no_tra_gop" not in context.tables:
         return "abstain", None, "Không tìm thấy sổ công nợ hoặc sổ trả góp"
 
-    t_norm = strip_accents(question)
+    t_norm = _normalize_mobile_text(question)
     if not re.search(
         r"\b(?:con\s+no|du\s+no|cong\s+no|con\s+thieu|thieu\s+tien|no)\b", t_norm
     ):
@@ -269,33 +326,19 @@ def resolve_unified_debt_query(
     ):
         return "abstain", None, "Dạng công nợ phức tạp cần kiểm tra lịch trả góp"
 
-    m_dmy = re.search(
-        r"\b(?:ngay|toi|den|tai|het)\s*(\d{1,2})[/-](\d{1,2})[/-](\d{4})\b",
+    so_no_df = context.tables.get("so_no_so_no")
+    tg_df = context.tables.get("so_no_tra_gop")
+    cutoff_ts = _extract_cutoff_day(
+        question,
         t_norm,
+        as_of_date,
+        context,
+        so_no_df["ngay"] if so_no_df is not None and "ngay" in so_no_df else None,
+        tg_df["ngay_gop"] if tg_df is not None and "ngay_gop" in tg_df else None,
+        tg_df["ngay"] if tg_df is not None and "ngay" in tg_df else None,
     )
-    m_ymd = re.search(r"\b(\d{4})-(\d{2})-(\d{2})\b", question)
-    if m_dmy:
-        cutoff_ts = pd.Timestamp(
-            year=int(m_dmy.group(3)),
-            month=int(m_dmy.group(2)),
-            day=int(m_dmy.group(1)),
-        )
-    elif m_ymd:
-        cutoff_ts = pd.Timestamp(
-            year=int(m_ymd.group(1)),
-            month=int(m_ymd.group(2)),
-            day=int(m_ymd.group(3)),
-        )
-    else:
-        so_no_df = context.tables.get("so_no_so_no")
-        tg_df = context.tables.get("so_no_tra_gop")
-        cutoff_ts = _resolve_installment_as_of(
-            as_of_date,
-            context,
-            so_no_df["ngay"] if so_no_df is not None and "ngay" in so_no_df else None,
-            tg_df["ngay_gop"] if tg_df is not None and "ngay_gop" in tg_df else None,
-            tg_df["ngay"] if tg_df is not None and "ngay" in tg_df else None,
-        )
+    if cutoff_ts is None:
+        return "abstain", None, "Ngày chốt công nợ không hợp lệ"
 
     if cutoff_ts == pd.Timestamp.max:
         cutoff_eod_str = None
@@ -316,9 +359,10 @@ def resolve_unified_debt_query(
     context.last_code_path = "mobile_installment.unify_debt_and_installment_ledgers"
 
     # 1. Active debtor count (deduplicated across ledgers)
-    if re.search(
-        r"\b(?:bao nhieu|bao nhiu|bnhiu|bn|may|so)\s+khach\b", t_norm
-    ) or "con bao nhieu khach" in t_norm:
+    if (
+        re.search(r"\b(?:bao nhieu|bao nhiu|bnhiu|bn|may|so)\s+khach\b", t_norm)
+        or "con bao nhieu khach" in t_norm
+    ):
         active = unified[unified["remaining_debt"] > 0]
         return "number", int(active["khach_norm"].nunique()), None
 
@@ -346,12 +390,22 @@ def resolve_unified_debt_query(
         return "abstain", None, "Nhiều khách hàng trùng khớp trong sổ công nợ"
 
     m_cust_tok = re.search(
-        r"\bkhach(?:\s+hang)?\s+(?!con\b|dang\b|mua\b|no\b|thieu\b|tra\b|hang\b|cua\b)([a-z0-9\s]{1,35}?)\s+(?:con\s+no|con\s+thieu|no|thieu|da\s+tra)\b",
+        r"\bkhach(?:\s+hang)?\s+(?!con\b|kon\b|dang\b|se\b|da\b|mua\b|no\b|thieu\b|tra\b|hang\b|cua\b)([a-z0-9\s]{1,35}?)\s+(?:con\s+no|con\s+thieu|no|thieu|da\s+tra)\b",
         t_norm,
     )
     if m_cust_tok:
         tok = m_cust_tok.group(1).strip()
-        if tok not in {"hang", "cua hang", "con", "dang", "dang con", "mua chiu"}:
+        if tok not in {
+            "hang",
+            "cua hang",
+            "con",
+            "dang",
+            "dang con",
+            "mua chiu",
+            "shop",
+            "shop minh",
+            "tiem",
+        }:
             tok_matches = [
                 nm
                 for nm in all_names
@@ -368,7 +422,15 @@ def resolve_unified_debt_query(
     # 3. Storewide combined remaining debt
     if any(
         k in t_norm
-        for k in ("tong", "bao nhieu", "bn", "bnhiu", "nhieu tien", "con no", "con thieu")
+        for k in (
+            "tong",
+            "bao nhieu",
+            "bn",
+            "bnhiu",
+            "nhieu tien",
+            "con no",
+            "con thieu",
+        )
     ):
         tot = int(round(unified["remaining_debt"].sum()))
         return "number", tot, None
@@ -384,12 +446,13 @@ def resolve_mobile_installment_query(
     """Resolve mobile retail & installment questions using deterministic schema logic."""
     has_sales = "so_ban_hang" in context.tables
     has_ledgers = any(
-        t in context.tables for t in ("so_no_tra_gop", "so_no_so_no", "so_no_bao_hanh", "thu_may_cu")
+        t in context.tables
+        for t in ("so_no_tra_gop", "so_no_so_no", "so_no_bao_hanh", "thu_may_cu")
     )
     if not has_sales and not has_ledgers:
         return "abstain", None, "Không tìm thấy bảng so_ban_hang hoặc sổ công nợ"
 
-    t_norm = strip_accents(question)
+    t_norm = _normalize_mobile_text(question)
     p = parse_time_expressions(question, as_of_date=as_of_date)
 
     target_month = p.month_str
@@ -419,16 +482,30 @@ def resolve_mobile_installment_query(
             tmc["m"] = pd.to_datetime(tmc["ngay"]).dt.strftime("%Y-%m")
 
             # A1. Percentage of orders with trade-in: 'bnhiu % dh co thu may cu'
-            if has_sales and any(k in t_norm for k in ["%", "phan tram"]) and any(
-                k in t_norm for k in ["dh", "don hang", "don"]
+            if (
+                has_sales
+                and any(k in t_norm for k in ["%", "phan tram"])
+                and any(k in t_norm for k in ["dh", "don hang", "don"])
             ):
                 if target_month:
                     sbh = context.tables["so_ban_hang"]
-                    is_return = sbh["ghi_chu"].astype(str).str.lower().str.contains("trả|tra|huỷ|huy|cancel")
-                    returned_orders = set(zip(sbh.loc[is_return, "sheet_name"], sbh.loc[is_return, "stt"]))
-                    sbh_clean = sbh[~sbh.set_index(["sheet_name", "stt"]).index.isin(returned_orders)]
+                    is_return = (
+                        sbh["ghi_chu"]
+                        .astype(str)
+                        .str.lower()
+                        .str.contains("trả|tra|huỷ|huy|cancel")
+                    )
+                    returned_orders = set(
+                        zip(sbh.loc[is_return, "sheet_name"], sbh.loc[is_return, "stt"])
+                    )
+                    sbh_clean = sbh[
+                        ~sbh.set_index(["sheet_name", "stt"]).index.isin(
+                            returned_orders
+                        )
+                    ]
                     sub_sbh = sbh_clean[
-                        pd.to_datetime(sbh_clean["ngay"]).dt.strftime("%Y-%m") == target_month
+                        pd.to_datetime(sbh_clean["ngay"]).dt.strftime("%Y-%m")
+                        == target_month
                     ]
                     total_orders = sub_sbh.groupby(["sheet_name", "stt"]).ngroups
                     sub_tmc = tmc[tmc["m"] == target_month]
@@ -442,7 +519,14 @@ def resolve_mobile_installment_query(
 
             # A2. Total trade-in value in month: 'cong tien thu may cu', 'cac khoan tien thu may cu'
             if any(
-                k in t_norm for k in ["cong", "tong", "het nhieu tien", "duoc bnhiu"]
+                k in t_norm
+                for k in [
+                    "cong",
+                    "tong",
+                    "het nhieu tien",
+                    "duoc bnhiu",
+                    "duoc bao nhieu",
+                ]
             ):
                 if target_month:
                     sub_tmc = tmc[tmc["m"] == target_month]
@@ -451,20 +535,33 @@ def resolve_mobile_installment_query(
     # -------------------------------------------------------------------------
     # B. ORDER NET AMOUNT AFTER DISCOUNTS & TRADE-IN (khach_tra)
     # -------------------------------------------------------------------------
-    if has_sales and any(k in t_norm for k in ["khach phai tra", "khach tra"]) and any(
-        k in t_norm
-        for k in [
-            "tru tien bot",
-            "tru bot",
-            "may cu thu lai",
-            "trung binh moi don",
-            "binh quan mot don",
-        ]
+    if (
+        has_sales
+        and any(k in t_norm for k in ["khach phai tra", "khach tra"])
+        and any(
+            k in t_norm
+            for k in [
+                "tru tien bot",
+                "tru bot",
+                "may cu thu lai",
+                "trung binh moi don",
+                "binh quan mot don",
+            ]
+        )
     ):
         sbh = context.tables["so_ban_hang"].copy()
-        is_return = sbh["ghi_chu"].astype(str).str.lower().str.contains("trả|tra|huỷ|huy|cancel")
-        returned_orders = set(zip(sbh.loc[is_return, "sheet_name"], sbh.loc[is_return, "stt"]))
-        sbh_clean = sbh[~sbh.set_index(["sheet_name", "stt"]).index.isin(returned_orders)].copy()
+        is_return = (
+            sbh["ghi_chu"]
+            .astype(str)
+            .str.lower()
+            .str.contains("trả|tra|huỷ|huy|cancel")
+        )
+        returned_orders = set(
+            zip(sbh.loc[is_return, "sheet_name"], sbh.loc[is_return, "stt"])
+        )
+        sbh_clean = sbh[
+            ~sbh.set_index(["sheet_name", "stt"]).index.isin(returned_orders)
+        ].copy()
         sbh_clean["kt_val"] = sbh_clean["khach_tra"].apply(clean_vietnamese_currency)
         sbh_clean["m"] = pd.to_datetime(sbh_clean["ngay"]).dt.strftime("%Y-%m")
 
@@ -480,17 +577,44 @@ def resolve_mobile_installment_query(
     # -------------------------------------------------------------------------
     # B0. AVERAGE ORDER VALUE (AOV - Gross Revenue thanh_tien)
     # -------------------------------------------------------------------------
-    if has_sales and any(k in t_norm for k in ["trung binh", "binh quan", "bq"]) and any(
-        k in t_norm for k in ["moi don", "1 don", "mot don", "tren mot don", "moi dh", "1 dh", "tren 1 don"]
+    if (
+        has_sales
+        and any(k in t_norm for k in ["trung binh", "binh quan", "bq"])
+        and any(
+            k in t_norm
+            for k in [
+                "moi don",
+                "1 don",
+                "mot don",
+                "tren mot don",
+                "moi dh",
+                "1 dh",
+                "tren 1 don",
+            ]
+        )
     ):
         sbh = context.tables["so_ban_hang"].copy()
-        is_return = sbh["ghi_chu"].astype(str).str.lower().str.contains("trả|tra|huỷ|huy|cancel")
-        returned_orders = set(zip(sbh.loc[is_return, "sheet_name"], sbh.loc[is_return, "stt"]))
-        sbh_clean = sbh[~sbh.set_index(["sheet_name", "stt"]).index.isin(returned_orders)].copy()
+        is_return = (
+            sbh["ghi_chu"]
+            .astype(str)
+            .str.lower()
+            .str.contains("trả|tra|huỷ|huy|cancel")
+        )
+        returned_orders = set(
+            zip(sbh.loc[is_return, "sheet_name"], sbh.loc[is_return, "stt"])
+        )
+        sbh_clean = sbh[
+            ~sbh.set_index(["sheet_name", "stt"]).index.isin(returned_orders)
+        ].copy()
         sbh_clean["m"] = pd.to_datetime(sbh_clean["ngay"]).dt.strftime("%Y-%m")
         if p.start_date and p.end_date:
-            sbh_clean["d_str"] = pd.to_datetime(sbh_clean["ngay"]).dt.strftime("%Y-%m-%d")
-            sub = sbh_clean[(sbh_clean["d_str"] >= p.start_date) & (sbh_clean["d_str"] <= p.end_date)]
+            sbh_clean["d_str"] = pd.to_datetime(sbh_clean["ngay"]).dt.strftime(
+                "%Y-%m-%d"
+            )
+            sub = sbh_clean[
+                (sbh_clean["d_str"] >= p.start_date)
+                & (sbh_clean["d_str"] <= p.end_date)
+            ]
             order_totals = sub.groupby(["sheet_name", "stt"])["thanh_tien"].sum()
             if len(order_totals) > 0:
                 aov = float(order_totals.sum() / len(order_totals))
@@ -509,60 +633,215 @@ def resolve_mobile_installment_query(
     # -------------------------------------------------------------------------
     if "so_no_tra_gop" in context.tables and any(
         k in t_norm
-        for k in ["tra gop", "tien gop", "ky gop", "qua han gop", "cham gop"]
+        for k in [
+            "tra gop",
+            "tien gop",
+            "ky gop",
+            "qua han gop",
+            "cham gop",
+            "gop toi han",
+            "gop den han",
+            "may ky gop",
+            "ky han hom nay",
+        ]
     ):
         tg_df = context.tables["so_no_tra_gop"]
         contracts = parse_contracts(tg_df)
-        as_of = _resolve_installment_as_of(
+        cutoff_day = _extract_cutoff_day(
+            question,
+            t_norm,
             as_of_date,
             context,
             tg_df.get("ngay_gop"),
             tg_df.get("ngay"),
         )
+        if cutoff_day is None:
+            return "abstain", None, "Ngày chốt trả góp không hợp lệ"
+        cutoff_eod = (
+            cutoff_day
+            if cutoff_day == pd.Timestamp.max
+            else cutoff_day + pd.Timedelta(hours=23, minutes=59, seconds=59)
+        )
 
-        # C1. Single customer installments due count: 'khach X toi han may ky gop'
-        if any(k in t_norm for k in ["toi han may ky", "den han may ky", "may ky gop"]):
-            for c in contracts:
-                if strip_accents(c["khach"]) in t_norm:
-                    due_count = 0
-                    for k in range(1, c["so_ky"] + 1):
-                        d_due = get_installment_due_date(c["ngay"], c["due_day"], k)
-                        if d_due <= as_of:
-                            due_count += 1
-                    return "number", due_count, None
+        # C1. Single customer installments due count: 'khach X (gop) toi han may ky'
+        if any(
+            k in t_norm
+            for k in [
+                "toi han may ky",
+                "den han may ky",
+                "may ky gop",
+                "toi han bao nhieu ky",
+                "den han bao nhieu ky",
+            ]
+        ):
+            if any(k in t_norm for k in ["khong tinh hom nay", "truoc hom nay"]):
+                return "abstain", None, "Mốc kỳ hạn loại trừ hôm nay cần kiểm tra thêm"
+            matched = [
+                c
+                for c in contracts
+                if c["ngay"] <= cutoff_day
+                and re.search(
+                    rf"(?<!\w){re.escape(strip_accents(c['khach']))}(?!\w)", t_norm
+                )
+            ]
+            if len(matched) != 1:
+                return (
+                    "abstain",
+                    None,
+                    "Khách hàng có nhiều hợp đồng hoặc không xác định duy nhất một hợp đồng",
+                )
+            target_c = matched[0]
+            due_count = sum(
+                1
+                for k in range(1, target_c["so_ky"] + 1)
+                if get_installment_due_date(target_c["ngay"], target_c["due_day"], k)
+                <= cutoff_day
+            )
+            return "number", due_count, None
 
         # C2. Single customer remaining balance: 'khach X con thieu bao nhieu', 'con lai bao nhieu tien chua gop'
         if any(k in t_norm for k in ["con thieu", "con lai", "chua gop"]):
-            matched_customer = None
-            for c in contracts:
-                if strip_accents(c["khach"]) in t_norm:
-                    matched_customer = c
-                    break
-            if matched_customer:
-                total_c_val = matched_customer["so_ky"] * matched_customer["gop_thang"]
+            matched = [
+                c
+                for c in contracts
+                if c["ngay"] <= cutoff_day
+                and re.search(
+                    rf"(?<!\w){re.escape(strip_accents(c['khach']))}(?!\w)", t_norm
+                )
+            ]
+            if len(matched) > 1:
+                return "abstain", None, "Khách hàng có nhiều hợp đồng trả góp"
+            if len(matched) == 1:
+                target_c = matched[0]
+                total_c_val = target_c["so_ky"] * target_c["gop_thang"]
                 paid_so_far = sum(
                     p["da_gop"]
-                    for p in matched_customer["payments"]
-                    if p["ngay_gop"] <= as_of
+                    for p in target_c["payments"]
+                    if p["ngay_gop"] <= cutoff_eod
                 )
                 rem = max(0.0, total_c_val - paid_so_far)
                 return "number", int(round(rem)), None
 
-        # C3, C4, C5: Fragile storewide overdue and balance aggregates -> abstain under Silence is Free
-        if any(
-            k in t_norm
-            for k in [
-                "ke ca",
-                "chua toi han",
-                "tong so tien gop",
-                "qua han",
-                "tre han",
-                "cham gop",
-                "cham",
-                "chua dong bao nhieu tien",
-            ]
+        # C3. Storewide remaining installment balance including un-due installments
+        if (
+            any(
+                k in t_norm
+                for k in ["con lai", "chua tra", "chua gop", "con thieu", "chua dong"]
+            )
+            and any(
+                k in t_norm
+                for k in [
+                    "ke ca",
+                    "tinh ca",
+                    "chua toi han",
+                    "chua den han",
+                    "con lai bao nhieu tien chua gop",
+                ]
+            )
+            and not any(k in t_norm for k in ["qua han", "tre han", "cham gop", "cham"])
         ):
-            return "abstain", None, "Complex installment aggregate abstained under Silence is Free"
+            total_rem = 0.0
+            for c in contracts:
+                if c["ngay"] > cutoff_day:
+                    continue
+                total_c_val = float(c["so_ky"] * c["gop_thang"])
+                paid_c = sum(
+                    p["da_gop"] for p in c["payments"] if p["ngay_gop"] <= cutoff_eod
+                )
+                total_rem += max(0.0, total_c_val - paid_c)
+            return "number", int(round(total_rem)), None
+
+        # C4 & C5. Overdue customer count and overdue unpaid amount with Boundary Agreement Guard (< vs <=)
+        if any(k in t_norm for k in ["qua han", "tre han", "cham gop"]):
+            cust_lt: set[str] = set()
+            cust_le: set[str] = set()
+            tot_lt = 0.0
+            tot_le = 0.0
+            for c in contracts:
+                if c["ngay"] > cutoff_day:
+                    continue
+                paid = sum(
+                    p["da_gop"] for p in c["payments"] if p["ngay_gop"] <= cutoff_eod
+                )
+                total_c = float(c["so_ky"] * c["gop_thang"])
+                due_lt = 0.0
+                due_le = 0.0
+                for k in range(1, c["so_ky"] + 1):
+                    d_due = get_installment_due_date(c["ngay"], c["due_day"], k)
+                    if d_due < cutoff_day:
+                        due_lt += c["gop_thang"]
+                    if d_due <= cutoff_day:
+                        due_le += c["gop_thang"]
+                ov_lt = max(0.0, min(due_lt, total_c) - paid)
+                ov_le = max(0.0, min(due_le, total_c) - paid)
+                cname = strip_accents(c["khach"])
+                if ov_lt > 0:
+                    cust_lt.add(cname)
+                    tot_lt += ov_lt
+                if ov_le > 0:
+                    cust_le.add(cname)
+                    tot_le += ov_le
+
+            asks_cust_count = bool(
+                re.search(
+                    r"\b(?:may|bao nhieu|co may|co bao nhieu|so)\s+(?:khach|nguoi)\b",
+                    t_norm,
+                )
+            ) and not any(
+                k in t_norm
+                for k in [
+                    "bao nhieu tien",
+                    "so tien",
+                    "tong tien",
+                    "tien cham",
+                    "tien gop",
+                ]
+            )
+            if asks_cust_count:
+                if len(cust_lt) != len(cust_le):
+                    return (
+                        "abstain",
+                        None,
+                        "Số khách quá hạn nhạy cảm ranh giới < và <= ngày chốt",
+                    )
+                return "number", len(cust_lt), None
+
+            asks_overdue_amt = (
+                any(
+                    k in t_norm
+                    for k in [
+                        "tien gop qua han",
+                        "tien cham gop",
+                        "cac ky gop",
+                        "ky gop da qua han",
+                        "tien qua han",
+                    ]
+                )
+                and any(
+                    k in t_norm
+                    for k in [
+                        "bao nhieu tien",
+                        "tong cong",
+                        "tong tien",
+                        "so tien",
+                        "chua tra",
+                        "chua dong",
+                        "bao nhieu",
+                    ]
+                )
+                and not any(k in t_norm for k in ["bao nhieu ky", "may ky", "hop dong"])
+            )
+            if asks_overdue_amt:
+                amt_lt, amt_le = int(round(tot_lt)), int(round(tot_le))
+                if amt_lt != amt_le:
+                    return (
+                        "abstain",
+                        None,
+                        "Tiền góp quá hạn nhạy cảm ranh giới < và <= ngày chốt",
+                    )
+                return "number", amt_lt, None
+
+        return "abstain", None, "Mẫu câu hỏi trả góp chưa đủ rõ để trả lời an toàn"
 
     # -------------------------------------------------------------------------
     # C+. UNIFIED DEBT & INSTALLMENT LEDGER (so_no_so_no + so_no_tra_gop)
@@ -614,22 +893,45 @@ def resolve_mobile_installment_query(
             q_months = _quarter_to_months(p.quarter_str)
             sub = bh[bh["nhan_m"].isin(q_months)]
             if any(k in t_norm for k in ["%", "phan tram"]):
-                if "so_ban_hang" in context.tables and "so_ban_hang_ghi_tat" in context.tables:
+                if (
+                    "so_ban_hang" in context.tables
+                    and "so_ban_hang_ghi_tat" in context.tables
+                ):
                     sbh = context.tables["so_ban_hang"].copy()
-                    is_ret = sbh["ghi_chu"].astype(str).str.lower().str.contains("trả|tra|huỷ|huy|cancel")
-                    ret_ords = set(zip(sbh.loc[is_ret, "sheet_name"], sbh.loc[is_ret, "stt"]))
-                    sbh_cl = sbh[~sbh.set_index(["sheet_name", "stt"]).index.isin(ret_ords)].copy()
+                    is_ret = (
+                        sbh["ghi_chu"]
+                        .astype(str)
+                        .str.lower()
+                        .str.contains("trả|tra|huỷ|huy|cancel")
+                    )
+                    ret_ords = set(
+                        zip(sbh.loc[is_ret, "sheet_name"], sbh.loc[is_ret, "stt"])
+                    )
+                    sbh_cl = sbh[
+                        ~sbh.set_index(["sheet_name", "stt"]).index.isin(ret_ords)
+                    ].copy()
                     gt_map = {}
                     for _, r in context.tables["so_ban_hang_ghi_tat"].iterrows():
                         gt_map[norm_item(r["ghi_tat"])] = r["loai"]
                         gt_map[norm_item(r["ten_hang"])] = r["loai"]
                     sbh_cl["m"] = pd.to_datetime(sbh_cl["ngay"]).dt.strftime("%Y-%m")
-                    sbh_cl["loai"] = sbh_cl["hang"].apply(norm_item).map(lambda x: gt_map.get(x, "khac"))
-                    sub_may = sbh_cl[sbh_cl["m"].isin(q_months) & sbh_cl["loai"].isin(["máy mới", "máy cũ"])]
+                    sbh_cl["loai"] = (
+                        sbh_cl["hang"]
+                        .apply(norm_item)
+                        .map(lambda x: gt_map.get(x, "khac"))
+                    )
+                    sub_may = sbh_cl[
+                        sbh_cl["m"].isin(q_months)
+                        & sbh_cl["loai"].isin(["máy mới", "máy cũ"])
+                    ]
                     tot_may = sub_may["sl"].sum()
                     if tot_may > 0:
                         return "percent", round(len(sub) / tot_may * 100, 2), None
-                return "abstain", None, "Warranty sales ratio percentage abstained for safety"
+                return (
+                    "abstain",
+                    None,
+                    "Warranty sales ratio percentage abstained for safety",
+                )
             return "number", len(sub), None
 
     # -------------------------------------------------------------------------
@@ -637,9 +939,18 @@ def resolve_mobile_installment_query(
     # -------------------------------------------------------------------------
     if has_sales and "so_ban_hang_ghi_tat" in context.tables:
         sbh = context.tables["so_ban_hang"].copy()
-        is_return = sbh["ghi_chu"].astype(str).str.lower().str.contains("trả|tra|huỷ|huy|cancel")
-        returned_orders = set(zip(sbh.loc[is_return, "sheet_name"], sbh.loc[is_return, "stt"]))
-        sbh_clean = sbh[~sbh.set_index(["sheet_name", "stt"]).index.isin(returned_orders)].copy()
+        is_return = (
+            sbh["ghi_chu"]
+            .astype(str)
+            .str.lower()
+            .str.contains("trả|tra|huỷ|huy|cancel")
+        )
+        returned_orders = set(
+            zip(sbh.loc[is_return, "sheet_name"], sbh.loc[is_return, "stt"])
+        )
+        sbh_clean = sbh[
+            ~sbh.set_index(["sheet_name", "stt"]).index.isin(returned_orders)
+        ].copy()
 
         gt = context.tables["so_ban_hang_ghi_tat"].copy()
 
@@ -737,7 +1048,9 @@ def resolve_mobile_installment_query(
             k in t_norm for k in ["nhieu may nhat", "chay nhat"]
         ):
             if target_month:
-                sub = sbh_clean[(sbh_clean["m"] == target_month) & (sbh_clean["loai"] == "máy mới")]
+                sub = sbh_clean[
+                    (sbh_clean["m"] == target_month) & (sbh_clean["loai"] == "máy mới")
+                ]
                 if not sub.empty:
                     top_m = sub.groupby("canonical_name")["sl"].sum().idxmax()
                     return "string", top_m, None
@@ -750,24 +1063,42 @@ def resolve_mobile_installment_query(
                 reverse=True,
             )
             matched_canon = next(
-                (cname for cname in canon_names if len(strip_accents(cname)) >= 4 and strip_accents(cname) in t_norm),
+                (
+                    cname
+                    for cname in canon_names
+                    if len(strip_accents(cname)) >= 4 and strip_accents(cname) in t_norm
+                ),
                 None,
             )
             if not matched_canon:
                 # Try stripped family name prefix (before capacity/color like iPhone 13)
                 families = sorted(
-                    {extract_dong_may(c) for c in canon_names if len(strip_accents(extract_dong_may(c))) >= 5},
+                    {
+                        extract_dong_may(c)
+                        for c in canon_names
+                        if len(strip_accents(extract_dong_may(c))) >= 5
+                    },
                     key=len,
                     reverse=True,
                 )
                 fam = next(
-                    (f for f in families if re.search(rf"(?<!\w){re.escape(strip_accents(f))}(?!\w)", t_norm)),
+                    (
+                        f
+                        for f in families
+                        if re.search(
+                            rf"(?<!\w){re.escape(strip_accents(f))}(?!\w)", t_norm
+                        )
+                    ),
                     None,
                 )
                 if fam:
                     sub = sbh_clean[
                         (sbh_clean["m"] == target_month)
-                        & (sbh_clean["canonical_name"].str.contains(fam, case=False, regex=False))
+                        & (
+                            sbh_clean["canonical_name"].str.contains(
+                                fam, case=False, regex=False
+                            )
+                        )
                     ]
                     if not sub.empty:
                         return "number", int(sub["sl"].sum()), None

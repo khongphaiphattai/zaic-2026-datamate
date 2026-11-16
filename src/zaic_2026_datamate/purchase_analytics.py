@@ -202,7 +202,7 @@ def _first_col(df: pd.DataFrame, candidates: tuple[str, ...]) -> str | None:
 
 def _to_numeric_series(s: pd.Series) -> pd.Series:
     num = pd.to_numeric(s, errors="coerce")
-    if num.isna().any() and s.dtype == object:
+    if num.isna().any() and not pd.api.types.is_numeric_dtype(s.dtype):
         parsed = s.map(lambda v: clean_vietnamese_currency(v) if pd.notna(v) else None)
         num = num.fillna(pd.to_numeric(parsed, errors="coerce"))
     return num
@@ -292,7 +292,10 @@ def _discover_purchase_schema(tables: dict[str, pd.DataFrame]) -> _PurchaseSchem
                 "ten_goi",
             ),
         )
-        item_id_col = _first_col(df, ("ma_hang_hoa", "ma_hang", "ma_sku", "ma_sp"))
+        item_id_col = _first_col(
+            df,
+            ("ma_hang_hoa", "ma_hang", "ma_sku", "ma_sp", "ma_vach", "ma_hang_ban"),
+        )
         if date_col and (
             (qty_col or item_name_col or item_id_col)
             and (price_col or amount_col or dedup_spend_col)
@@ -310,7 +313,9 @@ def _discover_purchase_schema(tables: dict[str, pd.DataFrame]) -> _PurchaseSchem
                 detail_name=t,
                 join_col=jcol,
                 date_col=date_col,
-                status_col=_first_col(df, ("trang_thai", "tinh_trang")),
+                status_col=_first_col(
+                    df, ("trang_thai", "tinh_trang", "trang_thai_phieu")
+                ),
                 spend_col=amount_col or dedup_spend_col,
                 dedup_spend_col=use_dedup,
                 supplier_name_col=_first_col(
@@ -410,7 +415,9 @@ def _discover_purchase_schema(tables: dict[str, pd.DataFrame]) -> _PurchaseSchem
             detail_name=dt,
             join_col=hj,
             date_col=dcol,
-            status_col=_first_col(hdf, ("trang_thai", "tinh_trang")),
+            status_col=_first_col(
+                hdf, ("trang_thai_phieu", "trang_thai", "tinh_trang")
+            ),
             spend_col=scol,
             supplier_id_col=sup_id_col,
             supplier_name_col=sup_name_col,
@@ -917,6 +924,11 @@ def _normalize_purchase_dialect(qn: str) -> str:
     }
     for src, dst in repls.items():
         qn = re.sub(rf"\b{re.escape(src)}\b", dst, qn)
+    qn = re.sub(
+        r"\bcat\s+hang(?=\s+(?:het|bao|bn|bnhiu|nhieu|tong|thang|nay|trong))\b",
+        "nhap hang",
+        qn,
+    )
     return qn
 
 
@@ -924,7 +936,8 @@ def resolve_purchase_query(
     question: str, context: BusinessContext, as_of_date: str | None = None
 ) -> tuple[str, Any, str | None]:
     """Resolve schema-general purchase analytics and deterministic unanswerable checks."""
-    q_telex = normalize_query_telex(question)
+    q_pre = re.sub(r"\bcất\s+hàng\b", "nhập hàng", question, flags=re.IGNORECASE)
+    q_telex = normalize_query_telex(q_pre)
     qn = _normalize_purchase_dialect(norm_vn(q_telex))
 
     tables = _select_base_tables(context)

@@ -23,11 +23,15 @@ from zaic_2026_datamate.intent_parser import parse_time_expressions
 
 def strip_accents(s: str) -> str:
     """Strip accents and lowercase a string."""
-    return "".join(
-        c
-        for c in unicodedata.normalize("NFD", str(s))
-        if unicodedata.category(c) != "Mn"
-    ).lower().replace("đ", "d")
+    return (
+        "".join(
+            c
+            for c in unicodedata.normalize("NFD", str(s))
+            if unicodedata.category(c) != "Mn"
+        )
+        .lower()
+        .replace("đ", "d")
+    )
 
 
 def resolve_mother_baby_query(
@@ -39,12 +43,51 @@ def resolve_mother_baby_query(
     if "ban_hang" not in context.tables:
         return "abstain", None, "Không tìm thấy bảng ban_hang"
 
-    t_norm = strip_accents(question)
-    p = parse_time_expressions(question, as_of_date=as_of_date)
+    import re
+
+    from zaic_2026_datamate.cleaner import normalize_query_telex
+    from zaic_2026_datamate.semantic_contract import parse_enhanced_period
+
+    q_clean = normalize_query_telex(question)
+    for pat, repl in (
+        (r"\btrog\b", "trong"),
+        (r"\bkua\b", "của"),
+        (r"\bkủa\b", "của"),
+        (r"\bmik\b", "mình"),
+        (r"\bmk\b", "mình"),
+        (r"\bjup\b", "giúp"),
+        (r"\bjùm\b", "giùm"),
+        (r"\bjum\b", "giùm"),
+        (r"\bbit\b", "biết"),
+        (r"\bbít\b", "biết"),
+        (r"\bdc\b", "được"),
+    ):
+        q_clean = re.sub(pat, repl, q_clean, flags=re.IGNORECASE)
+
+    t_norm = strip_accents(q_clean)
+    p = parse_time_expressions(q_clean, as_of_date=as_of_date)
+    if not p.month_str:
+        p_enh = parse_enhanced_period(q_clean, as_of_date)
+        if p_enh.month_str:
+            p.month_str = p_enh.month_str
 
     target_month = p.month_str
     is_mtd = False
-    if any(k in t_norm for k in ["thang nay", "thang ni", "th nay", "toi nay", "den nay", "hom nay", "bua ni"]) and as_of_date:
+    if (
+        any(
+            k in t_norm
+            for k in [
+                "thang nay",
+                "thang ni",
+                "th nay",
+                "toi nay",
+                "den nay",
+                "hom nay",
+                "bua ni",
+            ]
+        )
+        and as_of_date
+    ):
         target_month = as_of_date[:7]
         if not as_of_date.endswith(("-28", "-29", "-30", "-31")):
             is_mtd = True
@@ -53,15 +96,35 @@ def resolve_mother_baby_query(
 
     # 1. Unanswerable guards
     if any(k in t_norm for k in ["truong chinh", "lac long quan", "khach o duong"]):
-        return "unanswerable", None, "Cửa hàng không ghi nhận địa chỉ chi tiết theo tuyến đường của khách hàng"
+        return (
+            "unanswerable",
+            None,
+            "Cửa hàng không ghi nhận địa chỉ chi tiết theo tuyến đường của khách hàng",
+        )
     if any(k in t_norm for k in ["khach nam", "khach nu", "gioi tinh"]):
-        return "unanswerable", None, "Hệ thống không thu thập thông tin giới tính của khách hàng"
+        return (
+            "unanswerable",
+            None,
+            "Hệ thống không thu thập thông tin giới tính của khách hàng",
+        )
     if any(k in t_norm for k in ["dang tin cay", "uy tin", "ncc nao tot"]):
-        return "unanswerable", None, "Không có tiêu chí khách quan xác định mức độ uy tín của nhà cung cấp"
+        return (
+            "unanswerable",
+            None,
+            "Không có tiêu chí khách quan xác định mức độ uy tín của nhà cung cấp",
+        )
 
     # Clean ban_hang (exclude cancelled / refunded orders completely per Rulebook Section 1)
     bh = context.tables["ban_hang"].copy()
-    cancelled_hds = set(bh.loc[bh["ghi_chu"].astype(str).str.lower().str.contains("cancel|huỷ|huy|trả|tra"), "hd"])
+    cancelled_hds = set(
+        bh.loc[
+            bh["ghi_chu"]
+            .astype(str)
+            .str.lower()
+            .str.contains("cancel|huỷ|huy|trả|tra"),
+            "hd",
+        ]
+    )
     bh_valid = bh[~bh["hd"].isin(cancelled_hds)].copy()
     bh_valid["m"] = pd.to_datetime(bh_valid["ngay"]).dt.strftime("%Y-%m")
     bh_valid["d"] = pd.to_datetime(bh_valid["ngay"]).dt.strftime("%Y-%m-%d")
@@ -101,7 +164,11 @@ def resolve_mother_baby_query(
     if any(k in t_norm for k in ["dung diem", "tru diem", "diem tru"]):
         sub = get_period_sub(bh_valid)
         if not sub.empty:
-            p_sub = sub[sub["ten_hang"].astype(str).str.contains(r"Dùng \d+ điểm", regex=True, na=False)]
+            p_sub = sub[
+                sub["ten_hang"]
+                .astype(str)
+                .str.contains(r"Dùng \d+ điểm", regex=True, na=False)
+            ]
             return "number", int(abs(p_sub["tt"].sum())), None
 
     # -------------------------------------------------------------------------
@@ -130,19 +197,32 @@ def resolve_mother_baby_query(
         sub = get_period_sub(merged)
 
         # E1. Milk powder size counts: 'sua bot so 4', 'sua bot so 2'
-        if "sua bot" in t_norm and any(k in t_norm for k in ["so 1", "so 2", "so 3", "so 4"]):
-            for s_num, s_label in [("so 1", "Số 1"), ("so 2", "Số 2"), ("so 3", "Số 3"), ("so 4", "Số 4")]:
+        if "sua bot" in t_norm and any(
+            k in t_norm for k in ["so 1", "so 2", "so 3", "so 4"]
+        ):
+            for s_num, s_label in [
+                ("so 1", "Số 1"),
+                ("so 2", "Số 2"),
+                ("so 3", "Số 3"),
+                ("so 4", "Số 4"),
+            ]:
                 if s_num in t_norm:
                     # Top brand for milk powder size
-                    if any(k in t_norm for k in ["hang nao", "nhan nao", "thuong hieu nao"]) and any(
-                        k in t_norm for k in ["nhieu nhat", "nhieu lon nhat", "chay nhat"]
+                    if any(
+                        k in t_norm for k in ["hang nao", "nhan nao", "thuong hieu nao"]
+                    ) and any(
+                        k in t_norm
+                        for k in ["nhieu nhat", "nhieu lon nhat", "chay nhat"]
                     ):
                         m_sub = sub[sub["so_size"] == s_label]
                         if not m_sub.empty:
                             top_b = m_sub.groupby("hang")["sl"].sum().idxmax()
                             return "string", top_b, None
                     # Total volume of milk powder size
-                    if any(k in t_norm for k in ["may lon", "bnhiu lon", "bao nhieu lon", "so lon"]):
+                    if any(
+                        k in t_norm
+                        for k in ["may lon", "bnhiu lon", "bao nhieu lon", "so lon"]
+                    ):
                         m_sub = sub[sub["so_size"] == s_label]
                         return "number", int(m_sub["sl"].sum()), None
 
@@ -166,12 +246,17 @@ def resolve_mother_baby_query(
                         if tot_sl > 0:
                             return "percent", round(sz_sl / tot_sl * 100, 2), None
                     # Total volume of diaper size
-                    if any(k in t_norm for k in ["may bich", "bnhiu bich", "bao nhieu bich"]):
+                    if any(
+                        k in t_norm
+                        for k in ["may bich", "bnhiu bich", "bao nhieu bich"]
+                    ):
                         sz_sub = sub[sub["so_size"] == sz_label]
                         return "number", int(sz_sub["sl"].sum()), None
 
         # E3. Diaper brand share: 'bim bobby', 'bim moony', 'bim huggies', 'bim merries'
-        if any(k in t_norm for k in ["bim", "ta"]) and any(k in t_norm for k in ["%", "phan tram"]):
+        if any(k in t_norm for k in ["bim", "ta"]) and any(
+            k in t_norm for k in ["%", "phan tram"]
+        ):
             for b_kw, b_label in [
                 ("bobby", "Bobby"),
                 ("moony", "Moony"),
@@ -197,19 +282,25 @@ def resolve_mother_baby_query(
                 if any(k in t_norm for k in ["%", "phan tram"]):
                     tot_rev = sub[
                         ~sub["ten_hang"].isin(["Voucher", "Phí ship"])
-                        & ~sub["ten_hang"].astype(str).str.contains(r"Dùng \d+ điểm", regex=True, na=False)
+                        & ~sub["ten_hang"]
+                        .astype(str)
+                        .str.contains(r"Dùng \d+ điểm", regex=True, na=False)
                     ]["tt"].sum()
                     cat_rev = sub[sub["nhom"] == cat_label]["tt"].sum()
                     if tot_rev > 0:
                         return "percent", round(cat_rev / tot_rev * 100, 2), None
-                if any(k in t_norm for k in ["bao nhieu tien", "bnhiu", "duoc bao nhieu"]):
+                if any(
+                    k in t_norm for k in ["bao nhieu tien", "bnhiu", "duoc bao nhieu"]
+                ):
                     cat_rev = sub[sub["nhom"] == cat_label]["tt"].sum()
                     return "number", int(round(cat_rev)), None
 
     # -------------------------------------------------------------------------
     # F. CHANNEL SHARE: Tại tiệm vs Zalo vs Sàn TMĐT
     # -------------------------------------------------------------------------
-    if any(k in t_norm for k in ["tai quay", "tai tiem"]) and any(k in t_norm for k in ["%", "phan tram"]):
+    if any(k in t_norm for k in ["tai quay", "tai tiem"]) and any(
+        k in t_norm for k in ["%", "phan tram"]
+    ):
         sub = get_period_sub(bh_valid)
         if not sub.empty:
             t_rev = sub["tt"].sum()

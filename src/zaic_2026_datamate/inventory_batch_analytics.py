@@ -48,10 +48,18 @@ def find_df_col(
 def normalize_inventory_text(text: str) -> str:
     """Normalize Vietnamese text and common Telex/repeated-character typos for inventory queries."""
     base = normalize_debt_text(text)
+    base = re.sub(r"\btrog\b", "trong", base)
     base = re.sub(r"\bheets?\b", "het", base)
     base = re.sub(r"\bnhieeu\b", "nhieu", base)
     base = re.sub(r"\bbnhiu\b", "bao nhieu", base)
     base = re.sub(r"\bdem\s+het\b", "den het", base)
+    base = re.sub(
+        r"\broi\s+(?:zo|vo|vao)\s+(\d+\s+ngay\s+(?:toi|nua|sau))\b",
+        r"trong \1",
+        base,
+    )
+    base = re.sub(r"\bcan\s+date\s+nhat\b", "gan het han nhat", base)
+    base = re.sub(r"\bnhap\s+zia\b", "nhap ve", base)
     return base
 
 
@@ -148,7 +156,10 @@ def parse_hsd_date_range(
         except ValueError:
             return None
 
-    m_days = re.search(r"\btrong\s+(\d+)\s+ngay\s+toi\b", q_norm)
+    m_days = re.search(
+        r"\b(?:trong\s+(?:vong\s+)?|toi\s+han\s+trong\s+)(\d+)\s+ngay\s+(?:toi|nua|sau)\b",
+        q_norm,
+    )
     if m_days and as_of_date:
         try:
             d1 = pd.Timestamp(as_of_date).normalize()
@@ -211,7 +222,19 @@ def extract_product_master(context: BusinessContext) -> ProductMasterSchema | No
         ):
             continue
         id_col = find_df_col(
-            df, ["ma_hang_hoa", "ma_hang", "ma_sp", "id_sp", "ma_san_pham", "ma_hh"]
+            df,
+            [
+                "ma_hang_hoa",
+                "ma_hang",
+                "ma_sp",
+                "id_sp",
+                "ma_san_pham",
+                "ma_san_pham_ban",
+                "ma_hh",
+                "ma_sku",
+                "ma_h",
+                "ma_vach",
+            ],
         )
         name_col = find_df_col(
             df,
@@ -223,6 +246,7 @@ def extract_product_master(context: BusinessContext) -> ProductMasterSchema | No
                 "ten_sp",
                 "mon",
                 "hang_hoa",
+                "hang_ban",
                 "hang",
                 "product",
             ],
@@ -256,14 +280,65 @@ def extract_product_master(context: BusinessContext) -> ProductMasterSchema | No
         tl = tname.lower()
         if df.empty or _DUP_TABLE_RE.search(tl):
             continue
+        if any(
+            bad in tl
+            for bad in (
+                "chi_tiet_hoa_don",
+                "chi_tiet_don",
+                "chi_tiet_nhap",
+                "nhap_hang",
+                "phieu_nhap",
+                "lich_su_gia",
+                "bang_gia",
+                "the_kho",
+                "lo_hang",
+                "khach_hang",
+                "hoa_don",
+                "don_hang",
+            )
+        ):
+            continue
         factor_col = find_df_col(
             df, ["he_so_quy_doi", "quy_doi", "ti_le_quy_doi", "he_so_qd", "bang"]
         )
         uname_col = find_df_col(
-            df, ["don_vi_tinh", "dvt", "don_vi_quy_doi", "don_vi", "dv_lon"]
+            df,
+            [
+                "don_vi_tinh",
+                "dvt",
+                "don_vi_quy_doi",
+                "quy_cach",
+                "ten_don_vi",
+                "don_vi",
+                "dv_lon",
+            ],
         )
-        pid_col = find_df_col(df, ["ma_hang_hoa", "ma_hang", "ma_sp", "id_sp"])
-        pname_col = find_df_col(df, ["ten_san_pham", "ten_hang", "hang", "product"])
+        pid_col = find_df_col(
+            df,
+            [
+                "ma_hang_hoa",
+                "ma_hang",
+                "ma_sp",
+                "id_sp",
+                "ma_vach",
+                "ma_sku",
+                "ma_h",
+                "ma_san_pham",
+                "ma_san_pham_ban",
+            ],
+        )
+        pname_col = find_df_col(
+            df,
+            [
+                "ten_san_pham",
+                "ten_hang_hoa",
+                "ten_hang",
+                "hang_hoa",
+                "hang_ban",
+                "hang",
+                "product",
+            ],
+        )
         if factor_col and uname_col and (pid_col or pname_col):
             unit_df = df.copy()
             unit_pid_col = pid_col
@@ -360,8 +435,9 @@ def get_unit_factor(
 
     # Check if matches base unit directly
     prod_row: pd.Series | None = None
-    if product_id and master.id_col and master.id_col in master.products_df.columns:
-        m = master.products_df[master.id_col].astype(str) == str(product_id)
+    pid_str = str(product_id).strip() if product_id is not None else ""
+    if pid_str and master.id_col and master.id_col in master.products_df.columns:
+        m = master.products_df[master.id_col].astype(str).str.strip() == pid_str
         if m.any():
             prod_row = master.products_df.loc[m].iloc[0]
     elif product_name:
@@ -375,8 +451,8 @@ def get_unit_factor(
     if master.unit_df is not None and master.unit_name_col and master.unit_factor_col:
         sub = master.unit_df
         matched = pd.DataFrame()
-        if product_id and master.unit_pid_col and master.unit_pid_col in sub.columns:
-            matched = sub[sub[master.unit_pid_col].astype(str) == str(product_id)]
+        if pid_str and master.unit_pid_col and master.unit_pid_col in sub.columns:
+            matched = sub[sub[master.unit_pid_col].astype(str).str.strip() == pid_str]
         elif (
             product_name
             and master.unit_pname_col
@@ -430,6 +506,7 @@ def _max_transaction_date(context: BusinessContext) -> pd.Timestamp | None:
                 "ngay_ban",
                 "ngay_lap",
                 "ngay_dat_hang",
+                "ngay_xuat",
                 "ngay_nhap_kho",
                 "ngay_nhap",
                 "ngay_gio_phat_sinh",
@@ -499,15 +576,38 @@ def _extract_stock_df_at_cutoff(
         ):
             continue
         qty_col = find_df_col(
-            df, ["ton_cuoi_ky", "ton_kho", "ton_thuc", "so_luong_ton"]
+            df, ["ton_cuoi_ky", "ton_kho", "ton_thuc", "ton_cuoi", "so_luong_ton"]
         )
-        pid_col = find_df_col(df, ["ma_hang_hoa", "ma_hang", "ma_sp", "id_sp"])
+        pid_col = find_df_col(
+            df,
+            [
+                "ma_hang_hoa",
+                "ma_hang",
+                "ma_sp",
+                "id_sp",
+                "ma_san_pham",
+                "ma_san_pham_ban",
+                "ma_sku",
+                "ma_h",
+            ],
+        )
         pname_col = find_df_col(
-            df, ["ten_hang", "ten_hang_hoa", "hang_hoa", "product", "ten_san_pham"]
+            df,
+            [
+                "ten_hang",
+                "ten_hang_hoa",
+                "hang_hoa",
+                "hang_ban",
+                "hang",
+                "product",
+                "ten_san_pham",
+                "ten_sp",
+                "ten_goi",
+            ],
         )
         unit_col = find_df_col(df, ["dvt", "don_vi", "don_vi_tinh"])
         if qty_col and (pid_col or pname_col):
-            score = 20 if "ton_kho" in tl else 10
+            score = 20 if "ton_kho" in tl else (15 if "danh_muc" in tl else 10)
             snap_candidates.append(
                 (score, tname, df, pid_col, pname_col, unit_col, qty_col)
             )
@@ -916,7 +1016,9 @@ def _resolve_inventory_cost(
     if master.id_col and stock_df["_pid"].notna().all():
         cmap = costs[[master.id_col, "_cost"]].drop_duplicates(master.id_col)
         cmap.columns = ["_pid", "_cost"]
-        cmap["_pid"] = cmap["_pid"].astype(str)
+        cmap["_pid"] = cmap["_pid"].astype(str).str.strip()
+        stock_df = stock_df.copy()
+        stock_df["_pid"] = stock_df["_pid"].astype(str).str.strip()
         joined = stock_df.merge(cmap, on="_pid", how="left")
     else:
         cmap = costs[["_pname_clean", "_cost"]].drop_duplicates("_pname_clean")
@@ -1039,7 +1141,7 @@ def _resolve_batch_hsd(
 
     # 4. List of expiring products sorted by HSD ascending
     if re.search(
-        r"\b(?:hang\s+nao|mat\s+hang\s+nao|san\s+pham\s+nao|sp\s+nao|nhung\s+(?:sp|san\s+pham|mat\s+hang|hang)\s+nao)\b",
+        r"\b(?:hang\s+nao|mat\s+hang\s+nao|san\s+pham\s+nao|sp\s+nao|(?:cac|nhung)\s+(?:sp|san\s+pham|mat\s+hang|hang)(?:\s+nao)?|(?:ke|liet\s+ke)\b.*?\b(?:sp|san\s+pham|mat\s+hang|thuoc))\b",
         q_norm,
     ):
         if sub.empty:

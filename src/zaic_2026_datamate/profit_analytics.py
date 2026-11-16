@@ -8,6 +8,7 @@ from typing import Any
 
 import pandas as pd
 
+from zaic_2026_datamate.cleaner import normalize_query_telex
 from zaic_2026_datamate.data_loader import BusinessContext, parse_mixed_excel_dates
 from zaic_2026_datamate.debt_analytics import (
     extract_month_ym,
@@ -87,10 +88,36 @@ class ProfitSchema:
     max_ym: str | None
 
 
+def _parse_qty_series(series: pd.Series) -> pd.Series:
+    """Parse numeric quantities including unit-suffixed strings like '1 ly' or '2 hộp'."""
+    num = pd.to_numeric(series, errors="coerce")
+    if num.isna().any() and not pd.api.types.is_numeric_dtype(series.dtype):
+        need = num.isna() & series.notna()
+        extracted = (
+            series[need]
+            .astype(str)
+            .str.extract(r"^\s*([+-]?\d+(?:[.,]\d+)?)\b", expand=False)
+            .str.replace(",", ".", regex=False)
+        )
+        num = num.copy()
+        num.loc[need] = pd.to_numeric(extracted, errors="coerce")
+    return num.fillna(0.0)
+
+
 def _build_product_name_map(context: BusinessContext) -> dict[str, str]:
     """Map product ID to canonical display name from product master tables."""
     pid_to_name: dict[str, str] = {}
-    id_cands = ("ma_hang_hoa", "ma_hang", "ma_sp", "ma_sku", "product_id", "id_sp")
+    id_cands = (
+        "ma_hang_hoa",
+        "ma_hang",
+        "ma_sp",
+        "ma_sku",
+        "product_id",
+        "id_sp",
+        "ma_san_pham",
+        "ma_h",
+        "ma_hh",
+    )
     name_cands = (
         "ten_goi",
         "ten_hang_hoa",
@@ -159,7 +186,17 @@ def _schema_has_any_cost(context: BusinessContext) -> bool:
 
 def _select_expense_table(context: BusinessContext) -> tuple[pd.DataFrame | None, bool]:
     """Locate dedicated operating expense table (date + amount) and check for ambiguous cashbook expenses."""
-    date_cands = ("ngay_chi", "ngay", "thoi_gian", "ngay_lap", "date", "thoi_diem")
+    date_cands = (
+        "ngay_chi",
+        "ngay_mua",
+        "ngay",
+        "thoi_gian",
+        "ngay_lap",
+        "date",
+        "thoi_diem",
+        "ngay_chi_phi",
+        "ngay_phat_sinh",
+    )
     val_cands = ("so_tien", "gia_tri", "tien_chi", "tien", "amount", "thanh_tien")
     for tname, df in context.tables.items():
         tl = tname.lower()
@@ -260,6 +297,24 @@ def _select_header_and_detail_tables(
         if re.search(r"_\d+$", tl) and re.sub(r"_\d+$", "", tl) in context.tables:
             continue
         if tl == "ban_hang_tong_hop" or tl.startswith("ban_hang_tong_hop_"):
+            cols_l = {c.lower() for c in df.columns}
+            has_line_cols = (
+                bool(cols_l & _COST_COL_NAMES)
+                and any(
+                    c in cols_l
+                    for c in ("thanh_tien", "thanh_tien_d", "tri_gia", "tong_tien")
+                )
+                and any(
+                    c in cols_l
+                    for c in ("so_luong", "slg", "sl", "s", "qty", "quantity")
+                )
+                and any(c in cols_l for c in date_cands)
+            )
+            has_canonical_bhth = "ban_hang_tong_hop" in {
+                x.lower() for x in context.tables
+            }
+            if has_line_cols and (tl == "ban_hang_tong_hop" or not has_canonical_bhth):
+                detail_cands.append(tname)
             continue
         if any(k in tl for k in non_sales_doc_kw):
             continue
@@ -297,12 +352,12 @@ def _select_header_and_detail_tables(
             ):
                 header_cands.append(tname)
 
-    def _detail_sort_key(t: str) -> tuple[int, int, str]:
+    def _detail_sort_key(t: str) -> tuple[int, int, int, str]:
         dcols = {c.lower() for c in context.tables[t].columns}
         has_cost = int(
             bool(dcols & {"gia_von_luc_ban", "gia_von", "don_gia_von", "gia_von_sp"})
         )
-        return (-has_cost, len(t), t)
+        return (-has_cost, int("tong_hop" in t.lower()), len(t), t)
 
     if header_cands and detail_cands:
         header_cands.sort(
@@ -348,10 +403,24 @@ def extract_profit_schema(context: BusinessContext) -> ProfitSchema:
     line_cost_col = find_col(
         dcols, ("gia_von_luc_ban", "gia_von", "don_gia_von", "gia_von_sp")
     )
-    line_rev_col = find_col(dcols, ("thanh_tien", "tri_gia", "tong_tien"))
-    line_qty_col = find_col(dcols, ("so_luong", "slg", "sl", "qty", "quantity"))
+    line_rev_col = find_col(
+        dcols, ("thanh_tien", "thanh_tien_d", "tri_gia", "tong_tien")
+    )
+    line_qty_col = find_col(dcols, ("so_luong", "slg", "sl", "s", "qty", "quantity"))
     pid_col = find_col(
-        dcols, ("ma_hang_hoa", "ma_hang", "ma_sp", "ma_sku", "product_id", "id_sp")
+        dcols,
+        (
+            "ma_hang_hoa",
+            "ma_hang",
+            "ma_sp",
+            "ma_sku",
+            "product_id",
+            "id_sp",
+            "ma_san_pham",
+            "ma_h",
+            "barcode",
+            "ma_vach",
+        ),
     )
     line_name_col = find_col(
         dcols,
@@ -361,6 +430,8 @@ def extract_profit_schema(context: BusinessContext) -> ProfitSchema:
             "ten_san_pham",
             "chi_tiet_hang",
             "ten_sp",
+            "hang_hoa",
+            "hang_ban",
             "mon",
             "ten_goi",
         ),
@@ -398,6 +469,9 @@ def extract_profit_schema(context: BusinessContext) -> ProfitSchema:
         "tinh_trang",
         "tinh_trang_don",
         "trang_thai_don_hang",
+        "trang_thai_giao",
+        "tinh_trang_giao",
+        "tt_don",
         "xu_ly",
         "status",
     )
@@ -469,11 +543,23 @@ def extract_profit_schema(context: BusinessContext) -> ProfitSchema:
                 "_oid": d_df[d_oid].astype(str).str.strip(),
                 "_rev": to_numeric_series(d_df[line_rev_col]),
                 "_cogs": to_numeric_series(d_df[line_cost_col])
-                * to_numeric_series(d_df[line_qty_col]),
-                "_pid": d_df[pid_col].astype(str).str.strip() if pid_col else "",
-                "_dname": d_df[line_name_col].astype(str).str.strip()
-                if line_name_col
-                else "",
+                * _parse_qty_series(d_df[line_qty_col]),
+                "_pid": (
+                    d_df[pid_col]
+                    .where(d_df[pid_col].notna(), "")
+                    .astype(str)
+                    .str.strip()
+                    if pid_col
+                    else ""
+                ),
+                "_dname": (
+                    d_df[line_name_col]
+                    .where(d_df[line_name_col].notna(), "")
+                    .astype(str)
+                    .str.strip()
+                    if line_name_col
+                    else ""
+                ),
             }
         )
         merged = d_work.merge(active_h[["_oid", "_order_ts"]], on="_oid", how="inner")
@@ -509,14 +595,24 @@ def extract_profit_schema(context: BusinessContext) -> ProfitSchema:
                 "_rev": to_numeric_series(d_df.loc[active_mask, line_rev_col]),
                 "_cogs": (
                     to_numeric_series(d_df.loc[active_mask, line_cost_col])
-                    * to_numeric_series(d_df.loc[active_mask, line_qty_col])
+                    * _parse_qty_series(d_df.loc[active_mask, line_qty_col])
                 ),
-                "_pid": d_df.loc[active_mask, pid_col].astype(str).str.strip()
-                if pid_col
-                else "",
-                "_dname": d_df.loc[active_mask, line_name_col].astype(str).str.strip()
-                if line_name_col
-                else "",
+                "_pid": (
+                    d_df.loc[active_mask, pid_col]
+                    .where(d_df.loc[active_mask, pid_col].notna(), "")
+                    .astype(str)
+                    .str.strip()
+                    if pid_col
+                    else ""
+                ),
+                "_dname": (
+                    d_df.loc[active_mask, line_name_col]
+                    .where(d_df.loc[active_mask, line_name_col].notna(), "")
+                    .astype(str)
+                    .str.strip()
+                    if line_name_col
+                    else ""
+                ),
             }
         )
 
@@ -542,19 +638,33 @@ def resolve_profit_query(
     as_of_date: str | None = None,
 ) -> tuple[str, Any, str | None]:
     """Deterministically resolve monthly gross profit, net profit, and top-profit product queries."""
-    q_norm = normalize_debt_text(question)
+    q_norm = normalize_debt_text(normalize_query_telex(question))
+    q_norm = re.sub(r"\blaix\b", "lai", q_norm)
+    q_norm = re.sub(r"\btrog\b", "trong", q_norm)
 
     if any(k in q_norm for k in _EXCLUDED_PROFIT_TERMS):
         return "abstain", None, "Ngoài phạm vi lợi nhuận gộp/ròng theo tháng"
 
     is_top_product = bool(
-        re.search(r"\b(?:mat\s+hang|san\s+pham|hang\s+hoa|hang|mon)\b", q_norm)
+        re.search(
+            r"\b(?:mat\s+hang|san\s+pham|sp|hang\s+hoa|hang|mon)\b",
+            q_norm,
+        )
         and (
             ("loi nhat" in q_norm)
             or (
                 any(
                     k in q_norm
-                    for k in ("lai gop", "loi gop", "loi nhuan gop", "loi nhuan")
+                    for k in (
+                        "lai gop",
+                        "loi gop",
+                        "loi nhuan gop",
+                        "loi nhuan",
+                        "lai rong",
+                        "cho loi",
+                        "sinh loi",
+                        "tien loi",
+                    )
                 )
                 and any(
                     w in q_norm for w in ("cao nhat", "lon nhat", "nhieu nhat", "nhut")
@@ -568,9 +678,15 @@ def resolve_profit_query(
             "lai rong",
             "loi nhuan rong",
             "tru het chi phi",
+            "tru chi phi xong",
             "sau chi phi",
             "sau khi tru chi phi",
+            "sau khi tru het chi phi",
+            "loi that",
         )
+    ) or (
+        ("tru chi phi" in q_norm or "chi phi" in q_norm)
+        and any(k in q_norm for k in ("loi that", "con lai", "thuc lai", "loi nhuan"))
     )
     is_gross = any(k in q_norm for k in ("lai gop", "loi gop", "loi nhuan gop"))
 

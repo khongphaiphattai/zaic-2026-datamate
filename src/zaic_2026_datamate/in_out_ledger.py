@@ -4,6 +4,7 @@ import re
 
 import pandas as pd
 
+from zaic_2026_datamate.cleaner import normalize_query_telex
 from zaic_2026_datamate.data_loader import BusinessContext, parse_mixed_excel_dates
 from zaic_2026_datamate.debt_analytics import (
     extract_month_ym,
@@ -41,8 +42,9 @@ def _filter_product_rows(
 ) -> pd.DataFrame:
     """Filter DataFrame rows belonging to matched product by ID first, else normalized name."""
     mask = pd.Series(False, index=df.index)
-    if pid_col and pid:
-        mask = mask | (_norm_id_series(df[pid_col]) == pid)
+    pid_s = str(pid).strip()
+    if pid_col and pid_s:
+        mask = mask | (_norm_id_series(df[pid_col]) == pid_s)
     if not mask.any() and pname_col and pname_norm:
         mask = mask | (_norm_name_series(df[pname_col]) == pname_norm)
     return df.loc[mask].copy()
@@ -121,12 +123,25 @@ def _compute_monthly_import_base(
             ],
         )
         p_ref = find_df_col(
-            df, ["ma_hang_hoa", "ma_hang", "ma_sp", "id_sp", "ten_hang", "product"]
+            df,
+            [
+                "ma_hang_hoa",
+                "ma_hang",
+                "ma_sp",
+                "id_sp",
+                "ma_h",
+                "ma_sku",
+                "ma_vach",
+                "ten_hang",
+                "ten_hang_hoa",
+                "ten_mat_hang",
+                "product",
+            ],
         )
         if dt_col and qty_col and p_ref and "chi_tiet" not in tl:
             comb_cands.append((20, tname, df))
         elif doc_col and dt_col and "chi_tiet" not in tl and "lo_hang" not in tl:
-            st_col = find_df_col(df, ["tinh_trang", "trang_thai"])
+            st_col = find_df_col(df, ["tinh_trang", "trang_thai", "trang_thai_phieu"])
             hdr_cands.append((10 if st_col else 5, tname, df, doc_col, dt_col, st_col))
         elif doc_col and qty_col and p_ref:
             det_cands.append((10, tname, df))
@@ -156,10 +171,19 @@ def _compute_monthly_import_base(
             det_df, ["ma_phieu_nhap", "ma_nhap_hang", "ma_don_nhap", "so_phieu"]
         )
         d_pid = find_df_col(
-            det_df, ["ma_hang_hoa", "ma_hang", "ma_sp", "id_sp", "ma_mon"]
+            det_df,
+            ["ma_hang_hoa", "ma_hang", "ma_sp", "id_sp", "ma_mon", "ma_sku", "ma_vach"],
         )
         d_pname = find_df_col(
-            det_df, ["ten_hang", "ten_san_pham", "product", "hang_hoa"]
+            det_df,
+            [
+                "ten_hang",
+                "ten_hang_hoa",
+                "ten_san_pham",
+                "ten_mat_hang",
+                "product",
+                "hang_hoa",
+            ],
         )
         d_base = find_df_col(
             det_df, ["sl_nhap_quy_doi", "so_luong_quy_doi", "sl_nhap_dvt_co_ban"]
@@ -183,9 +207,21 @@ def _compute_monthly_import_base(
         comb_cands.sort(key=lambda x: (-x[0], x[1]))
         _, _, c_df = comb_cands[0]
         c_dt = find_df_col(c_df, ["ngay_nhap_kho", "ngay_nhap", "thoi_gian"])
-        c_st = find_df_col(c_df, ["tinh_trang", "trang_thai"])
-        c_pid = find_df_col(c_df, ["ma_hang_hoa", "ma_hang", "ma_sp", "id_sp"])
-        c_pname = find_df_col(c_df, ["product", "ten_hang", "ten_san_pham", "hang_hoa"])
+        c_st = find_df_col(c_df, ["tinh_trang", "trang_thai", "trang_thai_phieu"])
+        c_pid = find_df_col(
+            c_df, ["ma_hang_hoa", "ma_hang", "ma_sp", "id_sp", "ma_sku", "ma_vach"]
+        )
+        c_pname = find_df_col(
+            c_df,
+            [
+                "product",
+                "ten_hang",
+                "ten_hang_hoa",
+                "ten_san_pham",
+                "ten_mat_hang",
+                "hang_hoa",
+            ],
+        )
         c_base = find_df_col(
             c_df, ["sl_nhap_quy_doi", "so_luong_quy_doi", "sl_nhap_dvt_co_ban"]
         )
@@ -259,17 +295,70 @@ def _compute_monthly_sale_base(
         ):
             continue
         oid_col = find_df_col(
-            df, ["ma_hoa_don", "order_id", "ma_don_hang", "ma_giao_dich", "ma_phieu"]
+            df,
+            [
+                "ma_hoa_don",
+                "order_id",
+                "ma_don_hang",
+                "ma_giao_dich",
+                "ma_phieu",
+                "don_so",
+                "ma_bill",
+                "bill",
+                "ma_don",
+            ],
         )
         dt_col = find_df_col(
-            df, ["thoi_gian", "ngay_ban", "ngay_lap", "ngay_dat_hang", "ngay"]
+            df,
+            [
+                "thoi_gian",
+                "ngay_ban",
+                "ngay_lap",
+                "ngay_dat_hang",
+                "ngay_hd",
+                "ngay_xuat",
+                "ngay",
+            ],
         )
         st_col = find_df_col(
-            df, ["trang_thai", "tinh_trang", "trang_thai_don_hang", "ghi_chu_tt"]
+            df,
+            [
+                "trang_thai",
+                "tinh_trang",
+                "trang_thai_don_hang",
+                "trang_thai_giao",
+                "tinh_trang_giao",
+                "tt_don",
+                "ghi_chu_tt",
+            ],
         )
-        pid_col = find_df_col(df, ["ma_hang_hoa", "ma_hang", "ma_sp", "id_sp"])
+        pid_col = find_df_col(
+            df,
+            [
+                "ma_hang_hoa",
+                "ma_hang",
+                "ma_sp",
+                "id_sp",
+                "ma_h",
+                "ma_sku",
+                "ma_san_pham_ban",
+                "barcode",
+                "ma_vach",
+            ],
+        )
         pname_col = find_df_col(
-            df, ["ten_hang", "ten_hang_hoa", "ten_san_pham", "ten_sp", "chi_tiet_hang"]
+            df,
+            [
+                "ten_hang",
+                "ten_hang_hoa",
+                "ten_san_pham",
+                "ten_sp",
+                "chi_tiet_hang",
+                "hang_hoa",
+                "hang_ban",
+                "hang",
+                "mat_hang",
+            ],
         )
         qty_col = find_df_col(
             df,
@@ -277,6 +366,7 @@ def _compute_monthly_sale_base(
                 "sl_quy_doi",
                 "so_luong_quy_doi",
                 "sl_co_ban",
+                "sl_dv_co_ban",
                 "so_luong",
                 "sl",
                 "slg",
@@ -308,7 +398,12 @@ def _compute_monthly_sale_base(
         elif "chi_tiet" in tl and oid_col and (pid_col or pname_col) and qty_col:
             det_cands.append((25 if "hoa_don" in tl or "don" in tl else 10, tname, df))
         elif oid_col and dt_col and st_col and (pid_col or pname_col) and qty_col:
-            comb_cands.append((20, tname, df))
+            comb_score = (
+                30
+                if tl == "ban_hang_tong_hop"
+                else (15 if tl.startswith("ban_hang_tong_hop_") else 20)
+            )
+            comb_cands.append((comb_score, tname, df))
 
     if hdr_cands and det_cands:
         hdr_cands.sort(key=lambda x: (-x[0], x[1]))
@@ -368,21 +463,65 @@ def _compute_monthly_sale_base(
         )
 
     if comb_cands:
-        comb_cands.sort(key=lambda x: (-x[0], x[1]))
+        comb_cands.sort(key=lambda x: (-x[0], len(x[1]), x[1]))
         _, _, c_df = comb_cands[0]
-        c_dt = find_df_col(c_df, ["ngay_dat_hang", "ngay_lap", "thoi_gian", "ngay"])
+        c_dt = find_df_col(
+            c_df,
+            ["ngay_dat_hang", "ngay_lap", "ngay_hd", "ngay_xuat", "thoi_gian", "ngay"],
+        )
         c_st = find_df_col(
-            c_df, ["trang_thai", "tinh_trang", "trang_thai_don_hang", "ghi_chu_tt"]
+            c_df,
+            [
+                "trang_thai",
+                "tinh_trang",
+                "trang_thai_don_hang",
+                "trang_thai_giao",
+                "tinh_trang_giao",
+                "tt_don",
+                "ghi_chu_tt",
+            ],
         )
-        c_pid = find_df_col(c_df, ["ma_hang_hoa", "ma_hang", "ma_sp", "id_sp"])
+        c_pid = find_df_col(
+            c_df,
+            [
+                "ma_hang_hoa",
+                "ma_hang",
+                "ma_sp",
+                "id_sp",
+                "ma_h",
+                "ma_sku",
+                "ma_san_pham_ban",
+                "barcode",
+                "ma_vach",
+            ],
+        )
         c_pname = find_df_col(
-            c_df, ["ten_hang", "ten_hang_hoa", "ten_san_pham", "ten_sp"]
+            c_df,
+            [
+                "ten_hang",
+                "ten_hang_hoa",
+                "ten_san_pham",
+                "ten_sp",
+                "hang_hoa",
+                "hang_ban",
+                "hang",
+                "mat_hang",
+            ],
         )
-        c_base = find_df_col(c_df, ["sl_quy_doi", "so_luong_quy_doi", "sl_co_ban"])
+        c_base = find_df_col(
+            c_df,
+            [
+                "sl_quy_doi",
+                "so_luong_quy_doi",
+                "sl_co_ban",
+                "sl_dv_co_ban",
+                "so_luong_dvt_co_ban",
+            ],
+        )
         c_qty = find_df_col(
             c_df, ["so_luong", "sl", "slg", "so_luong_san_pham", "so_luong_hang"]
         )
-        c_unit = find_df_col(c_df, ["don_vi_tinh", "dvt", "donvi"])
+        c_unit = find_df_col(c_df, ["don_vi_tinh", "dvt", "donvi", "dv"])
         if not c_dt:
             return None
         sub = _filter_product_rows(c_df, c_pid, c_pname, pid, pname_norm)
@@ -404,26 +543,199 @@ def _compute_monthly_sale_base(
     return None
 
 
+_NON_UNIT_WORDS = frozenset(
+    {
+        "tien",
+        "phan",
+        "thang",
+        "nam",
+        "ngay",
+        "don",
+        "phieu",
+        "lan",
+        "mat",
+        "loai",
+        "lo",
+        "luot",
+        "hang",
+        "dong",
+        "vnd",
+        "d",
+        "nghin",
+        "trieu",
+        "luong",
+        "nguoi",
+        "khach",
+        "san",
+    }
+)
+
+_FILLER_TOKENS = frozenset(
+    {
+        "nho",
+        "xiu",
+        "chut",
+        "nha",
+        "nhe",
+        "nhi",
+        "ne",
+        "ad",
+        "shop",
+        "quan",
+        "tiem",
+        "thuoc",
+        "mik",
+        "minh",
+        "mk",
+        "em",
+        "e",
+        "anh",
+        "chi",
+        "cho",
+        "hoi",
+        "oi",
+        "tinh",
+        "giup",
+        "dum",
+        "xem",
+        "check",
+        "di",
+        "ban",
+        "cua",
+        "ben",
+        "hang",
+        "alo",
+    }
+)
+
+_MONTH_SPAN_RE = re.compile(
+    r"\b(?:trong|o|vao|tu|tinh)?\s*(?:thang|thg|th|t)\s*\d{1,2}\s*(?:[/\-]|nam\s*)\s*\d{2,4}\b"
+    r"|\b(?:trong|o|vao|tu|tinh)?\s*thang\s+\d{1,2}\b"
+    r"|\b(?:trong|o|vao)?\s*\d{1,2}\s*[/\-]\s*\d{4}\b"
+    r"|\bnam\s+\d{4}\b"
+)
+
+_LEADING_FILLER_RE = re.compile(
+    r"^(?:"
+    r"nho\s+xiu(?:\s+(?:nha|nhe))?"
+    r"|cho\s+(?:em|e|minh|mik|mk)?\s*hoi(?:\s+xiu)?"
+    r"|hoi\s+xiu"
+    r"|(?:tinh|xem|check|lay)\s+(?:giup|dum|cho)?(?:\s+(?:em|e|minh|mik|mk))?"
+    r"|doi\s+voi|ve\s+mat\s+hang|mat\s+hang|san\s+pham|\bsp\b"
+    r"|(?:cua\s+)?(?:shop|cua\s+hang|quan|tiem|nha\s+thuoc|ben)(?:\s+(?:minh|mik|mk|em|e))?"
+    r"|minh|mik|mk"
+    r")\b[\s,:\-]*"
+)
+
+_TRAILING_FILLER_RE = re.compile(
+    r"[\s,:\-]*(?:trong\s+ky(?:\s+nay)?|luon\s+di(?:\s+e)?|di\s+e|dum(?:\s+(?:em|e))?|giup(?:\s+(?:em|e))?|(?:duoc\s+)?(?:khong|ko|kg)|nha|nhe|nhi|voi|vay|zay|z|ta|a)\s*$"
+)
+
+
+def _clean_product_fragment(raw: str) -> str:
+    """Strip month references, store nouns, and polite conversational wrappers from a product fragment."""
+    frag = _MONTH_SPAN_RE.sub(" ", raw)
+    frag = re.sub(r"\s+", " ", frag).strip(" ,.?:;-")
+    m_sep = re.match(r"^([^,:;]{1,40})[,:;]\s*(.+)$", frag)
+    if m_sep:
+        head_tokens = [tok for tok in m_sep.group(1).strip().split() if tok]
+        if head_tokens and all(tok in _FILLER_TOKENS for tok in head_tokens):
+            frag = m_sep.group(2).strip()
+    while True:
+        updated = _LEADING_FILLER_RE.sub("", frag).strip(" ,.?:;-")
+        if updated == frag:
+            break
+        frag = updated
+    while True:
+        updated = _TRAILING_FILLER_RE.sub("", frag).strip(" ,.?:;-")
+        if updated == frag:
+            break
+        frag = updated
+    return frag
+
+
 def _extract_product_and_unit(q_norm: str) -> tuple[str, str]:
     """Extract product query fragment and requested output unit from an in-minus-out question."""
-    unit_matches = list(re.finditer(r"\b(?:bao\s+nhieu|may)\s+([a-z0-9]+)\b", q_norm))
     target_unit = ""
+    unit_matches = list(re.finditer(r"\b(?:bao\s+nhieu|may)\s+([a-z0-9]+)\b", q_norm))
     for m in reversed(unit_matches):
         cand = m.group(1)
-        if cand not in ("tien", "phan", "thang", "nam", "ngay", "don"):
+        if cand not in _NON_UNIT_WORDS:
             target_unit = cand
             break
 
+    if not target_unit:
+        for m in re.finditer(
+            r"\b(?:so|tong)\s+([a-z0-9]+)\s+(?:nhap(?:\s+(?:ve|vo|vao|kho))?|ban)\b",
+            q_norm,
+        ):
+            cand = m.group(1)
+            if cand not in _NON_UNIT_WORDS:
+                target_unit = cand
+                break
+
+    op_match = re.search(
+        r"\b(?:lay\s+)?(?:(?:so|tong)\s+(?:luong\s+)?(?:[a-z0-9]+\s+)?)?(?:chenh\s+lech\s+)?nhap(?:\s+(?:ve|vo|vao|kho))?\s+tru\b",
+        q_norm,
+    )
+    if op_match:
+        post_op = q_norm[op_match.end() :]
+        m_cua = re.search(
+            r"\bcua\s+(?!(?:shop|quan|cua\s+hang|tiem|nha\s+thuoc)\b)(.+)$",
+            post_op,
+        )
+        if m_cua:
+            tail = re.split(
+                r"\b(?:la\s+bao\s+nhieu|thi\s+duoc\s+bao\s+nhieu|bao\s+nhieu|chenh\s+bao\s+nhieu)\b",
+                m_cua.group(1),
+            )[0]
+            cleaned = _clean_product_fragment(tail)
+            if cleaned:
+                return cleaned, target_unit
+        prefix = q_norm[: op_match.start()]
+        cleaned_prefix = _clean_product_fragment(prefix)
+        if cleaned_prefix:
+            return cleaned_prefix, target_unit
+
     frag = q_norm
-    m_cua = re.search(r"\bcua\s+(.+)$", frag)
+    m_cua = re.search(
+        r"\bcua\s+(?!(?:shop|quan|cua\s+hang|tiem|nha\s+thuoc)\b)(.+)$",
+        frag,
+    )
     if m_cua:
         frag = m_cua.group(1)
     frag = re.split(
-        r"\b(?:trong\s+thang|o\s+thang|thang\s+\d|la\s+bao\s+nhieu|thi\s+(?:duoc|dc)\s+bao\s+nhieu|bao\s+nhieu)\b",
+        r"\b(?:trong\s+thang|o\s+thang|thang\s+\d|la\s+bao\s+nhieu|thi\s+duoc\s+bao\s+nhieu|bao\s+nhieu)\b",
         frag,
     )[0]
-    frag = frag.strip(" ,.?:-")
-    return frag, target_unit
+    return _clean_product_fragment(frag), target_unit
+
+
+_PURE_IMPORT_EXCLUDE_RE = re.compile(
+    r"\b(?:tien|chi\s+phi|gia\s+nhap|gia\s+mua|don\s+gia|thanh\s+tien|von|phieu|hoa\s+don|don\s+nhap|lan\s+nhap|dot\s+nhap|nha\s+cung\s+cap|ncc|mat\s+hang|loai|ton\s+kho|ban\s+ra|lai|loi\s+nhuan|cong\s+no|khach\s+no|tru)\b"
+)
+
+
+def _extract_pure_import_product_and_unit(q_norm: str) -> tuple[str, str] | None:
+    """Extract (product_fragment, target_unit) for monthly pure import quantity queries."""
+    if _PURE_IMPORT_EXCLUDE_RE.search(q_norm):
+        return None
+    m = re.search(
+        r"\bnhap(?:\s+(?:ve|vo|vao|kho|hang|them))?\s+(?:het\s+)?(?:duoc\s+|tong\s+(?:cong\s+)?)?(?:bao\s+nhieu|may)\s+([a-z0-9]+)\b(.*)$",
+        q_norm,
+    )
+    if not m:
+        return None
+    target_unit = m.group(1)
+    if target_unit in _NON_UNIT_WORDS:
+        return None
+    tail = re.sub(r"^\s*cua\s+", "", m.group(2))
+    prod_frag = _clean_product_fragment(tail)
+    if not prod_frag:
+        prod_frag = _clean_product_fragment(q_norm[: m.start()])
+    if not prod_frag:
+        return None
+    return prod_frag, target_unit
 
 
 def resolve_in_minus_out_query(
@@ -431,17 +743,20 @@ def resolve_in_minus_out_query(
     context: BusinessContext,
     as_of_date: str | None = None,
 ) -> tuple[str, object, str]:
-    """Resolve monthly import-minus-sale product quantity difference in the requested unit."""
-    q_norm = normalize_inventory_text(question)
+    """Resolve monthly import-minus-sale or monthly import product quantity in the requested unit."""
+    q_norm = normalize_inventory_text(normalize_query_telex(question))
     q_norm = re.sub(r"\bdc\b", "duoc", q_norm)
 
-    has_intent = bool(
+    has_diff_intent = bool(
         re.search(
-            r"\b(?:so\s+(?:luong\s+)?nhap\s+tru\s+(?:so\s+(?:luong\s+)?)?ban|chenh\s+lech\s+nhap\s+tru\s+ban|nhap\s+tru\s+ban)\b",
+            r"\b(?:so\s+(?:luong\s+)?nhap(?:\s+(?:ve|vo|vao|kho))?\s+tru\s+(?:so\s+(?:luong\s+)?)?ban|chenh\s+lech\s+nhap(?:\s+(?:ve|vo|vao|kho))?\s+tru\s+ban|nhap(?:\s+(?:ve|vo|vao|kho))?\s+tru\s+(?:so\s+)?ban|(?:so|tong)\s+(?:luong\s+)?[a-z0-9]+\s+nhap(?:\s+(?:ve|vo|vao|kho))?\s+tru\s+(?:(?:so|tong)\s+(?:luong\s+)?(?:[a-z0-9]+\s+)?)?ban)\b",
             q_norm,
         )
     )
-    if not has_intent:
+    pure_import_parsed = (
+        None if has_diff_intent else _extract_pure_import_product_and_unit(q_norm)
+    )
+    if not has_diff_intent and pure_import_parsed is None:
         return "abstain", None, "Not an in-minus-out query"
 
     # Guard out multi-month spans or financial margin/debt questions
@@ -474,7 +789,11 @@ def resolve_in_minus_out_query(
     if master is None:
         return "unanswerable", None, "Product master unavailable for in-minus-out query"
 
-    prod_frag, target_unit = _extract_product_and_unit(q_norm)
+    if has_diff_intent:
+        prod_frag, target_unit = _extract_product_and_unit(q_norm)
+    else:
+        assert pure_import_parsed is not None
+        prod_frag, target_unit = pure_import_parsed
     if not prod_frag or not target_unit:
         return "abstain", None, "Product or target unit not parsed cleanly"
 
@@ -496,13 +815,19 @@ def resolve_in_minus_out_query(
     if import_base is None:
         return "abstain", None, "Import unit conversion unresolved"
 
+    if not has_diff_intent:
+        ans = import_base / target_factor
+        rounded = round(float(ans), 2)
+        val: int | float = (
+            int(round(rounded)) if abs(rounded - round(rounded)) < 1e-6 else rounded
+        )
+        return "number", val, "Computed monthly import product quantity"
+
     sale_base = _compute_monthly_sale_base(context, ym, cutoff_eod, master, pid, pname)
     if sale_base is None:
         return "abstain", None, "Sales ledger or unit conversion unresolved"
 
     ans = (import_base - sale_base) / target_factor
     rounded = round(float(ans), 2)
-    val: int | float = (
-        int(round(rounded)) if abs(rounded - round(rounded)) < 1e-6 else rounded
-    )
+    val = int(round(rounded)) if abs(rounded - round(rounded)) < 1e-6 else rounded
     return "number", val, "Computed monthly import minus sale difference"

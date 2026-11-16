@@ -83,7 +83,11 @@ def _load_tho_registry(
             continue
         cols = list(tdf.columns)
         name_col = next(
-            (c for c in ("ho_ten", "ten_tho", "tho", "ten", "nhan_vien", "ten_nv") if c in cols),
+            (
+                c
+                for c in ("ho_ten", "ten_tho", "tho", "ten", "nhan_vien", "ten_nv")
+                if c in cols
+            ),
             None,
         )
         rate_col = next(
@@ -126,7 +130,11 @@ def _load_tho_registry(
     # Fallback: add multi-word canonical names observed in `so_sua_xe.tho` only if no roster table existed
     if not canon_names and "tho" in df.columns:
         raw_vals = sorted(
-            {re.sub(r"\s+", " ", str(v)).strip() for v in df["tho"].dropna() if str(v).strip()},
+            {
+                re.sub(r"\s+", " ", str(v)).strip()
+                for v in df["tho"].dropna()
+                if str(v).strip()
+            },
             key=len,
             reverse=True,
         )
@@ -169,7 +177,9 @@ def canonicalize_tho_name(raw: Any, canonical_names: list[str]) -> str:
 
 def extract_specific_tho(t_norm: str, canonical_names: list[str]) -> str | None:
     """Extract specific technician name mentioned in query with strict boundary matching."""
-    for cname in sorted(canonical_names, key=lambda s: len(strip_accents(s)), reverse=True):
+    for cname in sorted(
+        canonical_names, key=lambda s: len(strip_accents(s)), reverse=True
+    ):
         c_norm = strip_accents(cname)
         if re.search(rf"(?<![a-z0-9]){re.escape(c_norm)}(?![a-z0-9])", t_norm):
             return cname
@@ -235,7 +245,9 @@ def resolve_repair_shop_query(
         return "abstain", None, "Bảng so_sua_xe rỗng"
 
     canon_names, commission_rates = _load_tho_registry(context, df)
-    df["tho_canonical"] = df["tho"].apply(lambda x: canonicalize_tho_name(x, canon_names))
+    df["tho_canonical"] = df["tho"].apply(
+        lambda x: canonicalize_tho_name(x, canon_names)
+    )
     df["plate"] = df["xe"].apply(extract_plate)
     df["month"] = pd.to_datetime(df["ngay"]).dt.strftime("%Y-%m")
     df["date_str"] = pd.to_datetime(df["ngay"]).dt.strftime("%Y-%m-%d")
@@ -539,7 +551,10 @@ def resolve_repair_shop_query(
         sub = filter_df_by_period(df, p, t_norm, as_of_date)
         if sub is None or sub.empty:
             return "abstain", None, "Không xác định được khoảng thời gian"
-        vc = sub["xe"].value_counts()
+        plate_series = (
+            sub["plate"] if "plate" in sub.columns else sub["xe"].map(extract_plate)
+        )
+        vc = plate_series.value_counts()
         return "number", int((vc >= 2).sum()), None
 
     # 13. Specific repair task: 'sua dien', 'dau lap', 'va ruot xe'
@@ -553,8 +568,9 @@ def resolve_repair_shop_query(
         elif any(k in t_norm for k in ["dau lap", "nhot lap"]):
             matched = sub[
                 sub["lam_gi"].apply(
-                    lambda x: "dau lap" in strip_accents(x)
-                    or "nhot lap" in strip_accents(x)
+                    lambda x: (
+                        "dau lap" in strip_accents(x) or "nhot lap" in strip_accents(x)
+                    )
                 )
             ]
         elif "va ruot" in t_norm:
