@@ -32,7 +32,7 @@ def repair_mojibake_utf8(text: str) -> str:
     ):
         try:
             return text.encode("cp437").decode("utf-8")
-        except (UnicodeEncodeError, UnicodeDecodeError):
+        except UnicodeEncodeError, UnicodeDecodeError:
             parts = re.split(r"([_\s-]+)", text)
             fixed_parts: list[str] = []
             for part in parts:
@@ -40,16 +40,18 @@ def repair_mojibake_utf8(text: str) -> str:
                     try:
                         fixed_parts.append(part.encode("cp437").decode("utf-8"))
                         continue
-                    except (UnicodeEncodeError, UnicodeDecodeError):
+                    except UnicodeEncodeError, UnicodeDecodeError:
                         pass
                 fixed_parts.append(part)
             return "".join(fixed_parts)
-    if "\u00c3" in text or ("\u00e1" in text and ("\u00ba" in text or "\u00bb" in text)):
+    if "\u00c3" in text or (
+        "\u00e1" in text and ("\u00ba" in text or "\u00bb" in text)
+    ):
         try:
             decoded = text.encode("latin1").decode("utf-8")
             if decoded != text:
                 return decoded
-        except (UnicodeEncodeError, UnicodeDecodeError):
+        except UnicodeEncodeError, UnicodeDecodeError:
             pass
     return text
 
@@ -738,8 +740,13 @@ class DataLoader:
         raw_tables: dict[str, list[pd.DataFrame]] = {}
         split_tables: dict[str, pd.DataFrame] = {}
 
-        # 3.1. Process SQLite databases
-        for sqlite_file in biz_dir.glob("*.sqlite"):
+        # 3.1. Process SQLite databases (.sqlite, .sqlite3, .db)
+        sqlite_files = sorted(
+            list(biz_dir.glob("*.sqlite"))
+            + list(biz_dir.glob("*.sqlite3"))
+            + list(biz_dir.glob("*.db"))
+        )
+        for sqlite_file in sqlite_files:
             self._load_sqlite(sqlite_file, raw_tables)
 
         # 3.2. Process CSV files
@@ -911,17 +918,30 @@ class DataLoader:
         raw_tables: dict[str, list[pd.DataFrame]],
         split_tables: dict[str, pd.DataFrame],
     ) -> None:
-        """Load a CSV file."""
+        """Load a CSV file with robust encoding and delimiter fallback."""
         stem = csv_path.stem
         base_stem = get_base_table_stem(stem)
-        try:
-            df = pd.read_csv(csv_path, low_memory=False)
-            raw_tables.setdefault(base_stem, []).append(df)
-            split_tables[stem] = df
-        except Exception:
-            df = pd.read_csv(csv_path, encoding="latin1", low_memory=False)
-            raw_tables.setdefault(base_stem, []).append(df)
-            split_tables[stem] = df
+        df: pd.DataFrame | None = None
+        for enc in ("utf-8", "utf-8-sig", "latin1"):
+            try:
+                candidate = pd.read_csv(csv_path, encoding=enc, low_memory=False)
+                if len(candidate.columns) == 1 and (
+                    ";" in str(candidate.columns[0]) or "\t" in str(candidate.columns[0])
+                ):
+                    candidate = pd.read_csv(
+                        csv_path, encoding=enc, sep=None, engine="python"
+                    )
+                df = candidate
+                break
+            except Exception:
+                continue
+        if df is None:
+            try:
+                df = pd.read_csv(csv_path, sep=None, engine="python")
+            except Exception:
+                return
+        raw_tables.setdefault(base_stem, []).append(df)
+        split_tables[stem] = df
 
     def _load_sqlite(
         self,

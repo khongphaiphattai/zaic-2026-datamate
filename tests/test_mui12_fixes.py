@@ -2740,3 +2740,115 @@ def test_slice7_runtime_consistency_guards(monkeypatch) -> None:
         assert res_good[:2] == ("number", 55)
     finally:
         ctx.duckdb_conn.close()
+
+
+def test_slice_v34_robustness_and_crash_resilience(monkeypatch, tmp_path) -> None:
+    """v34 S1: Verify that unseen schemas, parsing errors, or runtime exceptions cleanly abstain without crashing."""
+    import json
+    import zaic_2026_datamate.hybrid_agent as ha_mod
+    from zaic_2026_datamate.data_loader import DataLoader
+    from zaic_2026_datamate.hybrid_agent import HybridAgent
+    from zaic_2026_datamate.container_runner import run_pipeline_to_result
+    from zaic_2026_datamate.pipeline import PipelineConfig
+    from zaic_2026_datamate.monthly_growth import MonthlyGrowthAgent
+    from zaic_2026_datamate.mtd_growth import MTDGrowthAgent
+
+    # 1. HybridAgent catches unexpected resolve_query exceptions cleanly
+    ctx = _make_ctx(
+        "synth_v34", {"bh": pd.DataFrame([{"ngay": "2026-01-01", "tt": 100}])}
+    )
+    try:
+        agent = HybridAgent(enable_slow_path=False)
+
+        def crash_resolve(question: str, context, as_of_date: str | None = None):
+            raise KeyError("unseen_private_column_xyz")
+
+        monkeypatch.setattr(ha_mod, "resolve_query", crash_resolve)
+        res = agent.answer_query("Doanh thu thang 1/2026?", ctx, "2026-02-01")
+        assert res[0] == "abstain"
+        assert "Fast path error" in str(res[2])
+    finally:
+        ctx.duckdb_conn.close()
+
+    # 2. DataLoader loads .db and semicolon CSV
+    biz_dir = tmp_path / "biz_unseen"
+    biz_dir.mkdir(parents=True)
+    # write a semicolon CSV
+    (biz_dir / "sales.csv").write_text(
+        "ma_don;ngay;tt\nORD1;2026-05-01;100000\n", encoding="utf-8"
+    )
+    loader = DataLoader(tmp_path)
+    loaded_ctx = loader.load_business("biz_unseen")
+    try:
+        assert "sales" in loaded_ctx.tables
+        assert "tt" in loaded_ctx.tables["sales"].columns
+    finally:
+        loaded_ctx.duckdb_conn.close()
+
+    # 3. MonthlyGrowthAgent & MTDGrowthAgent exception resilience
+    base_agent = HybridAgent(enable_slow_path=False)
+    m_agent = MonthlyGrowthAgent(base_agent)
+    mtd_agent = MTDGrowthAgent(m_agent)
+    dummy_ctx = _make_ctx(
+        "synth_m", {"bh": pd.DataFrame([{"ngay": "2026-01-01", "tt": 100}])}
+    )
+    try:
+
+        def crash_inner(q, c, a=None):
+            return "abstain", None, "abstained", "abstain"
+
+        monkeypatch.setattr(base_agent, "answer_query", crash_inner)
+        res_m = m_agent.answer_query(
+            "Thang nay so voi thang truoc the nao?", dummy_ctx, "2026-02-01"
+        )
+        assert res_m[0] == "abstain"
+        res_mtd = mtd_agent.answer_query(
+            "Tu dau thang den nay the nao?", dummy_ctx, "2026-02-01"
+        )
+        assert res_mtd[0] == "abstain"
+    finally:
+        dummy_ctx.duckdb_conn.close()
+
+    # 4. container_runner end-to-end loop resilience against single-question crash
+    q_file = tmp_path / "questions.jsonl"
+    q_file.write_text(
+        '{"id": "q1", "business_id": "biz_unseen", "question": "q1?", "as_of_date": "2026-01-01"}\n'
+        '{"id": "q2", "business_id": "biz_unseen", "question": "q2?", "as_of_date": "2026-01-01"}\n',
+        encoding="utf-8",
+    )
+    out_file = tmp_path / "preview_sub.jsonl"
+    cfg = PipelineConfig()
+
+    class BuggyAgent:
+        def __init__(self):
+            self.calls = 0
+
+        def answer_query(self, question, context, as_of_date=None):
+            self.calls += 1
+            if self.calls == 1:
+                raise RuntimeError("Exploding on first question")
+            return "number", 42, None, "fast_path"
+
+    # Patch build_agent
+    import zaic_2026_datamate.container_runner as cr_mod
+
+    monkeypatch.setattr(cr_mod, "build_agent", lambda c, client=None: BuggyAgent())
+
+    stats = run_pipeline_to_result(
+        questions_path=q_file,
+        data_dir=tmp_path,
+        calendar_path=None,
+        output_path=out_file,
+        config=cfg,
+        overwrite=True,
+    )
+    assert stats["total"] == 2
+    assert stats["abstain"] == 1
+    assert stats["answered"] == 1
+    out_rows = [
+        json.loads(line) for line in out_file.read_text(encoding="utf-8").splitlines()
+    ]
+    assert len(out_rows) == 2
+    assert out_rows[0]["type"] == "abstain"
+    assert out_rows[1]["type"] == "number"
+    assert out_rows[1]["answer"] == 42

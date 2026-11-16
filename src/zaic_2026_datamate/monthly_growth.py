@@ -263,12 +263,15 @@ class MonthlyGrowthAgent:
             or monthly_growth_period(question, as_of_date) is None
         ):
             return original
-        kind, value, reason = resolve_monthly_growth(
-            question, context, as_of_date, self.last_monthly_growth
-        )
-        return (
-            kind,
-            value,
-            reason,
-            "monthly_growth_path" if kind == "percent" else "abstain",
-        )
+        try:
+            kind, value, reason = resolve_monthly_growth(
+                question, context, as_of_date, self.last_monthly_growth
+            )
+            return (
+                kind,
+                value,
+                reason,
+                "monthly_growth_path" if kind == "percent" else "abstain",
+            )
+        except Exception:
+            return original

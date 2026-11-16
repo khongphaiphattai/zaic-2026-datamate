@@ -15,6 +15,7 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any, Callable
 
+import duckdb
 import pandas as pd
 
 from zaic_2026_datamate.data_loader import BusinessContext, DataLoader
@@ -192,9 +193,7 @@ def build_question_log_record(
         "route": route,
         "final_answer": sanitize_json_value(final_row),
         "elapsed_time": round(float(elapsed_seconds), 6),
-        "generated_sql_or_code": _describe_generated_sql_or_code(
-            context, route, agent
-        ),
+        "generated_sql_or_code": _describe_generated_sql_or_code(context, route, agent),
         "execution_output": sanitize_json_value(exec_output),
     }
 
@@ -311,9 +310,7 @@ def run_pipeline_to_result(
     log_handle = None
     if resolved_log_dir is not None:
         resolved_log_dir.mkdir(parents=True, exist_ok=True)
-        log_handle = (resolved_log_dir / "questions.jsonl").open(
-            "w", encoding="utf-8"
-        )
+        log_handle = (resolved_log_dir / "questions.jsonl").open("w", encoding="utf-8")
 
     try:
         total_q = len(raw_questions)
@@ -324,16 +321,31 @@ def run_pipeline_to_result(
             as_of_date = q.get("as_of_date")
             stats["total"] += 1
 
-            if bid not in business_cache:
-                business_cache[bid] = loader.load_business(bid)
-            ctx = business_cache[bid]
-
             q_t0 = time.monotonic()
-            ans_type, ans_val, reason, route = agent.answer_query(
-                question=q_text,
-                context=ctx,
-                as_of_date=as_of_date,
-            )
+            try:
+                if bid not in business_cache:
+                    business_cache[bid] = loader.load_business(bid)
+                ctx = business_cache[bid]
+
+                ans_type, ans_val, reason, route = agent.answer_query(
+                    question=q_text,
+                    context=ctx,
+                    as_of_date=as_of_date,
+                )
+            except Exception as exc:
+                ans_type, ans_val, reason, route = (
+                    "abstain",
+                    None,
+                    f"Runtime safety gate: {exc}",
+                    "abstain",
+                )
+                if bid not in business_cache:
+                    business_cache[bid] = BusinessContext(
+                        business_id=bid,
+                        data_dir=data_dir / bid,
+                        duckdb_conn=duckdb.connect(":memory:"),
+                    )
+                ctx = business_cache[bid]
             q_elapsed = time.monotonic() - q_t0
 
             if ans_type == "abstain":
@@ -372,7 +384,9 @@ def run_pipeline_to_result(
             if progress_callback is not None and (
                 (idx + 1) % 50 == 0 or (idx + 1) == total_q
             ):
-                progress_callback(idx + 1, total_q, stats, time.monotonic() - start_time)
+                progress_callback(
+                    idx + 1, total_q, stats, time.monotonic() - start_time
+                )
     finally:
         if log_handle is not None:
             log_handle.close()

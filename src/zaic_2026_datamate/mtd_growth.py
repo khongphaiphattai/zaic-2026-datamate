@@ -26,12 +26,17 @@ class MTDGrowthAgent:
         original = self.base.answer_query(question, context, as_of_date)
         if original[0] != "abstain":
             return original
-        plan = certify_growth_question(question, as_of_date)
-        if plan is None or plan.intent.period != "month_to_date":
+        try:
+            plan = certify_growth_question(question, as_of_date)
+            if plan is None or plan.intent.period != "month_to_date":
+                return original
+            kind, value, reason = resolve_growth_intent(
+                plan.intent, context, as_of_date, self.last_mtd_growth
+            )
+            return (
+                (kind, value, reason, "mtd_growth_path")
+                if kind == "percent"
+                else original
+            )
+        except Exception:
             return original
-        kind, value, reason = resolve_growth_intent(
-            plan.intent, context, as_of_date, self.last_mtd_growth
-        )
-        return (
-            (kind, value, reason, "mtd_growth_path") if kind == "percent" else original
-        )

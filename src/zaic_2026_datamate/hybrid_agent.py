@@ -425,11 +425,21 @@ class HybridAgent:
         # =====================================================================
         # ROUTE 1: FAST PATH (Deterministic Router & DuckDB Engine)
         # =====================================================================
-        fast_type, fast_val, fast_reason = resolve_query(
-            question=question,
-            context=context,
-            as_of_date=as_of_date,
-        )
+        try:
+            fast_type, fast_val, fast_reason = resolve_query(
+                question=question,
+                context=context,
+                as_of_date=as_of_date,
+            )
+        except Exception as exc:
+            logger.warning(
+                "Fast Path unhandled exception on '%s': %s", question[:60], exc
+            )
+            fast_type, fast_val, fast_reason = (
+                "abstain",
+                None,
+                f"Fast path error: {exc}",
+            )
 
         if fast_type != "abstain":
             # Preserve Fast Path decisions after technical invariant validation.
