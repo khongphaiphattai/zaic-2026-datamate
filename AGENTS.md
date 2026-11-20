@@ -92,3 +92,11 @@ Inspect live modules directly rather than caching signatures; core orchestration
 ### 5.2. Tool & MCP Orchestration
 - **`context7`:** Luôn tra cứu tài liệu mới nhất của DuckDB, Polars, và LangGraph khi cần viết các hàm phức tạp hoặc nâng cấp cú pháp.
 - **`serena` & `codebase-memory-mcp`:** Dùng để rà soát cấu trúc mã nguồn, refactor hàm dùng chung và truy vết dependency giữa các module.
+
+---
+
+## WSL2 / Linux Execution Guardrails
+
+- **Linux binaries only:** Always use native Linux tools on `PATH` (`docker`, `uv`, `python3`, `skillspector`). NEVER invoke Windows `.exe` binaries (`powershell.exe`, `cmd.exe`, `docker.exe`, `*.exe`) from WSL2 background commands (causes ConPTY deadlock / `Empty log`).
+- **Anti-hang pattern:** Wrap network/scan/build commands (`git`, `docker`, `curl`, `npx`, `skillspector`) with `timeout <sec>s <cmd> < /dev/null` and `PYTHONUNBUFFERED=1` for Python scripts.
+- **Avoid `/mnt/c` heavy scans:** Never recursively scan or run bulk I/O directly on `/mnt/c/...` (9P bottleneck); copy to `/tmp` or Linux home first if needed.
