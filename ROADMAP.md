@@ -1711,11 +1711,16 @@
   - **Gate 1 (Train 3.000 câu):** **`3.000 / 3.000 Correct (100.00%)`**, **`0 Wrong`**, **`0 Abstain`** (`PA = 1.00000`, hoàn thành trong `119.0s`).
   - **Gate 2 (Holdout 710 câu / 6 businesses):** **`710 / 710 Correct (100.00%)`**, **`0 Wrong`**, **`0 Abstain`** (`PA = 1.00000`).
   - **Gate 3 (Public Test 1.000 câu):** **`993 / 1.000 Answered`**, **`7 Abstain`**, **`0` new abstained**, **`0` diffs** so với Sub #35 (bảo toàn 100% kết quả Public Test, SHA256: `76b33a45349f183aac8c778b19c3f95966b90fd2af12e7badf4c0f60c33b924d`).
-- **Chiến lược Freeze Cuối:**
-  - Nếu điểm Public của Sub #35 / #36 > 0.82500 $\implies$ Tiến hành đóng gói Docker Freeze mới trước 22:30.
-  - Nếu điểm Public của Sub #35 / #36 $\le$ 0.82500 $\implies$ Giữ bản Docker Freeze an toàn đã đóng gói của Sub #33 (`c4d120daade17538b09c31ad36b58706f1c47cf13c4650abfac4e5a85ac08ed6`).
+  - **Kết quả Nộp bài Lần 35 & 36 (Portal Verified ngày `16/11/2026`):** Cả `#35` (`15:37:56`) và `#36` (`17:30:42`, file `4063ae85-c24f-4a47-9219-0f9d4d6d20bf.jsonl`, `Model: SLM`) đều đạt **Public Score = `0.84900`** (**`+0.02400` / `+24` điểm ròng** so với Sub #33/#34 = `0.82500` — toàn bộ 12 câu sửa ở #35 chuyển từ sai `-1` sang đúng `+1`).
+- **Đóng gói Final Solution Freeze #36 (`zaic2026-datamate:freeze` qua `/usr/bin/bash scripts/package_freeze_solution.sh`):**
+  - Chạy kiểm thử offline `--network none --read-only` trong Docker đạt `993 Answered / 7 Abstain` (`277.93s`), khớp **100% byte-identical SHA256** (`76b33a45349f183aac8c778b19c3f95966b90fd2af12e7badf4c0f60c33b924d`) với [`submission.jsonl`](file:///home/pt/AI%20Challenge/submission.jsonl).
+  - Gói nén `430M` tại [`zaic2026-datamate-freeze.tar.gz`](file:///home/pt/AI%20Challenge/artifacts/freeze-package/zaic2026-datamate-freeze.tar.gz) (đã chép sang `C:\Users\PT\Downloads\zaic2026_datamate_freeze.tar.gz` và lưu [`checksums.txt`](file:///home/pt/AI%20Challenge/artifacts/freeze-package/checksums.txt)):
+    * **SHA256 Checksum (Final Solution Freeze):** `dd32089d5acdf026b932cc63dba0dd64b1ea37865f7fd86c4f67499e9b2ad13d`
+    * **MD5 Checksum:** `ac7fb3c73fb3f158beb72b13ba57e43f`
 
+---
 
-
-
-
+## 🏁 Khép lại Chiến dịch ZAIC 2026 & Đóng gói Repo Kỷ niệm (21/11/2026)
+- **Dọn dẹp Workspace (`/home/pt/AI Challenge`):** Đã xóa `~1.25 GB` file tạm/log/zip trùng lặp, gom ảnh kỷ niệm vào `assets/`, gom tài liệu thể lệ vào `docs/competition/`, lưu kết quả Private Test tại `artifacts/private-test-final/submission.jsonl`, và kiểm tra `501 passed` unit tests.
+- **Lưu trữ `agentmemory`:** Đã cất `43` bản ghi đặc thù ZAIC 2026 vào `/home/pt/.gemini/archive/zaic-2026-memories.json` và ghi `5` bản ghi kiến trúc/bài học tổng quát (`global-ubuntu-core`) vào `/home/pt/.agentmemory/standalone.json`.
+- **Bước tiếp theo (Next Step):** Viết `README.md` tổng kết hành trình & bài học rút ra từ ZAIC 2026 DataMate, commit và đẩy repo kỷ niệm lên tài khoản GitHub phụ `khongphaiphattai`.

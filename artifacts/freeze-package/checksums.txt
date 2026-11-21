@@ -1,0 +1,12 @@
+ZAIC 2026 DataMate — Docker Freeze & Test Solution Package
+==========================================================
+Image Tag:                 zaic2026-datamate:freeze
+Archive File:              /home/pt/AI Challenge/artifacts/freeze-package/zaic2026-datamate-freeze.tar.gz
+Archive Size:              430M
+Submission SHA256:         76b33a45349f183aac8c778b19c3f95966b90fd2af12e7badf4c0f60c33b924d
+
+[Portal Tab "Test Solution" — Closes 23:59 15/11/2026 (Max 1 run/day)]
+MD5 Checksum:              ac7fb3c73fb3f158beb72b13ba57e43f
+
+[Final Solution Freeze — Closes 23:59 16/11/2026]
+SHA256 Checksum:           dd32089d5acdf026b932cc63dba0dd64b1ea37865f7fd86c4f67499e9b2ad13d

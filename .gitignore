@@ -6,16 +6,22 @@ dist/
 wheels/
 *.egg-info
 
-# Virtual environments
-.venv
+# Virtual environments & tool caches
+.venv/
+.pytest_cache/
+.ruff_cache/
+.serena/
 
 # Data archives & datasets
 *.zip
+*.tar.gz
 data/
 *.jsonl
 !submission.jsonl
+!artifacts/**/submission.jsonl
 
-# Logs & temp
+# Logs, temp & Windows ADS metadata
 *.log
+*:Zone.Identifier
 /tmp/
-
+artifacts/private_result/
