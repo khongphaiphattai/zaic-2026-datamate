@@ -1,208 +1,177 @@
-<div align="center">
+<p align="center">
+  <img src="assets/AgentX-Avatar.png" alt="AgentX Avatar" width="120" />
+</p>
 
-<img src="assets/AgentX-Avatar.png" alt="DataMate AgentX Avatar" width="160" />
+# Zalo AI Challenge 2026: Track 2 DataMate
 
-# Zalo AI Challenge 2026 — Track 2: DataMate (Data Agent)
+Kho lưu trữ mã nguồn, kết quả thực nghiệm và ghi chép kỹ thuật từ mùa giải Zalo AI Challenge 2026 (Track 2: DataMate, tháng 10 đến tháng 11 năm 2026).
 
-**Kho lưu trữ kỷ niệm & Đúc kết kỹ thuật (Engineering Retrospective & Post-Mortem)**
+Mình không có giải ở vòng chung kết. Repo này giữ lại mã nguồn, nhật ký 36 lần nộp bài trong [`ROADMAP.md`](ROADMAP.md) và những lỗi sai đáng nhớ trong quá trình xây dựng Data Agent.
 
-[![Track](https://img.shields.io/badge/ZAIC_2026-Track_2:_DataMate-0068FF?style=for-the-badge)](docs/competition/zalo-ai-challenge-regulations-vi.pdf)
-[![Public Score](https://img.shields.io/badge/Public_PA_Score-0.84900_(Sub_%2336)-2EA043?style=for-the-badge)](ROADMAP.md)
-[![Train Gate](https://img.shields.io/badge/Train_Gate-3000%2F3000_(100%25)-1F6FEB?style=for-the-badge)](scripts/audit_train_errors.py)
-[![Holdout Gate](https://img.shields.io/badge/Holdout_Gate-710%2F710_(100%25)-8957E5?style=for-the-badge)](artifacts/v34-holdout/holdout.json)
-[![Engine](https://img.shields.io/badge/Engine-DuckDB_+_Qwen2.5--Coder-F7A41D?style=for-the-badge)](pyproject.toml)
-
-</div>
+Kết quả cao nhất trên Public Leaderboard đạt `0.84900` Penalized Accuracy ở Sub #35 và Sub #36 (`993` câu trả lời, `7` câu `abstain`). Bộ kiểm thử nội bộ ở bản chốt cuối đạt `3.000/3.000` câu tập Train và `710/710` câu tập Holdout (6 doanh nghiệp), sai `0` câu.
 
 ---
 
-## 📖 Lời tựa & Ý nghĩa Kho lưu trữ
+## 1. Thước đo điểm số
 
-Repository này lưu giữ toàn bộ mã nguồn, kiến trúc kiểm thử, nhật ký hành trình ([`ROADMAP.md`](ROADMAP.md)) và các bài học kỹ thuật rút ra từ quá trình tham gia **Zalo AI Challenge 2026 — Track 2: DataMate (Data Agent)**.
+Bài toán yêu cầu truy vấn dữ liệu thô (`.xlsx`, `.csv`, `.sqlite`) của nhiều cửa hàng Việt Nam như tạp hóa, phòng khám, tiệm sửa xe, cửa hàng mẹ và bé, cửa hàng điện thoại trả góp.
 
-Dù dừng chân ở mức kỷ niệm và không đạt giải chung cuộc, hành trình **36 lần nộp bài** — đi từ con số âm **`-0.16700`** ở những ngày đầu tiên lên **`+0.84900` Penalized Accuracy** (`993/1.000` câu trả lời trên Public Test, đạt tuyệt đối **`3.000/3.000` (100%)** trên tập Train và **`710/710` (100%)** trên tập Holdout với **`0` lỗi sai**) — đã để lại một hệ thống phương pháp luận cực kỳ giá trị về **Thiết kế Data Agent, Kiểm thử Vi phân (Differential Verification), Chống Hardcode và Đóng gói Hệ thống Offline Tái lập 100%**.
+Hệ thống chấm điểm dùng Penalized Accuracy ($PA$):
 
----
+$$PA = \frac{1}{N} \sum_{i=1}^N s_i, \quad s_i = \begin{cases} +1 & \text{trả lời đúng} \\ 0 & \text{abstain} \\ -1 & \text{trả lời sai} \end{cases}$$
 
-## ⚖️ 1. Bài toán & Lý thuyết Trò chơi: *"Silence is Free"*
+Mỗi câu sai trừ 1 điểm, tức lệch 2 điểm so với một câu đúng. Mọi nhánh xử lý mới đều phải có xác suất đúng tối thiểu 50% mới mang lại điểm dương.
 
-Trong Track 2 **DataMate**, Agent phải tự động đọc hiểu và truy vấn dữ liệu thô đa định dạng (`.xlsx` nhiều sheet gộp ô, `.csv`, `.sqlite`) của hàng chục hộ kinh doanh/tiểu thương Việt Nam (tạp hóa, phòng khám, tiệm sửa xe, cửa hàng mẹ & bé, bán lẻ điện thoại trả góp, nhà xe...).
+Ngoài ra, bài toán tách rõ hai trạng thái từ chối:
 
-Thước đo chấm điểm là **Penalized Accuracy ($PA$)**:
-
-$$PA = \frac{1}{N} \sum_{i=1}^N s_i, \quad s_i = \begin{cases} +1 & \text{nếu trả lời ĐÚNG} \\ 0 & \text{nếu từ chối kỹ thuật (abstain)} \\ -1 & \text{nếu trả lời SAI (hallucination)} \end{cases}$$
-
-### Hai Tiên đề Sống còn:
-1. **Ngưỡng Hòa vốn Độ chính xác ($P_{\text{break-even}} \ge 50\%$):**
-   - Mỗi câu trả lời sai không chỉ mất $0$ điểm mà còn bị phạt **$-1$ điểm** (tương đương biên độ dao động **2 điểm** so với một câu trả lời đúng). Nếu một nhánh suy luận mới chỉ đúng dưới $50\%$, việc cố đoán sẽ kéo tụt tổng điểm.
-2. **Phân biệt Rạch ròi 2 Loại Từ chối (`unanswerable` vs. `abstain`):**
-   - **`type: "unanswerable"` ($+1$ điểm nếu đúng, $-1$ nếu đoán bừa):** Khi dữ liệu thực sự không chứa chỉ số được hỏi hoặc nằm ngoài khoảng thời gian có dữ liệu của cửa hàng.
-   - **`type: "abstain"` ($0$ điểm an toàn):** Khi truy vấn vượt ngoài khả năng phân giải chắc chắn hoặc không vượt qua cổng kiểm tra hậu kiểm kỹ thuật (`_technical_abstain_gate`).
+- `unanswerable`: dữ liệu thiếu cột chỉ số được hỏi hoặc câu hỏi rơi ra ngoài khoảng ngày có dữ liệu. Trả về đúng loại này được `+1` điểm; đoán một con số sẽ bị `-1`.
+- `abstain`: truy vấn gặp lỗi kỹ thuật hoặc dữ liệu nhập nhằng không đủ căn cứ. Trả về `abstain` nhận `0` điểm để tránh mất điểm.
 
 ---
 
-## 🏗️ 2. Kiến trúc Hệ thống (Hybrid Deterministic SQL + Bounded Slow Path)
+## 2. Kiến trúc hệ thống
+
+Hệ thống chạy theo mô hình lai: tầng xử lý dữ liệu xác định trên DuckDB đảm nhiệm phần lớn câu hỏi, còn mô hình ngôn ngữ (`Qwen2.5-Coder` dưới 15B tham số) chỉ tham gia vào nhóm câu hỏi diễn đạt tự nhiên có kiểm soát đầu ra.
 
 ```mermaid
 flowchart TD
-    A["Raw Business Data (.xlsx / .csv / .sqlite)"] --> B["Physical Loader & Unmerger (data_loader.py)"]
-    B --> C["Vietnamese Schema & Value Cleaner (cleaner.py)"]
-    C --> D["In-Memory DuckDB + BusinessContext"]
+    A["Du lieu goc (.xlsx / .csv / .sqlite)"] --> B["data_loader.py: go o gop, doc nhieu sheet"]
+    B --> C["cleaner.py: chuan hoa ngay, tien te, don vi"]
+    C --> D["BusinessContext + In-Memory DuckDB"]
 
-    Q["Câu hỏi Tiếng Việt + Calendar Bounds"] --> E["Orchestration Chain (pipeline.py)"]
-    E --> E1["MTDGrowthAgent (Tăng trưởng lũy kế đầu tháng)"]
-    E1 --> E2["MonthlyGrowthAgent (Tăng trưởng tháng/kỳ)"]
-    E2 --> E3["DailyOrderParaphraseAgent (Biến thể doanh thu/đơn hàng)"]
-    E3 --> F["HybridAgent + Deterministic Fast Path (intent_parser.py)"]
+    Q["Cau hoi tieng Viet + Calendar Bounds"] --> E["pipeline.py"]
+    E --> E1["MTDGrowthAgent"]
+    E1 --> E2["MonthlyGrowthAgent"]
+    E2 --> E3["DailyOrderParaphraseAgent"]
+    E3 --> F["HybridAgent + intent_parser.py"]
 
     D --> F
-    F -->|"Resolved Deterministically"| G["Technical Abstain Gate (_technical_abstain_gate)"]
-    F -->|"Unresolved & Eligible"| H["Bounded Slow Path (Qwen2.5-Coder + Metric Guard)"]
+    F -->|"Giai bang SQL xac dinh"| G["_technical_abstain_gate"]
+    F -->|"Cau hoi ngoai mau"| H["slow_path.py (Qwen2.5-Coder + Metric Guard)"]
     H --> G
 
-    G -->|"Valid Finite Schema"| O1["Output: number | percent | string | date | boolean | list | table | unanswerable"]
-    G -->|"NaN / Inf / Type Mismatch / Ambiguous"| O2["Safe Refusal: abstain (0 penalty)"]
+    G -->|"Hop le"| O1["number / percent / string / date / boolean / list / table / unanswerable"]
+    G -->|"NaN / Inf / Sai kieu"| O2["abstain"]
 ```
 
-### Bản đồ Module Chuyên sâu (`src/zaic_2026_datamate/`)
+### Các module chính trong `src/zaic_2026_datamate/`
 
-| Phân lớp | Module chủ lực | Trách nhiệm Kỹ thuật & Bất biến (Invariants) |
+| Nhóm chức năng | File mã nguồn | Nhiệm vụ |
 | :--- | :--- | :--- |
-| **Data Wrangling & Normalization** | [`data_loader.py`](src/zaic_2026_datamate/data_loader.py), [`cleaner.py`](src/zaic_2026_datamate/cleaner.py) | Gỡ merged cells `.xlsx`, nhận diện multi-row header, cắt dòng `Tổng cộng` cuối bảng, chuẩn hóa tiền tệ Việt Nam (`100k`, `1.5tr`, `100.000 đ`), đổi ngày Excel serial (`45xxx`), gộp liên bảng `Sổ nợ + Trả góp`. |
-| **Core Orchestration** | [`pipeline.py`](src/zaic_2026_datamate/pipeline.py), [`hybrid_agent.py`](src/zaic_2026_datamate/hybrid_agent.py), [`intent_parser.py`](src/zaic_2026_datamate/intent_parser.py) | Chuỗi Agent phân tầng (`MTDGrowth` $\rightarrow$ `MonthlyGrowth` $\rightarrow$ `DailyOrderParaphrase` $\rightarrow$ `HybridAgent`), bộ giải nghĩa ngữ pháp tiếng Việt (`"đến hết"`, `"tới cuối"`, khoảng tháng quý) và chốt chặn `_technical_abstain_gate`. |
-| **Semantic & Growth Contracts** | [`semantic_contract.py`](src/zaic_2026_datamate/semantic_contract.py), [`growth_semantics.py`](src/zaic_2026_datamate/growth_semantics.py), [`revenue_metric.py`](src/zaic_2026_datamate/revenue_metric.py) | Khóa ngữ nghĩa công thức doanh thu ròng/gộp, lọc đơn hủy/hoàn trả (`Đã hủy`, `Hoàn tiền`, `Trả hàng`), kiểm tra tính khả thi dữ liệu theo kỳ tăng trưởng. |
-| **Domain Verticals** | [`repair_shop.py`](src/zaic_2026_datamate/repair_shop.py), [`mobile_installment.py`](src/zaic_2026_datamate/mobile_installment.py), [`mother_baby.py`](src/zaic_2026_datamate/mother_baby.py), [`purchase_analytics.py`](src/zaic_2026_datamate/purchase_analytics.py), [`price_change.py`](src/zaic_2026_datamate/price_change.py), [`rolling_window.py`](src/zaic_2026_datamate/rolling_window.py), [`multi_month_revenue.py`](src/zaic_2026_datamate/multi_month_revenue.py), [`sales_status.py`](src/zaic_2026_datamate/sales_status.py) | Quy đổi đơn vị cơ sở (`Thùng` $\rightarrow$ `Hộp` $\rightarrow$ `Gói/Lốc`), tách món chính & topping qua dấu ` + `, phân tích biến động giá, cửa sổ trượt (rolling windows) và đối soát công nợ trả góp. |
-| **Selective Slow Path** | [`slow_path.py`](src/zaic_2026_datamate/slow_path.py), [`llm_client.py`](src/zaic_2026_datamate/llm_client.py) | Kết nối mô hình mã nguồn mở `Qwen2.5-Coder` ($\le 15\text{B}$) với sandbox thực thi DuckDB và bộ kiểm định AST SQL (`revenue_metric.py`). |
+| Đọc và làm sạch dữ liệu | [`data_loader.py`](src/zaic_2026_datamate/data_loader.py), [`cleaner.py`](src/zaic_2026_datamate/cleaner.py) | Gỡ ô gộp Excel, dò tiêu đề nhiều dòng, cắt dòng `Tổng cộng` cuối bảng, đổi tiền tệ Việt Nam (`100k`, `1.5tr`, `100.000 đ`), đổi số serial ngày Excel (`45xxx`), nối sổ nợ và trả góp. |
+| Điều phối và giải nghĩa | [`pipeline.py`](src/zaic_2026_datamate/pipeline.py), [`hybrid_agent.py`](src/zaic_2026_datamate/hybrid_agent.py), [`intent_parser.py`](src/zaic_2026_datamate/intent_parser.py) | Ghép chuỗi wrapper theo thứ tự ưu tiên, phân tách ngữ pháp thời gian tiếng Việt (`đến hết`, `tới cuối`, quý, tháng), ép giá trị `NaN`/`Inf` hoặc sai kiểu về `abstain`. |
+| Khóa ngữ nghĩa doanh thu | [`semantic_contract.py`](src/zaic_2026_datamate/semantic_contract.py), [`growth_semantics.py`](src/zaic_2026_datamate/growth_semantics.py), [`revenue_metric.py`](src/zaic_2026_datamate/revenue_metric.py) | Loại bỏ đơn hủy và đơn hoàn tiền (`Đã hủy`, `Hoàn tiền`, `Trả hàng`), kiểm tra điều kiện đủ dữ liệu cho câu hỏi tăng trưởng kỳ trước và MTD. |
+| Nghiệp vụ theo ngành hàng | [`repair_shop.py`](src/zaic_2026_datamate/repair_shop.py), [`mobile_installment.py`](src/zaic_2026_datamate/mobile_installment.py), [`mother_baby.py`](src/zaic_2026_datamate/mother_baby.py), [`purchase_analytics.py`](src/zaic_2026_datamate/purchase_analytics.py), [`price_change.py`](src/zaic_2026_datamate/price_change.py), [`rolling_window.py`](src/zaic_2026_datamate/rolling_window.py), [`multi_month_revenue.py`](src/zaic_2026_datamate/multi_month_revenue.py), [`sales_status.py`](src/zaic_2026_datamate/sales_status.py) | Quy đổi đơn vị đóng gói (`Thùng`, `Lốc`, `Hộp`, `Lon`), tách món chính và topping qua dấu ` + `, tính biến động giá, cửa sổ trượt và công nợ trả góp. |
+| Slow Path (LLM) | [`slow_path.py`](src/zaic_2026_datamate/slow_path.py), [`llm_client.py`](src/zaic_2026_datamate/llm_client.py) | Gọi endpoint tương thích OpenAI cho `Qwen2.5-Coder`, kiểm tra AST câu SQL trước khi chạy trên DuckDB. |
 
 ---
 
-## 📈 3. Hành trình 36 Lần Nộp Bài: Từ `-0.16700` đến `+0.84900`
+## 3. Diễn biến điểm số qua 36 lần nộp
 
-| Giai đoạn | Mốc Nộp bài | Điểm Public ($PA$) | Đúng / Sai / Abstain (ước tính hoặc xác thực) | Bước ngoặt Kỹ thuật |
-| :--- | :--- | :---: | :--- | :--- |
-| **Khởi đầu** | `v1.0` (Sub #1) | `-0.16700` | Sai nhiều hơn Đúng | Suy luận tự do chưa có cổng từ chối $\rightarrow$ dính phạt `-1` hàng loạt. |
-| **Phase 2 Freeze** | `v2.8` (Sub #12) | `+0.13400` | Tăng ròng `+301` điểm | Đóng băng kiến trúc DuckDB In-Memory + Abstain Gate (`99.87%` precision trên LBO 5-Fold). |
-| **Phase 3 Hybrid** | `v3.0` (Sub #13) | `+0.13400` | Bảo toàn baseline | Thử nghiệm Colab LoRA `Qwen2.5-Coder` & Metric Guard cho câu hỏi diễn đạt tự nhiên. |
-| **Mở rộng Verticals** | Sub #25 $\rightarrow$ #27 | `+0.56800` $\rightarrow$ `+0.61000` | `775` Đúng / `165` Sai / `60` Abstain | Mở rộng độ phủ các nghiệp vụ tiểu thương nhưng bắt đầu tích tụ nợ kỹ thuật. |
-| **Cú ngã Cảnh tỉnh** | **Sub #28** (`c66bbeb`) | **`+0.60800`** 📉 | `785` Đúng / `177` Sai / `38` Abstain | **Tụt `-0.00200`:** Mở thêm 22 câu nhưng sai 12 câu. Phát hiện các nhánh vá theo ID (`dev_*`) che khuất **108 lỗi thật** trên tập Train 3.000 câu! |
-| **Đại phẫu Dehardcode** | **Sub #29** (`v38`) | Clean Baseline | Xóa 100% hardcode `dev_*` | Thiết lập luật **Zero Hardcoding (Rule §6.2)** + khóa bằng static test và quy trình **3 Cổng Kiểm định Vàng**. |
-| **Mũi 9 $\rightarrow$ Mũi 11** | Sub #30 $\rightarrow$ #32 | `+0.65500` $\rightarrow$ `+0.81100` | Tăng tốc thần tốc `+203` điểm | Chuẩn hóa Telex/Unicode header, quy đổi đơn vị đóng gói, tách topping ` + `, xử lý ngày serial Excel. |
-| **Mũi 12 (Zero-Error Train)** | **Sub #33** (`62f3e37`) | **`+0.82500`** | Train `3000/3000` (100%), Holdout `710/710` (100%) | Lần đầu tiên đạt **100% tuyệt đối trên toàn bộ 3.000 câu Train & 710 câu Holdout (`0 Wrong`)**. |
-| **Mũi 13 & 14 (Final Freeze)** | **Sub #35 & #36** (`58f08e8`) | **`+0.84900`** 🏆 | **`993` Answered / `7` Abstain** (`+24` điểm ròng vs #33) | Sửa triệt để 12 câu sai tiềm ẩn nhờ quy đổi đơn vị schema tổng quát & chuẩn hóa khoảng trắng trạng thái đơn; đóng gói Docker Freeze cuối cùng. |
+| Mốc | Commit / Bản nộp | Public Score | Ghi chú kỹ thuật |
+| :--- | :--- | :---: | :--- |
+| Khởi đầu | `v1.0` (Sub #1) | `-0.16700` | Chưa có cổng `abstain`, nhiều câu sai kéo điểm xuống âm. |
+| Phase 2 | `v2.8` (Sub #12) | `+0.13400` | Chuyển sang DuckDB xác định kết hợp cổng từ chối, đạt `99.87%` precision trên kiểm thử LBO 5-Fold. |
+| Phase 3 | `v3.0` (Sub #13) | `+0.13400` | Thử nghiệm fine-tune LoRA `Qwen2.5-Coder` trên Colab và nối cổng kiểm tra công thức doanh thu. |
+| Mở rộng ngành hàng | Sub #25 đến #27 | `+0.56800` -> `+0.61000` | Sub #27 đạt `775` đúng, `165` sai, `60` `abstain`. |
+| Sụt điểm | Sub #28 (`c66bbeb`) | `+0.60800` | Trả lời thêm 22 câu nhưng sai 12 câu, mất ròng 2 điểm. Rà soát 3.000 câu Train phát hiện 108 lỗi bị che khuất do nhánh hardcode `dev_*`. |
+| Xóa hardcode | Sub #29 (`v38`) | Clean baseline | Gỡ bỏ toàn bộ rẽ nhánh theo `business_id`, thêm test tĩnh cấm hardcode và dựng quy trình kiểm tra 3 cổng. |
+| Mũi 9 đến Mũi 11 | Sub #30 đến #32 | `+0.65500` -> `+0.81100` | Chuẩn hóa tên cột Telex/Unicode, quy đổi đơn vị đóng gói, tách topping ` + `, xử lý ngày serial Excel. |
+| Mũi 12 | Sub #33 (`62f3e37`) | `+0.82500` | Đạt `3.000/3.000` câu Train và `710/710` câu Holdout, sai `0` câu. |
+| Mũi 13 và 14 | Sub #35 và #36 (`58f08e8`) | `+0.84900` | Sửa 12 câu sai tiềm ẩn qua chuẩn hóa khoảng trắng trạng thái đơn và quy đổi đơn vị theo schema; đóng gói Docker Freeze cuối cùng. |
 
----
+<p align="center">
+  <img src="assets/portal-submissions-v3.png" alt="Zalo AI Challenge 2026 DataMate Portal - Sub v2.8 va v3.0" />
+</p>
 
-## 🧠 4. Năm Bài Học Kỹ Thuật Xương Máu (Key Takeaways)
-
-### Bài học 1: Cái bẫy Hardcode & Vì sao cú tụt điểm ở `Sub #28` là bước ngoặt quý giá nhất
-Ở giai đoạn tăng điểm nóng (`Sub #25` $\rightarrow$ `#27`), việc thêm các nhánh xử lý đặc thù theo mã doanh nghiệp (`dev_*`) hoặc từ khóa tĩnh giúp mở khóa nhanh một số câu trên Public Test, nhưng lại vô tình **bẻ cong đường đi của luồng tổng quát**. Khi chạy kiểm toán toàn diện 3.000 câu Train sau cú tụt điểm `Sub #28`, nhóm phát hiện tới **108 câu Train bị tính sai ngầm**.
-> **Đúc kết:** Ngay khi xóa sạch 100% nhánh rẽ `dev_*` ở `Sub #29`, khóa bằng bài test tĩnh [`tests/test_phase1_dehardcode_and_rules.py`](tests/test_phase1_dehardcode_and_rules.py) và ép mọi quy tắc nghiệp vụ phải suy dẫn từ **Schema & Calendar Bounds tổng quát**, điểm Public tăng một mạch từ `0.60800` lên **`0.84900`** (`+241` điểm ròng) chỉ trong 72 giờ cuối mà không một lần bị tụt điểm!
-
-### Bài học 2: Dữ liệu Tiểu thương Việt Nam đòi hỏi "Physical & Semantic Cleaning" hơn là Prompt Engineering
-Dữ liệu thực tế trong cuộc thi không phải các bảng SQL chuẩn hóa, mà là sổ sách đời thực:
-- File Excel có **ô gộp (merged cells)** nhiều tầng, dòng tiêu đề nằm ở dòng thứ 3–5, cuối bảng có dòng **`Tổng cộng`** (nếu `SUM()` cả cột sẽ bị nhân đôi doanh thu!).
-- Đơn hàng chứa trạng thái hủy/hoàn trả đa dạng (`Đã hủy`, `Hoàn tiền`, `Khách trả hàng`, hoặc khoảng trắng Unicode không chuẩn).
-- Một dòng bán hàng gộp cả món chính lẫn topping (`Trà sữa trân châu + Kem cheese`), hoặc bán theo `Thùng/Lốc` nhưng hỏi tồn kho theo `Lon/Hộp`.
-> **Đúc kết:** Trong bài toán Data Agent có phạt điểm âm (`-1`), **95% độ chính xác nằm ở tầng Data Loader, Schema Linker và Semantic Contract thực thi trên DuckDB**, chứ không phải để LLM tự đoán công thức SQL trên dữ liệu bẩn.
-
-### Bài học 3: Hệ thống 3 Cổng Kiểm định Vàng (Three Golden Regression Gates — 15x Speedup)
-Để vừa sửa hàng chục lát cắt (slices) mỗi ngày vừa đảm bảo **0% hồi quy (Zero Regression)** trên 3.710 câu hỏi kiểm thử, nhóm đã chia quy trình kiểm thử thành 3 tầng tốc độ:
-1. **Fast Slice Gate (~25 giây — chạy sau mỗi lát cắt):**
-   ```bash
-   uv run ruff check src/ tests/ && uv run python -m pytest -m "not slow"
-   uv run python scripts/audit_train_errors.py --businesses biz_117,biz_118 --max-wrong 0
-   ```
-2. **Gate 1 (3.000 câu Train) + Gate 2 (710 câu Holdout / 6 businesses) Đa tiến trình (~2 phút):**
-   ```bash
-   uv run python scripts/audit_train_errors.py --workers 8 --max-wrong 0
-   ```
-   *(Tự động chạy song song 8 workers trên cả 30 doanh nghiệp Train và báo cáo luôn kết quả Holdout 710 câu, yêu cầu bắt buộc `0 Wrong`)*.
-3. **Gate 3 (Differential Twin Comparison vs. Baseline):**
-   ```bash
-   uv run python scripts/compare_submissions.py
-   ```
-   *(Mọi câu chuyển từ `abstain -> answer` hoặc đổi giá trị trên tập Public đều phải đối chiếu với doanh nghiệp song sinh `biz_*` trên tập Train; nếu không chứng minh được độ chính xác $\ge 50\%$, bắt buộc giữ `abstain`)*.
-
-### Bài học 4: Quản trị Rủi ro *"Last-Docker-Wins"* & Đóng gói Offline Tái lập 100%
-Theo quy chế của BTC, hệ thống chấm vòng chung kết chạy container trong môi trường cô lập hoàn toàn (`--network none`, thư mục `/data` chỉ đọc `READ-ONLY`), và **lấy bản Docker nộp cuối cùng chứ không lấy bản điểm cao nhất**.
-> **Đúc kết:** Mọi bản nộp Freeze đều được kiểm định tự động qua [`scripts/package_freeze_solution.sh`](scripts/package_freeze_solution.sh): dựng image `zaic2026-datamate:freeze`, chạy giả lập container `--network none --read-only`, đối chiếu mã băm **SHA256 khớp 100% từng byte** với `submission.jsonl` trên máy chủ trước khi xuất file `.tar.gz` kèm cặp checksum `MD5` & `SHA256`.
-
-### Bài học 5: Kỷ luật Vận hành AI Coding Agent trên WSL2 Ubuntu
-Quá trình làm việc cường độ cao cùng hệ thống Multi-Agent giúp nhóm đúc kết bộ quy tắc vận hành tối ưu cho các dự án lớn tiếp theo:
-- **Zero Windows-Interop Deadlock:** Chỉ dùng binary Linux native (`/usr/bin/docker`, `uv`, `python3`), luôn đóng `stdin` (`< /dev/null`) kèm `timeout` để không bao giờ bị treo tiến trình ngầm trên WSL2.
-- **Token Physics & Session Hygiene:** Giữ rules ngắn gọn, định tuyến skill theo bảng quyết định (Tier 3), đọc code theo lát cắt AST/symbol, và lưu nhật ký kiến trúc vào `ROADMAP.md` sau mỗi cột mốc.
+*Ảnh chụp cổng nộp bài giai đoạn đầu (Sub #12 `v2.8` và Sub #13 `v3.0` tại mốc `0.13400`, trước khi xóa nhánh hardcode và nâng điểm ở các mũi cuối).*
 
 ---
 
-## 🖼️ 5. Góc Kỷ Niệm Chiến Dịch (Campaign Gallery)
+## 4. Các bài học rút ra sau cuộc thi
 
-| Huấn luyện & Phục hồi Adapter trên Colab GPU | Cầu nối Cloudflare Tunnel & Quản lý Phiên |
-| :---: | :---: |
-| ![Colab Training 03_business](assets/03_business_10h46.png) | ![Colab Session & Tunnel](assets/manage_session.png) |
-| **Cột mốc Nộp bài v3.0 trên Portal ZAIC** | **Cấu hình Tunnel Kết nối Local $\leftrightarrow$ Colab** |
-| ![Submission v3.0 Portal](assets/submitv3.0.png) | ![Cloudflare Tunnel Setup](assets/crop_tunnel.png) |
+### 1. Rẽ nhánh theo ID tập test làm hỏng hệ thống kiểm chứng
+Từ Sub #25 đến Sub #28, mình thêm nhiều nhánh xử lý riêng cho một vài cửa hàng `dev_*` trên tập Public để lấy điểm nhanh. Cách làm này che mờ lỗi gốc của bộ phân tích chung. Khi chạy lại 3.000 câu tập Train sau đợt tụt điểm ở Sub #28 (`0.60800`), script kiểm toán chỉ ra 108 câu đang tính sai.
+
+Mình xóa các nhánh rẽ `dev_*` ở Sub #29, khóa quy định này bằng test tĩnh trong [`tests/test_phase1_dehardcode_and_rules.py`](tests/test_phase1_dehardcode_and_rules.py) và viết lại logic dựa trên cấu trúc bảng cùng biên lịch chung. Qua 7 lần nộp sau đó, điểm Public tăng từ `0.60800` lên `0.84900`.
+
+### 2. Tiền xử lý bảng tính quyết định phần lớn độ chính xác
+Dữ liệu tiểu thương Việt Nam chứa nhiều bẫy ở tầng định dạng vật lý:
+- File `.xlsx` gộp nhiều ô ở tiêu đề và chèn dòng `Tổng cộng` ngay cuối bảng. Nếu chạy `SUM()` trực tiếp sẽ nhân đôi doanh thu.
+- Cột trạng thái đơn hàng dùng nhiều cách ghi khác nhau kèm khoảng trắng thừa (`Đã hủy`, `Hoàn tiền`, `Khách trả hàng`).
+- Một dòng bán hàng gộp tên món và topping bằng dấu ` + `, hoặc bán theo `Thùng`/`Lốc` nhưng câu hỏi yêu cầu tính theo `Hộp`/`Lon`.
+
+Khi xử lý các lớp nhiễu này ngay tại `data_loader.py` và `cleaner.py`, câu SQL phía sau ngắn gọn và dễ viết unit test hơn việc đẩy bảng thô vào prompt cho LLM.
+
+### 3. Phân tầng kiểm thử để giữ tốc độ sửa lỗi
+Chạy lại 3.000 câu Train sau mỗi lần sửa code mất nhiều phút và làm đứt mạch làm việc. Mình chia bộ kiểm tra thành 3 tầng theo thời gian chạy:
+
+1. **Fast Gate (~20 giây):** chạy `ruff check`, `pytest -m "not slow"` (501 unit tests) và kiểm tra đúng 1 đến 2 doanh nghiệp liên quan đến lát cắt vừa sửa.
+2. **Gate 1 + Gate 2 song song (~2 phút):** chạy `scripts/audit_train_errors.py --workers 8 --max-wrong 0` trên cả 30 doanh nghiệp Train (3.000 câu) và tự động đối chiếu tập Holdout (710 câu).
+3. **Gate 3 (Differential Diff):** chạy `scripts/compare_submissions.py` để soi từng câu chuyển từ `abstain` sang có đáp án hoặc đổi giá trị so với bản nộp trước đó. Câu nào không chứng minh được trên dữ liệu song sinh ở tập Train sẽ giữ ở `abstain`.
+
+### 4. Kiểm thử tái lập trong môi trường container cô lập
+Theo thể lệ, hệ thống chấm vòng chung kết chạy Docker container ở chế độ không có mạng (`--network none`), gắn thư mục `/data` chỉ đọc và lấy bản Docker nộp cuối cùng làm kết quả chính thức.
+
+Trước khi nộp bản Freeze #36, script [`scripts/package_freeze_solution.sh`](scripts/package_freeze_solution.sh) dựng image `zaic2026-datamate:freeze`, chạy container với cờ `--network none --read-only` trong `277.93s` và đối chiếu SHA256 của file `submission.jsonl` sinh ra bên trong container khớp từng byte (`76b33a45349f183aac8c778b19c3f95966b90fd2af12e7badf4c0f60c33b924d`) với bản chạy cục bộ. Script xuất cặp checksum MD5 và SHA256 của gói `.tar.gz` cuối cùng vào [`artifacts/freeze-package/checksums.txt`](artifacts/freeze-package/checksums.txt).
 
 ---
 
-## 📂 6. Cấu trúc Thư mục Repository
+## 5. Cấu trúc thư mục
 
 ```text
-AI Challenge/
-├── assets/                  # Ảnh kỷ niệm cuộc thi, avatar nhóm, ảnh huấn luyện Colab & Portal
-├── artifacts/               # Báo cáo thực nghiệm, tập Holdout 710 câu, checksums Freeze & kết quả Private Test
-│   ├── freeze-package/      # Lưu trữ mã kiểm tra SHA256 & MD5 của gói Docker Freeze #36
-│   ├── private-test-final/  # Kết quả chạy tập Private Test (500 câu, ngày 20/11/2026)
-│   └── v34-holdout/         # Tập Holdout 710 câu hỏi trên 6 doanh nghiệp chuẩn hóa
-├── docs/                    # Tài liệu kiến trúc & quy chế
-│   ├── competition/         # Thể lệ chính thức (VI/EN PDF), FAQ & thông báo vòng Private Test
-│   ├── plans/               # 16 bản thiết kế & kế hoạch nâng cấp qua từng phiên bản (v3.1 -> Sub #36)
-│   ├── runbooks/            # Hướng dẫn vận hành đánh giá local & khôi phục checkpoint
-│   └── specs/               # 8 bản đặc tả kỹ thuật (Semantic Query Plans, Revenue Metric Guard, Order Fill...)
-├── notebooks/               # 5 Jupyter Notebooks (.ipynb) & các script huấn luyện/phục hồi LoRA Qwen2.5 trên Colab
-├── scripts/                 # Công cụ kiểm toán lỗi (audit_train_errors.py), so sánh bản nộp & đóng gói Docker
-├── src/zaic_2026_datamate/  # Mã nguồn chính của DataMate Agent (23 modules chuyên sâu)
-├── tests/                   # 38 file kiểm thử tự động (501 fast unit tests + slow full-dataset regression tests)
-├── AGENTS.md                # Hiến pháp kỹ thuật & quy chuẩn kiểm định của dự án
-├── Dockerfile               # Định nghĩa container chạy độc lập (--network none, non-root ready)
-├── IMPLEMENTATION_PLAN.md   # Kế hoạch triển khai tổng thể các pha
-├── ROADMAP.md               # Nhật ký chi tiết toàn bộ 14 Mũi chiến dịch & 36 lần nộp bài
-├── ZAIC_2026_GUIDE.md       # Tóm tắt quy chế & đặc tả kỹ thuật cuộc thi
-├── pyproject.toml & uv.lock # Khóa phiên bản thư viện đảm bảo tái lập 100%
-└── submission.jsonl         # Bản nộp Public Test xuất sắc nhất (Sub #36 — Public Score: 0.84900)
+.
+├── assets/                  # Logo nhom va anh chup man hinh portal
+├── artifacts/               # Cac moc replay, tap Holdout 710 cau, checksums Freeze va ket qua Private Test
+│   ├── freeze-package/      # Checksum SHA256 & MD5 cua ban Docker Freeze #36
+│   ├── private-test-final/  # Ket qua chay tap Private Test ngay 20/11/2026
+│   └── v34-holdout/         # Tap Holdout 710 cau / 6 doanh nghiep
+├── docs/                    # Tai lieu kien truc va the le cuoc thi
+│   ├── competition/         # The le PDF (VI/EN), FAQ va thong bao vong Private
+│   ├── plans/               # 16 ban ke hoach nang cap tu v3.1 den Sub #36
+│   ├── runbooks/            # Huong dan danh gia local va phuc hoi checkpoint
+│   └── specs/               # 8 ban dac ta ky thuat
+├── notebooks/               # Notebook Colab huan luyen va phuc hoi LoRA Qwen2.5
+├── scripts/                 # Script audit loi, so sanh ban nop va dong goi Docker
+├── src/zaic_2026_datamate/  # Ma nguon chinh cua DataMate Agent
+├── tests/                   # 38 file test (501 fast tests + slow regression tests)
+├── AGENTS.md                # Quy uoc ky thuat cua repo
+├── Dockerfile               # Cau hinh container chay offline (--network none)
+├── IMPLEMENTATION_PLAN.md   # Ke hoach trien khai theo giai doan
+├── ROADMAP.md               # Nhat ky 14 mui chien dich va 36 lan nop bai
+├── ZAIC_2026_GUIDE.md       # Tom tat quy che cuoc thi
+├── pyproject.toml & uv.lock # Khoa phien ban thu vien
+└── submission.jsonl         # Ban nop Public Test cuoi cung (Sub #36, 0.84900)
 ```
 
 ---
 
-## 🚀 7. Hướng dẫn Chạy & Tái lập Kết quả (Quickstart)
+## 6. Hướng dẫn chạy lại cục bộ
 
-### Cài đặt Môi trường (qua `uv`)
+### Cài đặt môi trường
+
 ```bash
 uv sync --frozen
 ```
 
-### Chạy Bộ Kiểm thử Nhanh (Fast Gate — 501 Unit Tests trong ~18 giây)
+### Chạy bộ test nhanh (501 tests)
+
 ```bash
 uv run ruff check src/ tests/
 uv run python -m pytest -m "not slow" -q
 ```
 
-### Chạy Kiểm toán Toàn diện Tập Train (3.000 câu) & Holdout (710 câu)
-*(Yêu cầu giải nén dữ liệu cuộc thi vào `data/train` và `data/public_test`)*
+### Kiểm toán tập Train (3.000 câu) và Holdout (710 câu)
+
+Cần giải nén dữ liệu cuộc thi vào `data/train` và `data/public_test` trước khi chạy:
+
 ```bash
 uv run python scripts/audit_train_errors.py --workers 8 --max-wrong 0
 ```
 
-### Sinh File Nộp bài `submission.jsonl` & Đóng gói Docker Offline Freeze
-```bash
-# Sinh kết quả với cấu hình Production Parity
-uv run python scripts/generate_public_submission.py --output submission.jsonl
+### Sinh `submission.jsonl` và đóng gói Docker offline
 
-# Đóng gói và kiểm chứng container offline (--network none --read-only)
+```bash
+uv run python scripts/generate_public_submission.py --output submission.jsonl
 bash scripts/package_freeze_solution.sh
 ```
-
----
-
-<div align="center">
-  <i>Lưu giữ kỷ niệm mùa giải Zalo AI Challenge 2026 (Tháng 10 – Tháng 11/2026) • Built with DuckDB, Python & Antigravity on WSL2 Ubuntu.</i>
-</div>
